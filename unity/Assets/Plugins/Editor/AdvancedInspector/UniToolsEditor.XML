@@ -1,0 +1,453 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UniToolsEditor</name>
+    </assembly>
+    <members>
+        <member name="T:UniToolsEditor.EditorResources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Add">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.AlphaOrder">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.AntiAlphaOrder">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Box_Empty">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxFlat">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxFlat_Pro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxFlat_Title">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxFlat_TitlePro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxRound">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxRound_Pro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxRound_Title">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.BoxRound_TitlePro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Calendar">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Capsule">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Check">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Checkbox_Back_Idle">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Checkbox_Back_Pressed">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Checkbox_Check">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.CheckpointHead">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.CheckpointLine">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.CheckpointPersistant">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ClipBackground">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Connected">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Cross">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Cube">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Cylinder">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Delete">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Directory">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Disconnected">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Drag">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Drag_Light">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Edit">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.EditorBackground">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ExtendBot">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ExtendBotPro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ExtendTop">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ExtendTopPro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Favorited">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.File">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.FolderClosed">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.FolderOpen">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Hidden">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Hierarchy">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Hourglass">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Jump">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Knob">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.KnobBack">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Length">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Locked">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Logo">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.MoveDown">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.MoveEmpty">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.MoveUp">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.NoOrder">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.NotFavorited">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Package">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Picker">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.PickerCursor">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.PickerPro">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.PreviewLight1">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.PreviewLight2">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.PreviewLight3">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Refresh">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Save">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.SaveProject">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.SaveScene">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Scene">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollDown">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollLeft">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollLeft_Light">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollRight">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollRight_Light">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.ScrollUp">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.SeparatorHorizontal">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.SeparatorVertical">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Sphere">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Unlocked">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.Visible">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="P:UniToolsEditor.EditorResources.White">
+            <summary>
+              Looks up a localized resource of type System.Byte[].
+            </summary>
+        </member>
+        <member name="T:UniToolsEditor.Helper">
+            <summary>
+            Collection of static helping method.
+            </summary>
+        </member>
+        <member name="M:UniToolsEditor.Helper.Load(System.String)">
+            <summary>
+            Load a binary file (ex.: from a .resx file) and covert it to a Unity Texture2D
+            This one is generally used when a non-editor script requires a texture.
+            It is requested by a the TextureRequest event.
+            </summary>
+            <param name="name">The name of the embedded resource.</param>
+            <returns>A UnityEngine.Texture</returns>
+        </member>
+        <member name="M:UniToolsEditor.Helper.Load(System.Byte[])">
+            <summary>
+            Load a binary file (ex.: from a .resx file) and covert it to a Unity Texture2D
+            </summary>
+            <param name="binary">The binary resources.</param>
+            <returns>A UnityEngine.Texture</returns>
+        </member>
+        <member name="M:UniToolsEditor.Helper.DrawColor(UnityEngine.Rect,UnityEngine.Color)">
+            <summary>
+            Similar to GUI.DrawTexture, but draw a color instead.
+            </summary>
+            <param name="rect">Region to draw.</param>
+            <param name="color">The color of the draw call.</param>
+        </member>
+        <member name="P:UniToolsEditor.Helper.White">
+            <summary>
+            A fully white texture.
+            Usually used by the DrawColor method.
+            </summary>
+        </member>
+    </members>
+</doc>

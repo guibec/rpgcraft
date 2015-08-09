@@ -1,0 +1,8 @@
+* Hard to place blocks
+* Enemies spawns in wall
+* Glitchy map world tiles
+* Games pauses when the world is generating
+* Get stuck, no slide on collision
+* Hitch when new chunks are being generated
+
+
