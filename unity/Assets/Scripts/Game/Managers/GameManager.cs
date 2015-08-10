@@ -164,75 +164,55 @@ public class GameManager : MonoSingleton<GameManager>
             // Naive algorithm: Use shortest distance
             // Better algorithm, go up/down if you can go to the wanted direction afterward, otherwise go to the shortest one
 
-            // try up first
+            //
             // 13.5001 up to 14.4999 -> 14.5
             // ceil(13.5001 - 0.5) + 0.5 = ceil(13.001) + 0.5 -> 14 + 0.5 = 14.5
             // ceil(14.4999 - 0.5) + 0.5 = ceil(13.999) + 0.5 -> 14 + 0.5 = 14.5
+
+            // yDir will be -1, then +1
+            for (int yDir = -1; yDir <= 1; yDir += 2)
+            {
+                double newY;
+                if (yDir < 0)
+                {
+                    newY = Math.Floor(beforeInputPosition.y + 0.5f) - 0.5f;
+                }
+                else
+                {
+                    newY = Math.Ceiling(beforeInputPosition.y - 0.5f) + 0.5f;
+                }
+
+                Vector2 sidePosition = new Vector2(beforeInputPosition.x, (float)newY);
+                Vector2 afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
+
+                // given that new position, could we actually continue where we wanted ?
+                float xDelta = (afterInputPosition.x > beforeInputPosition.x) ? 0.2f : -0.2f;
+                Vector2 goingDeeper = UpdateCollision(MainPlayer, afterSideStepCol,
+                    new Vector2(afterSideStepCol.x + xDelta, afterSideStepCol.y));
+
+                // if we were to go toward that direction, we would make it
+                // now, calculate how much we can actually do in a frame
+                if (xDelta > 0 && goingDeeper.x > afterSideStepCol.x || xDelta < 0 && goingDeeper.x < afterSideStepCol.x)
+                {
+                    // so we can do it, figure out really how much to go forward then
+                    double sideStepDistance = Math.Abs(newY - beforeInputPosition.y);
+
+                    if (sideStepDistance > distance)
+                    {
+                        Vector2 sideDir = (sidePosition - beforeInputPosition);
+                        sideDir.Normalize();
+
+                        sidePosition = beforeInputPosition + (sideDir*(float) distance);
+                    }
+
+                    afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
+
+                    // TODO - Use remaining momentum to move
+                    MainPlayer.SetPosition(afterSideStepCol);
+                    return;
+                }
+            }
             
-            double newY = Math.Ceiling(beforeInputPosition.y - 0.5f) + 0.5f;
-
-            Vector2 sidePosition = new Vector2(beforeInputPosition.x, (float)newY);
-            Vector2 afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
-
-            // given that new position, could we actually continue where we wanted ?
-            float xDelta = (afterInputPosition.x > beforeInputPosition.x) ? 0.2f : -0.2f;
-            Vector2 goingDeeper = UpdateCollision(MainPlayer, afterSideStepCol,
-                new Vector2(afterSideStepCol.x + xDelta, afterSideStepCol.y));
-
-            // if we were to go toward that direction, we would make it
-            // now, calculate how much we can actually do in a frame
-            if (xDelta > 0 && goingDeeper.x > afterSideStepCol.x || xDelta < 0 && goingDeeper.x < afterSideStepCol.x)
-            {
-                // so we can do it, figure out really how much to go forward then
-                double sideStepDistance = Math.Abs(newY - beforeInputPosition.y);
-
-                if (sideStepDistance > distance)
-                {
-                    Vector2 sideDir = (sidePosition - beforeInputPosition);
-                    sideDir.Normalize();
-
-                    sidePosition = beforeInputPosition + (sideDir * (float)distance);
-                }
-
-                afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
-                
-                // TODO - Use remaining momentum to move
-                MainPlayer.SetPosition(afterSideStepCol);
-                return;
-            }
-
-            // Then try down otherwise
-            newY = Math.Floor(beforeInputPosition.y + 0.5f) - 0.5f;
-
-            sidePosition = new Vector2(beforeInputPosition.x, (float)newY);
-            afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
-
-            // given that new position, could we actually continue where we wanted ?
-            xDelta = (afterInputPosition.x > beforeInputPosition.x) ? 0.2f : -0.2f;
-            goingDeeper = UpdateCollision(MainPlayer, afterSideStepCol,
-                new Vector2(afterSideStepCol.x + xDelta, afterSideStepCol.y));
-
-            // if we were to go toward that direction, we would make it
-            // now, calculate how much we can actually do in a frame
-            if (xDelta > 0 && goingDeeper.x > afterSideStepCol.x || xDelta < 0 && goingDeeper.x < afterSideStepCol.x)
-            {
-                // so we can do it, figure out really how much to go forward then
-                double sideStepDistance = Math.Abs(newY - beforeInputPosition.y);
-
-                if (sideStepDistance > distance)
-                {
-                    Vector2 sideDir = (sidePosition - beforeInputPosition);
-                    sideDir.Normalize();
-
-                    sidePosition = beforeInputPosition + (sideDir * (float)distance);
-                }
-
-                afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
-
-                // TODO - Use remaining momentum to move
-                MainPlayer.SetPosition(afterSideStepCol);
-                return;
-            }
 
             // Else, try closest
             // TODO - Also, in case both are possible, go toward the closest one first
