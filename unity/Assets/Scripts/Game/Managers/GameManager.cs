@@ -132,29 +132,48 @@ public class GameManager : MonoSingleton<GameManager>
         // we didn't go up/down, but we tried to
         if (afterColPosition.y == beforeInputPosition.y && (afterInputPosition.y > beforeInputPosition.y || afterInputPosition.y < beforeInputPosition.y))
         {
-            // can we bring the player to the closest 'tile' on the 'right', or 'on the left' ?
-            // This assume a 1x1 player, and that all collision are mapped on the tile itself
-            double newX = Math.Round(beforeInputPosition.x + 0.5f) - 0.5f;
-
-            Vector2 sidePosition = new Vector2((float)newX, beforeInputPosition.y);
-            double sideStepDistance = Math.Abs(newX - beforeInputPosition.x);
-
-            // clamp side-step with available distance
-            if (sideStepDistance > distance)
+            for (int xDir = -1; xDir <= 1; xDir += 2)
             {
-                Vector2 sideDir = (sidePosition - beforeInputPosition);
-                sideDir.Normalize();
+                double newX;
+                if (xDir < 0)
+                {
+                    newX = Math.Floor(beforeInputPosition.x + 0.5f) - 0.5f;
+                }
+                else
+                {
+                    newX = Math.Ceiling(beforeInputPosition.x - 0.5f) + 0.5f;
+                }
 
-                sidePosition = beforeInputPosition + (sideDir * (float)distance);
+                Vector2 sidePosition = new Vector2((float) newX, beforeInputPosition.y);
+                Vector2 afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
+
+                // given that new position, could we actually continue where we wanted ?
+                float yDelta = (afterInputPosition.y > beforeInputPosition.y) ? 0.2f : -0.2f;
+                Vector2 goingDeeper = UpdateCollision(MainPlayer, afterSideStepCol,
+                    new Vector2(afterSideStepCol.x, afterSideStepCol.y + yDelta));
+
+                // if we were to go toward that direction, we would make it
+                // now, calculate how much we can actually do in a frame
+                if (yDelta > 0 && goingDeeper.y > afterSideStepCol.y || yDelta < 0 && goingDeeper.y < afterSideStepCol.y)
+                {
+                    // so we can do it, figure out really how much to go forward then
+                    double sideStepDistance = Math.Abs(newX - beforeInputPosition.x);
+
+                    if (sideStepDistance > distance)
+                    {
+                        Vector2 sideDir = (sidePosition - beforeInputPosition);
+                        sideDir.Normalize();
+
+                        sidePosition = beforeInputPosition + (sideDir * (float)distance);
+                    }
+
+                    afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
+
+                    // TODO - Use remaining momentum to move
+                    MainPlayer.SetPosition(afterSideStepCol);
+                    return;
+                }
             }
-
-            // we have enough momentum to side-step, let's try it
-            Vector2 afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
-
-            // TODO - Use remaining momentum to move
-            MainPlayer.SetPosition(afterSideStepCol);
-
-            // TODO - Add same logic as left/right here
         }
 
         // left/right
