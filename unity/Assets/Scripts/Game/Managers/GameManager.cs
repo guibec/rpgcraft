@@ -134,6 +134,18 @@ public class GameManager : MonoSingleton<GameManager>
         {
             for (int xDir = -1; xDir <= 1; xDir += 2)
             {
+                // don't try to side-step in a direction the player specifically asked not go to
+                if (afterInputPosition.x > beforeInputPosition.x) // we tried to go right
+                {
+                    if (xDir < 0)
+                        continue;
+                }
+                else if (afterInputPosition.x < beforeInputPosition.x) // we tried to go left
+                {
+                    if (xDir > 0)
+                        continue;
+                }
+
                 double newX;
                 if (xDir < 0)
                 {
@@ -191,6 +203,18 @@ public class GameManager : MonoSingleton<GameManager>
             // yDir will be -1, then +1
             for (int yDir = -1; yDir <= 1; yDir += 2)
             {
+                // don't try to side-step in a direction the player specifically asked not go to
+                if (afterInputPosition.y > beforeInputPosition.y) // we tried to go up
+                {
+                    if (yDir < 0)
+                        continue;
+                }
+                else if (afterInputPosition.y < beforeInputPosition.y) // we tried to go down
+                {
+                    if (yDir > 0)
+                        continue;
+                }
+
                 double newY;
                 if (yDir < 0)
                 {
