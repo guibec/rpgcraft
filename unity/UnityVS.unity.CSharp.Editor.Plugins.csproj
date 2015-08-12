@@ -5,17 +5,17 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{55F249AC-5C5E-6C5F-4674-532B3E765494}</ProjectGuid>
+    <ProjectGuid>{430C2BEE-4B33-90CE-BF68-7357D024BC4F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace></RootNamespace>
-    <AssemblyName>Assembly-CSharp-Editor</AssemblyName>
+    <AssemblyName>Assembly-CSharp-Editor-firstpass</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
     <CompilerResponseFile></CompilerResponseFile>
-    <UnityProjectType>Editor:5</UnityProjectType>
+    <UnityProjectType>EditorPlugins:7</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.1.1f1</UnityVersion>
   </PropertyGroup>
@@ -137,14 +137,75 @@
       <Project>{FA83E9A0-6CB8-4BD9-107D-9FEF8E3A19A5}</Project>
       <Name>UnityVS.unity.CSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="UnityVS.unity.CSharp.Editor.Plugins.csproj">
-      <Project>{430C2BEE-4B33-90CE-BF68-7357D024BC4F}</Project>
-      <Name>UnityVS.unity.CSharp.Editor.Plugins</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\TileMapInspector.cs" />
-    <Compile Include="Assets\P4Connect\Editor\PackageIcons.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\Examples\ExternalInspectorWindow.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\ExtraGUI\ExtraGUI.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\ExtraGUI\ExtraGUILayout.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\AnimationCurveEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\BooleanEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\BoundsEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\CharEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\ColorEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\DateTimeEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\EnumEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\FloatEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\GradientEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\GuidEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\IntegerEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\LayerMaskEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\MonoEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\ObjectEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\QuaternionEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\RangeEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\RectEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\RigidbodyConstraints2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\RigidbodyConstraintsEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\StringEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\TimeSpanEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\FieldEditors\VectorEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\AnchoredJoint2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\AnimationEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\AnimatorEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\BoxColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\CameraEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\CapsuleColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\CharacterControllerEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\CharacterJointEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\ClothEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\ClothRendererEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\ColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\ConstantForceEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\FixedJointEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\HingeJoint2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\HingeJointEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\Joint2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\JointEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\LightEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\MeshColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\MeshEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\MeshFilterEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\MeshRendererEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\RendererEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\Rigidbody2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\RigidbodyEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SkinnedMeshRendererEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SphereColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SpringJoint2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SpringJointEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SpriteRendererEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointAngleLimits2D.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointDriveEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointLimitsEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointMotor2DEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointMotorEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\JointSpringEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\SoftJointLimitEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\SubTypes\WheelFrictionCurveEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\TerrainColliderEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\TextMeshEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\TransformEditor.cs" />
+    <Compile Include="Assets\Plugins\Editor\AdvancedInspector\UnityTypes\WheelColliderEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\AdvancedInspector\Documentation\AdvancedInspector_ReadMe.txt" />
