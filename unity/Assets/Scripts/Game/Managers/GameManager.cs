@@ -120,7 +120,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_posToChunks[new Vector2(chunkPos.x, chunkPos.y)] = chunkInfo;
     }
 
-    private void OnSideStep( Vector2 afterColPosition, Vector2 beforeInputPosition, Vector2 afterInputPosition)
+    private Vector2 OnSideStep( Vector2 afterColPosition, Vector2 beforeInputPosition, Vector2 afterInputPosition)
     {
         // not sure if this code should go here or within UpdateCollision
         // placing code here for now, we will see how it generalizes
@@ -146,14 +146,29 @@ public class GameManager : MonoSingleton<GameManager>
                         continue;
                 }
 
+                // 23.7 -> 23.5
+                // 23.7 -> 24.5
+                // which is good
+                // But when we get an exact number
+                // 23.5 -> 23.5
+                // 23.5 -> 24.5
+                // We are biased toward one direction
+                // Right now we are solving this by fixing the value with newX -= 1 / newX += 1
+                // This prevent the character from getting stuck not moving when near a hole
+                // however, it also prevents the character from going inside the hole, which someone might expect
+
                 double newX;
                 if (xDir < 0)
                 {
                     newX = Math.Floor(beforeInputPosition.x + 0.5f) - 0.5f;
+                    if (newX == beforeInputPosition.x)
+                        newX -= 1;
                 }
                 else
                 {
                     newX = Math.Ceiling(beforeInputPosition.x - 0.5f) + 0.5f;
+                    if (newX == beforeInputPosition.x)
+                        newX += 1;
                 }
 
                 Vector2 sidePosition = new Vector2((float) newX, beforeInputPosition.y);
@@ -182,8 +197,7 @@ public class GameManager : MonoSingleton<GameManager>
                     afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
 
                     // TODO - Use remaining momentum to move
-                    MainPlayer.SetPosition(afterSideStepCol);
-                    return;
+                    return afterSideStepCol;
                 }
             }
         }
@@ -219,10 +233,14 @@ public class GameManager : MonoSingleton<GameManager>
                 if (yDir < 0)
                 {
                     newY = Math.Floor(beforeInputPosition.y + 0.5f) - 0.5f;
+                    if (newY == beforeInputPosition.y)
+                        newY -= 1;
                 }
                 else
                 {
                     newY = Math.Ceiling(beforeInputPosition.y - 0.5f) + 0.5f;
+                    if (newY == beforeInputPosition.y)
+                        newY += 1;
                 }
 
                 Vector2 sidePosition = new Vector2(beforeInputPosition.x, (float)newY);
@@ -251,16 +269,15 @@ public class GameManager : MonoSingleton<GameManager>
                     afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
 
                     // TODO - Use remaining momentum to move
-                    MainPlayer.SetPosition(afterSideStepCol);
-                    return;
+                    return afterSideStepCol;
                 }
             }
             
-
             // Else, try closest
             // TODO - Also, in case both are possible, go toward the closest one first
-
         }
+
+        return afterColPosition;
     }
 
 	// Update is called once per frame
@@ -280,7 +297,8 @@ public class GameManager : MonoSingleton<GameManager>
         Vector3 afterColPosition = UpdateCollision(MainPlayer, MainPlayer.LastPosition, newPosition);
         MainPlayer.SetPosition(afterColPosition);
 
-        OnSideStep(afterColPosition, oldPosition, newPosition);
+        Vector3 afterSideStepPosition = OnSideStep(afterColPosition, oldPosition, newPosition);
+        MainPlayer.SetPosition(afterSideStepPosition);
 
         // take care of all entities as well
         foreach (var entity in EntityManager.Instance.Entities)
