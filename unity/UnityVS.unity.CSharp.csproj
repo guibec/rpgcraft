@@ -173,6 +173,8 @@
   <ItemGroup>
     <None Include="Assets\AdvancedInspector\Documentation\AdvancedInspector_ReadMe.txt" />
     <None Include="Assets\Data\extern\web\source.txt" />
+    <None Include="Assets\P4Connect\Editor\p4api.net.xml" />
+    <None Include="Assets\P4Connect\readme.txt" />
     <None Include="Assets\Plugins\Editor\AdvancedInspector\AdvancedInspector.XML" />
     <None Include="Assets\Plugins\Editor\AdvancedInspector\UniToolsEditor.XML" />
     <None Include="Assets\Resources\shaders\dig.shader" />
