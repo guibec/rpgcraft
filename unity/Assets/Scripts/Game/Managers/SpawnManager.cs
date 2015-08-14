@@ -39,16 +39,28 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         if (m_slimePrefab == null)
             return null;
 
-        //Unit pos = Unit.AtRandom(new Unit(0, 0), new Unit(WorldManager.Instance.CurrentWorld.Width, WorldManager.Instance.CurrentWorld.Height));
-
         Vector2 position = GameManager.Instance.MainPlayer.transform.position;
 
-        const float distance = 10.0f;
+        // also we should spawn them so we don't see them appearing
+        // from a x-axis point of view
+        // assuming we can see from [ -1 ... 1 ]
+        // that means we are interested in spawning them from [ -2 ... -1 , 1 ... 2 ]
 
-        float xOffset = RandomManager.Instance.Next(0.0f, distance) - distance / 2.0f;
-        float yOffset = RandomManager.Instance.Next(0.0f, distance) - distance / 2.0f;
+        // assuming these are the maximum size of the view port
+        const float xOffset = 20f;
+        const float yOffset = 20f;
 
-        Vector2 spawnPosition = position + new Vector2(xOffset, yOffset);
+        const float distance = 10f;
+
+        bool xSign = RandomManager.Instance.Boolean();
+        bool ySign = RandomManager.Instance.Boolean();
+
+        float xDistance = RandomManager.Instance.Next(0.0f, distance);
+        float yDistance = RandomManager.Instance.Next(0.0f, distance);
+
+        Vector2 spawnPosition = position +
+                                new Vector2(xSign ? xOffset + xDistance : -xOffset - xDistance,
+                                    ySign ? yOffset + yDistance : -yOffset - yDistance);
 
         GameObject obj = Instantiate(m_slimePrefab);
 
