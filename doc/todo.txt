@@ -1,0 +1,123 @@
+General
+  * Stronger enemies farther away
+  * XP gains strength (Damage by sword)
+
+Enemy 
+  * Add health/death
+  * Unspawn enemies too far
+  * Prevent spawning in unmovable objects.
+  * Limit number of spawns
+  * Enemy leaves XP Shard
+  * 3 enemy types (light, medium, hard)
+
+XP Shard
+  * Can be pickup
+  * Add to XP bar
+
+UI
+  * XP Bar
+  * Health bar
+  * Show DMG point (Cave Story)
+  * Show XP picup (Cave Story)
+
+Player
+Crafting
+Add name of object when touched
+Fix object size ratio
+  * Character bigger
+  * Items smaller
+  
+Make it easier to navigate small areas
+  * Improve side-step
+  * Make it work with diagonal
+
+Add music
+  -> http://gamedev.stackexchange.com/questions/1045/where-is-quality-paid-game-music
+  -> http://www.premiumbeat.com/royalty_free_music/songs/power-trailer-percussion 30$/track
+  -> Audacity to record sound temporary http://audacity.sourceforge.net/
+  -> Title Screen: Hope Will Prevail (premiumbeat)
+  -> Boss Battle: Bonecrusher, Speed Action Scene (sur rail)
+Add sound effects
+Improve world generation algorithm using varied biome instead of random mess as it looks like right now
+  * http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/ 
+  * Plain
+  * Ocean
+  * Desert
+  * Forest
+  * Mountain
+Improve object placement - allow getting stuck & unstuck yourself
+Improve digging
+ * Allow digging in direction of mouse cursor
+Make a web page
+Make a video
+Add readme
+Add version file
+Add save/load
+Add a title screen
+
+
+<-- VERSION FP
+
+Add multiplayer support
+Add mini-map
+Add a chat system
+Add configurable options
+* Support remapping of input
+Automate Build Process & Setup
+Clean up file struture (Code/data)
+
+<-- Version FPP
+
+Pay for Unity (?)
+Daily backup
+Auto archive
+
+
+<-- Progression
+
+Basic FPP
+Initial 
+  * Field: Grass + Trees at center, Middle ground. Outer mountain ring
+  * Player cut trees with his basic tool.
+  * Player obtain woods
+  * Player craft woods into walls
+  * Player craft woods into doors
+  * Player places walls to make a house
+  * Player places a door.
+
+Getting used to the game
+  * Enemy spawns after 2 minutes of gaming
+  * Player is protected when being inside the house
+  * Pleave leave the house.
+  * Player attack and kills enemies
+  * Enemy leaves XP shards and gold
+  * Player obtains these objects.
+  * XP is added to the XP inventory and GOLD is added to the GOLD inventory
+  
+Exploration
+  * Player explores the map and find surrounding mountain
+  * Player digs through mountains
+  * Certain mountains are collered differently.
+  * Player obtains special resources when digging through them.
+  * Harder enemy types are encountered near the mountains.
+  * Enemies perform magic attack (Secret of Mana).
+    * Self-targetting auto-attack.
+  * Player is unable to continue or he will certainly die.
+
+Return to home  
+  * Player crafts magic with various resource he has obtained.
+  * MP "bar" appears
+  * Player can now uses magic that consume resources/MP.
+  
+Exploration #2
+  * Player now has a easier time to defeat enemies in mountain
+  * Player may target them from a distance.
+  * Player may heal himself through magic or items.
+
+Exploration #3
+  * Going through mountain, player finds chest.
+  * Chest contains items to help him.
+  * Some chests are surrounded by swamp which hurt the player (badly) when trying to reach it.
+  
+Exploration #4
+  * Player finds mountains that are unbreakable with his current equipment.
