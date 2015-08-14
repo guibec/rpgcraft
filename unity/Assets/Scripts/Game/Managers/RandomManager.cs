@@ -8,6 +8,11 @@ public class RandomManager : MonoSingleton<RandomManager>
         m_random = new System.Random(); // No deterministic seed for now
     }
 
+    public bool Boolean()
+    {
+        return Next(0, 2) == 0;
+    }
+
     public int Next(int minValue, int maxValue)
     {
         return m_random.Next(minValue, maxValue);
