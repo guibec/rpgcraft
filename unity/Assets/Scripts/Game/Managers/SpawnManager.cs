@@ -6,7 +6,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
     public GameObject m_itemInstancePrefab;
     public GameObject m_slimePrefab;
 
-    public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
+    private ItemInstance SpawnItem(EItem item)
     {
         if (m_itemInstancePrefab == null)
             return null;
@@ -24,14 +24,31 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             Texture tex = Resources.Load("Item_3") as Texture;
             mr.material.SetTexture(0, tex);
 
-            ii.SetType(EItem.E_Stone);
+            ii.SetType(item);
         }
 
+        return ii;
+    }
+
+    public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
+    {
+        ItemInstance ii = SpawnItem(EItem.E_Stone);
+        if (!ii)
+            return null;
 
         Vector2 worldPos = GameManager.Chunk2World(info_, x_, y_);
-        obj.transform.position = new Vector3(worldPos.x, worldPos.y, -0.06f);
+        ii.gameObject.transform.position = new Vector3(worldPos.x, worldPos.y, -0.06f);
 
-        return obj;
+        return ii.gameObject;
+    }
+
+    public void SpawnLoot(EItem item, Vector2 worldPos)
+    {
+        ItemInstance ii = SpawnItem(item);
+        if (!ii)
+            return;
+
+        ii.gameObject.transform.position = new Vector3(worldPos.x, worldPos.y, -0.06f);
     }
 
     private GameObject SpawnEnemy()

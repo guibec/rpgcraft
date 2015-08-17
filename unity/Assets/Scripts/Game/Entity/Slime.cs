@@ -92,6 +92,14 @@ public class Slime : Enemy
         }
     }
 
+    protected override void OnEntityDestroy()
+    {
+        // spawn loot
+        SpawnManager.Instance.SpawnLoot( EItem.E_Stone, transform.position );
+
+        base.OnEntityDestroy();
+    }
+
     protected override void OnUpdate()
     {
         base.OnUpdate();
