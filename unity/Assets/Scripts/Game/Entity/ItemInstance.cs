@@ -19,7 +19,10 @@ public class ItemInstance : Entity
     {
         base.OnTouch(other);
 
-        RequestDestroy();
+        if (other is Player)
+        {
+            RequestDestroy();    
+        }
     }
 
     public void SetType(EItem itemType)
