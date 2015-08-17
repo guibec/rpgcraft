@@ -20,7 +20,7 @@ MonoBehaviour:
   UnityVSSupport: 1
   PerforceEnabled: 1
   IncludeProjectFiles: 1
-  IncludeSolutionFiles: 0
+  IncludeSolutionFiles: 1
   ShowPaths: 1
   AskBeforeCheckout: 0
   DisplayStatusIcons: 1
