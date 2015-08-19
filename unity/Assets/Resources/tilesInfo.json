@@ -1,8 +1,72 @@
 {
-	"version": "1.0",
-	"tilesInfo": [
-		"grass",
-		"mountain",
-		"dirt"
-	]
+    "version": "1.0",
+    "tilesInfo": [
+        {
+            "id": 0,
+            "name": "Grass",
+            "resource": {
+                "file": "terrain.png",
+                "x": 0,
+                "y": 0,
+                "w": 16,
+                "h": 16
+            }
+        },
+        {
+            "id": 1,
+            "name": "Dirt",
+            "resource": {
+                "file": "terrain.png",
+                "x": 32,
+                "y": 0,
+                "w": 16,
+                "h": 16
+            }
+        },
+        {
+            "id": 2,
+            "name": "Mountain",
+            "resource": {
+                "file": "terrain.png",
+                "x": 0,
+                "y": 0,
+                "w": 16,
+                "h": 16,
+                "count": 11
+            }
+        },
+        {
+            "id": 3,
+            "name": "Desert",
+            "resource": {
+                "file": "terrain.png",
+                "x": 32,
+                "y": 16,
+                "w": 16,
+                "h": 16
+            }
+        },
+        {
+            "id": 4,
+            "name": "Tree",
+            "resource": {
+                "file": "terrain.png",
+                "x": 240,
+                "y": 80,
+                "w": 16,
+                "h": 16
+            }
+        },
+        {
+            "id": 5,
+            "name": "Forest",
+            "resource": {
+                "file": "terrain.png",
+                "x": 240,
+                "y": 0,
+                "w": 16,
+                "h": 16
+            }
+        }
+    ]
 }

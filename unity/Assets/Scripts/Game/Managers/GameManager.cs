@@ -45,6 +45,7 @@ public class GameManager : MonoSingleton<GameManager>
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);
+        TileMapping.BuildFromJSON("tilesInfo");
     }
 
     public void Start()

@@ -15,9 +15,6 @@ public class TileMap : MonoBehaviour
     public int m_height = 8;    // number of vertices tiles
     public int m_tileSize = 16;   // tile pixel size (square)
 
-    public string m_tileInfo;
-    private JSONNode m_tileInfoJSON;
-
     private Vector3? m_currentSelection;
 
     private bool m_dirty = false;
@@ -104,7 +101,6 @@ public class TileMap : MonoBehaviour
     public void Regenerate()
     {
         BuildMesh();
-        ReloadInfo();
         GenerateLevel();
     }
 
@@ -118,23 +114,6 @@ public class TileMap : MonoBehaviour
             for (int i = 0; i <= m_width; ++i)
             {
                 //uvs[j * (m_width + 1) + i] = new Vector2(i / (float)numTilesHorizontal, j / (float)numTilesVertical);
-            }
-        }
-    }
-
-    private void ReloadInfo()
-    {
-        if (m_tileInfo == String.Empty)
-            return;
-
-        TextAsset tileInfo = Resources.Load(m_tileInfo) as TextAsset;
-        if (tileInfo != null)
-        {
-            m_tileInfoJSON = JSON.Parse(tileInfo.text);
-            var tilesInfo = m_tileInfoJSON["tilesInfo"];
-            for (int i = 0; i < tilesInfo.Count; ++i)
-            {
-                Debug.Log(tilesInfo[i]);
             }
         }
     }
