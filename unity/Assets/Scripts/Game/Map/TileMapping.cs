@@ -34,12 +34,10 @@ struct TileResourceDef
 
 public static class TileMapping
 {
-    private static List<TileDef> m_tilesDef = new List<TileDef>(50);
+    private static Dictionary<ETile, TileDef> m_tilesDef = new Dictionary<ETile, TileDef>(50);
 
     public static bool BuildFromJSON(string filename)
     {
-        m_tilesDef.Clear();
-
         TextAsset tileInfo = Resources.Load(filename) as TextAsset;
         if (tileInfo != null)
         {
@@ -52,6 +50,8 @@ public static class TileMapping
 
     private static bool BuildFromJSON(JSONNode rootNode)
     {
+        m_tilesDef.Clear();
+
         JSONNode tilesInfo = rootNode["tilesInfo"];
         if (tilesInfo == null)
             return false;
@@ -76,7 +76,12 @@ public static class TileMapping
 
             TileDef td = new TileDef(id, name, trd);
 
-            m_tilesDef.Add(td);
+            if (m_tilesDef.ContainsKey(id))
+            {
+                Debug.Log(string.Format("Ignoring duplicate id {0}", id));
+                continue;
+            }
+            m_tilesDef.Add(id, td);
         }
 
         return true;
@@ -84,62 +89,57 @@ public static class TileMapping
 
     public static void GetUVFromTile(TileInfo tileInfo, out Vector2 ul, out Vector2 ur, out Vector2 bl, out Vector2 br)
     {
-        // Hardcoded stuff for now
-        Vector2 result = new Vector2(0f, 0f);
-        switch (tileInfo.Tile)
+        TileDef tileDef;
+
+        if (m_tilesDef.TryGetValue(tileInfo.Tile, out tileDef))
         {
-            case ETile.Desert:
-                result = new Vector2(2, 1);
-                break;
-            case ETile.Dirt:
-                result = new Vector2(2, 0);
-                break;
-            case ETile.Forest:
-                result = new Vector2(15, 0);
-                break;
-            case ETile.Grass:
-                result = new Vector2(0, 0);
-                break;
-            case ETile.Mountain:
-                {
-                    if (tileInfo.HP == 100.0f)
-                        result = new Vector2(0, 15);
-                    else if (tileInfo.HP > 90.0f)
-                        result = new Vector2(1, 15);
-                    else if (tileInfo.HP > 80.0f)
-                        result = new Vector2(2, 15);
-                    else if (tileInfo.HP > 70.0f)
-                        result = new Vector2(3, 15);
-                    else if (tileInfo.HP > 60.0f)
-                        result = new Vector2(4, 15);
-                    else if (tileInfo.HP > 50.0f)
-                        result = new Vector2(5, 15);
-                    else if (tileInfo.HP > 40.0f)
-                        result = new Vector2(6, 15);
-                    else if (tileInfo.HP > 30.0f)
-                        result = new Vector2(7, 15);
-                    else if (tileInfo.HP > 20.0f)
-                        result = new Vector2(8, 15);
-                    else if (tileInfo.HP > 10.0f)
-                        result = new Vector2(9, 15);
-                    else if (tileInfo.HP >= 0.0f)
-                        result = new Vector2(10, 15);
+            int countOffset = 0;
+            if (tileDef.Resource.Count > 0)
+            {
+                if (tileInfo.HP == 100f)
+                    countOffset = 0;
+                else if (tileInfo.HP >= 90f)
+                    countOffset = 1;
+                else if (tileInfo.HP >= 80f)
+                    countOffset = 2;
+                else if (tileInfo.HP >= 70f)
+                    countOffset = 3;
+                else if (tileInfo.HP >= 60f)
+                    countOffset = 4;
+                else if (tileInfo.HP >= 50f)
+                    countOffset = 5;
+                else if (tileInfo.HP >= 40f)
+                    countOffset = 6;
+                else if (tileInfo.HP >= 30f)
+                    countOffset = 7;
+                else if (tileInfo.HP >= 20f)
+                    countOffset = 8;
+                else if (tileInfo.HP >= 10f)
+                    countOffset = 9;
+                else if (tileInfo.HP >= 0f)
+                    countOffset = 10;
 
+            }
 
-
-                }
-                break;
-            case ETile.Tree:
-                result = new Vector2(15, 5);
-                break;
+            float pixelOffset = countOffset*tileDef.Resource.Rect.width;
+            ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMin);
+            ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
+            bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
+            br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
+            
+            // now remap to real UVs and invert Y since I like to count from top to bottom for tile indices
+            const float textureSize = 256f;
+            ul = new Vector2(ul.x / textureSize, (textureSize - ul.y) / textureSize);
+            ur = new Vector2(ur.x / textureSize, (textureSize - ur.y) / textureSize);
+            bl = new Vector2(bl.x / textureSize, (textureSize - bl.y) / textureSize);
+            br = new Vector2(br.x / textureSize, (textureSize - br.y) / textureSize);
         }
-
-        // now remap to real UVs and invert Y since I like to count from top to bottom for UVs
-        ul = new Vector2((result.x + 0) * 16f / 256f, 256f - (result.y + 1) * 16f / 256f);
-        ur = new Vector2((result.x + 1) * 16f / 256f, 256f - (result.y + 1) * 16f / 256f);
-        bl = new Vector2((result.x + 0) * 16f / 256f, 256f - (result.y + 0) * 16f / 256f);
-        br = new Vector2((result.x + 1) * 16f / 256f, 256f - (result.y + 0) * 16f / 256f);
+        else
+        {
+            ul = new Vector2(0, 0);
+            ur = new Vector2(0, 0);
+            bl = new Vector2(0, 0);
+            br = new Vector2(0, 0);
+        }
     }
-
-
 }
