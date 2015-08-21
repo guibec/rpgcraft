@@ -1,0 +1,27 @@
+{
+	"version" : "1.0",
+	"itemsInfo" : [{
+			"id" : 0,
+			"name" : "Stone",
+			"resource" : {
+				"file" : "Item_3.png"
+			}
+		}, {
+			"id" : 1,
+			"name" : "PickAxe",
+			"resource" : {
+				"file" : "Item_1.png"
+			}
+		}, {
+			"id" : 1,
+			"name" : "Sword",
+			"resource" : {
+				"file" : "Swords.png",
+				"x" : 0,
+				"y" : 0,
+				"w" : 32,
+				"h" : 32
+			}
+		}
+	]
+}
