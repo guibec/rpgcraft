@@ -247,50 +247,22 @@ public class UIManager : MonoSingleton<UIManager>
                 isu.m_icon.sprite = null;
                 isu.m_icon.color = new Color(1f, 1f, 1f, 0f);
             }
-            // To be refactored into something more dynamic from configuration files/editor
-            else if (ic.Item == EItem.E_Stone)
-            {
-                if (isu.m_icon.sprite == null)
-                {
-                    Texture2D tex = Resources.Load("Item_3") as Texture2D;
-                    if (tex != null)
-                    {
-                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
-                        isu.m_icon.sprite = sprite;
-                        isu.m_icon.color = new Color(1f, 1f, 1f, 1f);
-                    }
-                }
-            }
-            else if (ic.Item == EItem.E_PickAxe)
-            {
-                if (isu.m_icon.sprite == null)
-                {
-                    Texture2D tex = Resources.Load("Item_1") as Texture2D;
-                    if (tex != null)
-                    {
-                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
-                        isu.m_icon.sprite = sprite;
-                        isu.m_icon.color = new Color(1f, 1f, 1f, 1f);
-                    }
-                }
-            }
-            else if (ic.Item == EItem.E_Sword)
-            {
-                if (isu.m_icon.sprite == null)
-                {
-                    Texture2D tex = Resources.Load("Swords") as Texture2D;
-                    if (tex != null)
-                    {
-                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, 32, tex.height), Vector2.zero);
-                        isu.m_icon.sprite = sprite;
-                        isu.m_icon.color = new Color(1f, 1f, 1f, 1f);
-                    }
-                }
-            }
             else
             {
-                // Implement general icon case
-                UnityEngine.Debug.DebugBreak();
+                if (isu.m_icon.sprite == null)
+                {
+                    TileResourceDef tileResourceDef = TileMapping.GetTileResourceDef((ETile) ic.Item);
+                    Texture2D tex = tileResourceDef != null
+                        ? Resources.Load(tileResourceDef.Filename) as Texture2D
+                        : null;
+
+                    if (tex)
+                    {
+                        Sprite sprite = Sprite.Create(tex, tileResourceDef.Rect, Vector2.zero);
+                        isu.m_icon.sprite = sprite;
+                        isu.m_icon.color = new Color(1f, 1f, 1f, 1f);
+                    }
+                }
             }
         }
     }

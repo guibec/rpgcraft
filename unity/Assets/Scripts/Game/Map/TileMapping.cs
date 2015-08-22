@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 
-public struct TileDef
+public class TileDef
 {
-    public TileDef(ETile id, string name, TileResourceDef tileResourceDef) : this()
+    public TileDef(ETile id, string name, TileResourceDef tileResourceDef)
     {
         Id = id;
         Name = name;
@@ -17,9 +17,9 @@ public struct TileDef
     public TileResourceDef Resource { private set; get; }
 }
 
-public struct TileResourceDef
+public class TileResourceDef
 {
-    public TileResourceDef(string filename, Rect rect, int count) : this()
+    public TileResourceDef(string filename, Rect rect, int count)
     {
         Filename = filename;
         Rect = rect;
@@ -36,7 +36,7 @@ public static class TileMapping
 {
     private static Dictionary<ETile, TileDef> m_tilesDef = new Dictionary<ETile, TileDef>(50);
 
-    static public TileResourceDef? GetTileResourceDef(ETile tile)
+    static public TileResourceDef GetTileResourceDef(ETile tile)
     {
         TileDef tileDef;
         if (!m_tilesDef.TryGetValue(tile, out tileDef))
