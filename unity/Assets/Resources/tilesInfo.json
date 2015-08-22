@@ -71,14 +71,22 @@
 			"id" : 256,
 			"name" : "Stone",
 			"resource" : {
-				"file" : "Item_3"
+				"file" : "Item_3",
+				"x" : 0,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
 			},
 			"item" : {}
 		}, {
 			"id" : 257,
 			"name" : "PickAxe",
 			"resource" : {
-				"file" : "Item_1"
+				"file" : "Item_1",
+				"x" : 0,
+				"y" : 0,
+				"w" : 32,
+				"h" : 32
 			},
 			"item" : {}
 		}, {
