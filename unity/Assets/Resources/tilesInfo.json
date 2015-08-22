@@ -101,6 +101,18 @@
 			},
 			"item" : {}
 			"weapon" : {}
+		}, {
+			"id" : 259,
+			"name" : "Gel",
+			"resource" : {
+				"file" : "Item_23",
+				"x" : 0,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
+			},
+			"item" : {}
+			"weapon" : {}
 		}
 	]
 }
