@@ -9,4 +9,5 @@ public enum EItem
     E_Stone = 256,
     E_PickAxe = 257,
     E_Sword = 258,
+    E_Gel = 259,
 }
