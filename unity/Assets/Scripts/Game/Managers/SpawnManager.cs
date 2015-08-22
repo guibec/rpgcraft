@@ -11,6 +11,12 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         if (m_itemInstancePrefab == null)
             return null;
 
+        TileResourceDef? tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
+        if (!tileResourceDef.HasValue)
+        {
+            return null;
+        }
+
         GameObject obj = Instantiate(m_itemInstancePrefab);
 
         if (obj == null)
@@ -21,7 +27,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
         if (mr)
         {
-            Texture tex = Resources.Load("Item_3") as Texture;
+            Texture tex = Resources.Load(tileResourceDef.Value.Filename) as Texture;
             mr.material.SetTexture(0, tex);
 
             ii.SetType(item);

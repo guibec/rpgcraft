@@ -5,7 +5,7 @@ using System.Text;
 
 public enum ETile
 {
-    Invalid = -1,
+    Invalid = 0,
     Grass,
     Dirt,
     Mountain,
