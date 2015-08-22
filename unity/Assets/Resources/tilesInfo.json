@@ -1,72 +1,98 @@
 {
-    "version": "1.0",
-    "tilesInfo": [
-        {
-            "id": 0,
-            "name": "Grass",
-            "resource": {
-                "file": "terrain.png",
-                "x": 0,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            }
-        },
-        {
-            "id": 1,
-            "name": "Dirt",
-            "resource": {
-                "file": "terrain.png",
-                "x": 32,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            }
-        },
-        {
-            "id": 2,
-            "name": "Mountain",
-            "resource": {
-                "file": "terrain.png",
-                "x": 0,
-                "y": 240,
-                "w": 16,
-                "h": 16,
-                "count": 11
-            }
-        },
-        {
-            "id": 3,
-            "name": "Desert",
-            "resource": {
-                "file": "terrain.png",
-                "x": 32,
-                "y": 16,
-                "w": 16,
-                "h": 16
-            }
-        },
-        {
-            "id": 4,
-            "name": "Tree",
-            "resource": {
-                "file": "terrain.png",
-                "x": 240,
-                "y": 80,
-                "w": 16,
-                "h": 16
-            }
-        },
-        {
-            "id": 5,
-            "name": "Forest",
-            "resource": {
-                "file": "terrain.png",
-                "x": 240,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            }
-        }
-    ]
+	"version" : "1.0",
+	"tilesInfo" : [{
+			"id" : 1,
+			"name" : "Grass",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 0,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
+			"id" : 2,
+			"name" : "Dirt",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 32,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
+			"id" : 3,
+			"name" : "Mountain",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 0,
+				"y" : 240,
+				"w" : 16,
+				"h" : 16,
+				"count" : 11
+			},
+			"world" : {}
+		}, {
+			"id" : 4,
+			"name" : "Desert",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 32,
+				"y" : 16,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
+			"id" : 5,
+			"name" : "Tree",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 240,
+				"y" : 80,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
+			"id" : 6,
+			"name" : "Forest",
+			"resource" : {
+				"file" : "terrain",
+				"x" : 240,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
+			"id" : 256,
+			"name" : "Stone",
+			"resource" : {
+				"file" : "Item_3"
+			},
+			"item" : {}
+		}, {
+			"id" : 257,
+			"name" : "PickAxe",
+			"resource" : {
+				"file" : "Item_1"
+			},
+			"item" : {}
+		}, {
+			"id" : 258,
+			"name" : "Sword",
+			"resource" : {
+				"file" : "Swords",
+				"x" : 0,
+				"y" : 0,
+				"w" : 32,
+				"h" : 32
+			},
+			"item" : {}
+			"weapon" : {}
+		}
+	]
 }

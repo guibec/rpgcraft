@@ -6,7 +6,7 @@ using System.Text;
 public enum EItem
 {
     E_None = 0,
-    E_Stone = 1,
-    E_PickAxe = 2,
-    E_Sword = 3,
+    E_Stone = 256,
+    E_PickAxe = 257,
+    E_Sword = 258,
 }

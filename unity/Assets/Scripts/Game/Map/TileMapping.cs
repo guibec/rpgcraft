@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 
-struct TileDef
+public struct TileDef
 {
     public TileDef(ETile id, string name, TileResourceDef tileResourceDef) : this()
     {
@@ -17,7 +17,7 @@ struct TileDef
     public TileResourceDef Resource { private set; get; }
 }
 
-struct TileResourceDef
+public struct TileResourceDef
 {
     public TileResourceDef(string filename, Rect rect, int count) : this()
     {
@@ -35,6 +35,17 @@ struct TileResourceDef
 public static class TileMapping
 {
     private static Dictionary<ETile, TileDef> m_tilesDef = new Dictionary<ETile, TileDef>(50);
+
+    static public TileResourceDef? GetTileResourceDef(ETile tile)
+    {
+        TileDef tileDef;
+        if (!m_tilesDef.TryGetValue(tile, out tileDef))
+            return null;
+        else
+        {
+            return tileDef.Resource;
+        }
+    }
 
     public static bool BuildFromJSON(string filename)
     {
@@ -81,6 +92,9 @@ public static class TileMapping
                 Debug.Log(string.Format("Ignoring duplicate id {0}", id));
                 continue;
             }
+
+            
+
             m_tilesDef.Add(id, td);
         }
 
