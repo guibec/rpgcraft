@@ -260,7 +260,7 @@ public class UIManager : MonoSingleton<UIManager>
                     {
                         Sprite sprite = Sprite.Create(tex, tileResourceDef.Rect, Vector2.zero);
                         isu.m_icon.sprite = sprite;
-                        isu.m_icon.color = new Color(1f, 1f, 1f, 1f);
+                        isu.m_icon.color = ItemInstance.GetColorForItem(ic.Item);
                     }
                 }
             }
