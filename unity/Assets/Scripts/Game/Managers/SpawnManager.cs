@@ -27,6 +27,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         {
             Texture tex = Resources.Load(tileResourceDef.Filename) as Texture;
             mr.material.SetTexture(0, tex);
+            mr.material.color = ItemInstance.GetColor32ForItem(item);
 
             ii.SetType(item);
         }

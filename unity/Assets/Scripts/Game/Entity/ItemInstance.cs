@@ -35,6 +35,19 @@ public class ItemInstance : Entity
         base.OnUpdate();
     }
 
+    public static Color32 GetColor32ForItem(EItem item)
+    {
+        if (item == EItem.E_Gel)
+            return new Color32(9, 129, 248, 255);
+        else
+            return new Color32(255, 255, 255, 255);
+    }
+
+    public static Color GetColorForItem(EItem item)
+    {
+        return GetColor32ForItem(item); // Cast operation is overloaded: http://answers.unity3d.com/questions/634208/convert-color32-to-color.html
+    }
+
     // http://docs.unity3d.com/ScriptReference/MonoBehaviour.OnDestroy.html
     // OnDestroy will only be called on game objects that have previously been active
     protected override void OnEntityDestroy()
