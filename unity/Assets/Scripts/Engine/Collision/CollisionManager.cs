@@ -13,7 +13,7 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         Box2D worldBox = new Box2D(worldPos, 0.5f, 0.5f);
 
         // Check against any player
-        Box2D playerBox = GameManager.Instance.MainPlayer.Box2D;
+        Box2D playerBox = GameManager.Instance.MainPlayer.Box;
 
         return CollisionCode.TestBox2DBox2D(worldBox, playerBox);
     }

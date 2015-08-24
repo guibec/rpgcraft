@@ -111,7 +111,7 @@ public class Entity : MonoBehaviour
         }
     }
 
-    public virtual Box2D Box2D
+    public virtual Box2D Box
     {
         get
         {

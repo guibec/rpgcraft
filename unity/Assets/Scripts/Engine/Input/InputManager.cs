@@ -34,8 +34,15 @@ public class InputManager : MonoSingleton<InputManager>
         Vector2 screenPos = Input.mousePosition;
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
 
-        TileInfo ti = GameManager.Instance.GetTileFromWorldPos(worldPos);
+        ItemInstance itemInstance = GameManager.Instance.GetItemInstanceFromWorldPos(worldPos);
 
-        UIManager.Instance.UpdateMouseToolTip( screenPos, ti.Tile.ToString());
+        if (itemInstance)
+        {
+            UIManager.Instance.UpdateMouseToolTip(screenPos, itemInstance.Item.ToString());
+        }
+        else
+        {
+            UIManager.Instance.UpdateMouseToolTip(screenPos, "");
+        }
     }
 }

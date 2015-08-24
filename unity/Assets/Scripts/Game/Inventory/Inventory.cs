@@ -20,10 +20,10 @@ public class Inventory
 
         // default inventory
         m_itemSlots[0].Count = 1;
-        m_itemSlots[0].Item = EItem.E_PickAxe;
+        m_itemSlots[0].Item = EItem.PickAxe;
 
         m_itemSlots[1].Count = 1;
-        m_itemSlots[1].Item = EItem.E_Sword;
+        m_itemSlots[1].Item = EItem.Sword;
 
     }
 
@@ -55,7 +55,7 @@ public class Inventory
             m_itemSlots[slotIndex].Count--;
             if (m_itemSlots[slotIndex].Count == 0)
             {
-                m_itemSlots[slotIndex].Item = EItem.E_None;
+                m_itemSlots[slotIndex].Item = EItem.None;
             }
 
             OnChanged();
@@ -77,7 +77,7 @@ public class Inventory
         // try to find an empty slot
         for (int i = 0; i < m_itemSlots.Length; ++i)
         {
-            if (m_itemSlots[i].Item == EItem.E_None)
+            if (m_itemSlots[i].Item == EItem.None)
                 return i;
         }
 

@@ -245,7 +245,7 @@ public class Player : Entity
         int selectedIndex = UIManager.Instance.SelectedInventorySlot;
         EItem selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
 
-        if (selectedItem == EItem.E_Sword)
+        if (selectedItem == EItem.Sword)
         {
             if (EntityManager.Instance.Count<SwordAttack>() > 0)
                 return false;
@@ -270,7 +270,7 @@ public class Player : Entity
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)
             {
-                if (selectedItem == EItem.E_PickAxe && tileInfo.Tile == ETile.Mountain)
+                if (selectedItem == EItem.PickAxe && tileInfo.Tile == ETile.Mountain)
                 {
                     // Try to dig ! Start an action
                     StartAction(EAction.Dig, 0.05f, worldPos, actionCompleted_ =>
@@ -292,7 +292,7 @@ public class Player : Entity
 
                     return true;
                 }
-                else if (selectedItem == EItem.E_Stone && tileInfo.Tile != ETile.Mountain)
+                else if (selectedItem == EItem.Stone && tileInfo.Tile != ETile.Mountain)
                 {
                     if (CollisionManager.Instance.HasCollision(chunkInfo, x, y))
                         return false;

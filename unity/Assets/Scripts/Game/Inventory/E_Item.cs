@@ -5,9 +5,9 @@ using System.Text;
 
 public enum EItem
 {
-    E_None = 0,
-    E_Stone = 256,
-    E_PickAxe = 257,
-    E_Sword = 258,
-    E_Gel = 259,
+    None = 0,
+    Stone = 256,
+    PickAxe = 257,
+    Sword = 258,
+    Gel = 259,
 }

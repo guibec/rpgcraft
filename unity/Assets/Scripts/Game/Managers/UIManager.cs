@@ -203,7 +203,6 @@ public class UIManager : MonoSingleton<UIManager>
 
     public void UpdateMouseToolTip(Vector2 screenPos, string text)
     {
-        //m_mouseTileInfo.GetComponent<RectTransform>().SetPositionOfPivot(screenPos);
         m_mouseTileInfo.transform.position = screenPos;
         m_mouseTileInfo.text = text;
     }
@@ -242,7 +241,7 @@ public class UIManager : MonoSingleton<UIManager>
             : new Color(1f, 1f, 1f);
 
             // set what is owned by this inventory slot
-            if (ic.Item == EItem.E_None)
+            if (ic.Item == EItem.None)
             {
                 isu.m_icon.sprite = null;
                 isu.m_icon.color = new Color(1f, 1f, 1f, 0f);
