@@ -42,7 +42,8 @@ public class InputManager : MonoSingleton<InputManager>
         }
         else
         {
-            UIManager.Instance.UpdateMouseToolTip(screenPos, "");
+            Enemy enemy = GameManager.Instance.GetEnemyFromWorldPos(worldPos);
+            UIManager.Instance.UpdateMouseToolTip(screenPos, enemy ? enemy.GetType().Name : "");
         }
     }
 }
