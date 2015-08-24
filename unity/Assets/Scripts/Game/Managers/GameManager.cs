@@ -592,4 +592,17 @@ public class GameManager : MonoSingleton<GameManager>
         else
             return TileInfo.GetInvalid();
     }
+
+    public ItemInstance GetItemInstanceFromWorldPos(Vector2 worldPos)
+    {
+        // (O(n)) - No spatial partitioning, will probably be slow when many items are present.
+        foreach (ItemInstance item in ItemManager.Instance)
+        {
+            if (CollisionCode.TestPointBox2D(worldPos, item.Box))
+            {
+                return item;
+            }
+        }
+        return null;
+    }
 }

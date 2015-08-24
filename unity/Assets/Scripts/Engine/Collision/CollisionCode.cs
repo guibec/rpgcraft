@@ -50,14 +50,6 @@ public static class CollisionCode
             }
         }
 
-        // check against spawned objects
-        //foreach (ItemInstance item in ItemManager.Instance)
-        //{
-        //    Vector3 pos = item.gameObject.transform.position;
-        //    Box2D box2d = new Box2D(pos.x - 0.5f, pos.y - 0.5f, pos.x + 0.5f, pos.y + 0.5f);
-        //    list.Add(new CollisionInfo(item.gameObject, box2d, CollisionFlags.Item));
-        //}
-
         // check against other entities
         foreach (Entity entity in EntityManager.Instance.Entities)
         {
@@ -66,7 +58,7 @@ public static class CollisionCode
                 continue;
 
             Vector3 pos = entity.gameObject.transform.position;
-            Box2D box2d = new Box2D(pos.x - 0.5f, pos.y + 0.5f, pos.x + 0.5f, pos.y - 0.5f);
+            Box2D box2d = entity.Box;
 
             if (entity is ItemInstance)
             {
@@ -93,6 +85,11 @@ public static class CollisionCode
         }
 
         return list.ToArray();
+    }
+
+    public static bool TestPointBox2D(Vector2 p, Box2D b)
+    {
+        return (p.x >= b.Min(0) && p.x <= b.Max(0) && p.y >= b.Min(1) && p.y <= b.Max(1));
     }
 
     public static bool TestBox2DBox2D(Box2D a, Box2D b)
