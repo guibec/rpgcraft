@@ -7,6 +7,11 @@ public class EntityManager : MonoSingleton<EntityManager>
     public GameObject m_attackPrefab;
     private static int m_nextId = 0;
 
+    List<Entity> m_entities = new List<Entity>();
+
+    // All known players (cache of m_entities)
+    List<Player> m_players = new List<Player>();
+
     private void RegisterPlayer(Player player_)
     {
         //Debug.Assert(!m_players.Contains(player_), String.Format("Player {0} is already registered.", player_));
@@ -68,9 +73,4 @@ public class EntityManager : MonoSingleton<EntityManager>
     {
         get { return m_entities.AsReadOnly(); }
     }
-
-    List<Entity> m_entities = new List<Entity>();
-
-    // All known players (cache of m_entities)
-    List<Player> m_players = new List<Player>();
 }

@@ -605,4 +605,17 @@ public class GameManager : MonoSingleton<GameManager>
         }
         return null;
     }
+
+    public Enemy GetEnemyFromWorldPos(Vector2 worldPos)
+    {
+        foreach (Entity entity in EntityManager.Instance.Entities)
+        {
+            Enemy enemy = entity as Enemy;
+            if (enemy && CollisionCode.TestPointBox2D(worldPos, enemy.Box))
+            {
+                return enemy;
+            }
+        }
+        return null;
+    }
 }
