@@ -57,9 +57,7 @@ public static class CollisionCode
             if (entity.Id <= owner.Id)
                 continue;
 
-            Vector3 pos = entity.gameObject.transform.position;
             Box2D box2d = entity.Box;
-
             if (entity is ItemInstance)
             {
                 list.Add(new CollisionInfo(entity.gameObject, box2d, CollisionFlags.Item));

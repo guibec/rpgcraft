@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 
 public class RandomManager : MonoSingleton<RandomManager> 
@@ -16,6 +17,12 @@ public class RandomManager : MonoSingleton<RandomManager>
     public int Next(int minValue, int maxValue)
     {
         return m_random.Next(minValue, maxValue);
+    }
+
+    public Vector2 Vector()
+    {
+        double angle = m_random.NextDouble()*Math.PI*2;
+        return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
     }
 
     public float Next(float minValue, float maxValue)
