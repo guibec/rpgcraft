@@ -95,7 +95,10 @@ public class Slime : Enemy
     protected override void OnEntityDestroy()
     {
         // spawn loot
-        SpawnManager.Instance.SpawnLoot( EItem.Gel, transform.position );
+        for (int i = 0; i < 2; ++i)
+        {
+            SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+        }
 
         base.OnEntityDestroy();
     }

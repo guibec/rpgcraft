@@ -54,6 +54,18 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return;
 
         ii.gameObject.transform.position = new Vector3(worldPos.x, worldPos.y, -0.06f);
+
+        Mover itemInstanceMover = ii.GetComponent<Mover>();
+        if (itemInstanceMover)
+        {
+            // make it moves around in a random direction
+            Vector2 randDir = RandomManager.Instance.Vector();
+            float dir = RandomManager.Instance.Next(0.8f, 3.5f);
+
+            Vector2 target = (Vector2)ii.gameObject.transform.position + (randDir * dir);
+
+            itemInstanceMover.StartInterpolation(target, 0.3f, null);
+        }
     }
 
     private GameObject SpawnEnemy()
