@@ -20,12 +20,12 @@ public struct TileInfo
     public ETile Tile { get; private set; }
     public float HP { get; private set; }
 
-    private static TileInfo Invalid = new TileInfo(
+    private static readonly TileInfo Invalid = new TileInfo(
         ETile.Invalid);
 
     public TileInfo(ETile tile_) : this()
     {
-        if (tile_ == ETile.Mountain)
+        if (tile_ == ETile.Mountain || tile_ == ETile.Tree)
             HP = 100.0f;
         else
             HP = 0.0f;

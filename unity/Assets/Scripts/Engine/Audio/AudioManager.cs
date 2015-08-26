@@ -14,18 +14,29 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     // Like this for now, data driven later on
     public List<AudioClip> m_digAudio;
+    public List<AudioClip> m_cutAudio;
 
     private E_Music m_currentMusic = E_Music.None;
 
     public void PlayDig()
     {
-        int indexToPlay=0;
-        if (m_digAudio == null || m_digAudio.Count == 0)
-            return;
-        else if (m_digAudio.Count > 1)
-            indexToPlay = Random.Range(0, m_digAudio.Count);
+        PlayAudioClip(m_digAudio);
+    }
 
-        AudioSource.PlayClipAtPoint(m_digAudio[indexToPlay], GameManager.Instance.m_mainCamera.transform.position);
+    public void PlayCut()
+    {
+        PlayAudioClip(m_cutAudio);
+    }
+
+    static private void PlayAudioClip(List<AudioClip> possibilities)
+    {
+        int indexToPlay = 0;
+        if (possibilities == null || possibilities.Count == 0)
+            return;
+        else if (possibilities.Count > 1)
+            indexToPlay = Random.Range(0, possibilities.Count);
+
+        AudioSource.PlayClipAtPoint(possibilities[indexToPlay], GameManager.Instance.m_mainCamera.transform.position);
     }
 
     public void PlayMusic(E_Music requestedMusic)

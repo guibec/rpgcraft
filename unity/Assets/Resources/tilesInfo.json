@@ -113,6 +113,18 @@
 			},
 			"item" : {}
 			"weapon" : {}
+		}, {
+			"id" : 260,
+			"name" : "Copper Axe",
+			"resource" : {
+				"file" : "Item_10",
+				"x" : 0,
+				"y" : 0,
+				"w" : 16,
+				"h" : 16
+			},
+			"item" : {}
+			"weapon" : {}
 		}
 	]
 }

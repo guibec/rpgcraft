@@ -25,6 +25,8 @@ public class Inventory
         m_itemSlots[1].Count = 1;
         m_itemSlots[1].Item = EItem.Sword;
 
+        m_itemSlots[2].Count = 1;
+        m_itemSlots[2].Item = EItem.Copper_Axe;
     }
 
     public void Start()
