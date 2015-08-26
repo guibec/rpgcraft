@@ -16,6 +16,7 @@ public class Player : Entity
     {
         None,
         Dig,
+        Cut,
         Build,
     }
 
@@ -291,6 +292,26 @@ public class Player : Entity
                     );
 
                     return true;
+                }
+                else if (selectedItem == EItem.Copper_Axe && tileInfo.Tile == ETile.Tree)
+                {
+                    // Try to dig ! Start an action
+                    StartAction(EAction.Cut, 0.05f, worldPos, actionCompleted_ =>
+                    {
+                        AudioManager.Instance.PlayCut();
+
+                        // logic here for now, should be moved as we add more
+                        TileInfo newTile = tileInfo.RemoveHP(10.0f);
+                        if (newTile.HP == 0.0f)
+                        {
+                            newTile = newTile.TransformToTile(ETile.Grass);
+
+                            SpawnManager.Instance.SpawnFromTile(tileInfo.Tile, chunkInfo, x, y);
+                        }
+
+                        chunkInfo.WriteSlotValue(x, y, newTile);
+                    }
+                    );
                 }
                 else if (selectedItem == EItem.Stone && tileInfo.Tile != ETile.Mountain)
                 {
