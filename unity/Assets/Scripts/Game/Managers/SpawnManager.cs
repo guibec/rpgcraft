@@ -37,7 +37,16 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
     public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
     {
-        ItemInstance ii = SpawnItem(EItem.Stone);
+        EItem toSpawn = EItem.None;
+        if (tile_ == ETile.Mountain)
+            toSpawn = EItem.Stone;
+        else if (tile_ == ETile.Tree)
+            toSpawn = EItem.Wood;
+
+        if (toSpawn == EItem.None)
+            return null;
+
+        ItemInstance ii = SpawnItem(toSpawn);
         if (!ii)
             return null;
 
