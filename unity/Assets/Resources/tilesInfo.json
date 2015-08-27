@@ -125,6 +125,19 @@
 			},
 			"item" : {}
 			"weapon" : {}
+		}, {
+			"id" : 261,
+			"name" : "Wood",
+			"resource" : {
+				"file" : "Item_94",
+				"x" : 0,
+				"y" : 0,
+				"w" : 24,
+				"h" : 14
+			},
+			"item" : {}
+			"weapon" : {}
 		}
+		
 	]
 }

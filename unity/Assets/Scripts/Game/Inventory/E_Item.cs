@@ -11,4 +11,5 @@ public enum EItem
     Sword = 258,
     Gel = 259,
     Copper_Axe = 260,
+    Wood = 261,
 }
