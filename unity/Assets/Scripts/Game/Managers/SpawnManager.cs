@@ -20,14 +20,21 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         if (obj == null)
             return null;
 
+        Transform tr = obj.GetComponent<Transform>();
         ItemInstance ii = obj.GetComponent<ItemInstance>();
         MeshRenderer mr = obj.GetComponent<MeshRenderer>();
 
         if (mr)
         {
             Texture tex = Resources.Load(tileResourceDef.Filename) as Texture;
-            mr.material.SetTexture(0, tex);
-            mr.material.color = ItemInstance.GetColor32ForItem(item);
+            if (tex)
+            {
+                mr.material.SetTexture(0, tex);
+                mr.material.color = ItemInstance.GetColor32ForItem(item);
+
+                float scale = (float) (Screen.height / 2.0) / Camera.main.orthographicSize;
+                tr.localScale = new Vector3((float)tex.width / scale, (float)tex.height / scale, tr.localScale.z);
+            }
 
             ii.SetType(item);
         }
