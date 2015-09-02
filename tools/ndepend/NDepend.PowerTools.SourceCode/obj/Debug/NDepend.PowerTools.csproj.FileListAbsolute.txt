@@ -1,0 +1,10 @@
+C:\My\NDepend\6.Current\bin\Debug\NDepend.PowerTools.exe
+C:\My\NDepend\6.Current\bin\Debug\NDepend.PowerTools.pdb
+C:\My\NDepend\6.Current\NDepend.PowerTools\obj\Debug\NDepend.PowerTools.csprojResolveAssemblyReference.cache
+C:\My\NDepend\6.Current\NDepend.PowerTools\obj\Debug\NDepend.PowerTools.exe
+C:\My\NDepend\6.Current\NDepend.PowerTools\obj\Debug\NDepend.PowerTools.pdb
+C:\My\NDepend\6.Current\bin\ReadyToDeploy\NDepend.PowerTools.SourceCode\obj\Debug\NDepend.PowerTools.csprojResolveAssemblyReference.cache
+C:\My\NDepend\6.Current\bin\ReadyToDeploy\NDepend.PowerTools.SourceCode\obj\Debug\NDepend.PowerTools.exe
+C:\My\NDepend\6.Current\bin\ReadyToDeploy\NDepend.PowerTools.SourceCode\obj\Debug\NDepend.PowerTools.pdb
+C:\My\NDepend\6.Current\bin\ReadyToDeploy\NDepend.PowerTools.exe
+C:\My\NDepend\6.Current\bin\ReadyToDeploy\NDepend.PowerTools.pdb
