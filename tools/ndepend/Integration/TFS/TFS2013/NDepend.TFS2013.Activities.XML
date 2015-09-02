@@ -1,0 +1,1063 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NDepend.TFS2013.Activities</name>
+    </assembly>
+    <members>
+        <member name="T:NDepend.TFS.Activities.DownloadCoverage">
+            <summary>
+            Download code coverage data of the specify Build from the TFS data store into the specify folder. Since the background 'Team Foundation Server Coverage Analysis' job could be running when this activity is executing, request TFS data store every 5ms until specify timeout to get data. If you use this activity on the current Build, it should be scheduled after tests execution and before NDepend execution.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase">
+            <summary>
+            Base activity for NDepend build activities.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements">
+            <summary>
+            This represents the minimum requirements for a NDepend build activity.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.ActivityContext">
+            <summary>
+            Gets the <see cref="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.ActivityContext"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.CodeActivityContext">
+            <summary>
+            Gets the typed <see cref="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.CodeActivityContext"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.FailBuildOnError">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.TreatWarningsAsErrors">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.IgnoreExceptions">
+            <summary>
+            Set to true to ignore any unhandled exceptions thrown by activities. Default is false.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.LogExceptionStack">
+            <summary>
+            Set to true to log the entire stack in the event of an exception. Default is true.
+            <para></para>
+            <remarks>This parameter is ignored, if <see cref="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.FailBuildOnError"/> is true or <see cref="P:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements.TreatWarningsAsErrors"/> is true </remarks>
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.m_ActivityContext">
+            <summary>
+            Variable to hold CodeActivityContext
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase"/> class and initialize Arguments' default value.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.Execute(System.Activities.CodeActivityContext)">
+            <summary>
+            When implemented in a derived class, performs the execution of the activity.
+            </summary>
+            <param name="context">The execution context under which the activity executes.</param>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.NDependSection">
+            <summary>
+            Gets or sets the NDepend section in the build report.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.ActivityContext">
+            <summary>
+            Gets the <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.ActivityContext"/> associated with this <see cref="T:System.Activities.CodeActivity"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.CodeActivityContext">
+            <summary>
+            Gets the strongly typed ActivityContext.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.ActivityLogger">
+            <summary>
+            Gets the activity logger.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.FailBuildOnError">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.TreatWarningsAsErrors">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.IgnoreExceptions">
+            <summary>
+            Set to true to ignore any unhandled exceptions thrown by activities. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.LogExceptionStack">
+            <summary>
+            Set to true to log the entire stack in the event of an exception. Default is true
+            <para></para>
+            <remarks>This parameter is ignored, if <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.FailBuildOnError"/> is true or <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase.TreatWarningsAsErrors"/> is true </remarks>
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.#ctor">
+            <summary>
+             DownloadCoverage activity constructor.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.InternalExecute">
+            <summary>
+            InternalExecute method 
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.GetBuild(System.Activities.CodeActivityContext)">
+            <summary>
+            Get the <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/> according to BuildDetail activity parameter. If the value is <c>null</c> return the current running build; otherwise return parameter value.
+            </summary>
+            <param name="context">The <see cref="T:System.Activities.CodeActivityContext"/> instance of this activity.</param>
+            <returns>A <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/> which represents the value of BuildDetail parameter if it is not <c>null</c>; otherwise the current running <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/></returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.DownloadCoveragesData(Microsoft.TeamFoundation.TestManagement.Client.IBuildCoverage[],Microsoft.TeamFoundation.Build.Client.IBuildDetail,System.Activities.CodeActivityContext)">
+            <summary>
+            Downloads all files corresponding to <paramref name="coveragesData"/>.
+            </summary>
+            <param name="coveragesData">The data to download as coverage file.</param>
+            <param name="build">The build on which coverage data are associated.</param>
+            <param name="context">The context of this running activity.</param>
+            <returns>A collection of <see cref="T:System.Threading.Tasks.Task"/> that are downloading coverage file asynchronously.</returns>
+            <remarks>Décrit ici : http://blogs.msdn.com/b/visualstudioalm/archive/2012/12/09/code-coverage-in-microsoft-test-manager-deep-dive.aspx</remarks>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.GetCoverageFileName(Microsoft.TeamFoundation.Build.Client.IBuildDetail,Microsoft.TeamFoundation.TestManagement.Client.IBuildCoverage)">
+            <summary>
+            Gets the coverage file name according to specified <paramref name="coverageData"/> in the specified <paramref name="build"/>.
+            </summary>
+            <param name="build">The <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/> on wich coverage data have been computed.</param>
+            <param name="coverageData">The <see cref="T:Microsoft.TeamFoundation.TestManagement.Client.IBuildCoverage"/> used to format file name.</param>
+            <returns>A coverage file name.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.GetCoverageFileUrl(System.String,Microsoft.TeamFoundation.Build.Client.IBuildDetail)">
+            <summary>
+            Gets the coverage file url, where coverage data have been computed in the specified <paramref name="build"/>, with the specified <paramref name="fileName"/>.
+            </summary>
+            <param name="fileName">The name of the file to get url.</param>
+            <param name="build">The build that compute coverage data.</param>
+            <returns>A <see cref="T:System.String"/> which represents the url to a coverage file.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.GetOrCreateLocalFilePath(System.String,System.Activities.CodeActivityContext)">
+            <summary>
+            Gets a local absolute file path according to activity argument and the specified <paramref name="fileName"/>
+            </summary>
+            <param name="fileName">The name of the file to get absolute file path.</param>
+            <param name="context">The <see cref="T:System.Activities.CodeActivityContext"/> used to get activity argument.</param>
+            <returns>An absolute file path combined with activity argument LocalFolder and the specified <paramref name="fileName"/>.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.DownloadCoverage.DownloadCoverageFileAsync(System.String,System.String,System.Net.ICredentials,System.Activities.CodeActivityContext)">
+            <summary>
+            Downloads asynchronously a coverage file from the specified <paramref name="coverageUrl"/> to <paramref name="filePath"/> with the specified <paramref name="credentials"/> in the specified activity <paramref name="context"/>.
+            </summary>
+            <param name="coverageUrl">The url from which the file will be downloaded.</param>
+            <param name="filePath">The local path where the file will be downloaded.</param>
+            <param name="credentials">The <see cref="T:System.Net.ICredentials"/> used to download the file.</param>
+            <param name="context">The <see cref="T:System.Activities.CodeActivityContext"/>.</param>
+            <returns>The <see cref="T:System.Threading.Tasks.Task"/> which represents the asynchronous download.</returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.DownloadCoverage.BuildDetail">
+            <summary>
+            Specify the Build on which Code Coverage must be downloaded. If this value is null, download current Build Code Coverage data.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.DownloadCoverage.LocalFolder">
+            <summary>
+            Specify the local folder path where Code Coverage data will be downloaded. The folder should exist at runtime. 
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.DownloadCoverage.Timeout">
+            <summary>
+            Specify the time span to wait before activity timeout. 
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.DownloadCoverage.Overwrite">
+            <summary>
+            Specify a value indicating whether the coverage could be overwriten if already exists. 
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.ImportCoverageFilesFromDir">
+            <summary>
+            Override OutputDir of the specify NDepend Project.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.NDependProjectHandlerActivityBase">
+            <summary>
+            Base class for <see cref="T:NDepend.Project.IProject"/> management in build activities.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependProjectHandlerActivityBase.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependProjectHandlerActivityBase.HandleProject">
+            <summary>
+            When implemented in a derived class, performs action on project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependProjectHandlerActivityBase.Project">
+            <summary>
+            Gets the NDepend <see cref="T:NDepend.Project.IProject"/> provided to the activity.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependProjectHandlerActivityBase.ProjectArgument">
+            <summary>
+            Gets or sets the project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.ImportCoverageFilesFromDir.HandleProject">
+            <summary>
+            Change the OutputDir of the NDepend Project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ImportCoverageFilesFromDir.CoverageFilesDir">
+            <summary>
+            Gets or sets the OutputDir.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.BuildActivityLogger">
+            <summary>
+            Provides logging capabilities for Activities with <see cref="T:NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements"/>.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BaseActivities.BuildActivityLogger.m_Activity">
+            <summary>
+            Gets the embeded activity with minimum build requirements.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.BuildActivityLogger.#ctor(NDepend.TFS.Activities.BaseActivities.IMinimumBuildActivityRequirements,Microsoft.TeamFoundation.Build.Workflow.Tracking.CustomSummaryInformation)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.BaseActivities.BuildActivityLogger"/> class.
+            </summary>
+            <param name="activity">The activity with minimum requirements.</param>
+            <param name="ndependSummarySection">The custom summary section, useful for logging message in the Build Summary.</param>
+        </member>
+        <member name="T:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor">
+            <summary>
+            A simple class to describe a Microsoft.TeamFoundation.Build.Client.IBuildDetailSpec.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.#ctor(Microsoft.TeamFoundation.Build.Client.IBuildDetail)">
+            <summary>
+            ctor of BuildDetailSpecForEditor
+            </summary>
+            <param name="buildDetail">The build detail to describe</param>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.#ctor">
+            <summary>
+            Default ctor of BuildDetailSpecForEditor (needed for serialiation).
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.ToString">
+            <summary>
+            ToString() method overriden.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.BuildNumber">
+            <summary>
+            The build number.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.BuildDefinitionName">
+            <summary>
+            The build definition name.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor.BuildUri">
+            <summary>
+            The build Uri.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm">
+            <summary>
+            Dialog to select a IBuildDetail belonging to a specific IBuildDefinition.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm.#ctor(Microsoft.TeamFoundation.Build.Client.IBuildDefinition,NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildDetailSpecForEditor)">
+            <summary>
+            ctor
+            </summary>
+            <param name="buildDefinition">The build definition (must not be null)</param>
+            <param name="selectedItem">The actually selected build (can be null)</param>
+        </member>
+        <member name="F:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm.SelectedBuildDetailSpec">
+            <summary>
+            Gets the currently selected IBuildDetail or null if no build has been selected. 
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorEditor">
+            <summary>
+            Handles the logic to display and load <see cref="T:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorForm"/>.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorEditor.EditValue(System.ComponentModel.ITypeDescriptorContext,System.IServiceProvider,System.Object)">
+            <summary>
+            Edits the specified object's value using the editor style indicated by the <see cref="M:System.Drawing.Design.UITypeEditor.GetEditStyle" /> method.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that can be used to gain additional context information.</param>
+            <param name="provider">An <see cref="T:System.IServiceProvider" /> that this editor can use to obtain services.</param>
+            <param name="value">The object to edit.</param>
+            <returns>
+            The new value of the object. If the value of the object has not changed, this should return the same object it was passed.
+            </returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CustomEditors.BuildSelector.BuildSelectorEditor.GetEditStyle(System.ComponentModel.ITypeDescriptorContext)">
+            <summary>
+            Gets the editor style used by the <see cref="M:System.Drawing.Design.UITypeEditor.EditValue(System.IServiceProvider,System.Object)" /> method.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that can be used to gain additional context information.</param>
+            <returns>
+            A <see cref="T:System.Drawing.Design.UITypeEditorEditStyle" /> value that indicates the style of editor used by the <see cref="M:System.Drawing.Design.UITypeEditor.EditValue(System.IServiceProvider,System.Object)" /> method. If the <see cref="T:System.Drawing.Design.UITypeEditor" /> does not support this method, then <see cref="M:System.Drawing.Design.UITypeEditor.GetEditStyle" /> will return <see cref="F:System.Drawing.Design.UITypeEditorEditStyle.None" />.
+            </returns>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.FailingBuildException">
+            <summary>
+            FailingBuild Exception
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.FailingBuildException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the FailingBuildException class
+            </summary>
+            <param name="message">Message to send</param>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase">
+            <summary>
+            Base class to all Build's <see cref="T:System.Activities.NativeActivity"/>.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.m_NativeActivityContext">
+            <summary>
+            Variable to hold NativeActivityContext
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase"/> class and initialize Arguments' default value.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.Execute(System.Activities.NativeActivityContext)">
+            <summary>
+            Runs the activity’s execution logic.
+            </summary>
+            <param name="context">The execution context in which the activity executes.</param>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.CacheMetadata(System.Activities.NativeActivityMetadata)">
+            <summary>
+            Creates and validates a description of the activity’s arguments, variables, child activities, and activity delegates.
+            </summary>
+            <param name="metadata">The activity’s metadata that encapsulates the activity’s arguments, variables, child activities, and activity delegates.</param>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.CreateEncapsulationLogic">
+            <summary>
+            Creates the encapsulation logic.
+            </summary>
+            <returns>The activity which encapsulate the Body activity</returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.ActivityContext">
+            <summary>
+            Gets the <see cref="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.ActivityContext"/> associated with this <see cref="T:System.Activities.NativeActivity"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.CodeActivityContext">
+            <summary>
+            Returns null. BuildNativeActivityBase doesn't support CodeActivityContext.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.FailBuildOnError">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.TreatWarningsAsErrors">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.IgnoreExceptions">
+            <summary>
+            Set to true to ignore any unhandled exceptions thrown by activities. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.LogExceptionStack">
+            <summary>
+            Set to true to log the entire stack in the event of an exception. Default is true
+            <para></para>
+            <remarks>This parameter is ignored, if <see cref="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.FailBuildOnError"/> is true or <see cref="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.TreatWarningsAsErrors"/> is true </remarks>
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.BuildNativeActivityBase.Body">
+            <summary>
+            Gets or sets the nested activity dropped into this one in the designer.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult">
+            <summary>
+            Compiles Queries.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.AnalysisResult">
+            <summary>
+            Gets or sets the analysis result.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.CompareContext">
+            <summary>
+            Gets or sets the ICompareContext.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.QueriesWithCompilationErrors">
+            <summary>
+            Gets or sets the compiled queries with errors collection.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.QueriesWithCompilationSuccess">
+            <summary>
+            Gets or sets the compiled queries with success collection.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.JustMyCode">
+            <summary>
+            Gets or sets the duration of the queries compilation.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CompileQueriesFromAnalysisResult.CompilationDuration">
+            <summary>
+            Gets or sets the duration of the queries compilation.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.LogTrendMetrics">
+            <summary>
+            Runs an analysis on a NDepend project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.LogTrendMetrics.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.LogTrendMetrics.AnalysisResult">
+            <summary>
+            Gets or sets the analysis result.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.LogTrendMetrics.CompareContext">
+            <summary>
+            Gets or sets the ICompareContext.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.CreateCompareContext">
+            <summary>
+            Creates the <see cref="T:NDepend.CodeModel.ICompareContext"/> from two <see cref="T:NDepend.CodeModel.ICodeBase"/> one form the current <see cref="T:NDepend.Analysis.IAnalysisResult"/> and the second from the <see cref="T:NDepend.Project.IProjectBaseline"/>.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1">
+            <summary>
+            Base activity for generic NDepend build activities.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.m_ActivityContext">
+            <summary>
+            Variable to hold CodeActivityContext
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement.
+            </summary>
+            <returns>The activity result.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1"/> class and initialize Arguments' default value.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.Execute(System.Activities.CodeActivityContext)">
+            <summary>
+            When implemented in a derived class, performs the execution of the activity.
+            </summary>
+            <param name="context">The execution context under which the activity executes.</param>
+            <returns>The activity result.</returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.NDependSection">
+            <summary>
+            Gets or sets the NDepend section in the build report.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.ActivityContext">
+            <summary>
+            Gets the <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.ActivityContext"/> associated with this <see cref="T:System.Activities.CodeActivity"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.CodeActivityContext">
+            <summary>
+            Gets the strongly typed ActivityContext.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.ActivityLogger">
+            <summary>
+            Gets the activity logger.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.FailBuildOnError">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.TreatWarningsAsErrors">
+            <summary>
+            Set to true to fail the build if the activity logs any errors. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.IgnoreExceptions">
+            <summary>
+            Set to true to ignore any unhandled exceptions thrown by activities. Default is false
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.LogExceptionStack">
+            <summary>
+            Set to true to log the entire stack in the event of an exception. Default is true
+            <para></para>
+            <remarks>This parameter is ignored, if <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.FailBuildOnError"/> is true or <see cref="P:NDepend.TFS.Activities.BaseActivities.NDependCodeActivityBase`1.TreatWarningsAsErrors"/> is true </remarks>
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.CreateCompareContext.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement.
+            </summary>
+            <returns>
+            The computed <see cref="T:NDepend.CodeModel.ICompareContext"/>.
+            </returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CreateCompareContext.AnalysisResult">
+            <summary>
+            Gets or sets the <see cref="T:NDepend.Analysis.IAnalysisResult"/>.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.CreateCompareContext.Project">
+            <summary>
+            Gets or sets the <see cref="T:NDepend.Project.IProject"/>.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver">
+            <summary>
+            Provides a ResolveEventHandler to load NDepend assemblies from outside of NDepend's installation path.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.m_NDependInstallLibPath">
+            <summary>
+            Lib directory path in NDepend's installation directory.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.m_TfsJobAgentPluginsPath">
+            <summary>
+            Plugins path under the TFS Job agent to load the Code Coverage Analysis assemblies from.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.m_VisualStudioPrivateAssembliesPath">
+            <summary>
+            Plugins path under the TFS Job agent to load the Code Coverage Analysis assemblies from.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver"/> class.
+            </summary>
+            <param name="ndependInstallPath">Lib directory path in NDepend's installation directory.</param>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.SubscribeToAssemblyResolution">
+            <summary>
+            Subscribes to assembly resolution with a <see cref="M:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.ResolveEventHandler(System.Object,System.ResolveEventArgs)"/>.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.ResolveEventHandler(System.Object,System.ResolveEventArgs)">
+            <summary>
+            Handle the AssemblyResolve event.
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="args">The <see cref="T:System.ResolveEventArgs"/> instance containing the event data.</param>
+            <returns>The resolved assembly or null if the assembly cannot be loaded from the <see cref="F:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.m_NDependInstallLibPath"/>.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver.Dispose">
+            <summary>
+            Unscribe to assembly resolution.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.OverrideProjectAssemblies">
+            <summary>
+            Overrides project assemblies.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideProjectAssemblies.HandleProject">
+            <summary>
+            Overrides assemblies
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideProjectAssemblies.OverrideAssemblies(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Overrides assemblies to analyze in the specify <paramref name="newAssembliesPath"/> collection.
+            </summary>
+            <param name="newAssembliesPath">The new assemblies path.</param>
+        </member>
+        <member name="P:NDepend.TFS.Activities.OverrideProjectAssemblies.AssembliesToAnalyze">
+            <summary>
+            Gets or sets the assemblies to analyze.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.NDependContext">
+            <summary>
+            Subscribes to AssemblyResolve to load NDepend assemblies directly from installation path.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.NDependContext.AssignNDependAssembliesResolver(System.Activities.Variable{NDepend.TFS.Activities.Helpers.NDependAssembliesResolver})">
+            <summary>
+            Creates Assign activity to assign the NDepend assemblies resolver variable.
+            </summary>
+            <param name="ndependAssembliesResolver">The <see cref="T:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver"/> to assign.</param>
+            <returns>The <see cref="T:System.Activities.Statements.Assign"/> activity.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.NDependContext.InvokeSubscribeToAssemblyResolution(System.Activities.Variable{NDepend.TFS.Activities.Helpers.NDependAssembliesResolver})">
+            <summary>
+            Creates InvokeMethod activity to invoke the SubscribeToAssemblyResolution method on NDependAssembliesResolver.
+            </summary>
+            <param name="ndependAssembliesResolver">The <see cref="T:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver"/> on which the SubscribeToAssemblyResolution method will be invoked.</param>
+            <returns>The <see cref="T:System.Activities.Statements.InvokeMethod"/> activty.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.NDependContext.InvokeDispose(System.Activities.Variable{NDepend.TFS.Activities.Helpers.NDependAssembliesResolver})">
+            <summary>
+            Create the InvokeMethod activity to invoke Dispose method on NDependAssembliesResolver.
+            </summary>
+            <param name="ndependAssembliesResolver">The <see cref="T:NDepend.TFS.Activities.Helpers.NDependAssembliesResolver"/> on which the Invoke method will be invoked.</param>
+            <returns>The <see cref="T:System.Activities.Statements.InvokeMethod"/> activty.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.NDependContext.CatchExceptionsDuringActivity">
+            <summary>
+            Create the <see cref="T:System.Activities.Statements.Catch"/> activity to catch exceptions thrown during activity.
+            </summary>
+            <returns>The <see cref="T:System.Activities.Statements.Catch"/> activity</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.NDependContext.CreateEncapsulationLogic">
+            <summary>
+            Creates the encapsulation logic.
+            </summary>
+            <returns>
+            The activity which encapsulate the Body activity
+            </returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.NDependContext.NDependInstallationPath">
+            <summary>
+            Gets or sets the NDepend installation folder path.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.LoadProject">
+            <summary>
+            Loads a NDepend project from a *.ndproj.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.LoadProject.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.LoadProject.GetProjectFormPath(System.String)">
+            <summary>
+            Gets the <see cref="T:NDepend.Project.IProject"/> corresponding to the *.ndproj file path.
+            </summary>
+            <param name="ndprojPath">The *.ndproj file path.</param>
+            <returns>The <see cref="T:NDepend.Project.IProject"/> corresponding to the specify <paramref name="ndprojPath"/>.</returns>
+        </member>
+        <member name="P:NDepend.TFS.Activities.LoadProject.NdprojFilePath">
+            <summary>
+            Gets or sets the ndproj file path.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified">
+            <summary>
+            Override OutputDir of the specify NDepend Project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified"/> class.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified.HandleProject">
+            <summary>
+            Eventually set the Analysis Baseline for Comparison of the NDepend Project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified.BuildDetailToSetAsProjectBaseline">
+            <summary>
+            Gets or sets the build detail to set as project baseline.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.OverrideProjectBaselineWithBuildSpecified.BuildSetAsProjectBaseline">
+            <summary>
+            Gets or sets the build set as project baseline.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.OverrideTrendMetricsCustomDir">
+            <summary>
+            Override Trend Metrics directory of the specify NDepend Project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideTrendMetricsCustomDir.HandleProject">
+            <summary>
+            Change the OutputDir of the NDepend Project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.OverrideTrendMetricsCustomDir.TrendMetricsCustomDir">
+            <summary>
+            Gets or sets the OutputDir.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.OverrideProjectOutputDir">
+            <summary>
+            Override OutputDir of the specify NDepend Project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.OverrideProjectOutputDir.HandleProject">
+            <summary>
+            Change the OutputDir of the NDepend Project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.OverrideProjectOutputDir.OutputDir">
+            <summary>
+            Gets or sets the OutputDir.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.RunAnalysis">
+            <summary>
+            Runs an analysis on a NDepend project.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.RunAnalysis.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.RunAnalysis"/> class and set default properties.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.RunAnalysis.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.RunAnalysis.DoAllApplicationAssembliesHaveBeenResolved(NDepend.Project.IProject)">
+            <summary>
+            Checks and logs assemblies resolution errors.
+            </summary>
+            <param name="project">The NDepend Project.</param>
+            <returns><c>true</c> if resolution error occurs; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.RunAnalysis.ExecuteAnalysis(System.Boolean,NDepend.Project.IProject,System.Action{NDepend.Analysis.IAnalysisLog},System.Action{NDepend.Analysis.IProgressLog},System.TimeSpan@)">
+            <summary>
+            Runs the NDepend analysis.
+            </summary>
+            <param name="buildReport">if set to <c>true</c> the report is build with the analysis.</param>
+            <param name="project">The NDepend projet to analyze.</param>
+            <param name="analysisLogHandler">The analysis log handler.</param>
+            <param name="progressLogHandler">The progress log handler.</param>
+            <param name="duration">Contains the duration of analysis.</param>
+            <returns>
+            The result of this analisys.
+            </returns>
+        </member>
+        <member name="M:NDepend.TFS.Activities.RunAnalysis.LogAnalysisLog(NDepend.Analysis.IAnalysisLog,System.Boolean)">
+            <summary>
+            Handle log activity of NDepend Analysis.
+            </summary>
+            <param name="analysisLog">The analysis log.</param>
+            <param name="ignoreWarnings">if set to <c>true</c> log NDepend warnings as message otherwise log it as build warning.</param>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.Project">
+            <summary>
+            Gets or sets the NDepend Project.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.BuildReport">
+            <summary>
+            Gets or sets a value which indicates whether the report must be built.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.IgnoreNDependWarning">
+            <summary>
+            Gets or sets the value of <see cref="P:NDepend.TFS.Activities.RunAnalysis.IgnoreNDependWarning"/> argument.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.ContinueWithPartialAnalyze">
+            <summary>
+            Gets or sets the StartPartialAnalyze value.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.AnalysisDuration">
+            <summary>
+            Gets or sets the duration of the analysis.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.RunAnalysis.Warnings">
+            <summary>
+            Gets or sets the warnings.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries">
+            <summary>
+            Run queries compiled with success.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries"/> class with arguments' default value.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.ThresholdCheck(System.UInt32,System.UInt32)">
+            <summary>
+            Thresholds the verification.
+            </summary>
+            <param name="criticalViolations">Number of critical rule violations.</param>
+            <param name="violations">Number of rules violations.</param>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.QueriesWithCompilationSuccess">
+            <summary>
+            Gets or sets compiled queries with success.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.QueryExecutionTimeOut">
+            <summary>
+            Gets or sets the query execution time out.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.JustMyCode">
+            <summary>
+            Gets or sets JustMyCode.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.CompareContext">
+            <summary>
+            Gets or sets the ICompareContext.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.FocusOnRecentRulesViolations">
+            <summary>
+            Gets or sets JustMyCode.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.ThresholdCriticalViolationsBeforeWarning">
+            <summary>
+            Gets or sets the number of critical violation before warning.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.ThresholdCriticalViolationsBeforeError">
+            <summary>
+            Gets or sets the number of critical violation before error.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.ThresholdViolationsBeforeWarning">
+            <summary>
+            Gets or sets the number of violation before warning.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.ExecuteSuccessCompiledQueries.ThresholdViolationsBeforeError">
+            <summary>
+            Gets or sets the number of violation before error.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.WriteAnalysisResults">
+            <summary>
+            Write analysis execution summary to build report
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.WriteAnalysisResults.InternalExecute">
+            <summary>
+            Write NDepend analysis results to the Build Report.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.WriteAnalysisResults.AnalysisResult">
+            <summary>
+            Gets or sets the analysis result.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.WriteAnalysisResults.AnalysisDuration">
+            <summary>
+            Gets or sets the duration of the analysis.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.WriteAnalysisResults.AnalysisWarnings">
+            <summary>
+            Gets or sets the analysis warning's messages.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.WriteMetrics">
+            <summary>
+            Log main NDepend metrics in the build report.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.WriteMetrics.InternalExecute">
+            <summary>
+            InternalExecute method which activities should implement
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.WriteMetrics.AnalysisResult">
+            <summary>
+            Gets or sets the analysis result.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.WriteMetrics.CompareContext">
+            <summary>
+            Gets or sets the ICompareContext.
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.Helpers.CustomSummaryInformationExtensions">
+            <summary>
+            Provides extensions methods on <see cref="T:Microsoft.TeamFoundation.Build.Workflow.Tracking.CustomSummaryInformation"/>.
+            </summary>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.CustomSummaryInformationExtensions.Copy(Microsoft.TeamFoundation.Build.Workflow.Tracking.CustomSummaryInformation)">
+            <summary>
+            Initializes a new <see cref="T:Microsoft.TeamFoundation.Build.Workflow.Tracking.CustomSummaryInformation"/> based on instance property. Copy all properties except Message.
+            </summary>
+            <param name="csi">The current instance.</param>
+            <returns>A new initialized instance of <see cref="T:Microsoft.TeamFoundation.Build.Workflow.Tracking.CustomSummaryInformation"/>.</returns>
+        </member>
+        <member name="T:NDepend.TFS.Activities.Helpers.NDependTrackingExtensions">
+            <summary>
+            Provides Tracking extension methods on <see cref="T:System.Activities.ActivityContext"/>. 
+            </summary>
+            <remarks>Those methods should never be called with an <see cref="T:System.Activities.ActivityContext"/>.</remarks>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependTrackingExtensions.TrackBuildMessage(System.Activities.ActivityContext,System.String,Microsoft.TeamFoundation.Build.Client.BuildMessageImportance)">
+            <summary>
+            Adds a message in the Build log.
+            </summary>
+            <param name="context">The context of the activity which is logging.</param>
+            <param name="message">The message to log.</param>
+            <param name="importance">The importance of the message.</param>
+            <exception cref="T:System.NotSupportedException">Tracking activities are not supported on ActivityContext. Use CodeActivityContext or NativeActivityContext instead.</exception>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependTrackingExtensions.TrackBuildWarning(System.Activities.ActivityContext,System.String,System.Boolean)">
+            <summary>
+            Adds a warning in the Build log.
+            </summary>
+            <param name="context">The context of the activity which is logging.</param>
+            <param name="message">The message to log.</param>
+            <param name="displayOnSummary">if set to <c>true</c> display warning on summary section.</param>
+            <exception cref="T:System.NotSupportedException">Tracking activities are not supported on ActivityContext. Use CodeActivityContext or NativeActivityContext instead.</exception>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependTrackingExtensions.TrackBuildError(System.Activities.ActivityContext,System.String)">
+            <summary>
+            Adds an error in the Build log.
+            </summary>
+            <param name="context">The context of the activity which is logging.</param>
+            <param name="message">The message to log.</param>
+            <exception cref="T:System.NotSupportedException">Tracking activities are not supported on ActivityContext. Use CodeActivityContext or NativeActivityContext instead.</exception>
+        </member>
+        <member name="M:NDepend.TFS.Activities.Helpers.NDependTrackingExtensions.TrackBuildCore(System.Activities.ActivityContext,System.Action{System.Activities.NativeActivityContext},System.Action{System.Activities.CodeActivityContext})">
+            <summary>
+            Tracks a build information according to native or code <see cref="T:System.Activities.ActivityContext"/>.
+            </summary>
+            <param name="context">The context that is <see cref="T:System.Activities.CodeActivityContext"/> or <see cref="T:System.Activities.NativeActivityContext"/>.</param>
+            <param name="onNative">The action to perform on <see cref="T:System.Activities.NativeActivityContext"/> to track information.</param>
+            <param name="onCode">The action to perform on <see cref="T:System.Activities.CodeActivityContext"/> to track information.</param>
+            <exception cref="T:System.NotSupportedException">Tracking activities are not supported on ActivityContext. Use CodeActivityContext or NativeActivityContext instead.</exception>
+        </member>
+        <member name="T:NDepend.TFS.Activities.BuildVariableName">
+            <summary>
+            Build variables' name that GetBuildVariables can get from TFS and its workflow context.
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BuildVariableName.BuildDetail">
+            <summary>
+            <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/>
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BuildVariableName.SourcesDirectory">
+            <summary>
+            $(SourcesDirectory)
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BuildVariableName.BinariesDirectory">
+            <summary>
+            $(BinariesDirectory)
+            </summary>
+        </member>
+        <member name="F:NDepend.TFS.Activities.BuildVariableName.DropLocation">
+            <summary>
+            $(DropLocation)
+            </summary>
+        </member>
+        <member name="T:NDepend.TFS.Activities.GetBuildVariables`1">
+            <summary>
+            Gets a build environment variable according to its name. This activity is also a wrapper for GetEnvironmentVariable.
+            </summary>
+            <typeparam name="T">The return type of the activity. Must be consistent with its name.</typeparam>
+        </member>
+        <member name="M:NDepend.TFS.Activities.GetBuildVariables`1.InternalExecute">
+            <summary>
+            Gets the build variable's value.
+            </summary>
+            <exception cref="T:System.ArgumentException">
+            Activity type is not <see cref="T:Microsoft.TeamFoundation.VersionControl.Client.Workspace"/> and <see cref="P:NDepend.TFS.Activities.GetBuildVariables`1.BuildVariable"/> argument is "Workspace".
+            or
+            Activity type is not <see cref="T:Microsoft.TeamFoundation.Build.Client.IBuildDetail"/> and <see cref="P:NDepend.TFS.Activities.GetBuildVariables`1.BuildVariable"/> argument is "BuildDetail".
+            or
+            Activity type is not <see cref="T:System.String"/> and <see cref="P:NDepend.TFS.Activities.GetBuildVariables`1.BuildVariable"/> is "Workspace" or "BuildDetail".
+            </exception>
+            <exception cref="T:System.NotSupportedException">The <see cref="P:NDepend.TFS.Activities.GetBuildVariables`1.BuildVariable"/> argument's value is not known.</exception>
+        </member>
+        <member name="P:NDepend.TFS.Activities.GetBuildVariables`1.BuildVariable">
+            <summary>
+            Gets or sets the build variable.
+            </summary>
+        </member>
+        <member name="P:NDepend.TFS.Activities.GetBuildVariables`1.Results">
+            <summary>
+            Gets or sets the results.
+            </summary>
+        </member>
+    </members>
+</doc>

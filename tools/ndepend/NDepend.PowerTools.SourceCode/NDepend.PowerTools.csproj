@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7DBADA8D-B2CC-4683-9891-0C211547D5D8}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NDepend.PowerTools</RootNamespace>
+    <AssemblyName>NDepend.PowerTools</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>NDepend.PowerTools.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>PowerTools.16x16.32x32.48x48.64x64.256x256.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NDepend.API">
+      <HintPath>..\Lib\NDepend.API.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnalyzeAssemblyInFolder\AnalyzeAssemblyInFolderPowerTool.cs" />
+    <Compile Include="AnalyzeCodeOnDisk\AnalyzeCodeOnDiskPowerTool.cs" />
+    <Compile Include="APIChanges\APIChangesDisplayer.cs" />
+    <Compile Include="APIChanges\APIChangesPowerTool.cs" />
+    <Compile Include="AssemblyResolver.cs" />
+    <Compile Include="CodeQueryConsole\CodeElementsDisplayer.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+ConsoleWriter+Highlight.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+ConsoleWriter+SyntaxHighlighter.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+ConsoleWriter+Test_SyntaxHighlighter.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+KeyHandlerChar.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+KeyHandlerCtrl.cs" />
+    <Compile Include="CodeQueryConsole\PreviousNextStack.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+KeyHandlerCursor.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+ConsoleWriter.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+IKeyHandler.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+Location.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+SelectionHelper.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession+State.cs" />
+    <Compile Include="CodeQueryConsole\QueryExecutionResultDisplayer.cs" />
+    <Compile Include="CodeQueryConsole\QueryEditSession.cs" />
+    <Compile Include="CodeQueryConsole\StringColored.cs" />
+    <Compile Include="CQL2CQLinq\CQL2CQLinqPowerTool.cs" />
+    <Compile Include="DeadCode\DeadCodeAlgo.cs" />
+    <Compile Include="DeadCode\DeadCodePowerTool.cs" />
+    <Compile Include="DetectAssemblyIssues\AssembliesReferencesVersionningChecker.cs" />
+    <Compile Include="DetectAssemblyIssues\CoherencyChecker.cs" />
+    <Compile Include="DetectAssemblyIssues\DetectAssemblyIssuesPowerTool.cs" />
+    <Compile Include="DotNetFrameworkAnalysis\DotNetFrameworkAnalysisPowerTool.cs" />
+    <Compile Include="AppWords\AppWordsPowerTool.cs" />
+    <Compile Include="AppWords\IdentifierWeight.cs" />
+    <Compile Include="AppWords\Test_WordExtracter.cs" />
+    <Compile Include="AppWords\WordExtracter.cs" />
+    <Compile Include="CodeQueryConsole\CodeQueryConsolePowerTool.cs" />
+    <Compile Include="DotNetFrameworkCoreAPIChanges\DotNetFrameworkCoreAPIChangesPowerTool.cs" />
+    <Compile Include="DotNetFx35Checker.cs" />
+    <Compile Include="Evolution\EvolutionPowerTool.cs" />
+    <Compile Include="NDepend_API_GettingStarted_Program.cs" />
+    <Compile Include="ReviewMethodChanges\MethodsChangedDisplayer.cs" />
+    <Compile Include="ReviewMethodChanges\ReviewMethodChangesPowerTool.cs" />
+    <Compile Include="SearchForDuplicateCode\MembersUsedIntersectionComputer.cs" />
+    <Compile Include="SearchForDuplicateCode\SearchForDuplicateCodePowerTool.cs" />
+    <Compile Include="SearchForDuplicateCode\SuspectSet.cs" />
+    <Compile Include="SearchForDuplicateCode\2_SuspectSetsMerger.cs" />
+    <Compile Include="SearchForDuplicateCode\3_SuspectSetsSorter.cs" />
+    <Compile Include="SearchForDuplicateCode\1_SuspectSetsWith2CallersComputer.cs" />
+    <Compile Include="SharedUtils\CodeElementsDisplayerBase.cs" />
+    <Compile Include="SharedUtils\ConsoleUtils.cs" />
+    <Compile Include="SharedUtils\ExtensionMethods.cs" />
+    <Compile Include="SharedUtils\MembersDisplayer.cs" />
+    <Compile Include="Base\IPowerTool.cs" />
+    <Compile Include="SharedUtils\ProjectAnalysisUtils.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchTypesByName\Match.cs" />
+    <Compile Include="SearchTypesByName\MatchEditor.cs" />
+    <Compile Include="SearchTypesByName\ResultDisplayer.cs" />
+    <Compile Include="SearchTypesByName\ResultSelector.cs" />
+    <Compile Include="SearchTypesByName\SearchTypesByNamePowerTool.cs" />
+    <Compile Include="TestDebuggerDisplay\TesterDebuggerDisplay.cs" />
+    <Compile Include="Trend\ListTrendValuesPowerTool.cs" />
+    <Compile Include="Trend\LogTrendValuesPowerTool.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PowerTools.16x16.32x32.48x48.64x64.256x256.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
