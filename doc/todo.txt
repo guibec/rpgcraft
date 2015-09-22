@@ -1,6 +1,14 @@
-General
-  * Stronger enemies farther away
-  * XP gains strength (Damage by sword)
+Crafting
+  * Crafting recipe (json)
+  * Need to find recipe ?
+  * Crafting UI
+  * Create a torch
+
+Torch
+  * Light up dark places
+
+Light
+  * Add darkness the further away
 
 Enemy 
   * Add health/death
@@ -20,17 +28,15 @@ UI
   * Show DMG point (Cave Story)
   * Show XP picup (Cave Story)
 
-Player
-Crafting
 Add name of object when touched
 Fix object size ratio
   * Character bigger
   * Items smaller
-  
-Make it easier to navigate small areas
-  * Improve side-step
-  * Make it work with diagonal
 
+General
+  * Stronger enemies farther away
+  * XP gains strength (Damage by sword)
+  
 Add music
   -> http://gamedev.stackexchange.com/questions/1045/where-is-quality-paid-game-music
   -> http://www.premiumbeat.com/royalty_free_music/songs/power-trailer-percussion 30$/track
@@ -71,6 +77,11 @@ Clean up file struture (Code/data)
 Pay for Unity (?)
 Daily backup
 Auto archive
+Chat System
+  * Using XMPP
+     * Snapchat & League of Legends based on that. Jabbers
+     * http://highscalability.com/blog/2014/10/13/how-league-of-legends-scaled-chat-to-70-million-players-it-t.html
+     * http://engineering.riotgames.com/news/chat-service-architecture-protocol
 
 
 <-- Progression
