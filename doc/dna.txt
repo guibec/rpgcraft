@@ -2,14 +2,24 @@ Riot:
 http://www.riotgames.com/riot-manifesto#5
 
 Netflix:
+  * L'anti-process
+  * Payer les gens au meilleur prix
+  * Ne pas compter les heures.
 
 Virgin:
 
 Google:
+http://www.wired.com/2015/09/google-2-billion-lines-codeand-one-place
+  * Code source centralisé et partagé à tous
+  * Aucun fork de Framework.
 
 2K Games:
 
 Ubisoft:
+  * Tout le système de niveau et d'évaluation/mentorat.
+  * La mentalité forte du build système.
 
 Frima:
+
+Microsoft:
 
