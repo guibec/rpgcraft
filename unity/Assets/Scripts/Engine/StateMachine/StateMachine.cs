@@ -128,7 +128,7 @@ public abstract class StateMachine
         if (forced || Locked)
             return;
 
-        if (nextState == null || (this.NextState != null && nextState.Priority < this.NextState.Priority))
+        if (nextState == null || (this.NextState != null))
             return;
 
         this.NextState = nextState;

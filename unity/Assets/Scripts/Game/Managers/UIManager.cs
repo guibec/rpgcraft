@@ -335,7 +335,7 @@ public class UIManager : MonoSingleton<UIManager>
             return null;
         }
 
-        newTxt.transform.parent = m_canvas.transform;
+        newTxt.transform.SetParent( m_canvas.transform, true );
 
         Text textComponent = newTxt.GetComponent<Text>();
         if (!textComponent)

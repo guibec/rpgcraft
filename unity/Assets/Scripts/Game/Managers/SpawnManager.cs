@@ -96,21 +96,15 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         // assuming we can see from [ -1 ... 1 ]
         // that means we are interested in spawning them from [ -2 ... -1 , 1 ... 2 ]
 
-        // assuming these are the maximum size of the view port
-        const float xOffset = 20f;
-        const float yOffset = 20f;
-
-        const float distance = 10f;
-
         bool xSign = RandomManager.Instance.Boolean();
         bool ySign = RandomManager.Instance.Boolean();
 
-        float xDistance = RandomManager.Instance.Next(0.0f, distance);
-        float yDistance = RandomManager.Instance.Next(0.0f, distance);
+        float xDistance = RandomManager.Instance.Next(0.0f, m_spawnVariableDistance);
+        float yDistance = RandomManager.Instance.Next(0.0f, m_spawnVariableDistance);
 
         Vector2 spawnPosition = position +
-                                new Vector2(xSign ? xOffset + xDistance : -xOffset - xDistance,
-                                    ySign ? yOffset + yDistance : -yOffset - yDistance);
+                                new Vector2(xSign ? m_spawnMinDistance + xDistance : -m_spawnMinDistance - xDistance,
+                                    ySign ? m_spawnMinDistance + yDistance : -m_spawnMinDistance - yDistance);
 
         GameObject obj = Instantiate(m_slimePrefab);
 
@@ -165,6 +159,12 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
     [Tooltip("how much time (seconds) before the initial spawn ")]
     public float m_initialSpawnTime = 1.0f;
+
+    [Tooltip("Variation in distance (0 to m_spawnVariableDistance) in enemy spawning")]
+    public float m_spawnVariableDistance = 10.0f;
+
+    [Tooltip("Minimum distance for enemy spawning")]
+    public float m_spawnMinDistance = 20.0f;
 
     float m_spawnTime = 0.0f;
     float m_nextSpawn = 0.0f;
