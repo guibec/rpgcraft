@@ -12,17 +12,7 @@ public abstract class State
     /// </summary>
     public StateMachine FSM { get; private set; }
 
-    protected int priority = 1;
-
-    /// <summary>
-    /// When two states try to gain control of a machine, the highest priority win.
-    /// </summary>
-    public int Priority
-    {
-        get { return priority; }
-    }
-
-    public State(StateMachine machine)
+    protected State(StateMachine machine)
     {
         this.FSM = machine;
     }

@@ -291,6 +291,7 @@ public class GameManager : MonoSingleton<GameManager>
         UpdateAudio();
 
         // There is a dependency on the main player for input recal right now
+        Profiler.BeginSample("Collision");
         Vector3 oldPosition = MainPlayer.BeforeInputPos;
         Vector3 newPosition = MainPlayer.AfterInputPos;
 
@@ -312,6 +313,7 @@ public class GameManager : MonoSingleton<GameManager>
             afterColPosition = UpdateCollision(entity, entity.LastPosition, newPosition);
             entity.transform.position = afterColPosition;
         }
+        Profiler.EndSample();
 
 	    UpdateInput();
 	    UpdateChunks();
@@ -412,9 +414,6 @@ public class GameManager : MonoSingleton<GameManager>
                 }
                 else
                 {
-                    // touch ..
-                    UnityEngine.Debug.Log("Touch " + ci.GameObject);
-
                     // send OnTouchEvent on Entity
                     // Note: This will probably send multiple Touch events to the same pair. We should accumulate these TouchEvent and then sweep them if we get the bug.
                     Entity entity2 = ci.GameObject.GetComponent<Entity>();

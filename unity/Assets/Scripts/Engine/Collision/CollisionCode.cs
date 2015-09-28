@@ -189,7 +189,7 @@ public static class CollisionCode
         if (tIn > tOut || tIn > 1.0f || tIn < 0f)
             return false;
 
-        UnityEngine.Debug.Log(string.Format("Dynamic collision on tFirst={0} and tLast={0}", tIn, tOut));
+        //UnityEngine.Debug.Log(string.Format("Dynamic collision on tFirst={0} and tLast={0}", tIn, tOut));
         return true;
 
     }
