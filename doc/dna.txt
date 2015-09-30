@@ -12,6 +12,7 @@ Google:
 http://www.wired.com/2015/09/google-2-billion-lines-codeand-one-place
   * Code source centralisé et partagé à tous
   * Aucun fork de Framework.
+  * Peer Bonus: http://blog.bonus.ly/a-look-at-googles-peer-to-peer-bonus-system/
 
 2K Games:
 
