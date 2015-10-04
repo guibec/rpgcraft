@@ -5,6 +5,7 @@ Netflix:
   * L'anti-process
   * Payer les gens au meilleur prix
   * Ne pas compter les heures.
+  * Mettre dehors les gens non productif (??)
 
 Virgin:
 
@@ -13,14 +14,23 @@ http://www.wired.com/2015/09/google-2-billion-lines-codeand-one-place
   * Code source centralisé et partagé à tous
   * Aucun fork de Framework.
   * Peer Bonus: http://blog.bonus.ly/a-look-at-googles-peer-to-peer-bonus-system/
-
+      * Idée de première implémentation: https://bonus.ly/#demo
+  * 20% time in action: http://googleblog.blogspot.com/2006/05/googles-20-percent-time-in-action.html
+  * Bouffe gratuite
+	  
 2K Games:
 
 Ubisoft:
   * Tout le système de niveau et d'évaluation/mentorat.
   * La mentalité forte du build système.
+  * Survey d'équipe et de compagnie.
+  * Mail du CEO à chaque trimestre.
 
 Frima:
+  * Le système d'achievement
 
 Microsoft:
+  * Le ownership: http://www.joelonsoftware.com/articles/TwoStories.html
+  I was blown away, of course. At Microsoft, if you're the Program Manager working on the Excel macro strategy, even if you've been at the company for less than six months, it doesn't matter - 
+  you are the GOD of the Excel macro strategy, and nobody, not even employee number 6, is allowed to get in your way. Period
 
