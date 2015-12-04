@@ -32,7 +32,15 @@ public class SwordAttack : Entity
             HealthComponent healthComponent = enemy.HealthComponent;
             if (healthComponent.CanReceiveDamage())
             {
-                healthComponent.ReceiveDamage(1);
+                int damage = 1;
+
+                // check if critical hit !
+                if (RandomManager.Instance.Probability(0.10f))
+                {
+                    damage *= 5;
+                }
+
+                healthComponent.ReceiveDamage(damage);
                 m_hitEntities.Add(other, true);
             }
         }
