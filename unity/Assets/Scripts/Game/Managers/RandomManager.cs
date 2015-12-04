@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 public class RandomManager : MonoSingleton<RandomManager> 
 {
@@ -17,6 +18,19 @@ public class RandomManager : MonoSingleton<RandomManager>
     public int Next(int minValue, int maxValue)
     {
         return m_random.Next(minValue, maxValue);
+    }
+
+    public bool Probability(float perc)
+    {
+        if (perc >= 1.0f)
+            return true;
+        else if (perc <= 0.0f)
+            return false;
+        else
+        {
+            return Next(0, 1.0f) <= perc;
+        }
+
     }
 
     public Vector2 Vector()
