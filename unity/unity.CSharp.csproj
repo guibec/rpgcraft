@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7E182C22-A798-BDAD-9C7D-1FF20524B48E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+    <CompilerResponseFile></CompilerResponseFile>
+    <UnityProjectType>Game:1</UnityProjectType>
+    <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
+    <UnityVersion>5.2.3f1</UnityVersion>
+    <RootNamespace></RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Debug\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Debug\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_2_3;UNITY_5_2;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_REFLECTION_BUFFERS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_LOG_MIXED_STACKTRACE;ENABLE_UNITYWEBREQUEST;ENABLE_EVENT_QUEUE;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Release\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Release\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>TRACE;UNITY_5_2_3;UNITY_5_2;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_REFLECTION_BUFFERS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_LOG_MIXED_STACKTRACE;ENABLE_UNITYWEBREQUEST;ENABLE_EVENT_QUEUE;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="Boo.Lang" />
+    <Reference Include="UnityScript.Lang" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine">
+      <HintPath>Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>Library\UnityAssemblies\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="unity.CSharp.Plugins.csproj">
+      <Project>{DD03665D-775E-E157-B925-901060156EA3}</Project>
+      <Name>unity.CSharp.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample0_UnityAttributes.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample10_ReadOnly.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample11_ReadOnlyDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample12_Group.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample13_Expandable.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample14_Background.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample15_DontAllowSceneObject.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample16_Help.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample17_HelpDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample18_TextField.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample19_Restrict.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample1_AdvancedInspector.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample20_RangeValue.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample21_Bypass.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample22_DisplayAsParent.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample23_Space.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample24_Tabs.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample25_Style.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample26_Toolbar.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample27_CreateDerived.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample28_Preview.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample29_RuntimeResolve.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample2_Inspect.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample30_RuntimeResolvedDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample31_Range.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample32_Dictionary.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample33_Title.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample34_TitleDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample35_ToString.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample36_NoPicker.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample37_UnityEvent.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample38_Constructor.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample39_DynamicStatic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample3_InspectDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample4_InspectLevel.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample5_Descriptor.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample6_DescriptorDynamic.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample7_Collection.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample8_Enum.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\AIExample9_Method.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\CreateDerived\AIExample_BaseClass.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\CreateDerived\AIExample_DerivedClassA.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\CreateDerived\AIExample_DerivedClassB.cs" />
+    <Compile Include="Assets\AdvancedInspector\Examples\CSharp\CreateDerived\AIExample_DerivedClassC.cs" />
+    <Compile Include="Assets\Prefabs\Plugins\SimpleJSON.cs" />
+    <Compile Include="Assets\Scripts\Engine\Audio\AudioManager.cs" />
+    <Compile Include="Assets\Scripts\Engine\Camera\FollowTarget.cs" />
+    <Compile Include="Assets\Scripts\Engine\Collision\Box2D.cs" />
+    <Compile Include="Assets\Scripts\Engine\Collision\CollisionCode.cs" />
+    <Compile Include="Assets\Scripts\Engine\Collision\CollisionFlags.cs" />
+    <Compile Include="Assets\Scripts\Engine\Collision\CollisionInfo.cs" />
+    <Compile Include="Assets\Scripts\Engine\Collision\CollisionManager.cs" />
+    <Compile Include="Assets\Scripts\Engine\Containers\MonoSingleton.cs" />
+    <Compile Include="Assets\Scripts\Engine\Containers\SortedSet.cs" />
+    <Compile Include="Assets\Scripts\Engine\Containers\Vector2Comparer.cs" />
+    <Compile Include="Assets\Scripts\Engine\Debug\DebugUtils.cs" />
+    <Compile Include="Assets\Scripts\Engine\Extensions\RandomExtensions.cs" />
+    <Compile Include="Assets\Scripts\Engine\Extensions\RectTransformExtensions.cs" />
+    <Compile Include="Assets\Scripts\Engine\GameObjects\Helpers.cs" />
+    <Compile Include="Assets\Scripts\Engine\Input\InputManager.cs" />
+    <Compile Include="Assets\Scripts\Engine\StateMachine\State.cs" />
+    <Compile Include="Assets\Scripts\Engine\StateMachine\StateMachine.cs" />
+    <Compile Include="Assets\Scripts\Engine\Utility\ScreenFollowWorld.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\Entity.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\EntityRender.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\HealthComponent.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\ItemInstance.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\Slime.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\E_Item.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\Inventory.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\ItemCount.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\ItemInfo.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\ItemSlot.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\Recipe.cs" />
+    <Compile Include="Assets\Scripts\Game\Inventory\RecipeManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\EntityManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\GameManager_FSM\GameManagerState_Dead.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\GameManager_FSM\GameManagerState_Init.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\GameManager_FSM\GameManagerState_Machine.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\GameManager_FSM\GameManagerState_Playing.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\ItemManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\RandomManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\SpawnManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\TimeManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Managers\UIManager.cs" />
+    <Compile Include="Assets\Scripts\Game\Map\ChunkInfo.cs" />
+    <Compile Include="Assets\Scripts\Game\Map\TileInfo.cs" />
+    <Compile Include="Assets\Scripts\Game\Map\TileMap.cs" />
+    <Compile Include="Assets\Scripts\Game\Map\TileMapping.cs" />
+    <Compile Include="Assets\Scripts\Game\Map\WorldMap.cs" />
+    <Compile Include="Assets\Scripts\Game\Physics\Mover.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\Player.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\PlayerStateMachine.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\PlayerState_Dead.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\PlayerState_Live.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\PlayerState_Spawn.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\SwordAttack.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\AdvancedInspector\Documentation\AdvancedInspector_ReadMe.txt" />
+    <None Include="Assets\Data\extern\web\source.txt" />
+    <None Include="Assets\P4Connect\Editor\p4api.net.xml" />
+    <None Include="Assets\P4Connect\readme.txt" />
+    <None Include="Assets\Plugins\Editor\AdvancedInspector\AdvancedInspector.XML" />
+    <None Include="Assets\Plugins\Editor\AdvancedInspector\UniToolsEditor.XML" />
+    <None Include="Assets\Resources\shaders\dig.shader" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
+</Project>
