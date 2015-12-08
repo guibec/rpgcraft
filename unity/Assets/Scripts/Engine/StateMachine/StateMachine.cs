@@ -64,6 +64,7 @@ public abstract class StateMachine
     public State FindStateByType(Type stateType)
     {
         State state;
+
         return m_states.TryGetValue(stateType, out state) ? state : null;
     }
 

@@ -144,8 +144,11 @@
     <Compile Include="Assets\Scripts\Engine\StateMachine\StateMachine.cs" />
     <Compile Include="Assets\Scripts\Engine\Utility\ScreenFollowWorld.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\EnemyStateMachine.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\EnemyState_Live.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\Entity.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\EntityRender.cs" />
+    <Compile Include="Assets\Scripts\Game\Entity\EntityState_Live.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\HealthComponent.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\ItemInstance.cs" />
     <Compile Include="Assets\Scripts\Game\Entity\Slime.cs" />
