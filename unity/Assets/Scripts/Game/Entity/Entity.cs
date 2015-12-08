@@ -111,6 +111,18 @@ public class Entity : MonoBehaviour
         }
     }
 
+    public void KnockBack(Vector2 dir, float force, float time)
+    {
+        if (m_fsm.IsInState<EntityState_Live>())
+        {
+            EntityState_Live psl = m_fsm.FindStateByType<EntityState_Live>();
+            if (psl != null)
+            {
+                psl.KnockBack(dir * force, time);
+            }
+        }
+    }
+
     public virtual Box2D Box
     {
         get

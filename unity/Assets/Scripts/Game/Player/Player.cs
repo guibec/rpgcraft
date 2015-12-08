@@ -174,18 +174,6 @@ public class Player : Entity
         HealthComponent.ReceiveDamage(damage);
     }
 
-    public void KnockBack(Vector2 dir, float force, float time)
-    {
-        if (m_fsm.IsInState<PlayerState_Live>())
-        {
-            PlayerState_Live psl = m_fsm.FindStateByType<PlayerState_Live>();
-            if (psl != null)
-            {
-                psl.KnockBack(dir*force, time);
-            }
-        }
-    }
-
     private void StartAction(EAction action_, float duration_, Vector3 position_, ActionCompletedDelegate callback_)
     {
         if (HasAction)

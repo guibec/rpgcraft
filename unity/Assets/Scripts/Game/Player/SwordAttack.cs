@@ -42,6 +42,9 @@ public class SwordAttack : Entity
 
                 healthComponent.ReceiveDamage(damage);
                 m_hitEntities.Add(other, true);
+
+                Vector2 relativeDir = other.transform.position - this.transform.position;
+                enemy.KnockBack(relativeDir.normalized, 3f, 0.05f);
             }
         }
     }
