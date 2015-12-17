@@ -63,9 +63,13 @@ public abstract class StateMachine
 
     public State FindStateByType(Type stateType)
     {
-        State state;
+        foreach (KeyValuePair<Type, State> test in m_states)
+        {
+            if (stateType.IsAssignableFrom(test.Key))
+                return test.Value;
+        }
 
-        return m_states.TryGetValue(stateType, out state) ? state : null;
+        return null;
     }
 
     public T FindStateByType<T>() where T : State
@@ -189,7 +193,7 @@ public abstract class StateMachine
         if (type == null)
             return false;
 
-        return (CurrentState != null && type.IsInstanceOfType(CurrentState));
+        return type.IsAssignableFrom(CurrentState.GetType());
     }
 
     public bool IsInState<T>() where T : State
