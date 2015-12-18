@@ -114,8 +114,11 @@ public class EntityRender : MonoBehaviour
         }
 
         Rect rect = new Rect(px, py, width, height);
-        FrameInfo fi = new FrameInfo {m_rect = rect};
-        fi.m_frameIndex = frameGroup.m_frames.Count;
+        FrameInfo fi = new FrameInfo
+        {
+            m_rect = rect,
+            m_frameIndex = frameGroup.m_frames.Count
+        };
         frameGroup.m_frames.Add(fi);
     }
 

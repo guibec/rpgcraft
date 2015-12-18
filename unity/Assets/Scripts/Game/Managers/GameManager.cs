@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 
 using AdvancedInspector;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoSingleton<GameManager>
 {
@@ -64,7 +65,7 @@ public class GameManager : MonoSingleton<GameManager>
     protected override void OnInit()
     {
         base.OnInit();
-        Application.LoadLevelAdditive("ui");
+        SceneManager.LoadScene("ui");
     }
 
     void SpawnChunkAt(int x, int y)
