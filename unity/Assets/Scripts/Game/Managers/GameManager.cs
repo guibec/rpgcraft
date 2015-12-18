@@ -65,7 +65,7 @@ public class GameManager : MonoSingleton<GameManager>
     protected override void OnInit()
     {
         base.OnInit();
-        SceneManager.LoadScene("ui");
+        SceneManager.LoadScene("ui", LoadSceneMode.Additive);
     }
 
     void SpawnChunkAt(int x, int y)
