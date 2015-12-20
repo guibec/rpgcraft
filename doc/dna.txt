@@ -34,3 +34,10 @@ Microsoft:
   I was blown away, of course. At Microsoft, if you're the Program Manager working on the Excel macro strategy, even if you've been at the company for less than six months, it doesn't matter - 
   you are the GOD of the Excel macro strategy, and nobody, not even employee number 6, is allowed to get in your way. Period
 
+Typical Engineer day:
+
+I grab some breakfast first.  It's free and I sit in the cafeteria with my laptop checking mail and listening to whatever Pandora station is playing on the PA system.  Sometimes Nirvana.  Sometimes classical guitar.  Then I hit the gym for 30 minutes.  I grab a cappuccino on the way to my office.  If some of my code reviews have cleared, I'll build some new binaries and deploy them on the super cluster to test them.  I check out the bug database, walk around and talk to people about projects, check log files for problems, learn stuff in the huge Google library, answer email.  Around noon, team members usually go to lunch together.  If we pick a far away cafeteria, we'll grab some of the bikes lying around and ride there.  Lunch is quick, walk up, grab whatever you want, sit down, then eat and talk.  Then back to the office.  I'll code until dinner time, usually C++ or Python.  It's common for people to talk and joke with each other throughout the day.  If you need help with anything, just ask.  A group of us usually goes to dinner on campus.  Some go home afterwards.  I usually stay a little later to review my code and submit it for a code review by a peer.  Then I go home.
+
+I have no real life outside Google at the moment.  I'm happy with the environment and the work and the people I'm with.  But most people there have families or other outside commitments.  They tend to come in earlier and leave by 4pm or 5pm.  No one really cares exactly when you work, so long are you are around during the day to talk with people and help out.  Meeting the deadlines that you set for yourself each quarter is the main thing.
+
+https://www.quora.com/Whats-a-day-as-an-engineer-like-at-Google
