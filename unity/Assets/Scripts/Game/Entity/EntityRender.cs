@@ -76,7 +76,8 @@ public class EntityRender : MonoBehaviour
     {
         if (m_mr)
         {
-            m_mr.material.SetTexture(0, m_texture);
+           //m_mr.material.SetTexture(0, m_texture);
+            m_mr.material.mainTexture = m_texture;
         }
     }
 	
