@@ -29,7 +29,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             Texture tex = Resources.Load(tileResourceDef.Filename) as Texture;
             if (tex)
             {
-                mr.material.SetTexture(0, tex);
+                mr.material.mainTexture = tex;
                 mr.material.color = ItemInstance.GetColor32ForItem(item);
 
                 float scale = (float) (Screen.height / 2.0) / Camera.main.orthographicSize;
