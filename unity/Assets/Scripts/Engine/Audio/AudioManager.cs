@@ -16,6 +16,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     public List<AudioClip> m_digAudio;
     public List<AudioClip> m_cutAudio;
 
+    public List<AudioClip> m_hitAudio;
+
     private E_Music m_currentMusic = E_Music.None;
 
     public void PlayDig()
@@ -26,6 +28,11 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void PlayCut()
     {
         PlayAudioClip(m_cutAudio);
+    }
+
+    public void PlayHit()
+    {
+        PlayAudioClip(m_hitAudio);
     }
 
     static private void PlayAudioClip(List<AudioClip> possibilities)
