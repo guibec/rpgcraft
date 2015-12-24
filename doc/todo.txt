@@ -15,8 +15,16 @@ Enemy
   * Unspawn enemies too far
   * Prevent spawning in unmovable objects.
   * Limit number of spawns
-  * Enemy leaves XP Shard
   * 3 enemy types (light, medium, hard)
+
+Combat Mechanics
+  * Score
+  * Critical Hit
+     * Mechanic
+	 * Display of text (Critical Hit!)
+  * Combo
+     * Mechanic
+	 * Display of text (
 
 XP Shard
   * Can be pickup
@@ -25,9 +33,15 @@ XP Shard
 UI
   * XP Bar
   * Health bar
-  * Show DMG point (Cave Story)
-  * Show XP picup (Cave Story)
-
+  * Title Screen
+  
+Progression
+  * Gain XP when killing enemies
+    * Display '+1 XP'
+  * Level Up
+    * Increase strength, health
+  * Save/load
+	
 Add name of object when touched
 Fix object size ratio
   * Character bigger
@@ -35,7 +49,6 @@ Fix object size ratio
 
 General
   * Stronger enemies farther away
-  * XP gains strength (Damage by sword)
   
 Add music
   -> http://gamedev.stackexchange.com/questions/1045/where-is-quality-paid-game-music
@@ -54,12 +67,16 @@ Improve world generation algorithm using varied biome instead of random mess as 
 Improve object placement - allow getting stuck & unstuck yourself
 Improve digging
  * Allow digging in direction of mouse cursor
-Make a web page
-Make a video
-Add readme
-Add version file
-Add save/load
-Add a title screen
+ 
+Tech
+ * Auto-versioning
+
+
+ 
+Meta
+  * Web Page
+  * Trailer Video
+  * Readme 
 
 
 <-- VERSION FP
@@ -83,6 +100,8 @@ Chat System
      * http://highscalability.com/blog/2014/10/13/how-league-of-legends-scaled-chat-to-70-million-players-it-t.html
      * http://engineering.riotgames.com/news/chat-service-architecture-protocol
 
+Multiplayer
+  * Using libgren for UDP connexion https://github.com/lidgren/lidgren-network-gen3
 
 <-- Progression
 
