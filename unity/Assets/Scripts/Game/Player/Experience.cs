@@ -4,6 +4,11 @@ using UnityEngine.Assertions;
 
 public class Experience
 {
+    public Experience()
+    {
+        XP = 0;
+    }
+
     public int Level
     {
         get
@@ -19,8 +24,15 @@ public class Experience
         }
     }
 
-    public int XP { get; private set; } = 0;
-    public int MaxLevel => NextLevels.Length;
+    public int XP { get; private set; }
+
+    public int MaxLevel
+    {
+        get
+        {
+            return NextLevels.Length;
+        }
+    } 
 
     private int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
 
