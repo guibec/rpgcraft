@@ -55,12 +55,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -168,6 +162,7 @@
     <Compile Include="Assets\Scripts\Game\Map\TileMapping.cs" />
     <Compile Include="Assets\Scripts\Game\Map\WorldMap.cs" />
     <Compile Include="Assets\Scripts\Game\Physics\Mover.cs" />
+    <Compile Include="Assets\Scripts\Game\Player\Experience.cs" />
     <Compile Include="Assets\Scripts\Game\Player\Player.cs" />
     <Compile Include="Assets\Scripts\Game\Player\PlayerStateMachine.cs" />
     <Compile Include="Assets\Scripts\Game\Player\PlayerState_Dead.cs" />
