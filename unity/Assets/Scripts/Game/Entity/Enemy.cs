@@ -40,6 +40,9 @@ public class Enemy : Entity
 
         if (HealthComponent.Health <= 0)
         {
+            // give XP to main player
+            GameManager.Instance.MainPlayer.Experience.AddXP(5);
+
             RequestDestroy();
         }
     }

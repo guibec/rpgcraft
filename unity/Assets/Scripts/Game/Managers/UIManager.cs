@@ -89,6 +89,8 @@ public class UIManager : MonoSingleton<UIManager>
 
     private readonly List<InventorySlotUI> m_inventorySlot = new List<InventorySlotUI>(NumInventorySlots);
     private Text m_healthText;
+    private Slider m_xpSlider;
+    private Text m_txtLevel;
 
     public Text m_mouseTileInfo;
 
@@ -118,6 +120,8 @@ public class UIManager : MonoSingleton<UIManager>
 
         m_healthText = GameObject.Find("Canvas/txt_Health").GetComponent<Text>();
         m_mouseTileInfo = GameObject.Find("Canvas/txt_MouseCursorHover").GetComponent<Text>();
+        m_xpSlider = GameObject.Find("Canvas/sld_XP").GetComponent<Slider>();
+        m_txtLevel = GameObject.Find("Canvas/txt_Level").GetComponent<Text>();
     }
 
     private int m_selectSlotIndex = 0;
@@ -144,6 +148,10 @@ public class UIManager : MonoSingleton<UIManager>
 
             GameManager.Instance.MainPlayer.HealthComponent.HealthChanged +=
                 new HealthComponent.HealthChangedEventHandler(OnHealthChanged);
+
+            GameManager.Instance.MainPlayer.Experience.Changed +=
+                new Experience.XPChangedEventHandler(OnXPChanged);
+
 
             UpdateHealth();
         }
@@ -188,6 +196,8 @@ public class UIManager : MonoSingleton<UIManager>
         {
             GameManager.Instance.MainPlayer.Inventory.Changed -= new Inventory.InventoryChangedEventHandler(OnInventoryChanged);
             GameManager.Instance.MainPlayer.HealthComponent.HealthChanged -= new HealthComponent.HealthChangedEventHandler(OnHealthChanged);
+            GameManager.Instance.MainPlayer.Experience.Changed -=
+                new Experience.XPChangedEventHandler(OnXPChanged);
         }
     }
 
@@ -199,6 +209,11 @@ public class UIManager : MonoSingleton<UIManager>
     public void OnHealthChanged(object sender, EventArgs e)
     {
         UpdateHealth();
+    }
+
+    public void OnXPChanged(object sender, EventArgs e)
+    {
+        UpdateXP();
     }
 
     public void UpdateMouseToolTip(Vector2 screenPos, string text)
@@ -213,6 +228,24 @@ public class UIManager : MonoSingleton<UIManager>
             return;
 
         m_healthText.text = GameManager.Instance.MainPlayer.HealthComponent.Health.ToString();
+    }
+
+    private void UpdateXP()
+    {
+        if (!GameManager.Instance)
+            return;
+
+        int XPRequired = GameManager.Instance.MainPlayer.Experience.GetXPRequiredForNextLevel();
+        if (XPRequired == int.MaxValue)
+        {
+            m_xpSlider.value = 0f;
+        }
+        else
+        {
+            m_xpSlider.value = (float) GameManager.Instance.MainPlayer.Experience.XP/XPRequired;
+        }
+
+        m_txtLevel.text = "Lvl " + GameManager.Instance.MainPlayer.Experience.Level;
     }
 
     private void UpdateText()
