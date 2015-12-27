@@ -53,6 +53,7 @@ public class Player : Entity
     {
         base.OnAwake();
         Inventory = new Inventory(this);
+        Experience = new Experience();
 
         m_entityRender = GetComponent<EntityRender>();
         HealthComponent = GetComponent<HealthComponent>();

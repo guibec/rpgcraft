@@ -70,8 +70,7 @@ Improve digging
  
 Tech
  * Auto-versioning
-
-
+ * Check for C# 6.0 support: https://bitbucket.org/alexzzzz/unity-c-5.0-and-6.0-integration/src
  
 Meta
   * Web Page

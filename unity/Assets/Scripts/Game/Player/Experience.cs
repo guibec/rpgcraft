@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.Assertions;
 
 public class Experience
 {
+    public delegate void XPChangedEventHandler(object sender, System.EventArgs e);
+    public event XPChangedEventHandler Changed;
+
     public Experience()
     {
         XP = 0;
@@ -26,6 +30,16 @@ public class Experience
 
     public int XP { get; private set; }
 
+    public int GetXPRequiredForNextLevel()
+    {
+        if (Level == MaxLevel)
+        {
+            return int.MaxValue;
+        }
+
+        return NextLevels[Level];
+    }
+
     public int MaxLevel
     {
         get
@@ -33,7 +47,14 @@ public class Experience
             return NextLevels.Length;
         }
     } 
-
+                               // How much you need to achieve Level1, Level2, ...
     private int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
+
+    public void AddXP(int amount)
+    {
+        XP += amount;
+        if (Changed != null)
+            Changed.Invoke(this, new EventArgs());
+    }
 
 }
