@@ -40,6 +40,11 @@ public class Experience
         return NextLevels[Level];
     }
 
+    public int GetXPRequiredForCurrentLevel()
+    {
+        return NextLevels[Level - 1];
+    }
+
     public int MaxLevel
     {
         get
@@ -53,6 +58,8 @@ public class Experience
     public void AddXP(int amount)
     {
         XP += amount;
+
+
         if (Changed != null)
             Changed.Invoke(this, new EventArgs());
     }
