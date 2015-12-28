@@ -83,6 +83,11 @@ public class UIManager : MonoSingleton<UIManager>
                 }
             }
         }
+
+        public Text Text
+        {
+            get { return Object.GetComponent<Text>(); }
+        }
     }
 
     private const int NumInventorySlots = 10;
@@ -108,10 +113,14 @@ public class UIManager : MonoSingleton<UIManager>
         m_canvas = GameObject.Find("Canvas");
 
         if (m_canvas == null)
+        {
             UnityEngine.Debug.LogWarning("Could not find canvas");
+        }
 
         if (masterSlot == null)
+        {
             UnityEngine.Debug.LogWarning("Could not find inventory slot");
+        }
         else
         {
             m_inventorySlot.Add(InventorySlotUI.CreateFromGameObject(masterSlot, 0));
