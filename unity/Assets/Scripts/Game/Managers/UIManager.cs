@@ -242,7 +242,8 @@ public class UIManager : MonoSingleton<UIManager>
         }
         else
         {
-            m_xpSlider.value = (float) GameManager.Instance.MainPlayer.Experience.XP/XPRequired;
+            int XPCurrentLevel = GameManager.Instance.MainPlayer.Experience.GetXPRequiredForCurrentLevel();
+            m_xpSlider.value = (float) (GameManager.Instance.MainPlayer.Experience.XP - XPCurrentLevel)/XPRequired;
         }
 
         m_txtLevel.text = "Lvl " + GameManager.Instance.MainPlayer.Experience.Level;
