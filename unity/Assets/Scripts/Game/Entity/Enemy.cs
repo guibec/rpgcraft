@@ -40,11 +40,29 @@ public class Enemy : Entity
 
         if (HealthComponent.Health <= 0)
         {
-            // give XP to main player
-            GameManager.Instance.MainPlayer.Experience.AddXP(5);
-
-            RequestDestroy();
+            if (!IsDestroying())
+            {
+                // give XP to main player
+                RewardWithXP();
+                RequestDestroy();
+            }
         }
+    }
+
+    private void RewardWithXP()
+    {
+        int xp = 5;
+        GameManager.Instance.MainPlayer.Experience.AddXP(xp);
+
+        GameObject anchor = GameManager.Instance.MainPlayer.gameObject;
+        Vector2 screenPos = Camera.main.WorldToScreenPoint(anchor.transform.position);
+        screenPos.y += 32;
+
+        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration(string.Format("+{0} XP", xp), screenPos, 2f);
+        dynamicText.Text.color = Color.green;
+
+        dynamicText.ParentToWorld(anchor);
+        dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
 
     //public Interval<int> GoldValue
