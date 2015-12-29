@@ -59,9 +59,7 @@ public class Experience
     {
         XP += amount;
 
-
-        if (Changed != null)
-            Changed.Invoke(this, new EventArgs());
+        Changed?.Invoke(this, new EventArgs());
     }
 
 }
