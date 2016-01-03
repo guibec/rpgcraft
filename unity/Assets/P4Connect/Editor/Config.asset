@@ -11,10 +11,10 @@ MonoBehaviour:
   m_Script: {fileID: 1016893447, guid: 9000ab1936017654d9d2ee9653a42d43, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
-  ServerURI: Lavallee-PC:1666
+  ServerURI: 1666
   Username: rlavallee
   Password: 1X3zyg!!
-  Workspace: rlavallee_Lavallee-PC_8537
+  Workspace: rlavallee_DESKTOP-GDA7AUO_7380
   Hostname: 
   Charset: 
   UnityVSSupport: 1
