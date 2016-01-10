@@ -138,7 +138,30 @@ public class Player : Entity
 
             CurrentAction = currentAction;
         }
-	}
+
+        // Enable auto-attak
+        if (EntityManager.Instance.Count<SwordAttack>() == 0)
+        {
+            Enemy closest = null;
+            float closestSqrDistance = float.MaxValue;
+            foreach (Entity e in EntityManager.Instance.Entities)
+            {
+                Enemy candidate = e as Enemy;
+                if (candidate == null)
+                    continue;
+
+                float sqrDistance = (candidate.transform.position - transform.position).sqrMagnitude;
+                if (sqrDistance < closestSqrDistance)
+                {
+                    closest = candidate;
+                    closestSqrDistance = sqrDistance;
+                }
+            }
+
+            if (closest != null && closestSqrDistance <= 4.0f * 4.0f)
+                SpawnAttackToward(gameObject.transform.position, closest.transform.position);
+        }
+    }
 
     protected override void OnLateUpdate()
     {
