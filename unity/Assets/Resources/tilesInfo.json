@@ -68,6 +68,17 @@
 			},
 			"world" : {}
 		}, {
+			"id" : 7,
+			"name" : "Water",
+			"resource" : {
+				"file" : "dw1",
+				"x" : 0,
+				"y" : 34,
+				"w" : 16,
+				"h" : 16
+			},
+			"world" : {}
+		}, {
 			"id" : 256,
 			"name" : "Stone",
 			"resource" : {
