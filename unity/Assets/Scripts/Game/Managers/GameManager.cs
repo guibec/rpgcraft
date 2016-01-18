@@ -110,6 +110,7 @@ public class GameManager : MonoSingleton<GameManager>
         template.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.20f, 1.0f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Tree, 0.20f, 0.1f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Mountain, percMountain, 0.3f));
+        template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
 
         ChunkInfo chunkInfo = new ChunkInfo(chunkPos);
         chunkInfo.Generate(template);

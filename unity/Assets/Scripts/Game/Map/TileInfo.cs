@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+// Next time another entry is added here, we need to make this enum self-generated
 public enum ETile
 {
     Invalid = 0,
@@ -11,7 +12,8 @@ public enum ETile
     Mountain,
     Desert,
     Tree,
-    Forest
+    Forest,
+    Water
 }
 
 // describe a specific tile
