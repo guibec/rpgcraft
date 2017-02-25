@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using UnityEngine.Profiling;
 
 using AdvancedInspector;
 using UnityEngine.SceneManagement;
