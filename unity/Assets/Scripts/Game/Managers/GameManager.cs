@@ -47,6 +47,11 @@ public class GameManager : MonoSingleton<GameManager>
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);
+    }
+
+    protected override void Awake() 
+    {
+        base.Awake();
         TileMapping.BuildFromJSON("tilesInfo");
     }
 
