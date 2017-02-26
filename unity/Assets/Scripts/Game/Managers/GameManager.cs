@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using UnityEngine.Profiling;
 
 using AdvancedInspector;
 using UnityEngine.SceneManagement;
@@ -46,6 +47,11 @@ public class GameManager : MonoSingleton<GameManager>
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);
+    }
+
+    protected override void Awake() 
+    {
+        base.Awake();
         TileMapping.BuildFromJSON("tilesInfo");
     }
 
