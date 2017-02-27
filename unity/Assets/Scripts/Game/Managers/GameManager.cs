@@ -95,8 +95,7 @@ public class GameManager : MonoSingleton<GameManager>
         //material.SetTextureOffset("_MainTex", material.mainTextureOffset);
         //material.SetTextureScale("_MainTex", material.mainTextureScale);
         //mr.material = material;
-
-
+        
         chunkObj.GetComponent<Renderer>().material.mainTexture = m_tileTextureMap;
         chunkObj.name = string.Format("WorldMapChunk({0},{1})", (int)chunkPos.x, (int)chunkPos.y);
         sw.Stop();
@@ -116,7 +115,7 @@ public class GameManager : MonoSingleton<GameManager>
         template.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.20f, 1.0f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Tree, 0.20f, 0.1f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Mountain, percMountain, 0.3f));
-        template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
+        //template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
 
         ChunkInfo chunkInfo = new ChunkInfo(chunkPos);
         chunkInfo.Generate(template);
