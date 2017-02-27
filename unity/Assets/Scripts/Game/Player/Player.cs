@@ -139,7 +139,7 @@ public class Player : Entity
             CurrentAction = currentAction;
         }
 
-        // Enable auto-attak
+        // Enable auto-attack
         if (EntityManager.Instance.Count<SwordAttack>() == 0)
         {
             Enemy closest = null;
@@ -226,7 +226,10 @@ public class Player : Entity
         GameObject prefab = EntityManager.Instance.m_attackPrefab;
 
         if (prefab == null)
+        {
+            UnityEngine.Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
             return;
+        }
 
         GameObject obj = Instantiate(prefab);
 
