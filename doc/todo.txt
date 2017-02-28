@@ -1,4 +1,33 @@
-Crafting
+New Version:
+  * Turn based battle.
+  * Can see enemy on screen: Final Fantasy Mystic Quest / Lufia 2
+--> Easier to pace progression.
+--> No need to play with action related control.
+--> Can copy existing math formulas.
+
+Version FPP Requirement:
+  * Fun World Generation
+Improve world generation algorithm using varied biome instead of random mess as it looks like right now
+  * http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/ 
+  * Plain
+  * Ocean
+  * Desert
+  * Forest
+  * Mountain
+  
+Add music
+  -> http://gamedev.stackexchange.com/questions/1045/where-is-quality-paid-game-music
+  -> http://www.premiumbeat.com/royalty_free_music/songs/power-trailer-percussion 30$/track
+  -> Audacity to record sound temporary http://audacity.sourceforge.net/
+  -> Title Screen: Hope Will Prevail (premiumbeat)
+  -> Boss Battle: Bonecrusher, Speed Action Scene (sur rail)
+Add sound effects
+
+  * Add progression similar to Buff Knight. Just getting further away. Improve gameplay loop & progression. Keep battle fast and simple.
+
+
+Old Version:
+Crafting 
   * Crafting recipe (json)
   * Need to find recipe ?
   * Crafting UI
