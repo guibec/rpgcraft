@@ -57,6 +57,20 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void Start()
     {
+        // just create one if none have been set
+        if (m_mainCharacter == null)
+        {
+            UnityEngine.Debug.Log("Creating main character dynamically");
+            
+
+            Type[] components = { typeof(Player), typeof(HealthComponent) };
+            m_mainCharacter = new GameObject("MainCharacter", components);
+
+            // TODO: May have to spawn those components at Object
+            //m_mainCharacter.AddComponent<Player>();
+            //m_mainCharacter.AddComponent<HealthComponent>();
+        }
+
         MainPlayer = m_mainCharacter.GetComponent<Player>();
 
         for (int i = -1; i <= 1; ++i)
@@ -81,6 +95,9 @@ public class GameManager : MonoSingleton<GameManager>
 
     void SpawnChunkAt(Vector2 chunkPos)
     {
+        if (m_worldAnchorRoot == null)
+            return;
+
         Vector3 spawnPos = m_worldAnchorRoot.transform.position;
         spawnPos.x += chunkPos.x*64;
         spawnPos.y += chunkPos.y*64;
