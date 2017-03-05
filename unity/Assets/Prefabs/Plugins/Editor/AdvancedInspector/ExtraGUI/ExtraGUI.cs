@@ -53,7 +53,7 @@ namespace AdvancedInspector
 
         public static float FloatAngle(Rect rect, float value, float snap, float min, float max)
         {
-            int id = GUIUtility.GetControlID(FocusType.Native, rect);
+            int id = GUIUtility.GetControlID(FocusType.Passive, rect);
 
             Rect knobRect = new Rect(rect.x, rect.y, rect.height, rect.height);
 
@@ -122,7 +122,7 @@ namespace AdvancedInspector
 
         public static int IntAngle(Rect rect, int value, int snap, int min, int max)
         {
-            int id = GUIUtility.GetControlID(FocusType.Native, rect);
+            int id = GUIUtility.GetControlID(FocusType.Passive, rect);
 
             Rect knobRect = new Rect(rect.x, rect.y, rect.height, rect.height);
 
