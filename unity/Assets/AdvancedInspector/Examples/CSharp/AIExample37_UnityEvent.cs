@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
-using AdvancedInspector;
 
-[AdvancedInspector]
-public class AIExample37_UnityEvent : MonoBehaviour
+namespace AdvancedInspector
 {
-    [Inspect]
-    public UnityEvent testEvent;
+    public class AIExample37_UnityEvent : MonoBehaviour
+    {
+        // Advanced Inspector is able to draw any already existing Property Drawer.
+        // For example, Unity Event here are drawn from Unity's own drawer.
+        // However, drawer are bound to serialization, and therefor cannot be used in a property.
+        public UnityEvent testEvent;
+    }
 }

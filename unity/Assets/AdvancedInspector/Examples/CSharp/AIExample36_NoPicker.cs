@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using UnityEngine;
 
-using UnityEngine;
-using AdvancedInspector;
-
-using UnityEngine.Events;
-
-[AdvancedInspector]
-public class AIExample36_NoPicker : MonoBehaviour
+namespace AdvancedInspector
 {
-    [Inspect, NoPicker]
-    public Camera Camera
+    public class AIExample36_NoPicker : MonoBehaviour
     {
-        get { return Camera.main; }
+        // No picker disable the picking tool on the left of an object field.
+        [Inspect, NoPicker]
+        public Camera Camera
+        {
+            get { return Camera.main; }
+        }
     }
 }

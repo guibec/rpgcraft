@@ -345,4 +345,175 @@ Take a look at the video for more information. It's an example of what the AI ca
 - Fixed obsolete values in RigidBody2D and Joint2D for Unity 5.1
 - For some reason Unity 5.1 dislike indexed PNG, which made some GUI image show as colored.
 
-Tested on; 4.3.4 / 4.6.1 / 5.1.0
+1.57:
+- Fixed an issue of AnimationCurve not being initialized on creation.
+- Fixed an issue where Property Drawer - such as UnityEvent - would fail to draw when nested in a collection.
+- Fixed an exception thrown when a base class has no valid derivation while using CreateDerived.
+- Found and removed a left-over Debug.LogError in the 5.1 version.
+- Fixed an issue where none-Unity object value would not be copied properly when dragged and dropped. 
+- Fixed a issue while copying ScriptableObject. It was duplicating the object instead of copying the reference.
+
+1.60 (Unity 5.2+):
+- Runtime Help attribute now returns a HelpItem, instead of a HelpAttribute.
+- Descriptor attribute now returns a Description object instead of itself.
+- Most attributes are now unbinded from the class in the DLL. Instead, interfaces are used, which gives you the ability to create your own attributes.
+- Fixed an issue when grouped item would be alone in tabs, making nothing showing up.
+- UniTools library have been merged with the AdvancedInspector's one and its namespace renamed. 
+- Fixed a copy/paste stack overflow when encountered nested static field of the same type. 
+- Fixed some type definition such as HingeJoint and SoftJointLimit.
+- Renamed an example material so it doesn't fail compilation on Android.
+- Fixed an issue of multiselection of layer masks of different values.
+- Removed useless CTRL+E menu item.
+- Updated numerous editor towards 5.2 definition.
+- Revision A; fixed an issue where tabs were not selectable.
+
+1.61:
+[CHANGES]
+- Removed the nicifying of dictionary keys when they are string values.
+- Added an error while trying to draw a Property Drawer from a non-serializable feature, like a dictionary or a property. 
+- Added the ADVANCED_INSPECTOR define back in the DLL, as requested.
+[FIXES]
+- Fixed that toolbars or header would fail to draw without tabs.
+- Fixed that subobject tabs would show up multiple time when combined with Display As Parent.
+- Added a catch on FieldEditor drawing so that any exception wouldn't prevent the inspector from drawing its remaining stuff.
+- Added "Use Auto Mass" property on RigidBody 2D, added in Unity 5.3x.
+
+1.62:
+[CHANGES]
+- Collection Attribute may now take a method name. This allow to manually set the name of each elements. (See example 7)
+[FIXES]
+- Compatible with 5.2 again.
+- Cleaned and update the examples.
+- Added an enum fix submitted by ldhongen1990.
+- Test if a type is generic before trying to instance it; some people forget to flag them as being abstract.
+- Fixed an issue where hiding the script type would prevent that object from being flagged dirty upon changes.
+- Fixed an initialization issue when a collection is "displayed as parent".
+
+1.63:
+[CHANGES]
+- The separator's style can now be change to a solid color, and you can also choose the highlighted color in the preference.
+[FIXES]
+- The Collection Attribute item name override wasn't working when displaying a collection in DropDown or Button mode.
+- Help boxes on a ReadOnly item doesn't get grayed out anymore.
+- Collection of GameObject no longer create new GameObject when adding indexes. 
+- IDataChanged callback wasn't invoked when using the picking tool, since it was outside the redraw scope of the inspector.
+- Rewrote the copy/paste logic, it was a mess with lot of very deep and unique issues. 
+- Rewrote how the AI gather the object's information. It should be a lot faster now, as it no longer need to test for duplicate items. Contact us if anything isn't showing properly anymore.
+- Fixed the cursor picking icon, which for some reason was the wrong one for quite some time.
+
+1.64:
+[CHANGES]
+- DisplayAsParent now have a property named "Hide Parent". When false, the parent field is displayed as a title.
+- Expandable attribute now have a property named "Always Expanded", which force an object to be expanded, and prevent it from being collapsible.
+[FIXES]
+- MeshRenderer and SkinnedMeshRenderer now properly display reflection probes in range and the probe blending option.
+- Updated the TerrainCollider to better follow latest Unity's inspector changes.
+- IDataChanged event is now handled on subclass, not only the inspector entry point.
+- Preventing a type from being expandable from the AdvancedInspector attribute had been broken for a while. Now, Expandable attribute can be placed on class/struct.
+- Fixed a visual lining issue with deep nesting.
+- Trap "ExitGUIException" from being thrown by Unity for no reason. Should prevent them from showing up in the console.
+- Double-clicking labels was ignoring the mass child expand/collapse feature.
+- Expand/Collapse child is now more intuitive as it doesn't expand or collapse the parent, allowing you to see the result.
+- Fixed an issue with Copy/Paste where constant field be attempted to be pasted on.
+
+1.65:
+[CHANGES]
+- New option in the preferences; ability to disable the expansion of references. The exception being ComponentMonoBehaviour.
+- New option in the preferences; ability to change the naming pattern of collection. 
+- Selected tabs are now persistent. 
+[FIXES]
+- Clean up all the example to remove most of the [AdvancedInspector] attributes or redundant [Inspect]
+- Hide the ComponentMonoBehaviour's owner. It wasn't supposed to be displayed in the inspector.
+- Make float written with a "," automatically convert to "."
+- Fixed an issue when Inspect Default Items is false, and the inspector would remember some item as being expanded.
+- Fixed issue with Collection in DropDown or Button mode while displaying value type.
+
+1.66:
+[FIXES]
+- Removed Light shadow warning about Unity Pro.
+- Removed HDR limitation on camera, it's no longer valid.
+- Performance issue fixed on the Selection Tracker while duplicating large selection of GameObject.
+- Performance issue when entering/exiting play and reloading context.
+
+1.67:
+[CHANGES]
+- Added a new attribute; IgnoreBase. Allows deriving from class like Button and ignoring its properties when inspecting.
+- The Method attribute now has a property named "UndoMessageOnClick". This attempt to record a undo when pressing the button.
+- Added support for attribute-bound PropertyDrawers. Note; since they are Serialization bound, they only works with fields, not Property or Methods.
+[FIXES]
+- Reworked how IDataChanged works, fixing an issue where the event would not be raised in a Restrict Attribute in Toolbox mode.
+- Fixed an issue where the IDataChanged flag would be "eaten" by the wrong class.
+- Fixed an issue where tabs would show up in an External Editor where they should not.
+- Latest version became increasingly imcompatible with Windows Phone 8.0. Fixed the reflection issue in ActionBinding and ComponentMonoBehaviour.
+- Insert, Remove, Move Up, Move Down, Move To Top and Move To Bottom on the contextual menu were broken.
+- Exceptions caught by the inspector now returns the proper stack trace in the logged error.
+- Cleanup done in the Undos. Some functions were not flagging proper undo stacks.
+- Rev A: Fixed assert thrown while clicking button of inspected method.
+- Rev B: Fixed a null when drawing a Dictionary's new key field.
+- Rev B: Fixed an issue where attribute-bound property drawer would not have the "attribute" and "fieldInfo" value set properly.
+- Rev C: Managed to shave off 6 pixels off the labels section.
+- Rev C: Fixed an issue that prevented inspecting nested Unity type.
+- Rev C: Use the object type instead of the declaring type for ToString overload test.
+
+1.68:
+[CHANGES]
+- The Method attribute has a new property named "IsCoroutine", which allows you to invoke coroutines in the editor. WaitForSeconds is supported, but not YieldCustom.
+- Added preferences control over the default and playmode color of the inspector boxing, since we cannot access the Unity's one.
+- FieldAttribute added, an attribute-bound FieldEditor. It is like PropertyDrawer, but with far less limitation. See the documentations and examples.
+[FIXES]
+- Support Unity 5.4;
+- Removed some advanced and debug properties from the Animator inspector; Unity had the brilliant idea of spamming warning everytime they are inspected.
+- Update Renderes editor for the new 5.4 features.
+- Disable contextual collection control when read only.
+- Allows custom EditorField being used with CreateDerived fields.
+- Prevent drag'n'dropping ComponentMonoBehaviour on other fields.
+- Fixed an issue where some properties without a setter would not appear as read only.
+- Internal Change; InspectorField.Editor now returns the associated FieldEditor if any.
+- Allow to ping the script from a ComponentMonoBehaviour by clicking on it.
+
+1.69:
+[CHANGES]
+- CreateDerived attribute now has HideClassName property, which hide the class name on the left of the "+" sign. False by default.
+- Don't pass down FieldInfo to PropertyDrawer if it's not a field. Makes some PropertyDrawer works on properties instead of only fields! (See UnityEvent)
+- Added Unity's Audio VU draw at the bottom of MonoBehaviour that have the proper OnAudioFilterRead implementation. Warning; lot of reflection involved.
+[FIXES]
+- Fixed a null exception when applying a Collection attribute on an empty dictionary.
+- Fixed that an object was not properly flagged as dirty when adding a file by drag'n'drop to a inner collection.
+- Fixed an issue where collection of ComponentMonoBehaviour would not duplicate properly in a copy/paste operation.
+- Fixed that multiple version of the same MonoBehaviour on the same GameObject had duplication issues with UnityEvent.
+- Allow copy-pasting objects that don't have a public constructor.
+- Fixed a major performance issue when inspecting deep nesting (level 4+)
+- Major speed boost when selecting very complex object.
+
+1.70:
+[CHANGES]
+- Added the IInspect interface which allows you to inspect extra object. Similar to a MeshRenderer displaying its materials at the bottom.
+- Added a Refresh static method to the AdvancedInspectorAttribute. This can force all AI's editor to be refresh and optionnaly rebuilt.
+- Added a icon preview beside object fields. Option to show/hide and size of the icons are available in the right-click menu.
+- Added an Always Expanded property in the Collection Attribute to make list and dictionary uncollapsable.
+[FIXES]
+- Fixed the UV Meter in Unity 5.4+
+- Fixed a culture variation exception in saving colors in the preferences. 
+- Fixed a null occurring while watching a value.
+
+1.71:
+[CHANGES]
+- Introducing Menu Attribute, a way to add option menu to a field from an attribute.
+- TabAttribute is now a IRuntimeAttribute, which means the tab description can be changed per derived type or as you wish.
+- Derive from "AIStateMachineBehaviour" if you want your StateMachineBehaviour to be displayed by Advanced Inspector.
+[FIXES]
+- Performance improvements; 20% refresh speed boost and -40% memory allocation.
+- Property drawers bound by attributes were not being recongnized anymore. Fixed!
+- Changed how Apply/Revert works with prefabs, since the data was reverted, but not the link to the prefabs. Some issues still need to be resolved.
+- DescriptorAttribute applied directly to Enum can now target a static method delegate.
+- Apply "SetDirty" when a Method attribute has a undo message so that Prefabs can be considered modified.
+- Namespaced some classes that weren't previously.
+- Fixed an issue when a field is UnityEngine.Object and targets is hosting a MonoBehaviour.
+- Added an "inversing" condition similar to Inspect Attribute to the ReadOnly Attribute.
+- Extracted the Selection Tracker from the DLL so that people can change its shortcut, if wanted.
+- Rev A: Mistakingly flagged "AddAttribute" in InspectorField as private.
+
+1.60 and above is only supported on Unity 5.2+
+You may require to disable custom Advanced Inspector if you wish to use 1.60 on 5.1x.
+
+Tested on 5.2, 5.3, 5.4 and partially on 5.5 beta

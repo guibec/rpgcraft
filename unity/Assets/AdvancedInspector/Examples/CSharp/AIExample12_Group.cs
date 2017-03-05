@@ -1,44 +1,43 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-using AdvancedInspector;
-
-[AdvancedInspector]
-public class AIExample12_Group : MonoBehaviour 
+namespace AdvancedInspector
 {
-    // Item can be grouped using the Group attribute;
-    [Inspect, Group("My First Group")]
-    public float myFirstField;
-
-    [Inspect, Group("My First Group")]
-    public float MyFirstProperty
+    public class AIExample12_Group : MonoBehaviour
     {
-        get { return myFirstField; }
-        set { myFirstField = value; }
-    }
+        // Item can be grouped using the Group attribute;
+        [Group("My First Group", 0, 0, 1)]
+        public float myFirstField;
 
-    // Flagging it false stops the chaining.
-    [Inspect, Group("My First Group")]
-    public void MyFirstMethod()
-    {
-        myFirstField++;
-    }
+        [Group("My First Group")]
+        public float MyFirstProperty
+        {
+            get { return myFirstField; }
+            set { myFirstField = value; }
+        }
 
-    // Grouping is done with similar names.
-    // The second parameter is the order in which the different groups are shown.
-    [Inspect, Group("My Second Group", 1, Description = "This is some extra text.")]
-    public float mySecondField;
+        // Flagging it false stops the chaining.
+        [Group("My First Group")]
+        public void MyFirstMethod()
+        {
+            myFirstField++;
+        }
 
-    [Inspect, Group("My Second Group")]
-    public float MySecondProperty
-    {
-        get { return mySecondField; }
-        set { mySecondField = value; }
-    }
+        // Grouping is done with similar names.
+        // The second parameter is the order in which the different groups are shown.
+        [Group("My Second Group", 1, Description = "This is some extra text.")]
+        public float mySecondField;
 
-    [Inspect, Group("My Second Group")]
-    public void MySecondMethod()
-    {
-        mySecondField++;
+        [Group("My Second Group")]
+        public float MySecondProperty
+        {
+            get { return mySecondField; }
+            set { mySecondField = value; }
+        }
+
+        [Group("My Second Group")]
+        public void MySecondMethod()
+        {
+            mySecondField++;
+        }
     }
 }

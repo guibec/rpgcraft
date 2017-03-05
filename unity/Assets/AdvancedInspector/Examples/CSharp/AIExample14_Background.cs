@@ -1,32 +1,29 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 
-using AdvancedInspector;
-
-[AdvancedInspector]
-public class AIExample14_Background : MonoBehaviour 
+namespace AdvancedInspector
 {
-    // The background attribute is simply used to stored a color for the background of an expandable item.
-    [Inspect, Background(1, 0.5f, 0)]
-    public ExpandableClass myObject;
-
-    [AdvancedInspector, Serializable]
-    public class ExpandableClass
+    public class AIExample14_Background : MonoBehaviour
     {
-        [Inspect]
-        public float myField;
-    }
+        // The background attribute is simply used to stored a color for the background of an expandable item.
+        [Background(1, 0.5f, 0)]
+        public ExpandableClass myObject;
 
-    // It can also be dynamic.
-    [Inspect, Background("GetBackgroundColor")]
-    public float[] myArray;
+        [Serializable]
+        public class ExpandableClass
+        {
+            public float myField;
+        }
 
-    [Inspect]
-    public Color color;
+        // It can also be dynamic.
+        [Background("GetBackgroundColor")]
+        public float[] myArray;
 
-    private Color GetBackgroundColor()
-    {
-        return color;
+        public Color color;
+
+        private Color GetBackgroundColor()
+        {
+            return color;
+        }
     }
 }
