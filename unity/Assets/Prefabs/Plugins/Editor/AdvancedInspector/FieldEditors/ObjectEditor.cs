@@ -133,7 +133,7 @@ namespace AdvancedInspector
             if (type.IsInterface)
             {
                 Rect position = EditorGUILayout.GetControlRect(false, 16f);
-                int id = GUIUtility.GetControlID(s_ObjectFieldHash, EditorGUIUtility.Passive, position);
+                int id = GUIUtility.GetControlID(s_ObjectFieldHash, FocusType.Passive, position);
                 Delegate validation = Delegate.CreateDelegate(validator, typeof(ObjectEditor).GetMethod("ValidateObjectFieldAssignment", BindingFlags.NonPublic | BindingFlags.Static));
 
                 result = doObjectField.Invoke(null, new object[] { position, position, id, value, type, null, validation, dontAllow == null, EditorStyles.objectField } ) as UnityEngine.Object;
