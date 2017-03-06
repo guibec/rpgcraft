@@ -10,8 +10,8 @@ namespace AdvancedInspector
             get { return new Type[] { typeof(FieldAttributeExample) }; }
         }
 
-        // Robin: This wouldn't compile. It's an example. Commented it out.
-        //public override void Draw(AdvancedInspector.FieldAttribute attribute, InspectorField field)
+        // For some reason, this is completely broken. Commenting it out.
+        //public override void Draw(FieldAttribute attribute, InspectorField field)
         //{
         //    object value = field.GetValue();
         //    if (value == null)
