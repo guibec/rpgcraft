@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 2318880}
   - component: {fileID: 3318880}
   - component: {fileID: 11418880}
-  - component: {fileID: 11418882}
-  - component: {fileID: 6418880}
   m_Layer: 0
   m_Name: WorldMapChunk
   m_TagString: Untagged
@@ -71,20 +69,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 118880}
   m_Mesh: {fileID: 0}
---- !u!64 &6418880
-MeshCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 118880}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Convex: 0
-  m_InflateMesh: 0
-  m_SkinWidth: 0.01
-  m_Mesh: {fileID: 0}
 --- !u!114 &11418880
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -100,18 +84,6 @@ MonoBehaviour:
   m_width: 64
   m_height: 64
   m_tileSize: 16
---- !u!114 &11418882
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 118880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0bb362519356cfe4ea2784c6081f2084, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectionObject: {fileID: 0}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
