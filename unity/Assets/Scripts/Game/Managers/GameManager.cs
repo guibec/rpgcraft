@@ -2,12 +2,13 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using SysDiag = System.Diagnostics;
 using System.Net;
 using UnityEngine.Profiling;
 
 using AdvancedInspector;
 using UnityEngine.SceneManagement;
+
 
 public class GameManager : MonoSingleton<GameManager>
 {
@@ -87,7 +88,7 @@ public class GameManager : MonoSingleton<GameManager>
 
         Quaternion spawnRot = m_worldAnchorRoot.transform.rotation;
 
-        Stopwatch sw = Stopwatch.StartNew();
+        SysDiag.Stopwatch sw = SysDiag.Stopwatch.StartNew();
         GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
 
         //Material material = new Material(shader);
