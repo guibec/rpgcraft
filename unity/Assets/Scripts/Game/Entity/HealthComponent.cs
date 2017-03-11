@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
-using AdvancedInspector;
 
 public class HealthComponent : MonoBehaviour 
 {
@@ -19,7 +18,7 @@ public class HealthComponent : MonoBehaviour
     /// <summary>
     /// how much time you are invincible between attack
     /// </summary>
-    [Inspect, SerializeField]
+    [SerializeField]
     private float m_interdamageTime = 0f;
 
     /// <summary>
@@ -27,7 +26,6 @@ public class HealthComponent : MonoBehaviour
     /// </summary>
     private float m_damageTimer = 0f;
 
-    [Inspect]
     private int m_health;
     public int Health
     {
