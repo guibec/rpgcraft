@@ -761,33 +761,85 @@ void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs
 void Render()
 {
 
-	const xFloat2 top[4] = {
+	const xFloat2 top1[4] = {
 		{  -0.5f,  -0.5f },
 		{  -0.2f,  -0.3f },		// control point
 		{	0.3f,  -0.6f },		// control point
 		{	0.5f,  -0.5f },
 	};
 
-	const xFloat2 left[4] = {
+	const xFloat2 left1[4] = {
 		{   0.5f,  -0.5f },
 		{	0.8f,  -0.2f },		// control point
 		{	0.8f,   0.2f },		// control point
-		{   0.5f,   0.5f },
+		{   0.7f,   0.6f },
 	};
 
-	const xFloat2 bottom[4] = {
-		{	0.5f,   0.5f },
+	const xFloat2 bottom1[4] = {
+		{	0.7f,   0.6f },
 		{	0.3f,   0.3f },		// control point
 		{  -0.2f,   0.9f },		// control point
 		{  -0.5f,   0.5f },
 	};
 
-	const xFloat2 right[4] = {
+	const xFloat2 right1[4] = {
 		{  -0.5f,   0.5f },
 		{  -0.8f,   0.2f },		// control point
 		{  -0.8f,  -0.2f },		// control point
 		{  -0.5f,  -0.5f },
 	};
+
+
+	// --------------------------------------------------------------------------------------
+
+	const xFloat2 top2[4] = {
+		{  -0.3f,  -0.5f },
+		{  -0.2f,  -0.3f },		// control point
+		{	0.3f,  -0.6f },		// control point
+		{	0.5f,  -0.3f },
+	};
+
+	const xFloat2 left2[4] = {
+		{   0.5f,  -0.3f },
+		{	0.8f,  -0.4f },		// control point
+		{	0.8f,   0.2f },		// control point
+		{   0.5f,   0.5f },
+	};
+
+	const xFloat2 bottom2[4] = {
+		{	0.5f,   0.5f },
+		{	0.3f,   0.3f },		// control point
+		{  -0.2f,   0.7f },		// control point
+		{  -0.5f,   0.5f },
+	};
+
+	const xFloat2 right2[4] = {
+		{  -0.5f,   0.5f },
+		{  -0.8f,   0.2f },		// control point
+		{  -0.9f,  -0.2f },		// control point
+		{  -0.3f,  -0.5f },
+	};
+
+	static float animPos = 0.0f;
+
+	animPos += 0.06f;
+	animPos = std::fmodf(animPos, 3.14159f * 4);
+
+	float apos = std::sinf(animPos);
+
+#define lerp(a,b)		((a) + (((b)-(a))* (apos)))
+
+#define lerpBezier(varA, varB)	{ \
+	{ ((varA)[0].x + (((varB)[0].x-(varA)[0].x) * (apos))), ((varA)[0].y + (((varB)[0].y-(varA)[0].y) * (apos))) },		\
+	{ ((varA)[1].x + (((varB)[1].x-(varA)[1].x) * (apos))), ((varA)[1].y + (((varB)[1].y-(varA)[1].y) * (apos))) },		\
+	{ ((varA)[2].x + (((varB)[2].x-(varA)[2].x) * (apos))), ((varA)[2].y + (((varB)[2].y-(varA)[2].y) * (apos))) },		\
+	{ ((varA)[3].x + (((varB)[3].x-(varA)[3].x) * (apos))), ((varA)[3].y + (((varB)[3].y-(varA)[3].y) * (apos))) },		\
+}
+
+	xFloat2 top		[4] = lerpBezier(top1,		top2	);
+	xFloat2 left	[4] = lerpBezier(left1,		left2	);
+	xFloat2 bottom	[4]	= lerpBezier(bottom1,	bottom2	);
+	xFloat2 right	[4]	= lerpBezier(right1,	right2	);
 
 	SimpleVertex vertices[SimpleVertexBufferSize];
 
@@ -810,6 +862,9 @@ void Render()
 	// Clear the back buffer
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
 
+	// ------------------------------------------------------------------------------------------
+	// Update Spline Vertex Information
+
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	xMemZero(mappedResource);
 
@@ -823,6 +878,8 @@ void Render()
 
 	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx].Simple, &stride, &offset);
+	// ------------------------------------------------------------------------------------------
+
 
 	//
 	// Update variables
@@ -833,17 +890,18 @@ void Render()
 	//cb.mProjection = XMMatrixTranspose(g_Projection);
 	//g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
-	//
-	// Renders a triangle
+	// ------------------------------------------------------------------------------------------
+	// Renders Scene Gemoetry
 	//
 	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	//g_pImmediateContext->Draw(303, 0);
 	g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4)+3, 0,  0);
 
+	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 	g_pSwapChain->Present(0, 0);
 	g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
+	xThreadSleep(17);
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
