@@ -21,6 +21,27 @@
 
 using namespace DirectX;
 
+static const int BackBufferCount = 3;
+
+struct DynamicVertexBufferSet {
+
+    // Vertex lists will need to be split according to their layout - namely their stride.
+    // eg, if some have texture UV data while others do not.
+    // It makes the most sense if the buffers are named after the vertex data types that they contain.
+    // Or more generically they can be named according to the buffer stride, since the underlying data
+    // is not important.
+
+    // For now just have the Simple buffer...
+
+    ID3D11Buffer*      Simple       = nullptr;
+};
+
+
+// * Vertex Buffers are Mostly Dynamic.
+// * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
+// * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
+
+
 
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
@@ -38,8 +59,13 @@ ID3D11VertexShader*     g_pVertexShader			= nullptr;
 ID3D11PixelShader*      g_pPixelShader			= nullptr;
 ID3D11InputLayout*      g_pVertexLayout			= nullptr;
 
-ID3D11Buffer*           g_pVertexBuffer			= nullptr;
+
+DynamicVertexBufferSet  g_DynVertBuffers[BackBufferCount];
+//DynamicIndexBufferSet
+
+
 ID3D11Buffer*           g_pIndexBuffer			= nullptr;
+
 ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
 XMMATRIX                g_World;
@@ -543,13 +569,13 @@ HRESULT InitDevice()
 
         DXGI_SWAP_CHAIN_DESC1 sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.Width = width;
-        sd.Height = height;
-        sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        sd.SampleDesc.Count = 1;
-        sd.SampleDesc.Quality = 0;
-        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.BufferCount = 1;
+        sd.Width                = width;
+        sd.Height               = height;
+        sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
+        sd.SampleDesc.Count     = 1;
+        sd.SampleDesc.Quality   = 0;
+        sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        sd.BufferCount          = 1;
 
         hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
         if (SUCCEEDED(hr))
@@ -563,17 +589,17 @@ HRESULT InitDevice()
         // DirectX 11.0 systems
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.BufferCount = 1;
-        sd.BufferDesc.Width = width;
-        sd.BufferDesc.Height = height;
-        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        sd.BufferCount          = 1;
+        sd.BufferDesc.Width     = width;
+        sd.BufferDesc.Height    = height;
+        sd.BufferDesc.Format    = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
-        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.OutputWindow = g_hWnd;
-        sd.SampleDesc.Count = 1;
-        sd.SampleDesc.Quality = 0;
-        sd.Windowed = TRUE;
+        sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        sd.OutputWindow         = g_hWnd;
+        sd.SampleDesc.Count     = 1;
+        sd.SampleDesc.Quality   = 0;
+        sd.Windowed             = TRUE;
 
         hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
     }
@@ -599,8 +625,8 @@ HRESULT InitDevice()
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
-    vp.Width = (FLOAT)width;
-    vp.Height = (FLOAT)height;
+    vp.Width	= (float)width;
+    vp.Height	= (float)height;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
@@ -630,7 +656,8 @@ HRESULT InitDevice()
 
     // Create the input layout
     hr = g_pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-        pVSBlob->GetBufferSize(), &g_pVertexLayout);
+        pVSBlob->GetBufferSize(), &g_pVertexLayout
+    );
     pVSBlob->Release();
     if (FAILED(hr))
         return hr;
@@ -712,12 +739,74 @@ static const int s_perlin_permutation[512] = {
     138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 };
 
-static const int numStepsPerCurve		= 200;
-static const int numTrisPerCurve		=  numStepsPerCurve;
-static const int numVertexesPerCurve	= (numTrisPerCurve * 3);
+static const int    numStepsPerCurve		= 200;
+static const int    numTrisPerCurve		    =  numStepsPerCurve;
+static const int    numVertexesPerCurve	    = (numTrisPerCurve * 3);
+static const int    SimpleVertexBufferSize  = (numTrisPerCurve*4) + 2;
+
+int g_curBufferIdx = 0;
+
+void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs)
+{
+    for (int idx = 0; idx < numSubdivs; ++idx)
+    {
+        dest[iidx + 0] = 0;
+        dest[iidx + 1] = vertexIdx + 0;
+        dest[iidx + 2] = vertexIdx + 1;
+        vertexIdx   += 1;
+        iidx        += 3;
+    }
+}
 
 void Render()
 {
+
+    const xFloat2 top[4] = {
+        {  -0.5f,  -0.5f },
+        {  -0.2f,  -0.3f },		// control point
+        {	0.3f,  -0.6f },		// control point
+        {	0.5f,  -0.5f },
+    };
+
+    const xFloat2 left[4] = {
+        {   0.5f,  -0.5f },
+        {	0.8f,  -0.2f },		// control point
+        {	0.8f,   0.2f },		// control point
+        {   0.5f,   0.5f },
+    };
+
+    const xFloat2 bottom[4] = {
+        {	0.5f,   0.5f },
+        {	0.3f,   0.3f },		// control point
+        {  -0.2f,   0.9f },		// control point
+        {  -0.5f,   0.5f },
+    };
+
+    const xFloat2 right[4] = {
+        {  -0.5f,   0.5f },
+        {  -0.8f,   0.2f },		// control point
+        {  -0.8f,  -0.2f },		// control point
+        {  -0.5f,  -0.5f },
+    };
+
+    SimpleVertex vertices[SimpleVertexBufferSize];
+
+    xFloat2		center	= xFloat2(0.0f,		0.0f);
+    xFloat3		prev	= xFloat3(top[0].x, top[0].y, 0.5f );
+
+    vertices[0].Pos = xFloat3(center, 0.5f);
+    vertices[1].Pos = prev;
+
+    VertexBufferState<SimpleVertex> vstate = { 2, vertices };
+
+    SubDiv_BezierFan(vstate, numStepsPerCurve, center, top);
+    SubDiv_BezierFan(vstate, numStepsPerCurve, center, left);
+    SubDiv_BezierFan(vstate, numStepsPerCurve, center, bottom);
+    SubDiv_BezierFan(vstate, numStepsPerCurve, center, right);
+
+    assume(vstate.m_vidx <= bulkof(vertices));
+
+
     //
     // Animate the cube
     //
@@ -727,6 +816,19 @@ void Render()
     // Clear the back buffer
     //
     g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    xMemZero(mappedResource);
+
+    auto*   simple      = g_DynVertBuffers[g_curBufferIdx].Simple;
+    UINT    stride      = sizeof(SimpleVertex);
+    UINT    offset      = 0;
+
+    g_pImmediateContext->Map(simple, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    memcpy(mappedResource.pData, vertices, sizeof(vertices));
+    g_pImmediateContext->Unmap(simple, 0);
+
+    g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx].Simple, &stride, &offset);
 
     //
     // Update variables
@@ -747,6 +849,7 @@ void Render()
     g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4)+3, 0,  0);
 
     g_pSwapChain->Present(0, 0);
+    g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -763,94 +866,60 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         return 0;
     }
 
-    const xFloat2 top[4] = {
-        {  -0.5f,  -0.5f },
-        {  -0.2f,  -0.3f },		// control point
-        {	0.3f,  -0.6f },		// control point
-        {	0.5f,  -0.5f },
-    };
+    s16	   indices [(numVertexesPerCurve*4) + 3];
 
-    const xFloat2 left[4] = {
-        {   0.5f,  -0.5f },
-        {	0.8f,  -0.2f },		// control point
-        {	0.8f,   0.2f },		// control point
-        {   0.5f,   0.5f },
-    };
+    int iidx = 0;
+    int vidx = 1;
 
-    const xFloat2 bottom[4] = {
-        {	0.5f,  0.5f },
-        {	0.3f,  0.3f },		// control point
-        {  -0.2f,  0.9f },		// control point
-        {  -0.5f,  0.5f },
-    };
+    PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
+    PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
+    PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
+    PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
 
-    const xFloat2 right[4] = {
-        {  -0.5f,   0.5f },
-        {  -0.8f,   0.2f },		// control point
-        {  -0.8f,  -0.2f },		// control point
-        {  -0.5f,  -0.5f },
-    };
+    // Close the patch by creating triable between last vertex along the spline and first one.
+    indices[iidx+0] = 0;
+    indices[iidx+1] = vidx-1;
+    indices[iidx+2] = 1;
 
-    SimpleVertex vertices[(numTrisPerCurve*4) + 2];
-    WORD		 indices [(numVertexesPerCurve*4) + 3];
+    iidx += 3;
 
-    xFloat2		center	= xFloat2(0.0f,		0.0f);
-    xFloat3		prev	= xFloat3(top[0].x, top[0].y, 0.5f );
+    assume(vidx <= SimpleVertexBufferSize);
+    assume(iidx <= bulkof(indices));
 
-    vertices[0].Pos = xFloat3(center, 0.5f);
-    vertices[1].Pos = prev;
 
-    VertexBufferState<SimpleVertex> vstate = {
-        2, 0, indices, vertices
-    };
+    for (int i=0; i<BackBufferCount; ++i) {
+        D3D11_SUBRESOURCE_DATA InitData;
+  
+        D3D11_BUFFER_DESC bd;
+        xMemZero(bd);
+        bd.Usage			= D3D11_USAGE_DYNAMIC;
+        bd.ByteWidth		= sizeof(SimpleVertex) * SimpleVertexBufferSize;
+        bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
+        bd.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
 
-    SubDiv_BezierFan(vstate, numStepsPerCurve, center, top);
-    SubDiv_BezierFan(vstate, numStepsPerCurve, center, left);
-    SubDiv_BezierFan(vstate, numStepsPerCurve, center, bottom);
-    SubDiv_BezierFan(vstate, numStepsPerCurve, center, right);
+        xMemZero(InitData);
+        //InitData.pSysMem = vertices;
 
-    indices[vstate.m_iidx+0] = 0;
-    indices[vstate.m_iidx+1] = vstate.m_vidx-1;
-    indices[vstate.m_iidx+2] = 1;
+        auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_DynVertBuffers[i].Simple);
+        bug_on (FAILED(hr));
 
-    vstate.m_iidx += 3;
-    assume(vstate.m_vidx <= bulkof(vertices));
-    assume(vstate.m_iidx <= bulkof(indices));
 
-    D3D11_SUBRESOURCE_DATA InitData;
+        xMemZero(bd);
+        bd.Usage			= D3D11_USAGE_DEFAULT;
+        bd.ByteWidth		= sizeof(indices);
+        bd.BindFlags		= D3D11_BIND_INDEX_BUFFER;
+        bd.CPUAccessFlags	= 0;
 
-    D3D11_BUFFER_DESC bd;
-    xMemZero(bd);
-    bd.Usage			= D3D11_USAGE_DEFAULT;
-    bd.ByteWidth		= sizeof(SimpleVertex) * bulkof(vertices);
-    bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
-    bd.CPUAccessFlags	= 0;
+        xMemZero(InitData);
+        InitData.pSysMem	= indices;
 
-    xMemZero(InitData);
-    InitData.pSysMem = vertices;
+        hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
+        bug_on (FAILED(hr));
+    }
 
-    auto hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
-    bug_on (FAILED(hr));
-
-    // Set vertex buffer
-    UINT stride = sizeof(SimpleVertex);
-    UINT offset = 0;
-    g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
     // Set primitive topology
     g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    xMemZero(bd);
-    bd.Usage			= D3D11_USAGE_DEFAULT;
-    bd.ByteWidth		= sizeof(indices);
-    bd.BindFlags		= D3D11_BIND_INDEX_BUFFER;
-    bd.CPUAccessFlags	= 0;
-
-    xMemZero(InitData);
-    InitData.pSysMem	= indices;
-
-    hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
-    bug_on (FAILED(hr));
 
     // Set index buffer
     g_pImmediateContext->IASetIndexBuffer( g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0 );

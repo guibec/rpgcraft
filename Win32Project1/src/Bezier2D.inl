@@ -51,11 +51,7 @@ void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const
 		float y = CalculateBezierPoint(i, y1, y2, y3, y4);
 
 		dest.vertices[dest.m_vidx].Pos = xFloat3(x, y, 0.5f);
-		dest.indices[dest.m_iidx + 0] = 0;
-		dest.indices[dest.m_iidx + 1] = dest.m_vidx - 1;
-		dest.indices[dest.m_iidx + 2] = dest.m_vidx;
 		dest.m_vidx += 1;
-		dest.m_iidx += 3;
 	}
 }
 

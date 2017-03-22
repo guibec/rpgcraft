@@ -8,8 +8,6 @@
 template<typename VertexType>			// SimpleVertex
 struct VertexBufferState {
 	int 			m_vidx;
-	int 			m_iidx;
-	u16*			indices;
 	VertexType*		vertices;
 };
 
