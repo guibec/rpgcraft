@@ -22,6 +22,7 @@
 using namespace DirectX;
 
 static const int BackBufferCount = 3;
+static const int const_zval = 0.1f;
 
 struct DynamicVertexBufferSet {
 
@@ -674,16 +675,6 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// Create vertex buffer
-	// X Y Z  in the typical nonsensical arrangement:
-
-	SimpleVertex vertices[] =
-	{
-		xFloat3( 0.0f,  0.5f, 0.5f),
-		xFloat3( 0.5f, -0.5f, 0.5f),
-		xFloat3(-0.5f, -0.5f, 0.5f),
-	};
-
 	return hr;
 }
 
@@ -825,7 +816,7 @@ void Render()
 	animPos += 0.06f;
 	animPos = std::fmodf(animPos, 3.14159f * 4);
 
-	float apos = std::sinf(animPos);
+	float apos = (1.0f + std::sinf(animPos)) * 0.5f;
 
 #define lerp(a,b)		((a) + (((b)-(a))* (apos)))
 
@@ -844,9 +835,9 @@ void Render()
 	SimpleVertex vertices[SimpleVertexBufferSize];
 
 	xFloat2		center	= xFloat2(0.0f,		0.0f);
-	xFloat3		prev	= xFloat3(top[0].x, top[0].y, 0.5f );
+	xFloat3		prev	= xFloat3(top[0].x, top[0].y, const_zval );
 
-	vertices[0].Pos = xFloat3(center, 0.5f);
+	vertices[0].Pos = xFloat3(center, const_zval);
 	vertices[1].Pos = prev;
 
 	VertexBufferState<SimpleVertex> vstate = { 2, vertices };
@@ -891,7 +882,7 @@ void Render()
 	//g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
 	// ------------------------------------------------------------------------------------------
-	// Renders Scene Gemoetry
+	// Renders Scene Geometry
 	//
 	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
