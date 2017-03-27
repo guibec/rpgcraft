@@ -29,7 +29,7 @@
 //
 
 template<typename VertexType>
-void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const xFloat2& center, const xFloat2(&xy)[4])
+void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const vFloat2& center, const vFloat2(&xy)[4])
 {
 	const auto& x1 = xy[0].x;
 	const auto& x2 = xy[1].x;
@@ -50,7 +50,7 @@ void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const
 		float x = CalculateBezierPoint(i, x1, x2, x3, x4);
 		float y = CalculateBezierPoint(i, y1, y2, y3, y4);
 
-		dest.vertices[dest.m_vidx].Pos = xFloat3(x, y, 0.5f);
+		dest.vertices[dest.m_vidx].Pos = vFloat3(x, y, 0.5f);
 		dest.m_vidx += 1;
 	}
 }
@@ -66,7 +66,7 @@ void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const
 //           (numXY  )*2 triangles will be generated.
 
 template<typename VertexType>
-void StripTool_FromLine(VertexBufferState<VertexType>& dest, const xFloat2 *xy, int numXY)
+void StripTool_FromLine(VertexBufferState<VertexType>& dest, const vFloat2 *xy, int numXY)
 {
 
 //    ATAN2((pn+1).y - (pn-1).y, (pn+1).x - (pn-1).x) +/- Math.Pi/2
@@ -74,7 +74,7 @@ void StripTool_FromLine(VertexBufferState<VertexType>& dest, const xFloat2 *xy, 
 }
 
 template<typename VertexType>
-void StripTool_FromPatch(VertexBufferState<VertexType>& dest, const xFloat2 *xy, int numXY)
+void StripTool_FromPatch(VertexBufferState<VertexType>& dest, const vFloat2 *xy, int numXY)
 {
 
 //    ATAN2((pn+1).y - (pn-1).y, (pn+1).x - (pn-1).x) +/- Math.Pi/2

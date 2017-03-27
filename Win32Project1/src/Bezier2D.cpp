@@ -22,7 +22,7 @@ float CalculateBezierPoint(float t, float p0, float p1, float p2, float p3)
 	return p;
 }
 
-void GenList2D_BezierLine(xFloat2* dest, int numSubdivs, const xFloat2& center, const xFloat2(&xy)[4])
+void GenList2D_BezierLine(vFloat2* dest, int numSubdivs, const vFloat2& center, const vFloat2(&xy)[4])
 {
 	const auto& x1 = xy[0].x;
 	const auto& x2 = xy[1].x;
@@ -42,7 +42,7 @@ void GenList2D_BezierLine(xFloat2* dest, int numSubdivs, const xFloat2& center, 
 		float x = CalculateBezierPoint(i, x1, x2, x3, x4);
 		float y = CalculateBezierPoint(i, y1, y2, y3, y4);
 
-		dest[idx] = xFloat2(x, y);
+		dest[idx] = vFloat2(x, y);
 	}
 }
 

@@ -752,28 +752,28 @@ void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs
 void Render()
 {
 
-	const xFloat2 top1[4] = {
+	const vFloat2 top1[4] = {
 		{  -0.5f,  -0.5f },
 		{  -0.2f,  -0.3f },		// control point
 		{	0.3f,  -0.6f },		// control point
 		{	0.5f,  -0.5f },
 	};
 
-	const xFloat2 left1[4] = {
+	const vFloat2 left1[4] = {
 		{   0.5f,  -0.5f },
 		{	0.8f,  -0.2f },		// control point
 		{	0.8f,   0.2f },		// control point
 		{   0.7f,   0.6f },
 	};
 
-	const xFloat2 bottom1[4] = {
+	const vFloat2 bottom1[4] = {
 		{	0.7f,   0.6f },
 		{	0.3f,   0.3f },		// control point
 		{  -0.2f,   0.9f },		// control point
 		{  -0.5f,   0.5f },
 	};
 
-	const xFloat2 right1[4] = {
+	const vFloat2 right1[4] = {
 		{  -0.5f,   0.5f },
 		{  -0.8f,   0.2f },		// control point
 		{  -0.8f,  -0.2f },		// control point
@@ -783,28 +783,28 @@ void Render()
 
 	// --------------------------------------------------------------------------------------
 
-	const xFloat2 top2[4] = {
+	const vFloat2 top2[4] = {
 		{  -0.3f,  -0.5f },
 		{  -0.2f,  -0.3f },		// control point
 		{	0.3f,  -0.6f },		// control point
 		{	0.5f,  -0.3f },
 	};
 
-	const xFloat2 left2[4] = {
+	const vFloat2 left2[4] = {
 		{   0.5f,  -0.3f },
 		{	0.8f,  -0.4f },		// control point
 		{	0.8f,   0.2f },		// control point
 		{   0.5f,   0.5f },
 	};
 
-	const xFloat2 bottom2[4] = {
+	const vFloat2 bottom2[4] = {
 		{	0.5f,   0.5f },
 		{	0.3f,   0.3f },		// control point
 		{  -0.2f,   0.7f },		// control point
 		{  -0.5f,   0.5f },
 	};
 
-	const xFloat2 right2[4] = {
+	const vFloat2 right2[4] = {
 		{  -0.5f,   0.5f },
 		{  -0.8f,   0.2f },		// control point
 		{  -0.9f,  -0.2f },		// control point
@@ -827,17 +827,17 @@ void Render()
 	{ ((varA)[3].x + (((varB)[3].x-(varA)[3].x) * (apos))), ((varA)[3].y + (((varB)[3].y-(varA)[3].y) * (apos))) },		\
 }
 
-	xFloat2 top		[4] = lerpBezier(top1,		top2	);
-	xFloat2 left	[4] = lerpBezier(left1,		left2	);
-	xFloat2 bottom	[4]	= lerpBezier(bottom1,	bottom2	);
-	xFloat2 right	[4]	= lerpBezier(right1,	right2	);
+	vFloat2 top		[4] = lerpBezier(top1,		top2	);
+	vFloat2 left	[4] = lerpBezier(left1,		left2	);
+	vFloat2 bottom	[4]	= lerpBezier(bottom1,	bottom2	);
+	vFloat2 right	[4]	= lerpBezier(right1,	right2	);
 
 	SimpleVertex vertices[SimpleVertexBufferSize];
 
-	xFloat2		center	= xFloat2(0.0f,		0.0f);
-	xFloat3		prev	= xFloat3(top[0].x, top[0].y, const_zval );
+	vFloat2		center	= vFloat2(0.0f,		0.0f);
+	vFloat3		prev	= vFloat3(top[0].x, top[0].y, const_zval );
 
-	vertices[0].Pos = xFloat3(center, const_zval);
+	vertices[0].Pos = vFloat3(center, const_zval);
 	vertices[1].Pos = prev;
 
 	VertexBufferState<SimpleVertex> vstate = { 2, vertices };

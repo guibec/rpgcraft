@@ -95,14 +95,14 @@
     <ClInclude Include="src\common-standard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\x-float.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Bezier2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Bezier2D.inl">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\v-float.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
