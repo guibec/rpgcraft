@@ -733,7 +733,7 @@ static const int s_perlin_permutation[512] = {
 static const int    numStepsPerCurve		= 10;
 static const int    numTrisPerCurve		    =  numStepsPerCurve;
 static const int    numVertexesPerCurve	    = (numTrisPerCurve * 3);
-static const int    SimpleVertexBufferSize  = (numTrisPerCurve*4) + 2;
+static const int    SimpleVertexBufferSize  = (numTrisPerCurve*4) + 1;
 
 int g_curBufferIdx = 0;
 
@@ -835,12 +835,10 @@ void Render()
 	SimpleVertex vertices[SimpleVertexBufferSize];
 
 	vFloat2		center	= vFloat2(0.0f,		0.0f);
-	vFloat3		prev	= vFloat3(top[0].x, top[0].y, const_zval );
 
 	vertices[0].Pos = vFloat3(center, const_zval);
-	vertices[1].Pos = prev;
 
-	VertexBufferState<SimpleVertex> vstate = { 2, vertices };
+	VertexBufferState<SimpleVertex> vstate = { 1, vertices };
 
 	SubDiv_BezierFan(vstate, numStepsPerCurve, center, top);
 	SubDiv_BezierFan(vstate, numStepsPerCurve, center, left);
@@ -905,7 +903,7 @@ void Render()
 	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4)+3, 0,  0);
+	g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 	g_pSwapChain->Present(0, 0);
@@ -927,7 +925,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		return 0;
 	}
 
-	s16	   indices [(numVertexesPerCurve*4) + 3];
+	s16	   indices [(numVertexesPerCurve*4)];
 
 	int iidx = 0;
 	int vidx = 1;
@@ -938,15 +936,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
 
 	// Close the patch by creating triable between last vertex along the spline and first one.
-	indices[iidx+0] = 0;
-	indices[iidx+1] = vidx-1;
-	indices[iidx+2] = 1;
 
-	iidx += 3;
+	indices[(iidx-3)+1] = 0;
+	indices[(iidx-3)+0] = vidx-1;
+	indices[(iidx-3)+2] = 1;
 
 	assume(vidx <= SimpleVertexBufferSize);
 	assume(iidx <= bulkof(indices));
-
 
 	for (int i=0; i<BackBufferCount; ++i) {
 		D3D11_SUBRESOURCE_DATA InitData;
