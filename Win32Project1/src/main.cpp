@@ -651,7 +651,7 @@ HRESULT InitDevice()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-//		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	UINT numElements = ARRAYSIZE(layout);
 
@@ -730,7 +730,7 @@ static const int s_perlin_permutation[512] = {
 	138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 };
 
-static const int    numStepsPerCurve		= 200;
+static const int    numStepsPerCurve		= 10;
 static const int    numTrisPerCurve		    =  numStepsPerCurve;
 static const int    numVertexesPerCurve	    = (numTrisPerCurve * 3);
 static const int    SimpleVertexBufferSize  = (numTrisPerCurve*4) + 2;
@@ -741,8 +741,8 @@ void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs
 {
 	for (int idx = 0; idx < numSubdivs; ++idx)
 	{
-		dest[iidx + 0] = 0;
-		dest[iidx + 1] = vertexIdx + 0;
+		dest[iidx + 1] = 0;
+		dest[iidx + 0] = vertexIdx + 0;
 		dest[iidx + 2] = vertexIdx + 1;
 		vertexIdx   += 1;
 		iidx        += 3;
@@ -849,6 +849,24 @@ void Render()
 
 	assume(vstate.m_vidx <= bulkof(vertices));
 
+	// ------------------------------------------------------------------------------------------
+	// Apply Diagnostic color for visualizing geometry...
+
+	if (1) {
+		static float colorYay = 0.0f;
+		float colorIdx = colorYay; //0.0f;
+		foreach( auto& vert, vertices ) {
+			vert.Color = vFloat4( colorIdx, 0.0f, 0.0f, 1.0f );
+			colorIdx  += 0.05f;
+			colorIdx   = std::fmodf(colorIdx, 1.0f);
+		}
+
+		colorYay += 0.01f;
+		vertices[0].Color.x = 0.0f;
+		vertices[0].Color.y = 0.0f;
+		vertices[0].Color.z = 0.0f;
+	}
+
 
 	// Clear the back buffer
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
@@ -892,7 +910,7 @@ void Render()
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 	g_pSwapChain->Present(0, 0);
 	g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
-	xThreadSleep(17);
+	xThreadSleep(20);
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)

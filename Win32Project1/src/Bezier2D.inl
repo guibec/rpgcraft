@@ -18,6 +18,9 @@
 //    ATAN2(DY, DX) +/- Math.Pi/2
 //    ATAN2((pn+1).y - (pn-1).y, (pn+1).x - (pn-1).x) +/- Math.Pi/2
 //
+// Or calculate using Derivative (but tangent'ing is probably much faster):
+//    3 * (t^2) * (d + 3*(b - c) - a)  +  6t*(a - 2*b + c) + 3*(b - a) 
+//
 // To convert angle into a line:
 //     x = start_x + len * cos(angle);		// startx == pn.x
 //	   y = start_y + len * sin(angle);		// starty == pn.y

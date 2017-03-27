@@ -15,16 +15,23 @@ cbuffer ConstantBuffer : register( b0 )
 }
 
 //--------------------------------------------------------------------------------------
+struct VS_INPUT
+{	
+	float3 Pos   : POSITION;
+	float4 Color : COLOR0;
+};
+
+//--------------------------------------------------------------------------------------
 struct VS_OUTPUT
 {
     float4 Pos   : SV_POSITION;
-    float4 Color : COLOR0;
+	nointerpolation float4 Color : COLOR0;
 };
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-float4 VS( float4 Pos : POSITION ) : SV_POSITION // float4 Color : COLOR )
+VS_OUTPUT VS( VS_INPUT input ) //float4 Pos : POSITION ) // float4 Color : COLOR )
 {
     //VS_OUTPUT output = (VS_OUTPUT)0;
     //output.Pos = mul( Pos, World );
@@ -33,7 +40,12 @@ float4 VS( float4 Pos : POSITION ) : SV_POSITION // float4 Color : COLOR )
     //output.Color = Color;
     //return output;
 
-	return Pos;
+	float4 Color = input.Color * float4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	VS_OUTPUT outp;
+	outp.Pos = float4(input.Pos, 1.0f);
+	outp.Color = float4(input.Color.r, 0.0f, 0.0f, 1.0f);
+	return outp;
 
 	//return Pos * float4(1.0f, -1.0f, 1.0f, 1.0f);
 	//float4 pos_inv_y = Pos * float4(1.0f, -1.0f, 1.0f, 1.0f);
@@ -44,8 +56,8 @@ float4 VS( float4 Pos : POSITION ) : SV_POSITION // float4 Color : COLOR )
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
-//float4 PS( VS_OUTPUT input ) : SV_Target
-float4 PS( float4 Pos : SV_POSITION ) : SV_Target
+float4 PS( VS_OUTPUT input ) : SV_Target
+//float4 PS( float4 Pos : SV_POSITION ) : SV_Target
 {
-    return float4( 1.0f, 1.0f, 0.0f, 1.0f );    // Yellow, with Alpha = 1input.Color;
+	return input.Color; //float4( 1.0f, 1.0f, 0.0f, 1.0f );    // Yellow, with Alpha = 1input.Color;
 }
