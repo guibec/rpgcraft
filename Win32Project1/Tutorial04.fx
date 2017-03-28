@@ -24,32 +24,28 @@ struct VS_INPUT
 //--------------------------------------------------------------------------------------
 struct VS_OUTPUT
 {
-    float4 Pos   : SV_POSITION;
+	float4 Pos   : SV_POSITION;
 	nointerpolation float4 Color : COLOR0;
 };
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-VS_OUTPUT VS( VS_INPUT input ) //float4 Pos : POSITION ) // float4 Color : COLOR )
+VS_OUTPUT VS( VS_INPUT input )
 {
-    //VS_OUTPUT output = (VS_OUTPUT)0;
-    //output.Pos = mul( Pos, World );
-    //output.Pos = mul( output.Pos, View );
-    //output.Pos = mul( output.Pos, Projection );
-    //output.Color = Color;
-    //return output;
+	//VS_OUTPUT output = (VS_OUTPUT)0;
+	//output.Pos = mul( Pos, World );
+	//output.Pos = mul( output.Pos, View );
+	//output.Pos = mul( output.Pos, Projection );
+	//output.Color = Color;
+	//return output;
 
 	float4 Color = input.Color * float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	VS_OUTPUT outp;
-	outp.Pos = float4(input.Pos, 1.0f);
-	outp.Color = float4(input.Color.r, 0.0f, 0.0f, 1.0f);
+	outp.Pos	= float4(input.Pos, 1.0f);
+	outp.Color	= input.Color;
 	return outp;
-
-	//return Pos * float4(1.0f, -1.0f, 1.0f, 1.0f);
-	//float4 pos_inv_y = Pos * float4(1.0f, -1.0f, 1.0f, 1.0f);
-	//return pos_inv_y;
 }
 
 
