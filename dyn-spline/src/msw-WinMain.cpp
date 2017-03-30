@@ -1,6 +1,8 @@
 #include "msw-redtape.h"
 
 #include "x-string.h"
+#include "x-gpu-ifc.h"
+
 
 extern void			LogHostInit();
 extern HRESULT		InitDevice();
@@ -26,14 +28,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
 			EndPaint(hWnd, &ps);
-			break;
+		break;
 
 		case WM_DESTROY:
 			PostQuitMessage(0);
-			break;
+		break;
 
-			// Note that this tutorial does not handle resizing (WM_SIZE) requests,
-			// so we created the window without the resize border.
+
+		case WM_KEYDOWN: {
+			WPARAM param = wParam;
+			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
+			if (c == 'W' || c == 'w') {
+				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
+			}
+		}break;
 
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);

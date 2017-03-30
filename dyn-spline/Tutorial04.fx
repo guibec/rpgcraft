@@ -25,7 +25,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
 	float4 Pos   : SV_POSITION;
-	nointerpolation float4 Color : COLOR0;
+	float4 Color : COLOR0;
 };
 
 //--------------------------------------------------------------------------------------
