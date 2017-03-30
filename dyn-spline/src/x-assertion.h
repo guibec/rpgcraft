@@ -508,6 +508,7 @@ namespace
 #	define	bug_var_qa(...)
 #endif
 
+extern assert_t	Host_AssertionDialog		(const xString& title, const xString& message, const xString& context);
 
 // --------------------------------------------------------------------------------------
 inline __ai void xStopProcess(const char* filepos, const char* func)

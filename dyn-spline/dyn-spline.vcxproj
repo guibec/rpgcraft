@@ -85,10 +85,13 @@
   <ItemGroup>
     <ClCompile Include="src\Bezier2D.cpp" />
     <ClCompile Include="src\common-standard.cpp" />
+    <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-GetLastError.cpp" />
     <ClCompile Include="src\msw-thread.cpp" />
+    <ClCompile Include="src\msw-WinMain.cpp" />
     <ClCompile Include="src\mswStandard.cpp" />
+    <ClCompile Include="src\x-log_host.cpp" />
     <ClCompile Include="src\x-stdlib.cpp" />
     <ClCompile Include="src\x-string.cpp" />
     <ClCompile Include="src\x-thread.cpp" />
