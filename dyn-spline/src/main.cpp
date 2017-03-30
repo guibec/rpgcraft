@@ -1,6 +1,4 @@
 
-#define TARGET_DEBUG		1
-
 #include "x-types.h"
 #include "x-stl.h"
 #include "x-assertion.h"
@@ -12,7 +10,6 @@
 
 #include <windows.h>
 #include <d3d11_1.h>
-#include <directxmath.h>
 #include <DirectXColors.h>
 
 #include "Bezier2d.inl"
@@ -26,12 +23,8 @@ extern ID3D11RenderTargetView* g_pRenderTargetView;
 extern ID3D11VertexShader*     g_pVertexShader;
 extern ID3D11PixelShader*      g_pPixelShader;
 
-extern int g_curBufferIdx;
-
-
 int						g_VertexBufferId;
 GPU_IndexBuffer         g_IndexBuffer;
-ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
 
 static const int s_perlin_permutation[512] = {
@@ -224,11 +217,11 @@ void Render()
 	//
 
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
-
-	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
+	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
+
+	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
 	g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
 

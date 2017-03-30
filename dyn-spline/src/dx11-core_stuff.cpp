@@ -36,6 +36,7 @@ ID3D11RenderTargetView* g_pRenderTargetView		= nullptr;
 ID3D11VertexShader*     g_pVertexShader			= nullptr;
 ID3D11PixelShader*      g_pPixelShader			= nullptr;
 ID3D11InputLayout*      g_pVertexLayout			= nullptr;
+ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
 XMMATRIX                g_World;
 XMMATRIX                g_View;
@@ -170,6 +171,7 @@ HRESULT InitDevice()
 	// set default render state to msaa enabled
 	D3D11_RASTERIZER_DESC drd = {
 		D3D11_FILL_SOLID, //D3D11_FILL_MODE FillMode;
+		//D3D11_FILL_WIREFRAME,
 		D3D11_CULL_NONE,//D3D11_CULL_MODE CullMode;
 		FALSE, //BOOL FrontCounterClockwise;
 		0, //INT DepthBias;
@@ -426,4 +428,21 @@ void dx11_BackbufferSwap()
 {
 	g_pSwapChain->Present(0, 0);
 	g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
+}
+
+void dx11_SetPrimType(GpuPrimitiveType primType)
+{
+	D3D_PRIMITIVE_TOPOLOGY dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	switch(primType) {
+		case GPU_PRIM_POINTLIST		: dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST		;	break;
+		case GPU_PRIM_LINELIST		: dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST		;	break;
+		case GPU_PRIM_LINESTRIP		: dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP		;	break;
+		case GPU_PRIM_TRIANGLELIST	: dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST	;	break;
+		case GPU_PRIM_TRIANGLESTRIP	: dxPrimTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP	;	break;
+
+		default: unreachable("");
+	}
+	
+	g_pImmediateContext->IASetPrimitiveTopology(dxPrimTopology);
 }

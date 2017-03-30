@@ -107,6 +107,7 @@
     <ClInclude Include="src\x-atomic.h" />
     <ClInclude Include="src\v-float.h" />
     <ClInclude Include="src\x-ForwardDefs.h" />
+    <ClInclude Include="src\x-gpu-ifc.h" />
     <ClInclude Include="src\x-simd.h" />
     <ClInclude Include="src\x-stdlib.h" />
     <ClInclude Include="src\x-stl.h" />

@@ -113,6 +113,9 @@
     <ClInclude Include="src\v-float.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\x-gpu-ifc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\x-MemCopy.inl">
