@@ -19,9 +19,10 @@ using namespace DirectX;
 
 static const int BackBufferCount = 3;
 
-extern HINSTANCE               g_hInst;
-extern HWND                    g_hWnd;
+extern HINSTANCE		g_hInst;
+extern HWND				g_hWnd;
 
+ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_];
 
 D3D_DRIVER_TYPE         g_driverType			= D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel			= D3D_FEATURE_LEVEL_11_0;
@@ -168,24 +169,48 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// set default render state to msaa enabled
+	//  * DX Docs recommend always having MSAA enabled.
+	//  * Depth Bias options are pretty much jsut for shadow implementations
+	//  * FrontCounterClockwise is *probably* a system-wide setting.  Can't think of a good reason to have
+	//    models with mixed clockwise/counter-clockwise vertex order.  Preprocess them bitches!
+	//  * Wireframe of any raster state should be created, simply for debugging purposes.
+	//  * That leaves just Cull Mode and Scissor Enable as the only other wildcards.
+
 	D3D11_RASTERIZER_DESC drd = {
-		D3D11_FILL_SOLID, //D3D11_FILL_MODE FillMode;
-		//D3D11_FILL_WIREFRAME,
-		D3D11_CULL_NONE,//D3D11_CULL_MODE CullMode;
-		FALSE, //BOOL FrontCounterClockwise;
-		0, //INT DepthBias;
-		0.0f,//FLOAT DepthBiasClamp;
-		0.0f,//FLOAT SlopeScaledDepthBias;
-		TRUE,//BOOL DepthClipEnable;
-		FALSE,//BOOL ScissorEnable;
-		TRUE,//BOOL MultisampleEnable;
-		FALSE//BOOL AntialiasedLineEnable;        
+		D3D11_FILL_SOLID,	//D3D11_FILL_MODE FillMode;
+		D3D11_CULL_NONE,	//D3D11_CULL_MODE CullMode;
+		FALSE,				//BOOL FrontCounterClockwise;
+		0,					//INT DepthBias;
+		0.0f,				//FLOAT DepthBiasClamp;
+		0.0f,				//FLOAT SlopeScaledDepthBias;
+		TRUE,				//BOOL DepthClipEnable;
+		FALSE,				//BOOL ScissorEnable;
+		TRUE,				//BOOL MultisampleEnable;
+		FALSE				//BOOL AntialiasedLineEnable;        
 	};
-	ID3D11RasterizerState* pRS = nullptr;
-	hr = g_pd3dDevice->CreateRasterizerState(&drd, &pRS);
-	bug_on( FAILED( hr ));
-	g_pImmediateContext->RSSetState(pRS);
+
+	for (int fill=0; fill<_GPU_Fill_Count_; ++fill) {
+		switch(fill) {
+			case GPU_Fill_Solid:		drd.FillMode = D3D11_FILL_SOLID;		break;
+			case GPU_Fill_Wireframe:	drd.FillMode = D3D11_FILL_WIREFRAME;	break;
+			default: __unreachable();
+		}
+
+		for (int cull=0; cull<_GPU_Cull_Count_; ++cull) {
+			switch(cull) {
+				case GPU_Cull_None:		drd.CullMode = D3D11_CULL_NONE;		break;
+				case GPU_Cull_Front:	drd.CullMode = D3D11_CULL_FRONT;	break;
+				case GPU_Cull_Back:		drd.CullMode = D3D11_CULL_BACK;		break;
+				default: __unreachable();
+			}
+
+			for (int scissor=0; scissor<_GPU_Scissor_Count_; ++scissor) {
+				drd.ScissorEnable = (scissor == GPU_Scissor_Enable) ? 1 : 0;
+				hr = g_pd3dDevice->CreateRasterizerState(&drd, &g_RasterState[fill][cull][scissor]);
+				bug_on( FAILED( hr ));
+			}
+		}
+	}
 
 	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
 	IDXGIFactory1* dxgiFactory = nullptr;
@@ -445,4 +470,12 @@ void dx11_SetPrimType(GpuPrimitiveType primType)
 	}
 	
 	g_pImmediateContext->IASetPrimitiveTopology(dxPrimTopology);
+}
+
+void dx11_SetRasterState(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor)
+{
+	if (g_gpu_ForceWireframe) {
+		fill = GPU_Fill_Wireframe;
+	}
+	g_pImmediateContext->RSSetState(g_RasterState[fill][cull][scissor]);
 }

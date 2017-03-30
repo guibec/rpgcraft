@@ -12,6 +12,25 @@ enum GpuPrimitiveType
 	// Maybe TriFan topology can be set and then submitted indexes converted automatically to suit DX11 limitations?
 };
 
+enum GpuRasterFillMode {
+	GPU_Fill_Solid		= 0,
+	GPU_Fill_Wireframe	= 1,
+	_GPU_Fill_Count_,
+};
+
+enum GpuRasterCullMode {
+	GPU_Cull_None			= 0,
+	GPU_Cull_Front			= 1,
+	GPU_Cull_Back			= 2,
+	_GPU_Cull_Count_
+};
+
+enum GpuRasterScissorMode {
+	GPU_Scissor_Disable		= 0,
+	GPU_Scissor_Enable		= 1,
+	_GPU_Scissor_Count_
+};
+
 struct GPU_IndexBuffer {
 	s64		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_IndexBuffer(const void* driverData = nullptr);
@@ -30,4 +49,6 @@ extern void				dx11_UploadDynamicBufferData	(int bufferIdx, void* srcData, int s
 extern void				dx11_SetIndexBuffer				(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset);
 extern void				dx11_SetPrimType				(GpuPrimitiveType primType);
 
+extern void				dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
 
+extern bool				g_gpu_ForceWireframe;

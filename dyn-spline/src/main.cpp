@@ -26,6 +26,8 @@ extern ID3D11PixelShader*      g_pPixelShader;
 int						g_VertexBufferId;
 GPU_IndexBuffer         g_IndexBuffer;
 
+bool					g_gpu_ForceWireframe	= false;
+
 
 static const int s_perlin_permutation[512] = {
 	151,160,137,91,90,15,
@@ -215,6 +217,8 @@ void Render()
 	// ------------------------------------------------------------------------------------------
 	// Renders Scene Geometry
 	//
+
+	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
