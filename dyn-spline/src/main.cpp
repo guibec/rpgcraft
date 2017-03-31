@@ -38,10 +38,37 @@ void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs
 {
 	for (int idx = 0; idx < numSubdivs; ++idx)
 	{
-		dest[iidx + 1] = 0;
+		// non-interpolated (flat shading) determines color according the first vertex.
+		// To allow for non-solid colorization of the objectm make sure the first vertex
+		// is *not* the center point:
+
 		dest[iidx + 0] = vertexIdx + 0;
+		dest[iidx + 1] = 0;
 		dest[iidx + 2] = vertexIdx + 1;
 		vertexIdx   += 1;
+		iidx        += 3;
+	}
+}
+
+// TripStrip is natively supported by all GPUs, so providing an index list is not necessary.
+// This function may be useful for some fancier mesh types though, where it consists of some
+// mix of fan and strip triangles, etc...
+void PopulateIndices_TriStrip(s16* dest, int& iidx, int& vertexIdx, int numSubdivs)
+{
+	// Expected vertex layout:
+	//   vidx 0   - Edge 0
+	//   vidx 1,2 - Center, Edge 1
+	//   vidx 3,4 - Center, Edge 2
+	//   vidx 5,6 - Center, Edge 3
+
+	bug_on(vertexIdx==0, "vertexIdx must be at least 1; vertexIdx-1 should be first vertex along outside edge.");
+
+	for (int idx = 0; idx < numSubdivs; ++idx)
+	{
+		dest[iidx + 0] = vertexIdx - 1;
+		dest[iidx + 1] = vertexIdx;
+		dest[iidx + 2] = vertexIdx + 1;
+		vertexIdx   += 2;
 		iidx        += 3;
 	}
 }
