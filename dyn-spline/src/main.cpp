@@ -23,15 +23,16 @@ extern ID3D11RenderTargetView* g_pRenderTargetView;
 extern ID3D11VertexShader*     g_pVertexShader;
 extern ID3D11PixelShader*      g_pPixelShader;
 
+
 int						g_VertexBufferId;
 GPU_IndexBuffer         g_IndexBuffer;
-
 bool					g_gpu_ForceWireframe	= false;
 
-static const int    numStepsPerCurve		= 10;
-static const int    numTrisPerCurve		    =  numStepsPerCurve;
-static const int    numVertexesPerCurve	    = (numTrisPerCurve * 3);
-static const int    SimpleVertexBufferSize  = (numTrisPerCurve*4) + 1;
+
+static const int		numStepsPerCurve		= 10;
+static const int		numTrisPerCurve		    =  numStepsPerCurve;
+static const int		numVertexesPerCurve	    = (numTrisPerCurve * 3);
+static const int		SimpleVertexBufferSize  = (numTrisPerCurve*4) + 1;
 
 
 void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs)
@@ -75,7 +76,6 @@ void PopulateIndices_TriStrip(s16* dest, int& iidx, int& vertexIdx, int numSubdi
 
 void Render()
 {
-
 	const vFloat2 top1[4] = {
 		{  -0.5f,  -0.5f },
 		{  -0.2f,  -0.3f },		// control point

@@ -124,7 +124,7 @@
     <None Include="src\x-MemCopy.inl" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Tutorial04.fx">
+    <FxCompile Include="ColorGradient.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>

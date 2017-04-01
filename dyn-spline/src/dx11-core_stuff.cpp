@@ -310,10 +310,8 @@ HRESULT InitDevice()
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 
-	// SAMPLE LOADS SHADER(s) HERE.
-
 	// Compile the vertex shader
-	ID3DBlob* pVSBlob = CompileShaderFromFile(L"Tutorial04.fx", "VS", "vs_4_0");
+	ID3DBlob* pVSBlob = CompileShaderFromFile(L"ColorGradient.fx", "VS", "vs_4_0");
 
 	// Create the vertex shader
 	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
@@ -343,7 +341,7 @@ HRESULT InitDevice()
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 
 	// Compile the pixel shader
-	ID3DBlob* pPSBlob = CompileShaderFromFile(L"Tutorial04.fx", "PS", "ps_4_0");
+	ID3DBlob* pPSBlob = CompileShaderFromFile(L"ColorGradient.fx", "PS", "ps_4_0");
 
 	// Create the pixel shader
 	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
