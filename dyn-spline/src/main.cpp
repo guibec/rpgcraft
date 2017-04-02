@@ -25,7 +25,9 @@ extern ID3D11PixelShader*      g_pPixelShader;
 
 
 int						g_VertexBufferId;
-GPU_IndexBuffer         g_IndexBuffer;
+GPU_IndexBuffer			g_IndexBuffer;
+GPU_VertexBuffer		g_mesh_box2D;
+GPU_IndexBuffer			g_idx_box2D;
 bool					g_gpu_ForceWireframe	= false;
 
 
@@ -33,6 +35,26 @@ static const int		numStepsPerCurve		= 10;
 static const int		numTrisPerCurve		    =  numStepsPerCurve;
 static const int		numVertexesPerCurve	    = (numTrisPerCurve * 3);
 static const int		SimpleVertexBufferSize  = (numTrisPerCurve*4) + 1;
+
+
+static const int TerrainTileW = 256;
+static const int TerrainTileH = 256;
+
+float s_ProcTerrain_Height[TerrainTileW][TerrainTileH];
+
+void ProcGenTerrain()
+{
+	// Generate a heightmap!
+	
+	// Base heightmap on several interfering waves.
+
+	for (int y=0; y<TerrainTileH; ++y) {
+		for (int x=0; x<TerrainTileW; ++x) {
+			float continental_wave = std::sinf((y+x) * 0.006);
+			s_ProcTerrain_Height[y][x] = continental_wave; // * 32767.0f;
+		}
+	}
+}
 
 
 void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs)
@@ -50,6 +72,11 @@ void PopulateIndices_TriFan(s16* dest, int& iidx, int& vertexIdx, int numSubdivs
 		iidx        += 3;
 	}
 }
+
+struct TileMapVertex {
+	vFloat3		xyz;
+	vFloat2		uv;
+};
 
 // TripStrip is natively supported by all GPUs, so providing an index list is not necessary.
 // This function may be useful for some fancier mesh types though, where it consists of some
@@ -216,15 +243,21 @@ void Render()
 
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 
+	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
+	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
+
 	dx11_SetIndexBuffer(g_IndexBuffer, 16, 0);
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
+	//g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
+
 
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 
-	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
-	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
+
+	dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
+	dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
+	g_pImmediateContext->DrawIndexed(6, 0,  0);
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
@@ -232,8 +265,12 @@ void Render()
 	xThreadSleep(20);
 }
 
+extern void dx11_CreateTexture2D(int width, int height, void* srcData);
+
 void DoGameInit()
 {
+	ProcGenTerrain();
+
 	s16	   indices [(numVertexesPerCurve*4)];
 
 	int iidx = 0;
@@ -255,4 +292,27 @@ void DoGameInit()
 
 	g_VertexBufferId	= dx11_CreateDynamicVertexBuffer(sizeof(SimpleVertex) * SimpleVertexBufferSize);
 	g_IndexBuffer		= dx11_CreateIndexBuffer(indices, sizeof(indices));
+
+	dx11_CreateTexture2D(TerrainTileW, TerrainTileH, s_ProcTerrain_Height);
+
+TileMapVertex vertices[] =
+{
+	//{ vFloat3( -0.5f,  0.5f, 0.5f ), vFloat2(0.0f, 0.0f) },
+	//{ vFloat3( -0.5f, -0.5f, 0.5f ), vFloat2(0.0f, 1.0f) },
+	//{ vFloat3(  0.5f, -0.5f, 0.5f ), vFloat2(1.0f, 1.0f) },
+	//{ vFloat3(  0.5f,  0.5f, 0.5f ), vFloat2(1.0f, 0.0f) }
+
+	{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
+	{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
+	{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
+	{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
+};
+
+	s16 indices_box[] = {
+		0,1,3,
+		1,3,2
+	};
+
+	g_mesh_box2D = dx11_CreateStaticMesh(vertices, sizeof(vertices[0]), bulkof(vertices));
+	g_idx_box2D  = dx11_CreateIndexBuffer(indices_box, 6*2);
 }

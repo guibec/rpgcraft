@@ -36,6 +36,10 @@ ID3D11RenderTargetView* g_pRenderTargetView		= nullptr;
 
 ID3D11VertexShader*     g_pVertexShader			= nullptr;
 ID3D11PixelShader*      g_pPixelShader			= nullptr;
+
+ID3D11VertexShader*     g_pVertexShaderHMQ		= nullptr;
+ID3D11PixelShader*      g_pPixelShaderHMQ		= nullptr;
+
 ID3D11InputLayout*      g_pVertexLayout			= nullptr;
 ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
@@ -65,6 +69,10 @@ struct DynamicVertexBufferSet {
 
 int						g_DynVertBufferCount = 0;
 DynamicVertexBufferSet  g_DynVertBuffers[BackBufferCount];
+
+ID3D11SamplerState* m_pTextureSampler = nullptr;
+ID3D11Texture2D*	g_tex2d;
+ID3D11ShaderResourceView*	g_texView;
 
 
 //--------------------------------------------------------------------------------------
@@ -310,23 +318,25 @@ HRESULT InitDevice()
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 
-	// Compile the vertex shader
-	ID3DBlob* pVSBlob = CompileShaderFromFile(L"ColorGradient.fx", "VS", "vs_4_0");
+	//ID3DBlob* pVSBlob = CompileShaderFromFile(L"ColorGradient.fx", "VS", "vs_4_0");
+	ID3DBlob* pVSBlob = CompileShaderFromFile(L"HeightMappedQuad.fx", "VS", "vs_4_0");
 
-	// Create the vertex shader
 	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
-	if (FAILED(hr))
-	{
-		pVSBlob->Release();
-		return hr;
-	}
+	bug_on(FAILED(hr));
 
 	// Define the input layout
+	//D3D11_INPUT_ELEMENT_DESC layout[] =
+	//{
+	//	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//};
+
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
+
 	UINT numElements = ARRAYSIZE(layout);
 
 	// Create the input layout
@@ -341,7 +351,8 @@ HRESULT InitDevice()
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 
 	// Compile the pixel shader
-	ID3DBlob* pPSBlob = CompileShaderFromFile(L"ColorGradient.fx", "PS", "ps_4_0");
+	//ID3DBlob* pPSBlob = CompileShaderFromFile(L"ColorGradient.fx", "PS", "ps_4_0");
+	ID3DBlob* pPSBlob = CompileShaderFromFile(L"HeightMappedQuad.fx", "PS", "ps_4_0");
 
 	// Create the pixel shader
 	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
@@ -349,6 +360,22 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
+
+	D3D11_SAMPLER_DESC samplerDesc;
+	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+
+//	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	// Create the sampler
+	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
+	bug_on(FAILED(hr));
 
 	XMVECTOR Eye	= XMVectorSet( 0.0f, 1.0f, -5.0f, 0.0f );
 	XMVECTOR At		= XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
@@ -367,6 +394,14 @@ void dx11_SetVertexBuffer( int bufferId, int shaderSlot, int _stride, int _offse
 	uint offset = _offset;
 
 	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx].Buffers[bufferId], &stride, &offset);
+}
+
+void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset)
+{
+	uint stride = _stride;
+	uint offset = _offset;
+
+	g_pImmediateContext->IASetVertexBuffers(0, 1, (ID3D11Buffer**)&vbuffer.m_driverData, &stride, &offset);
 }
 
 void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset)
@@ -410,6 +445,33 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 	}
 	g_DynVertBufferCount += 1;
 	return bufferIdx;
+}
+
+
+//Indices:
+//
+//0,1,3
+//3,2,1
+
+
+GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, int vertexCount)
+{
+	D3D11_BUFFER_DESC bd;
+	xMemZero( bd );
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = itemSizeInBytes * vertexCount;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA InitData;
+	xMemZero( InitData );
+	InitData.pSysMem = vertexData;
+
+	GPU_VertexBuffer result;
+	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, (ID3D11Buffer**)&result.m_driverData );
+
+	bug_on(FAILED(hr));
+	return result;
 }
 
 GPU_IndexBuffer dx11_CreateIndexBuffer(void* indexBuffer, int bufferSize)
@@ -476,4 +538,40 @@ void dx11_SetRasterState(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRast
 		fill = GPU_Fill_Wireframe;
 	}
 	g_pImmediateContext->RSSetState(g_RasterState[fill][cull][scissor]);
+	g_pImmediateContext->PSSetSamplers( 0, 1, &m_pTextureSampler );
+	g_pImmediateContext->PSSetShaderResources( 0, 1, &g_texView );
+}
+
+void dx11_CreateTexture2D(int width, int height, void* srcData)
+{
+	D3D11_TEXTURE2D_DESC desc;
+	xMemZero(desc);
+	desc.Width				= width;
+	desc.Height				= height;
+	desc.MipLevels			= 1;
+	desc.ArraySize			= 1;
+	desc.Format				= DXGI_FORMAT_R32_FLOAT;
+	desc.SampleDesc.Count	= 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage				= D3D11_USAGE_DEFAULT;
+	desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags		= 0;
+
+	D3D11_SUBRESOURCE_DATA InitData;
+
+	xMemZero(InitData);
+	InitData.pSysMem		= srcData;
+	InitData.SysMemPitch	= width * sizeof(float);
+
+	auto hr = g_pd3dDevice->CreateTexture2D( &desc, &InitData, &g_tex2d );
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
+	xMemZero( SRVDesc );
+	SRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MipLevels			= -1;
+
+	hr = g_pd3dDevice->CreateShaderResourceView( g_tex2d, &SRVDesc, &g_texView );
+
 }

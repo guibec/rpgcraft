@@ -31,10 +31,19 @@ enum GpuRasterScissorMode {
 	_GPU_Scissor_Count_
 };
 
+struct GPU_VertexBuffer {
+	s64		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	GPU_VertexBuffer(const void* driverData = nullptr);
+};
+
 struct GPU_IndexBuffer {
 	s64		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_IndexBuffer(const void* driverData = nullptr);
 };
+
+inline GPU_VertexBuffer::GPU_VertexBuffer(const void* driverData) {
+	m_driverData = (s64)driverData;
+}
 
 inline GPU_IndexBuffer::GPU_IndexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
@@ -50,5 +59,8 @@ extern void				dx11_SetIndexBuffer				(GPU_IndexBuffer indexBuffer, int bitsPerI
 extern void				dx11_SetPrimType				(GpuPrimitiveType primType);
 
 extern void				dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
+
+extern void				dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
+extern GPU_VertexBuffer	dx11_CreateStaticMesh			(void* vertexData, int itemSizeInBytes, int vertexCount);
 
 extern bool				g_gpu_ForceWireframe;
