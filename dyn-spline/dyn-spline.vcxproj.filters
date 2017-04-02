@@ -126,5 +126,8 @@
     <FxCompile Include="ColorGradient.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="HeightMappedQuad.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
