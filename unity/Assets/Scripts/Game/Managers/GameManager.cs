@@ -13,7 +13,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public GameObject m_mainCharacter;
     public Camera m_mainCamera;
-    
+
     public Texture m_tileTextureMap;
 
     /// <summary>
@@ -47,7 +47,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_fsm = new GameManagerState_Machine(this);
     }
 
-    protected override void Awake() 
+    protected override void Awake()
     {
         base.Awake();
         TileMapping.BuildFromJSON("tilesInfo");
@@ -80,8 +80,8 @@ public class GameManager : MonoSingleton<GameManager>
     void SpawnChunkAt(Vector2 chunkPos)
     {
         Vector3 spawnPos = m_worldAnchorRoot.transform.position;
-        spawnPos.x += chunkPos.x*64;
-        spawnPos.y += chunkPos.y*64;
+        spawnPos.x += chunkPos.x * 64;
+        spawnPos.y += chunkPos.y * 64;
 
         Quaternion spawnRot = m_worldAnchorRoot.transform.rotation;
 
@@ -93,7 +93,7 @@ public class GameManager : MonoSingleton<GameManager>
         //material.SetTextureOffset("_MainTex", material.mainTextureOffset);
         //material.SetTextureScale("_MainTex", material.mainTextureScale);
         //mr.material = material;
-        
+
         chunkObj.GetComponent<Renderer>().material.mainTexture = m_tileTextureMap;
         chunkObj.name = string.Format("WorldMapChunk({0},{1})", (int)chunkPos.x, (int)chunkPos.y);
         sw.Stop();
@@ -105,7 +105,7 @@ public class GameManager : MonoSingleton<GameManager>
 
         float distFromOrigin = (float)Math.Sqrt((double)chunkPos.SqrMagnitude());
 
-        float percMountain = distFromOrigin/10f;
+        float percMountain = distFromOrigin / 10f;
         if (percMountain > 1.0f)
             percMountain = 1.0f;
 
@@ -126,7 +126,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_posToChunks[new Vector2(chunkPos.x, chunkPos.y)] = chunkInfo;
     }
 
-    private Vector2 OnSideStep( Vector2 afterColPosition, Vector2 beforeInputPosition, Vector2 afterInputPosition)
+    private Vector2 OnSideStep(Vector2 afterColPosition, Vector2 beforeInputPosition, Vector2 afterInputPosition)
     {
         // not sure if this code should go here or within UpdateCollision
         // placing code here for now, we will see how it generalizes
@@ -177,7 +177,7 @@ public class GameManager : MonoSingleton<GameManager>
                         newX += 1;
                 }
 
-                Vector2 sidePosition = new Vector2((float) newX, beforeInputPosition.y);
+                Vector2 sidePosition = new Vector2((float)newX, beforeInputPosition.y);
                 Vector2 afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
 
                 // given that new position, could we actually continue where we wanted ?
@@ -269,7 +269,7 @@ public class GameManager : MonoSingleton<GameManager>
                         Vector2 sideDir = (sidePosition - beforeInputPosition);
                         sideDir.Normalize();
 
-                        sidePosition = beforeInputPosition + (sideDir*(float) distance);
+                        sidePosition = beforeInputPosition + (sideDir * (float)distance);
                     }
 
                     afterSideStepCol = UpdateCollision(MainPlayer, afterColPosition, sidePosition);
@@ -278,7 +278,7 @@ public class GameManager : MonoSingleton<GameManager>
                     return afterSideStepCol;
                 }
             }
-            
+
             // Else, try closest
             // TODO - Also, in case both are possible, go toward the closest one first
         }
@@ -286,9 +286,9 @@ public class GameManager : MonoSingleton<GameManager>
         return afterColPosition;
     }
 
-	// Update is called once per frame
+    // Update is called once per frame
     protected override void OnUpdate()
-	{
+    {
         base.OnUpdate();
 
         m_fsm.Update();
@@ -320,9 +320,9 @@ public class GameManager : MonoSingleton<GameManager>
         }
         Profiler.EndSample();
 
-	    UpdateInput();
-	    UpdateChunks();
-	}
+        UpdateInput();
+        UpdateChunks();
+    }
 
     protected override void OnLateUpdate()
     {
@@ -415,7 +415,7 @@ public class GameManager : MonoSingleton<GameManager>
                 if ((ci.Flags & CollisionFlags.Wall) == CollisionFlags.Wall)
                 {
                     // hard collision, prevent movement
-                    bestT = Mathf.Min(tFirst, bestT);    
+                    bestT = Mathf.Min(tFirst, bestT);
                 }
                 else
                 {
@@ -558,7 +558,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     static public Vector2 Chunk2World(ChunkInfo chunk, int x, int y)
     {
-        return Chunk2World(chunk) - new Vector2(ChunkInfo.DefaultChunkWidth / 2, ChunkInfo.DefaultChunkHeight / 2) + new Vector2(x+0.5f, y+0.5f);
+        return Chunk2World(chunk) - new Vector2(ChunkInfo.DefaultChunkWidth / 2, ChunkInfo.DefaultChunkHeight / 2) + new Vector2(x + 0.5f, y + 0.5f);
     }
 
     public bool GetTileDataFromWorldPos(Vector2 worldPos, out ChunkInfo chunk, out int x, out int y)
