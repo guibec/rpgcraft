@@ -8,10 +8,13 @@
 #include "v-float.h"
 #include "x-gpu-ifc.h"
 
+
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <DirectXColors.h>
+
+#include <wincodec.h>
 
 DECLARE_MODULE_NAME("dx11");
 
@@ -575,3 +578,32 @@ void dx11_CreateTexture2D(int width, int height, void* srcData)
 	hr = g_pd3dDevice->CreateShaderResourceView( g_tex2d, &SRVDesc, &g_texView );
 
 }
+
+#if 0
+
+IWICImagingFactory* factory = nullptr;
+
+void WIC_Initialize()
+{
+	IWICImagingFactory* factory = nullptr;
+
+	HRESULT hr = CoCreateInstance(
+		CLSID_WICImagingFactory2,
+		nullptr,
+		CLSCTX_INPROC_SERVER,
+		__uuidof(IWICImagingFactory2),
+		(LPVOID*)&factory
+	);
+}
+
+void WIC_TextureFromFile(const xString& filename)
+{
+	IWICBitmapDecoder decoder;
+	HRESULT hr = pWIC->CreateDecoderFromFilename(fileName, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
+	bug_on(FAILED(hr));
+
+	IWICBitmapFrameDecode frame;
+	hr = decoder->GetFrame(0, frame.GetAddressOf());
+}
+
+#endif
