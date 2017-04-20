@@ -123,6 +123,9 @@
     <ProjectReference Include="..\ajek-framework\msbuild\msw-framework.vcxproj">
       <Project>{d45b9090-e34a-4796-908e-24f83cbd0fb3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\imports\libpng-1.6.29\projects\vstudio\libpng\libpng.vcxproj">
+      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
