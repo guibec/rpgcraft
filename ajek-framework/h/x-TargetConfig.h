@@ -111,7 +111,7 @@
 #endif
 
 #if !TARGET_DEBUG && !TARGET_QA && !TARGET_RELEASE
-#	error A valid target type has not been set.  TARGET_DEBUG, TARGET_BENCHMARK, TARGET_QA, and TARGET_FINAL are all zero (0).
+#	error A valid target type has not been set.  TARGET_DEBUG, TARGET_BENCHMARK, TARGET_QA, and TARGET_RELEASE are all zero (0).
 #endif
 // ======================================================================================
 
