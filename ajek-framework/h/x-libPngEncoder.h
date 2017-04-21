@@ -4,14 +4,6 @@
 #include "png.h"
 #include "zlib.h"
 
-#if (_MSC_VER == 1800)
-#	pragma comment(lib, "libpng16_vs2013.lib")
-#	pragma comment(lib, "zlib_vs2013.lib")
-#elif (_MSC_VER == 1600)
-#	pragma comment(lib, "zlib_vs2010.lib")
-#	pragma comment(lib, "libpng16_vs2010.lib")
-#endif
-
 class x_png {
 
 private:
