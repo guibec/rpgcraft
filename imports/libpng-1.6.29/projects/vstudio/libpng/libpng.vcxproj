@@ -87,9 +87,6 @@
     <ClCompile Include="..\..\..\pngwtran.c" />
     <ClCompile Include="..\..\..\pngwutil.c" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\..\scripts\pngwin.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
