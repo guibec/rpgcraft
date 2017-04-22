@@ -30,6 +30,7 @@ GPU_VertexBuffer		g_mesh_box2D;
 GPU_IndexBuffer			g_idx_box2D;
 bool					g_gpu_ForceWireframe	= false;
 
+GPU_TextureResource2D	tex_terrain;
 
 static const int		numStepsPerCurve		= 10;
 static const int		numTrisPerCurve		    =  numStepsPerCurve;
@@ -223,7 +224,9 @@ void Render()
 	// ------------------------------------------------------------------------------------------
 	// Update Spline Vertex Information
 
-	dx11_UploadDynamicBufferData(g_VertexBufferId, vertices, sizeof(vertices));
+	if (g_VertexBufferId) {
+		dx11_UploadDynamicBufferData(g_VertexBufferId, vertices, sizeof(vertices));
+	}
 
 	// ------------------------------------------------------------------------------------------
 
@@ -249,9 +252,9 @@ void Render()
 	dx11_SetIndexBuffer(g_IndexBuffer, 16, 0);
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
+	dx11_BindShaderResource(tex_terrain, 0);
+
 	//g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
-
-
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 
 
@@ -265,12 +268,8 @@ void Render()
 	xThreadSleep(20);
 }
 
-extern void dx11_CreateTexture2D(int width, int height, void* srcData);
-
-void DoGameInit()
+void InitSplineTest()
 {
-	ProcGenTerrain();
-
 	s16	   indices [(numVertexesPerCurve*4)];
 
 	int iidx = 0;
@@ -281,7 +280,7 @@ void DoGameInit()
 	PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
 	PopulateIndices_TriFan(indices, iidx, vidx, numStepsPerCurve);
 
-	// Close the patch by creating triable between last vertex along the spline and first one.
+	// Close the patch by creating triangle between last vertex along the spline and first one.
 
 	indices[(iidx-3)+1] = 0;
 	indices[(iidx-3)+0] = vidx-1;
@@ -292,8 +291,12 @@ void DoGameInit()
 
 	g_VertexBufferId	= dx11_CreateDynamicVertexBuffer(sizeof(SimpleVertex) * SimpleVertexBufferSize);
 	g_IndexBuffer		= dx11_CreateIndexBuffer(indices, sizeof(indices));
+}
 
-	dx11_CreateTexture2D(TerrainTileW, TerrainTileH, s_ProcTerrain_Height);
+void DoGameInit()
+{
+	ProcGenTerrain();
+	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
 TileMapVertex vertices[] =
 {

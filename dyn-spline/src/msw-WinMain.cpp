@@ -5,9 +5,6 @@
 
 
 extern void			LogHostInit();
-extern HRESULT		InitDevice();
-extern void			CleanupDevice();
-
 
 extern void			DoGameInit();
 extern void			Render();
@@ -93,11 +90,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
-	if (FAILED(InitDevice()))
-	{
-		CleanupDevice();
-		return 0;
-	}
+	dx11_InitDevice();
 
 	DoGameInit();
 
@@ -115,7 +108,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		}
 	}
 
-	CleanupDevice();
+	dx11_CleanupDevice();
 	return (int)msg.wParam;
 }
 
