@@ -18,6 +18,8 @@
 
 DECLARE_MODULE_NAME("dx11");
 
+#define ptr_cast		reinterpret_cast
+
 using namespace DirectX;
 
 static const int BackBufferCount = 3;
@@ -70,13 +72,84 @@ struct DynamicVertexBufferSet {
 };
 
 
-int						g_DynVertBufferCount = 0;
-DynamicVertexBufferSet  g_DynVertBuffers[BackBufferCount];
+int							g_DynVertBufferCount = 0;
+DynamicVertexBufferSet		g_DynVertBuffers[BackBufferCount];
 
-ID3D11SamplerState* m_pTextureSampler = nullptr;
-ID3D11Texture2D*	g_tex2d;
-ID3D11ShaderResourceView*	g_texView;
+ID3D11SamplerState*			m_pTextureSampler = nullptr;
 
+
+DXGI_FORMAT get_DXGI_Format(GPU_ResourceFmt bitmapFmt)
+{
+	switch(bitmapFmt)
+	{
+		case     GPU_ResourceFmt_R32G32B32A32_TYPELESS     :  return DXGI_FORMAT_R32G32B32A32_TYPELESS       ;
+		case     GPU_ResourceFmt_R32G32B32A32_FLOAT        :  return DXGI_FORMAT_R32G32B32A32_FLOAT          ;
+		case     GPU_ResourceFmt_R32G32B32A32_UINT         :  return DXGI_FORMAT_R32G32B32A32_UINT           ;
+		case     GPU_ResourceFmt_R32G32B32A32_SINT         :  return DXGI_FORMAT_R32G32B32A32_SINT           ;
+		case     GPU_ResourceFmt_R32G32B32_TYPELESS        :  return DXGI_FORMAT_R32G32B32_TYPELESS          ;
+		case     GPU_ResourceFmt_R32G32B32_FLOAT           :  return DXGI_FORMAT_R32G32B32_FLOAT             ;
+		case     GPU_ResourceFmt_R32G32B32_UINT            :  return DXGI_FORMAT_R32G32B32_UINT              ;
+		case     GPU_ResourceFmt_R32G32B32_SINT            :  return DXGI_FORMAT_R32G32B32_SINT              ;
+		case     GPU_ResourceFmt_R16G16B16A16_TYPELESS     :  return DXGI_FORMAT_R16G16B16A16_TYPELESS       ;
+		case     GPU_ResourceFmt_R16G16B16A16_FLOAT        :  return DXGI_FORMAT_R16G16B16A16_FLOAT          ;
+		case     GPU_ResourceFmt_R16G16B16A16_UNORM        :  return DXGI_FORMAT_R16G16B16A16_UNORM          ;
+		case     GPU_ResourceFmt_R16G16B16A16_UINT         :  return DXGI_FORMAT_R16G16B16A16_UINT           ;
+		case     GPU_ResourceFmt_R16G16B16A16_SNORM        :  return DXGI_FORMAT_R16G16B16A16_SNORM          ;
+		case     GPU_ResourceFmt_R16G16B16A16_SINT         :  return DXGI_FORMAT_R16G16B16A16_SINT           ;
+		case     GPU_ResourceFmt_R32G32_TYPELESS           :  return DXGI_FORMAT_R32G32_TYPELESS             ;
+		case     GPU_ResourceFmt_R32G32_FLOAT              :  return DXGI_FORMAT_R32G32_FLOAT                ;
+		case     GPU_ResourceFmt_R32G32_UINT               :  return DXGI_FORMAT_R32G32_UINT                 ;
+		case     GPU_ResourceFmt_R32G32_SINT               :  return DXGI_FORMAT_R32G32_SINT                 ;
+		case     GPU_ResourceFmt_R32G8X24_TYPELESS         :  return DXGI_FORMAT_R32G8X24_TYPELESS           ;
+		case     GPU_ResourceFmt_D32_FLOAT_S8X24_UINT      :  return DXGI_FORMAT_D32_FLOAT_S8X24_UINT        ;
+		case     GPU_ResourceFmt_R32_FLOAT_X8X24_TYPELESS  :  return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS    ;
+		case     GPU_ResourceFmt_X32_TYPELESS_G8X24_UINT   :  return DXGI_FORMAT_X32_TYPELESS_G8X24_UINT     ;
+		case     GPU_ResourceFmt_R10G10B10A2_TYPELESS      :  return DXGI_FORMAT_R10G10B10A2_TYPELESS        ;
+		case     GPU_ResourceFmt_R10G10B10A2_UNORM         :  return DXGI_FORMAT_R10G10B10A2_UNORM           ;
+		case     GPU_ResourceFmt_R10G10B10A2_UINT          :  return DXGI_FORMAT_R10G10B10A2_UINT            ;
+		case     GPU_ResourceFmt_R8G8B8A8_TYPELESS         :  return DXGI_FORMAT_R8G8B8A8_TYPELESS           ;
+		case     GPU_ResourceFmt_R8G8B8A8_UNORM            :  return DXGI_FORMAT_R8G8B8A8_UNORM              ;
+		case     GPU_ResourceFmt_R8G8B8A8_UINT             :  return DXGI_FORMAT_R8G8B8A8_UINT               ;
+		case     GPU_ResourceFmt_R8G8B8A8_SNORM            :  return DXGI_FORMAT_R8G8B8A8_SNORM              ;
+		case     GPU_ResourceFmt_R8G8B8A8_SINT             :  return DXGI_FORMAT_R8G8B8A8_SINT               ;
+		case     GPU_ResourceFmt_R16G16_TYPELESS           :  return DXGI_FORMAT_R16G16_TYPELESS             ;
+		case     GPU_ResourceFmt_R16G16_FLOAT              :  return DXGI_FORMAT_R16G16_FLOAT                ;
+		case     GPU_ResourceFmt_R16G16_UNORM              :  return DXGI_FORMAT_R16G16_UNORM                ;
+		case     GPU_ResourceFmt_R16G16_UINT               :  return DXGI_FORMAT_R16G16_UINT                 ;
+		case     GPU_ResourceFmt_R16G16_SNORM              :  return DXGI_FORMAT_R16G16_SNORM                ;
+		case     GPU_ResourceFmt_R16G16_SINT               :  return DXGI_FORMAT_R16G16_SINT                 ;
+		case     GPU_ResourceFmt_R32_TYPELESS              :  return DXGI_FORMAT_R32_TYPELESS                ;
+		case     GPU_ResourceFmt_D32_FLOAT                 :  return DXGI_FORMAT_D32_FLOAT                   ;
+		case     GPU_ResourceFmt_R32_FLOAT                 :  return DXGI_FORMAT_R32_FLOAT                   ;
+		case     GPU_ResourceFmt_R32_UINT                  :  return DXGI_FORMAT_R32_UINT                    ;
+		case     GPU_ResourceFmt_R32_SINT                  :  return DXGI_FORMAT_R32_SINT                    ;
+		case     GPU_ResourceFmt_R24G8_TYPELESS            :  return DXGI_FORMAT_R24G8_TYPELESS              ;
+		case     GPU_ResourceFmt_D24_UNORM_S8_UINT         :  return DXGI_FORMAT_D24_UNORM_S8_UINT           ;
+		case     GPU_ResourceFmt_R24_UNORM_X8_TYPELESS     :  return DXGI_FORMAT_R24_UNORM_X8_TYPELESS       ;
+		case     GPU_ResourceFmt_X24_TYPELESS_G8_UINT      :  return DXGI_FORMAT_X24_TYPELESS_G8_UINT        ;
+		case     GPU_ResourceFmt_R8G8_TYPELESS             :  return DXGI_FORMAT_R8G8_TYPELESS               ;
+		case     GPU_ResourceFmt_R8G8_UNORM                :  return DXGI_FORMAT_R8G8_UNORM                  ;
+		case     GPU_ResourceFmt_R8G8_UINT                 :  return DXGI_FORMAT_R8G8_UINT                   ;
+		case     GPU_ResourceFmt_R8G8_SNORM                :  return DXGI_FORMAT_R8G8_SNORM                  ;
+		case     GPU_ResourceFmt_R8G8_SINT                 :  return DXGI_FORMAT_R8G8_SINT                   ;
+		case     GPU_ResourceFmt_R16_TYPELESS              :  return DXGI_FORMAT_R16_TYPELESS                ;
+		case     GPU_ResourceFmt_R16_FLOAT                 :  return DXGI_FORMAT_R16_FLOAT                   ;
+		case     GPU_ResourceFmt_D16_UNORM                 :  return DXGI_FORMAT_D16_UNORM                   ;
+		case     GPU_ResourceFmt_R16_UNORM                 :  return DXGI_FORMAT_R16_UNORM                   ;
+		case     GPU_ResourceFmt_R16_UINT                  :  return DXGI_FORMAT_R16_UINT                    ;
+		case     GPU_ResourceFmt_R16_SNORM                 :  return DXGI_FORMAT_R16_SNORM                   ;
+		case     GPU_ResourceFmt_R16_SINT                  :  return DXGI_FORMAT_R16_SINT                    ;
+		case     GPU_ResourceFmt_R8_TYPELESS               :  return DXGI_FORMAT_R8_TYPELESS                 ;
+		case     GPU_ResourceFmt_R8_UNORM                  :  return DXGI_FORMAT_R8_UNORM                    ;
+		case     GPU_ResourceFmt_R8_UINT                   :  return DXGI_FORMAT_R8_UINT                     ;
+		case     GPU_ResourceFmt_R8_SNORM                  :  return DXGI_FORMAT_R8_SNORM                    ;
+		case     GPU_ResourceFmt_R8_SINT                   :  return DXGI_FORMAT_R8_SINT                     ;
+		case     GPU_ResourceFmt_A8_UNORM                  :  return DXGI_FORMAT_A8_UNORM                    ;
+	}
+
+	unreachable();
+	return DXGI_FORMAT_R8G8B8A8_UNORM;
+}
 
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
@@ -126,10 +199,21 @@ ID3DBlob* CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR s
 	return ppBlobOut;
 }
 
-//--------------------------------------------------------------------------------------
-// Create Direct3D device and swap chain
-//--------------------------------------------------------------------------------------
-HRESULT InitDevice()
+void dx11_CleanupDevice()
+{
+	// ... one of these isn't like all the others... !!!
+
+	if (g_pImmediateContext)	g_pImmediateContext		->ClearState();
+
+	if (g_pSwapChain1)			g_pSwapChain1			->Release();
+	if (g_pSwapChain)			g_pSwapChain			->Release();
+	if (g_pImmediateContext1)	g_pImmediateContext1	->Release();
+	if (g_pImmediateContext)	g_pImmediateContext		->Release();
+	if (g_pd3dDevice1)			g_pd3dDevice1			->Release();
+	if (g_pd3dDevice)			g_pd3dDevice			->Release();
+}
+
+void dx11_InitDevice()
 {
 	HRESULT hr = S_OK;
 
@@ -177,8 +261,7 @@ HRESULT InitDevice()
 			break;
 	}
 
-	if (FAILED(hr))
-		return hr;
+	log_and_abort_on (FAILED(hr));
 
 	//  * DX Docs recommend always having MSAA enabled.
 	//  * Depth Bias options are pretty much jsut for shadow implementations
@@ -240,8 +323,7 @@ HRESULT InitDevice()
 			dxgiDevice->Release();
 		}
 	}
-	if (FAILED(hr))
-		return hr;
+	log_and_abort_on (hr);
 
 	// Create swap chain
 	IDXGIFactory2* dxgiFactory2 = nullptr;
@@ -297,8 +379,7 @@ HRESULT InitDevice()
 
 	dxgiFactory->Release();
 
-	if (FAILED(hr))
-		return hr;
+	log_and_abort_on(FAILED(hr));
 
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
@@ -347,8 +428,7 @@ HRESULT InitDevice()
 		pVSBlob->GetBufferSize(), &g_pVertexLayout
 	);
 	pVSBlob->Release();
-	if (FAILED(hr))
-		return hr;
+	log_and_abort_on(FAILED(hr));
 
 	// Set the input layout
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
@@ -360,21 +440,20 @@ HRESULT InitDevice()
 	// Create the pixel shader
 	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
 	pPSBlob->Release();
-	if (FAILED(hr))
-		return hr;
+	log_and_abort_on(FAILED(hr));
 
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 
-//	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+//	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD			= 0;
+	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
 
 	// Create the sampler
 	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
@@ -387,8 +466,6 @@ HRESULT InitDevice()
 	g_World			= XMMatrixIdentity();
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f );
-
-	return hr;
 }
 
 void dx11_SetVertexBuffer( int bufferId, int shaderSlot, int _stride, int _offset)
@@ -450,13 +527,6 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 	return bufferIdx;
 }
 
-
-//Indices:
-//
-//0,1,3
-//3,2,1
-
-
 GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, int vertexCount)
 {
 	D3D11_BUFFER_DESC bd;
@@ -498,20 +568,6 @@ GPU_IndexBuffer dx11_CreateIndexBuffer(void* indexBuffer, int bufferSize)
 	return (GPU_IndexBuffer)handle;
 }
 
-void CleanupDevice()
-{
-	// ... one of these isn't like all the others... !!!
-
-	if (g_pImmediateContext)	g_pImmediateContext		->ClearState();
-
-	if (g_pSwapChain1)			g_pSwapChain1			->Release();
-	if (g_pSwapChain)			g_pSwapChain			->Release();
-	if (g_pImmediateContext1)	g_pImmediateContext1	->Release();
-	if (g_pImmediateContext)	g_pImmediateContext		->Release();
-	if (g_pd3dDevice1)			g_pd3dDevice1			->Release();
-	if (g_pd3dDevice)			g_pd3dDevice			->Release();
-}
-
 void dx11_BackbufferSwap()
 {
 	g_pSwapChain->Present(0, 0);
@@ -542,41 +598,112 @@ void dx11_SetRasterState(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRast
 	}
 	g_pImmediateContext->RSSetState(g_RasterState[fill][cull][scissor]);
 	g_pImmediateContext->PSSetSamplers( 0, 1, &m_pTextureSampler );
-	g_pImmediateContext->PSSetShaderResources( 0, 1, &g_texView );
 }
 
-void dx11_CreateTexture2D(int width, int height, void* srcData)
+void dx11_BindShaderResource(const GPU_ShaderResource& res, int startSlot)
 {
-	D3D11_TEXTURE2D_DESC desc;
-	xMemZero(desc);
+	auto&	resourceView	= ptr_cast<ID3D11ShaderResourceView* const&>(res.m_driverData_view);
+	g_pImmediateContext->PSSetShaderResources( startSlot, 1, &resourceView );
+}
+
+void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format)
+{
+	HRESULT hr;
+
+	auto&	texture		= ptr_cast<ID3D11Texture2D*&>			(dest.m_driverData_tex );
+	auto&	textureView	= ptr_cast<ID3D11ShaderResourceView*&>	(dest.m_driverData_view);
+
+	// See if format is supported for auto-gen mipmaps (varies by feature level)
+	// (Must have context and shader-view to auto generate mipmaps)
+
+	DXGI_FORMAT dxfmt = get_DXGI_Format(format);
+
+	bool autogen_mipmaps = false;
+	UINT fmtSupport = 0;
+	hr = g_pd3dDevice->CheckFormatSupport(dxfmt, &fmtSupport);
+	if (SUCCEEDED(hr) && (fmtSupport & D3D11_FORMAT_SUPPORT_MIP_AUTOGEN))
+	{
+		autogen_mipmaps = true;
+	}
+
+	// Create texture
+	D3D11_TEXTURE2D_DESC desc = {};
+
 	desc.Width				= width;
 	desc.Height				= height;
-	desc.MipLevels			= 1;
+	desc.MipLevels			= (autogen_mipmaps) ? 0 : 1;
 	desc.ArraySize			= 1;
-	desc.Format				= DXGI_FORMAT_R32_FLOAT;
+	desc.Format				= dxfmt;
 	desc.SampleDesc.Count	= 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage				= D3D11_USAGE_DEFAULT;
-	desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags		= 0;
 
-	D3D11_SUBRESOURCE_DATA InitData;
+	desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE; 
+	desc.MiscFlags			= 0;
+	
+	if (autogen_mipmaps)
+	{
+		desc.BindFlags	   |= D3D11_BIND_RENDER_TARGET;
+		desc.MiscFlags	   |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
 
-	xMemZero(InitData);
-	InitData.pSysMem		= srcData;
-	InitData.SysMemPitch	= width * sizeof(float);
+	int bytespp = 4;
+	if (format == GPU_ResourceFmt_R32G32_UINT) {
+		bytespp = 8;
+	}
 
-	auto hr = g_pd3dDevice->CreateTexture2D( &desc, &InitData, &g_tex2d );
+	if (format == GPU_ResourceFmt_R32G32_FLOAT) {
+		bytespp = 8;
+	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-	xMemZero( SRVDesc );
-	SRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	int rowPitch = ((width * bytespp));
 
-	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	SRVDesc.Texture2D.MipLevels			= -1;
+	D3D11_SUBRESOURCE_DATA initData;
+	initData.pSysMem			= src_bitmap_data;
+	initData.SysMemPitch		= rowPitch;
+	initData.SysMemSlicePitch	= rowPitch * height;
 
-	hr = g_pd3dDevice->CreateShaderResourceView( g_tex2d, &SRVDesc, &g_texView );
+	hr = g_pd3dDevice->CreateTexture2D(&desc, (autogen_mipmaps) ? nullptr : &initData, &texture);
+	log_and_abort_on(FAILED(hr) || !texture);
 
+	// textureView bits
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	SRVDesc.Format				= desc.Format;
+	SRVDesc.ViewDimension		= D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MipLevels = autogen_mipmaps ? -1 : 1;
+
+	hr = g_pd3dDevice->CreateShaderResourceView(texture, &SRVDesc, &textureView);
+	log_and_abort_on (FAILED(hr));
+
+	if (autogen_mipmaps)
+	{
+
+#if defined(_XBOX_ONE) && defined(_TITLE)
+		// reference code left in from when I copied this mess from DirectXTK.
+		// Has not been updated or tested.  --jstine
+
+		ID3D11Texture2D *pStaging = nullptr;
+		CD3D11_TEXTURE2D_DESC stagingDesc(format, twidth, theight, 1, 1, 0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ, 1, 0, 0);
+		initData.pSysMem = temp.get();
+		initData.SysMemPitch = static_cast<UINT>(rowPitch);
+		initData.SysMemSlicePitch = static_cast<UINT>(imageSize);
+
+		hr = d3dDevice->CreateTexture2D(&stagingDesc, &initData, &pStaging);
+		if (SUCCEEDED(hr))
+		{
+			d3dContext->CopySubresourceRegion(tex, 0, 0, 0, 0, pStaging, 0, nullptr);
+
+			UINT64 copyFence = d3dContextX->InsertFence(0);
+			while (d3dDeviceX->IsFencePending(copyFence)) { SwitchToThread(); }
+			pStaging->Release();
+		}
+#else
+		g_pImmediateContext->UpdateSubresource(texture, 0, nullptr, src_bitmap_data, rowPitch, rowPitch * height);
+#endif
+		g_pImmediateContext->GenerateMips(textureView);
+	}
 }
 
 #if 0

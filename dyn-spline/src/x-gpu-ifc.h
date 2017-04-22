@@ -1,5 +1,72 @@
 #pragma once
 
+enum GPU_ResourceFmt
+{
+	GPU_ResourceFmt_R32G32B32A32_TYPELESS       = 1,
+	GPU_ResourceFmt_R32G32B32A32_FLOAT          = 2,
+	GPU_ResourceFmt_R32G32B32A32_UINT           = 3,
+	GPU_ResourceFmt_R32G32B32A32_SINT           = 4,
+	GPU_ResourceFmt_R32G32B32_TYPELESS          = 5,
+	GPU_ResourceFmt_R32G32B32_FLOAT             = 6,
+	GPU_ResourceFmt_R32G32B32_UINT              = 7,
+	GPU_ResourceFmt_R32G32B32_SINT              = 8,
+	GPU_ResourceFmt_R16G16B16A16_TYPELESS       = 9,
+	GPU_ResourceFmt_R16G16B16A16_FLOAT          = 10,
+	GPU_ResourceFmt_R16G16B16A16_UNORM          = 11,
+	GPU_ResourceFmt_R16G16B16A16_UINT           = 12,
+	GPU_ResourceFmt_R16G16B16A16_SNORM          = 13,
+	GPU_ResourceFmt_R16G16B16A16_SINT           = 14,
+	GPU_ResourceFmt_R32G32_TYPELESS             = 15,
+	GPU_ResourceFmt_R32G32_FLOAT                = 16,
+	GPU_ResourceFmt_R32G32_UINT                 = 17,
+	GPU_ResourceFmt_R32G32_SINT                 = 18,
+	GPU_ResourceFmt_R32G8X24_TYPELESS           = 19,
+	GPU_ResourceFmt_D32_FLOAT_S8X24_UINT        = 20,
+	GPU_ResourceFmt_R32_FLOAT_X8X24_TYPELESS    = 21,
+	GPU_ResourceFmt_X32_TYPELESS_G8X24_UINT     = 22,
+	GPU_ResourceFmt_R10G10B10A2_TYPELESS        = 23,
+	GPU_ResourceFmt_R10G10B10A2_UNORM           = 24,
+	GPU_ResourceFmt_R10G10B10A2_UINT            = 25,
+	GPU_ResourceFmt_R8G8B8A8_TYPELESS           = 27,
+	GPU_ResourceFmt_R8G8B8A8_UNORM              = 28,
+	GPU_ResourceFmt_R8G8B8A8_UINT               = 30,
+	GPU_ResourceFmt_R8G8B8A8_SNORM              = 31,
+	GPU_ResourceFmt_R8G8B8A8_SINT               = 32,
+	GPU_ResourceFmt_R16G16_TYPELESS             = 33,
+	GPU_ResourceFmt_R16G16_FLOAT                = 34,
+	GPU_ResourceFmt_R16G16_UNORM                = 35,
+	GPU_ResourceFmt_R16G16_UINT                 = 36,
+	GPU_ResourceFmt_R16G16_SNORM                = 37,
+	GPU_ResourceFmt_R16G16_SINT                 = 38,
+	GPU_ResourceFmt_R32_TYPELESS                = 39,
+	GPU_ResourceFmt_D32_FLOAT                   = 40,
+	GPU_ResourceFmt_R32_FLOAT                   = 41,
+	GPU_ResourceFmt_R32_UINT                    = 42,
+	GPU_ResourceFmt_R32_SINT                    = 43,
+	GPU_ResourceFmt_R24G8_TYPELESS              = 44,
+	GPU_ResourceFmt_D24_UNORM_S8_UINT           = 45,
+	GPU_ResourceFmt_R24_UNORM_X8_TYPELESS       = 46,
+	GPU_ResourceFmt_X24_TYPELESS_G8_UINT        = 47,
+	GPU_ResourceFmt_R8G8_TYPELESS               = 48,
+	GPU_ResourceFmt_R8G8_UNORM                  = 49,
+	GPU_ResourceFmt_R8G8_UINT                   = 50,
+	GPU_ResourceFmt_R8G8_SNORM                  = 51,
+	GPU_ResourceFmt_R8G8_SINT                   = 52,
+	GPU_ResourceFmt_R16_TYPELESS                = 53,
+	GPU_ResourceFmt_R16_FLOAT                   = 54,
+	GPU_ResourceFmt_D16_UNORM                   = 55,
+	GPU_ResourceFmt_R16_UNORM                   = 56,
+	GPU_ResourceFmt_R16_UINT                    = 57,
+	GPU_ResourceFmt_R16_SNORM                   = 58,
+	GPU_ResourceFmt_R16_SINT                    = 59,
+	GPU_ResourceFmt_R8_TYPELESS                 = 60,
+	GPU_ResourceFmt_R8_UNORM                    = 61,
+	GPU_ResourceFmt_R8_UINT                     = 62,
+	GPU_ResourceFmt_R8_SNORM                    = 63,
+	GPU_ResourceFmt_R8_SINT                     = 64,
+	GPU_ResourceFmt_A8_UNORM                    = 65,
+};
+
 enum GpuPrimitiveType
 {
 	GPU_PRIM_POINTLIST		= 1,
@@ -32,13 +99,30 @@ enum GpuRasterScissorMode {
 };
 
 struct GPU_VertexBuffer {
-	s64		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_VertexBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_IndexBuffer {
-	s64		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_IndexBuffer(const void* driverData = nullptr);
+};
+
+struct GPU_ShaderResource {
+	sptr		m_driverData_view;
+
+	GPU_ShaderResource() {
+		m_driverData_view	= 0;
+	}
+};
+
+struct GPU_TextureResource2D : public GPU_ShaderResource {
+	sptr		m_driverData_tex;
+
+	GPU_TextureResource2D() {
+		m_driverData_tex	= 0;
+		m_driverData_view	= 0;
+	}
 };
 
 inline GPU_VertexBuffer::GPU_VertexBuffer(const void* driverData) {
@@ -49,18 +133,24 @@ inline GPU_IndexBuffer::GPU_IndexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
 
+extern void				dx11_InitDevice();
+extern void				dx11_CleanupDevice();
 
 extern void				dx11_BackbufferSwap				();
 extern int				dx11_CreateDynamicVertexBuffer	(int bufferSizeInBytes);
 extern GPU_IndexBuffer	dx11_CreateIndexBuffer			(void* indexBuffer, int bufferSize);
+extern void				dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
+
 extern void				dx11_SetVertexBuffer			(int bufferId, int shaderSlot, int _stride, int _offset);
 extern void				dx11_UploadDynamicBufferData	(int bufferIdx, void* srcData, int sizeInBytes);
 extern void				dx11_SetIndexBuffer				(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset);
 extern void				dx11_SetPrimType				(GpuPrimitiveType primType);
 
 extern void				dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
-
 extern void				dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
+extern void				dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
+
+
 extern GPU_VertexBuffer	dx11_CreateStaticMesh			(void* vertexData, int itemSizeInBytes, int vertexCount);
 
 extern bool				g_gpu_ForceWireframe;
