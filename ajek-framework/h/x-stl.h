@@ -39,11 +39,40 @@
 #include <list>
 #include <algorithm>
 #include <memory>
+#include <functional>
 
 template< typename T > 
 inline __ai T xBoundsCheck(const T& src, const T& lower, const T& upper) {
 	return std::min( std::max(src, lower), upper);
 }
+
+// -----------------------------------------------------------------------------------------------
+// Defer (macro) / Defer_t (struct)
+//
+// Inspired by Golang's 'defer' keyword.  Allows binding a lambda to be executed when the current 
+// scope of the deferral's creation is left.  This still differs from Golang `defer`:
+//
+//    - Golang defer executes at the end of function scope.
+//    - Our C++ Defer executes at the end of current lexical scope.
+//
+struct Defer_t {
+	std::function<void()>   m_func;
+
+	Defer_t() throw() { }
+	Defer_t(std::function<void()> func) throw() {
+		m_func = func;
+	}
+
+	~Defer_t() {
+		m_func();
+	}
+
+	void Bind(std::function<void()> func) {
+		m_func = func;
+	}
+};
+
+#define Defer(func)   Defer_t defer_anon_##__COUNTER__( [&]() { func; } )
 
 #ifdef _MSC_VER
 #	pragma warning(default: 4275)
