@@ -1,5 +1,7 @@
 #pragma once
 
+#include "x-types.h"
+
 enum GPU_ResourceFmt
 {
 	GPU_ResourceFmt_R32G32B32A32_TYPELESS       = 1,
@@ -154,3 +156,4 @@ extern void				dx11_BindShaderResource			(const GPU_ShaderResource& res, int sta
 extern GPU_VertexBuffer	dx11_CreateStaticMesh			(void* vertexData, int itemSizeInBytes, int vertexCount);
 
 extern bool				g_gpu_ForceWireframe;
+
