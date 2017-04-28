@@ -85,6 +85,7 @@
     <ClInclude Include="..\ajek-framework\h\x-atomic.h" />
     <ClInclude Include="..\ajek-framework\h\x-ForwardDefs.h" />
     <ClInclude Include="..\ajek-framework\h\x-libPngEncoder.h" />
+    <ClInclude Include="..\ajek-framework\h\x-ScopedMalloc.h" />
     <ClInclude Include="..\ajek-framework\h\x-simd.h" />
     <ClInclude Include="..\ajek-framework\h\x-stdlib.h" />
     <ClInclude Include="..\ajek-framework\h\x-stl.h" />
