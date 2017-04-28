@@ -119,6 +119,9 @@
     <ClInclude Include="..\ajek-framework\h\x-types.h">
       <Filter>ajek-framework\Public Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\ajek-framework\h\x-ScopedMalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ajek-framework\h\x-MemCopy.inl">
