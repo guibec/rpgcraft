@@ -337,8 +337,7 @@ void dx11_InitDevice()
 			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1));
 		}
 
-		DXGI_SWAP_CHAIN_DESC1 sd;
-		ZeroMemory(&sd, sizeof(sd));
+		DXGI_SWAP_CHAIN_DESC1 sd = {};
 		sd.Width                = width;
 		sd.Height               = height;
 		sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -357,8 +356,7 @@ void dx11_InitDevice()
 	} else
 	{
 		// DirectX 11.0 systems
-		DXGI_SWAP_CHAIN_DESC sd;
-		ZeroMemory(&sd, sizeof(sd));
+		DXGI_SWAP_CHAIN_DESC sd = {};
 		sd.BufferCount          = 1;
 		sd.BufferDesc.Width     = width;
 		sd.BufferDesc.Height    = height;
@@ -443,8 +441,7 @@ void dx11_InitDevice()
 	log_and_abort_on(FAILED(hr));
 
 
-	D3D11_SAMPLER_DESC samplerDesc;
-	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+	D3D11_SAMPLER_DESC samplerDesc = {};
 
 //	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -499,8 +496,7 @@ void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offs
 
 void dx11_UploadDynamicBufferData(int bufferIdx, void* srcData, int sizeInBytes)
 {
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	xMemZero(mappedResource);
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 
 	auto*   simple      = g_DynVertBuffers[g_curBufferIdx].Buffers[bufferIdx];
 
@@ -513,8 +509,7 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 {
 	int bufferIdx = g_DynVertBufferCount;
 	for (int i=0; i<BackBufferCount; ++i) {
-		D3D11_BUFFER_DESC bd;
-		xMemZero(bd);
+		D3D11_BUFFER_DESC bd = {};
 		bd.Usage			= D3D11_USAGE_DYNAMIC;
 		bd.ByteWidth		= bufferSizeInBytes;
 		bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
@@ -529,15 +524,13 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 
 GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, int vertexCount)
 {
-	D3D11_BUFFER_DESC bd;
-	xMemZero( bd );
+	D3D11_BUFFER_DESC bd = {};
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = itemSizeInBytes * vertexCount;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData;
-	xMemZero( InitData );
+	D3D11_SUBRESOURCE_DATA InitData = {};
 	InitData.pSysMem = vertexData;
 
 	GPU_VertexBuffer result;
@@ -549,16 +542,13 @@ GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, in
 
 GPU_IndexBuffer dx11_CreateIndexBuffer(void* indexBuffer, int bufferSize)
 {
-	D3D11_SUBRESOURCE_DATA InitData;
-	D3D11_BUFFER_DESC bd;
+	D3D11_SUBRESOURCE_DATA	InitData	= {};
+	D3D11_BUFFER_DESC		bd			= {};
 
-	xMemZero(bd);
 	bd.Usage			= D3D11_USAGE_DEFAULT;
 	bd.ByteWidth		= bufferSize;
 	bd.BindFlags		= D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags	= 0;
-
-	xMemZero(InitData);
 	InitData.pSysMem	= indexBuffer;
 
 	ID3D11Buffer* handle;
