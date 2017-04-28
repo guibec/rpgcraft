@@ -54,6 +54,9 @@
     <ClCompile Include="..\ajek-framework\src\x-thread.cpp">
       <Filter>ajek-framework</Filter>
     </ClCompile>
+    <ClCompile Include="..\ajek-framework\src\x-png-decode.cpp">
+      <Filter>ajek-framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
@@ -121,6 +124,12 @@
     </ClInclude>
     <ClInclude Include="..\ajek-framework\h\x-ScopedMalloc.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ajek-framework\h\x-png-decode.h">
+      <Filter>ajek-framework\Public Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ajek-framework\h\x-BitmapData.h">
+      <Filter>ajek-framework\Public Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

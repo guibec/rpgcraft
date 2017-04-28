@@ -68,6 +68,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ajek-framework\src\common-standard.cpp" />
+    <ClCompile Include="..\ajek-framework\src\x-png-decode.cpp" />
     <ClCompile Include="..\ajek-framework\src\x-stdlib.cpp" />
     <ClCompile Include="..\ajek-framework\src\x-string.cpp" />
     <ClCompile Include="..\ajek-framework\src\x-thread.cpp" />
@@ -83,8 +84,10 @@
     <ClInclude Include="..\ajek-framework\h\sse_intrinsics.h" />
     <ClInclude Include="..\ajek-framework\h\x-assertion.h" />
     <ClInclude Include="..\ajek-framework\h\x-atomic.h" />
+    <ClInclude Include="..\ajek-framework\h\x-BitmapData.h" />
     <ClInclude Include="..\ajek-framework\h\x-ForwardDefs.h" />
     <ClInclude Include="..\ajek-framework\h\x-libPngEncoder.h" />
+    <ClInclude Include="..\ajek-framework\h\x-png-decode.h" />
     <ClInclude Include="..\ajek-framework\h\x-ScopedMalloc.h" />
     <ClInclude Include="..\ajek-framework\h\x-simd.h" />
     <ClInclude Include="..\ajek-framework\h\x-stdlib.h" />
