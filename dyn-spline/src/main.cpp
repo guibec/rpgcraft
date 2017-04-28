@@ -6,6 +6,8 @@
 #include "x-thread.h"
 #include "x-gpu-ifc.h"
 
+#include "x-png-decode.h"
+
 #include "Bezier2D.h"
 
 #include <windows.h>
@@ -30,6 +32,7 @@ GPU_VertexBuffer		g_mesh_box2D;
 GPU_IndexBuffer			g_idx_box2D;
 bool					g_gpu_ForceWireframe	= false;
 
+GPU_TextureResource2D	tex_floor;
 GPU_TextureResource2D	tex_terrain;
 
 static const int		numStepsPerCurve		= 10;
@@ -252,7 +255,7 @@ void Render()
 	dx11_SetIndexBuffer(g_IndexBuffer, 16, 0);
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
-	dx11_BindShaderResource(tex_terrain, 0);
+	dx11_BindShaderResource(tex_floor, 0);
 
 	//g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
@@ -295,20 +298,25 @@ void InitSplineTest()
 
 void DoGameInit()
 {
+	xBitmapData  pngtex;
+	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+
+	dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
 TileMapVertex vertices[] =
 {
-	//{ vFloat3( -0.5f,  0.5f, 0.5f ), vFloat2(0.0f, 0.0f) },
-	//{ vFloat3( -0.5f, -0.5f, 0.5f ), vFloat2(0.0f, 1.0f) },
-	//{ vFloat3(  0.5f, -0.5f, 0.5f ), vFloat2(1.0f, 1.0f) },
-	//{ vFloat3(  0.5f,  0.5f, 0.5f ), vFloat2(1.0f, 0.0f) }
+	{ vFloat3( -0.4f,  0.5f, 0.5f ), vFloat2(0.0f, 0.0f) },
+	{ vFloat3( -0.4f, -0.5f, 0.5f ), vFloat2(0.0f, 1.0f) },
+	{ vFloat3(  0.4f, -0.5f, 0.5f ), vFloat2(1.0f, 1.0f) },
+	{ vFloat3(  0.4f,  0.5f, 0.5f ), vFloat2(1.0f, 0.0f) }
 
-	{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
-	{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
-	{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
-	{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
+	//{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
+	//{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
+	//{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
+	//{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
 };
 
 	s16 indices_box[] = {
