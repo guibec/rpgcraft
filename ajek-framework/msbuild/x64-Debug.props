@@ -5,12 +5,11 @@
     <!-- Oddly enough, Visual Studio Intellisense seems to work best if Whole Program Optimization
          and Link Time Code Generation are enabled, even if we're really not utilizing them due to
          all other optimizations being disabled in Debug builds. -->
-         
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>_SECURE_SCL=1;_ITERATOR_DEBUG_LEVEL=2;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TOOLCHAIN_LTO_ENABLED=0;_SECURE_SCL=1;_ITERATOR_DEBUG_LEVEL=2;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
@@ -19,9 +18,9 @@
       <StringPooling>false</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-	<Link>
+    <Link>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
-	</Link>
+    </Link>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>

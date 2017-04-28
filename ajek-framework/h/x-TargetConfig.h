@@ -214,15 +214,12 @@
 // --------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------
-// USING_CLANG_LTO
+// TOOLCHAIN_LTO_ENABLED
 //
 // This should be defined by the project file so that it matches other linker settings regarding
-// debug symbols and such.  LTO is not always debug-information friendly and so the project file
-// will disable those features when enabling LTO.  Forcing LTO to enabled here may yield an
-// executable without debug information -- and forcing it to 1 may cause very long build times or
-// crashes.
+// debug symbols, cross-module COMDAT elimination, etc.  It affects the inclusion of inl for
+// certain high-performance or high-redundancy modules.
 //
-#if !defined(USING_CLANG_LTO)
-#	define USING_CLANG_LTO		0
+#if !defined(TOOLCHAIN_LTO_ENABLED)
+#	define TOOLCHAIN_LTO_ENABLED	0
 #endif
-// --------------------------------------------------------------------------------------

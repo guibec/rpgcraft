@@ -76,6 +76,7 @@
     <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
+    <ClCompile Include="src\x-gpu-colors.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +101,7 @@
     <ClInclude Include="src\Bezier2D.h" />
     <ClInclude Include="src\mswStandard.h" />
     <ClInclude Include="src\v-float.h" />
+    <ClInclude Include="src\x-gpu-colors.h" />
     <ClInclude Include="src\x-gpu-ifc.h" />
     <ClInclude Include="src\x-thread-internal.h" />
   </ItemGroup>
@@ -108,6 +110,7 @@
       <FileType>Document</FileType>
     </ClInclude>
     <None Include="..\ajek-framework\h\x-MemCopy.inl" />
+    <None Include="src\x-gpu-colors.inl" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ColorGradient.fx">
