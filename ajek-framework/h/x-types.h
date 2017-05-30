@@ -29,6 +29,16 @@
 	// (happens all the time in x64, and explicit typecasts to avoid these warnings are redundant and annoying)
 #	pragma warning(disable: 4244)
 #	pragma warning(disable: 4267)
+
+// Microsoft loves their 32/64 bit conversion warnings.  One can only imagine how many bad coding practices have been littered through
+// out Microsoft/Windows codebase to merit 1. roughly 6 warnings dedicated to trying to catch such things, and 2. having the warnings
+// put in at Warning Level #1 (always enabled).
+// Worst part: fixing these warning with macros actually does a disservice to other superior code analysis tools, namely Valgrind and
+// MSVC's own "Smaller Type Check" option.  Other great example of how this warning can lead to bad code design is Microsoft's own
+// HIWORD()/LOWORD() macros, which mute this warning but also kill the sign bit.  Oops.  Conclusion: disable these, forever.
+
+#	pragma warning(disable: 4311)		// pointer truncation from 'void *' to 'u32'
+#	pragma warning(disable: 4302)		// truncation from 'void *' to 'u32'
 #endif
 
 // --------------------------------------------------------------------------------------
