@@ -15,7 +15,7 @@
     <Keyword>ajek-msw</Keyword>
     <RootNamespace>ajek_msw</RootNamespace>
     <ProjectGuid>{D45B9090-E34A-4796-908E-24F83CBD0FB3}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
