@@ -420,7 +420,41 @@ union u128x8 {
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
 
-union f128x4 {
+union float2 {
+	struct {
+		float	x, y;
+	};
+
+	struct {
+		float	z, w;
+	};
+
+	struct {
+		float	u, v;
+	};
+
+	u64			_i64val;
+
+	// note: intentionally omitted u64 operator assignment.
+
+	__ai operator const u64&		()			{ return _i64val;		}
+
+	__ai bool operator==( const float2& right ) const	{ return _i64val == right._i64val; }
+	__ai bool operator!=( const float2& right ) const	{ return _i64val != right._i64val; }
+};
+
+union float4 {
+	struct {
+		float	x,y,z,w;
+	};
+
+	struct {
+		float2	xy,zw;
+	};
+
+	struct {
+		float	u,v;
+	};
 	struct {
 		float	f[4];
 	};

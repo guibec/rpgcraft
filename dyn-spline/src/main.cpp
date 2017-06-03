@@ -5,31 +5,24 @@
 #include "x-string.h"
 #include "x-thread.h"
 #include "x-gpu-ifc.h"
+#include "x-gpu-colors.h"
 
 #include "x-png-decode.h"
 
 #include "Bezier2D.h"
 
-#include <windows.h>
-#include <d3d11_1.h>
-#include <DirectXColors.h>
-
 #include "Bezier2d.inl"
 
-using namespace DirectX;
-
 static const int const_zval = 0.1f;
-
-extern ID3D11DeviceContext*    g_pImmediateContext;
-extern ID3D11RenderTargetView* g_pRenderTargetView;
-extern ID3D11VertexShader*     g_pVertexShader;
-extern ID3D11PixelShader*      g_pPixelShader;
 
 
 int						g_VertexBufferId;
 GPU_IndexBuffer			g_IndexBuffer;
 GPU_VertexBuffer		g_mesh_box2D;
 GPU_IndexBuffer			g_idx_box2D;
+GPU_ShaderVS			g_ShaderVS;
+GPU_ShaderFS			g_ShaderFS;
+
 bool					g_gpu_ForceWireframe	= false;
 
 GPU_TextureResource2D	tex_floor;
@@ -222,7 +215,7 @@ void Render()
 
 
 	// Clear the back buffer
-	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
 
 	// ------------------------------------------------------------------------------------------
 	// Update Spline Vertex Information
@@ -249,8 +242,8 @@ void Render()
 
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 
-	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
-	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
+	dx11_BindShaderVS(g_ShaderVS);
+	dx11_BindShaderFS(g_ShaderFS);
 
 	dx11_SetIndexBuffer(g_IndexBuffer, 16, 0);
 	dx11_SetVertexBuffer(g_VertexBufferId, 0, sizeof(SimpleVertex), 0);
@@ -263,7 +256,7 @@ void Render()
 
 	dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 	dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
-	g_pImmediateContext->DrawIndexed(6, 0,  0);
+	dx11_DrawIndexed(6, 0,  0);
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
@@ -305,6 +298,11 @@ void DoGameInit()
 
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
+
+	extern void dx11_SetInputLayout();
+	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS", VertexBufferLayout_Tex1);
+	dx11_LoadShaderFS(g_ShaderFS, "HeightMappedQuad.fx", "PS");
+	dx11_SetInputLayout();
 
 TileMapVertex vertices[] =
 {
