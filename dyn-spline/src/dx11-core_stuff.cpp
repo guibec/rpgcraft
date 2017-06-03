@@ -37,13 +37,6 @@ ID3D11DeviceContext*    g_pImmediateContext		= nullptr;
 ID3D11DeviceContext1*   g_pImmediateContext1	= nullptr;
 IDXGISwapChain*         g_pSwapChain			= nullptr;
 IDXGISwapChain1*        g_pSwapChain1			= nullptr;
-ID3D11RenderTargetView* g_pRenderTargetView		= nullptr;
-
-ID3D11VertexShader*     g_pVertexShader			= nullptr;
-ID3D11PixelShader*      g_pPixelShader			= nullptr;
-
-ID3D11VertexShader*     g_pVertexShaderHMQ		= nullptr;
-ID3D11PixelShader*      g_pPixelShaderHMQ		= nullptr;
 
 ID3D11InputLayout*      g_pVertexLayout			= nullptr;
 ID3D11Buffer*           g_pConstantBuffer		= nullptr;
@@ -52,7 +45,10 @@ XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 
+GPU_RenderTarget		g_gpu_BackBuffer;
+
 int g_curBufferIdx = 0;
+
 
 // * Vertex Buffers are Mostly Dynamic.
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
@@ -156,7 +152,7 @@ DXGI_FORMAT get_DXGI_Format(GPU_ResourceFmt bitmapFmt)
 //
 // With VS 11, we could load up prebuilt .cso files instead...
 //--------------------------------------------------------------------------------------
-HRESULT TryCompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
 	HRESULT hr = S_OK;
 
@@ -173,6 +169,21 @@ HRESULT TryCompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR 
 #endif
 
 	ID3DBlob* pErrorBlob = nullptr;
+	Defer( { if (pErrorBlob) pErrorBlob->Release(); } );
+
+	// Note on compiler macros: 
+	//   Macros should match exactly what's being used to precompile shaders via the makefile.
+	//   One possible way to do this is to have the project file write the active shader macro
+	//   configuration into some larger macro that we process here and then pass to the runtime
+	//   compiler.
+
+#if defined(DX11_SHADER_COMPILER_MACROS)
+	// DX11_SHADER_COMPILER_MACROS -
+	//   a semicolon-delimited list of macros.  Translate it into a null-terminated macro list,
+	//   because micorosoft is annoying and makes everything harder for us, the programmer.
+
+#endif
+
 	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
 		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
 
@@ -180,16 +191,20 @@ HRESULT TryCompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR 
 		if (pErrorBlob) {
 			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
 		}
+		else {
+			log_and_abort("D3DCompileFromFile(%s) failed with no errorBlob, hr=0x%08x", szFileName, hr);
+		}
 	}
 
-	if (pErrorBlob) pErrorBlob->Release();
 	return hr;
 }
 
-ID3DBlob* CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel)
+ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel)
 {
+	HRESULT hr = S_OK;
 	ID3DBlob* ppBlobOut;
-	auto hr = TryCompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &ppBlobOut);
+
+	hr = TryCompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &ppBlobOut);
 	if (FAILED(hr)) {
 		MessageBox(nullptr,
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK
@@ -371,24 +386,24 @@ void dx11_InitDevice()
 
 		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
 	}
+	log_and_abort_on(FAILED(hr));
 
 	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
 	dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
-
 	dxgiFactory->Release();
 
-	log_and_abort_on(FAILED(hr));
-
-	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	bug_on(FAILED(hr));
+	log_and_abort_on(FAILED(hr));
 
-	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &g_pRenderTargetView);
+	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
+
+	g_gpu_BackBuffer.m_driverData;
+	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
 	pBackBuffer->Release();
-	bug_on(FAILED(hr));
+	log_and_abort_on(FAILED(hr));
 
-	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, nullptr);
+	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -399,47 +414,6 @@ void dx11_InitDevice()
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
-
-	//ID3DBlob* pVSBlob = CompileShaderFromFile(L"ColorGradient.fx", "VS", "vs_4_0");
-	ID3DBlob* pVSBlob = CompileShaderFromFile(L"HeightMappedQuad.fx", "VS", "vs_4_0");
-
-	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
-	bug_on(FAILED(hr));
-
-	// Define the input layout
-	//D3D11_INPUT_ELEMENT_DESC layout[] =
-	//{
-	//	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//};
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	UINT numElements = ARRAYSIZE(layout);
-
-	// Create the input layout
-	hr = g_pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-		pVSBlob->GetBufferSize(), &g_pVertexLayout
-	);
-	pVSBlob->Release();
-	log_and_abort_on(FAILED(hr));
-
-	// Set the input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-
-	// Compile the pixel shader
-	//ID3DBlob* pPSBlob = CompileShaderFromFile(L"ColorGradient.fx", "PS", "ps_4_0");
-	ID3DBlob* pPSBlob = CompileShaderFromFile(L"HeightMappedQuad.fx", "PS", "ps_4_0");
-
-	// Create the pixel shader
-	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
-	pPSBlob->Release();
-	log_and_abort_on(FAILED(hr));
-
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 
@@ -463,6 +437,152 @@ void dx11_InitDevice()
 	g_World			= XMMatrixIdentity();
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f );
+}
+
+
+// Our gpu interface provides a set of standard vertex buffer layouts to meet most of our common
+// needs.  Uncommon needs can usually be met by using one of the more versatile vertex buffer
+// layouts -- just treat unused fields as padding data (neither initialized or used by shader)
+// Such layouts can be optimized later if seen fit, eg. there's actually enough geometry and meshes
+// using the vertex type to justify baking a new layout into the GPU interface.
+
+static const D3D11_INPUT_ELEMENT_DESC layout_color[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, 36,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, 42,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, 50,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayoutType layoutType)
+{
+	switch (layoutType)
+	{
+		case VertexBufferLayout_Color:		return layout_color;
+		case VertexBufferLayout_Tex1:		return layout_tex1;
+		case VertexBufferLayout_ColorTex1:	return layout_colortex1;
+		case VertexBufferLayout_ColorTex4:	return layout_colortex4;
+
+		default: unreachable();
+	}
+
+	unreachable();
+	return nullptr;
+}
+
+int getVertexBufferLayoutSize(GPU_VertexBufferLayoutType layoutType)
+{
+	switch (layoutType)
+	{
+		case VertexBufferLayout_Color:		return bulkof(layout_color		);
+		case VertexBufferLayout_Tex1:		return bulkof(layout_tex1		);
+		case VertexBufferLayout_ColorTex1:	return bulkof(layout_colortex1	);
+		case VertexBufferLayout_ColorTex4:	return bulkof(layout_colortex4	);
+
+		default: unreachable();
+	}
+
+	unreachable();
+	return 0;
+}
+
+void dx11_SetInputLayout()
+{
+	// Set the input layout
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+}
+
+bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn, GPU_VertexBufferLayoutType layoutType)
+{
+	HRESULT hr;
+
+	bug_on( !entryPointFn || !entryPointFn[0] );
+	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
+	if (!blob) return false;
+
+	auto& shader = ptr_cast<ID3D11VertexShader* &>(dest.m_driverData);
+	if (shader) {
+		log_host(
+			"Unloading existing vertex shader resource:\n"
+			" > %s",
+			cPtrStr(shader)
+		);
+		shader->Release();
+	}
+
+
+	// Create the input layout
+	hr = g_pd3dDevice->CreateInputLayout(
+		getVertexBufferLayout		(layoutType),
+		getVertexBufferLayoutSize	(layoutType),
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		&g_pVertexLayout
+	);
+	log_and_abort_on(FAILED(hr));
+
+	hr = g_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
+	log_and_abort_on(FAILED(hr));
+
+	blob->Release();
+	return true;
+}
+
+bool dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
+{
+	HRESULT hr;
+
+	bug_on( !entryPointFn || !entryPointFn[0] );
+	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "ps_4_0");
+	if (!blob) return false;
+
+	auto& shader = ptr_cast<ID3D11PixelShader* &>(dest.m_driverData);
+	if (shader) {
+		log_host(
+			"Unloading existing fragment shader resource:\n"
+			" > %s",
+			cPtrStr(shader)
+		);
+		shader->Release();
+	}
+
+	hr = g_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
+	log_and_abort_on(FAILED(hr));
+
+	return true;
+}
+
+void dx11_BindShaderVS(GPU_ShaderVS& vs)
+{
+	auto&	shader	= ptr_cast<ID3D11VertexShader* const&>(vs.m_driverData);
+	g_pImmediateContext->VSSetShader(shader, nullptr, 0);
+}
+
+void dx11_BindShaderFS(GPU_ShaderFS& fs)
+{
+	auto&	shader	= ptr_cast<ID3D11PixelShader* const&>(fs.m_driverData);
+	g_pImmediateContext->PSSetShader(shader, nullptr, 0);
 }
 
 void dx11_SetVertexBuffer( int bufferId, int shaderSlot, int _stride, int _offset)
@@ -493,6 +613,10 @@ void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offs
 	g_pImmediateContext->IASetIndexBuffer( (ID3D11Buffer*)indexBuffer.m_driverData, format, offset);
 }
 
+void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
+{
+	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
+}
 
 void dx11_UploadDynamicBufferData(int bufferIdx, void* srcData, int sizeInBytes)
 {
@@ -694,6 +818,11 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 #endif
 		g_pImmediateContext->GenerateMips(textureView);
 	}
+}
+
+void dx11_ClearRenderTarget(const GPU_RenderTarget& target, const float4& color)
+{
+	g_pImmediateContext->ClearRenderTargetView((ID3D11RenderTargetView*)target.m_driverData, color.f);
 }
 
 #if 0
