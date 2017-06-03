@@ -41,6 +41,8 @@ IDXGISwapChain1*        g_pSwapChain1			= nullptr;
 ID3D11InputLayout*      g_pVertexLayout			= nullptr;
 ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
+ID3D11InputLayout*      g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS];
+
 XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
@@ -192,7 +194,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
 		}
 		else {
-			log_and_abort("D3DCompileFromFile(%s) failed with no errorBlob, hr=0x%08x", szFileName, hr);
+			log_and_abort("D3DCompileFromFile(%S) failed with no errorBlob, hr=0x%08x", szFileName, hr);
 		}
 	}
 
@@ -226,6 +228,80 @@ void dx11_CleanupDevice()
 	if (g_pImmediateContext)	g_pImmediateContext		->Release();
 	if (g_pd3dDevice1)			g_pd3dDevice1			->Release();
 	if (g_pd3dDevice)			g_pd3dDevice			->Release();
+}
+
+// Our gpu interface provides a set of standard vertex buffer layouts to meet most of our common
+// needs.  Uncommon needs can usually be met by using one of the more versatile vertex buffer
+// layouts -- just treat unused fields as padding data (neither initialized or used by shader)
+// Such layouts can be optimized later if seen fit, eg. there's actually enough geometry and meshes
+// using the vertex type to justify baking a new layout into the GPU interface.
+
+static const D3D11_INPUT_ELEMENT_DESC layout_color[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, 36,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, 44,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, 52,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayoutType layoutType)
+{
+	switch (layoutType)
+	{
+		case VertexBufferLayout_Color:		return layout_color;
+		case VertexBufferLayout_Tex1:		return layout_tex1;
+		case VertexBufferLayout_ColorTex1:	return layout_colortex1;
+		case VertexBufferLayout_ColorTex4:	return layout_colortex4;
+
+		default: unreachable();
+	}
+
+	unreachable();
+	return nullptr;
+}
+
+int getVertexBufferLayoutSize(GPU_VertexBufferLayoutType layoutType)
+{
+	switch (layoutType)
+	{
+		case VertexBufferLayout_Color:		return bulkof(layout_color		);
+		case VertexBufferLayout_Tex1:		return bulkof(layout_tex1		);
+		case VertexBufferLayout_ColorTex1:	return bulkof(layout_colortex1	);
+		case VertexBufferLayout_ColorTex4:	return bulkof(layout_colortex4	);
+
+		default: unreachable();
+	}
+
+	unreachable();
+	return 0;
+}
+
+ID3DBlob* LoadShaderBlobVS(const xString& srcfile, const char* entryPointFn)
+{
+	bug_on( !entryPointFn || !entryPointFn[0] );
+	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
+	return blob;
 }
 
 void dx11_InitDevice()
@@ -437,83 +513,34 @@ void dx11_InitDevice()
 	g_World			= XMMatrixIdentity();
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f );
-}
 
+	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
+	//        specifications defined within and supported by our engine.
 
-// Our gpu interface provides a set of standard vertex buffer layouts to meet most of our common
-// needs.  Uncommon needs can usually be met by using one of the more versatile vertex buffer
-// layouts -- just treat unused fields as padding data (neither initialized or used by shader)
-// Such layouts can be optimized later if seen fit, eg. there's actually enough geometry and meshes
-// using the vertex type to justify baking a new layout into the GPU interface.
+	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
+		auto vbl = (GPU_VertexBufferLayoutType)i;
+		auto* IALayoutBlob = LoadShaderBlobVS("..\\ajek-framework\\shaders\\VertexInputLayouts.fx", toString(vbl));
 
-static const D3D11_INPUT_ELEMENT_DESC layout_color[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, 36,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, 42,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, 50,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayoutType layoutType)
-{
-	switch (layoutType)
-	{
-		case VertexBufferLayout_Color:		return layout_color;
-		case VertexBufferLayout_Tex1:		return layout_tex1;
-		case VertexBufferLayout_ColorTex1:	return layout_colortex1;
-		case VertexBufferLayout_ColorTex4:	return layout_colortex4;
-
-		default: unreachable();
+		// Create the input layout
+		hr = g_pd3dDevice->CreateInputLayout(
+			getVertexBufferLayout		(vbl),
+			getVertexBufferLayoutSize	(vbl),
+			IALayoutBlob->GetBufferPointer(),
+			IALayoutBlob->GetBufferSize(),
+			&g_pVertexLayouts[vbl]
+		);
+		IALayoutBlob->Release();
 	}
-
-	unreachable();
-	return nullptr;
-}
-
-int getVertexBufferLayoutSize(GPU_VertexBufferLayoutType layoutType)
-{
-	switch (layoutType)
-	{
-		case VertexBufferLayout_Color:		return bulkof(layout_color		);
-		case VertexBufferLayout_Tex1:		return bulkof(layout_tex1		);
-		case VertexBufferLayout_ColorTex1:	return bulkof(layout_colortex1	);
-		case VertexBufferLayout_ColorTex4:	return bulkof(layout_colortex4	);
-
-		default: unreachable();
-	}
-
-	unreachable();
-	return 0;
+	log_and_abort_on(FAILED(hr));
 }
 
 void dx11_SetInputLayout()
 {
 	// Set the input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[VertexBufferLayout_Tex1]);
 }
 
-bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn, GPU_VertexBufferLayoutType layoutType)
+bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	HRESULT hr;
 
@@ -530,17 +557,6 @@ bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* e
 		);
 		shader->Release();
 	}
-
-
-	// Create the input layout
-	hr = g_pd3dDevice->CreateInputLayout(
-		getVertexBufferLayout		(layoutType),
-		getVertexBufferLayoutSize	(layoutType),
-		blob->GetBufferPointer(),
-		blob->GetBufferSize(),
-		&g_pVertexLayout
-	);
-	log_and_abort_on(FAILED(hr));
 
 	hr = g_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
 	log_and_abort_on(FAILED(hr));

@@ -619,3 +619,13 @@ inline __ai bool IsInInt32u(u64 x)	{ return (x <= 0xFFFFFFFFUL); }
 	explicit classname(const classname&);		\
 	classname& operator=(const classname&)
 
+
+// -------------------------------------------------------------
+// CaseReturnString( caseName )
+// -------------------------------------------------------------
+// Neat!  Returns the case option as a string matching precisely the case label.
+// Useful for logging hardware registers and for converting sparse enumerations
+// into strings (enums where simple char* arrays fail).
+//
+#define CaseReturnString( caseName )		case caseName: return # caseName
+#define CaseReturnString2(caseName, ofs )	case caseName: return # caseName + (ofs)

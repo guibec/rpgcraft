@@ -8,7 +8,20 @@ enum GPU_VertexBufferLayoutType {
 	VertexBufferLayout_Tex1,
 	VertexBufferLayout_ColorTex1,
 	VertexBufferLayout_ColorTex4,
+	VertexBufferLayout_NUM_LAYOUTS,
 };
+
+static inline __ai const char* toString(GPU_VertexBufferLayoutType layout) {
+	switch(layout) {
+		CaseReturnString(VertexBufferLayout_Color		);
+		CaseReturnString(VertexBufferLayout_Tex1		);
+		CaseReturnString(VertexBufferLayout_ColorTex1	);
+		CaseReturnString(VertexBufferLayout_ColorTex4	);
+		CaseReturnString(VertexBufferLayout_NUM_LAYOUTS	);
+		default: __unreachable();
+	}
+	return "invalid";
+}
 
 enum GPU_ResourceFmt
 {
@@ -192,7 +205,7 @@ extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMod
 extern void					dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
 extern void					dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
 
-extern bool					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn, GPU_VertexBufferLayoutType layoutType);
+extern bool					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
 extern bool					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
 
 extern void					dx11_ClearRenderTarget			(const GPU_RenderTarget& target, const float4& color);

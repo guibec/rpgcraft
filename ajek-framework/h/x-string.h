@@ -108,16 +108,6 @@ typedef std::string		tString;
 #define cDecStr( value )		(xDecStr		( value )				.c_str())
 #define cPosixErrorStr(...)		(xPosixErrorStr	( __VA_ARGS__ )			.c_str())
 
-//
-// CaseReturnString( caseName )
-//
-// Neat!  Returns the case option as a string matching precisely the case label.
-// Useful for logging hardware registers and for converting sparse enumerations
-// into strings (enums where simple char* arrays fail).
-//
-#define CaseReturnString( caseName )		case caseName: return # caseName
-#define CaseReturnString2(caseName, ofs )	case caseName: return # caseName + (ofs)
-
 
 // --------------------------------------------------------------------------------------
 //  xString  (definition)

@@ -300,7 +300,7 @@ void DoGameInit()
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
 	extern void dx11_SetInputLayout();
-	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS", VertexBufferLayout_Tex1);
+	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS, "HeightMappedQuad.fx", "PS");
 	dx11_SetInputLayout();
 
