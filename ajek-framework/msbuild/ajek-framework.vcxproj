@@ -12,10 +12,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <Keyword>ajek-msw</Keyword>
-    <RootNamespace>ajek_msw</RootNamespace>
-    <ProjectGuid>{D45B9090-E34A-4796-908E-24F83CBD0FB3}</ProjectGuid>
+    <Keyword>ajek-framework</Keyword>
+    <RootNamespace>ajek_framework</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectGuid>{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -73,14 +73,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\msw\msw-GetLastError.cpp" />
-    <ClCompile Include="..\src\msw\msw-thread.cpp" />
-    <ClCompile Include="..\src\msw\mswStandard.cpp" />
+    <ClCompile Include="..\src\x-png-decode.cpp" />
+    <ClCompile Include="..\src\x-stdlib.cpp" />
+    <ClCompile Include="..\src\x-string.cpp" />
+    <ClCompile Include="..\src\x-thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
     <ClInclude Include="..\h\msw-redtape.h" />
-    <ClInclude Include="..\src\msw\mswStandard.h" />
+    <ClInclude Include="..\h\sse_intrinsics.h" />
+    <ClInclude Include="..\h\x-assertion.h" />
+    <ClInclude Include="..\h\x-atomic.h" />
+    <ClInclude Include="..\h\x-BitmapData.h" />
+    <ClInclude Include="..\h\x-ForwardDefs.h" />
+    <ClInclude Include="..\h\x-libPngEncoder.h" />
+    <ClInclude Include="..\h\x-png-decode.h" />
+    <ClInclude Include="..\h\x-ScopedMalloc.h" />
+    <ClInclude Include="..\h\x-simd.h" />
+    <ClInclude Include="..\h\x-stdlib.h" />
+    <ClInclude Include="..\h\x-stl.h" />
+    <ClInclude Include="..\h\x-string.h" />
+    <ClInclude Include="..\h\x-TargetConfig.h" />
+    <ClInclude Include="..\h\x-thread.h" />
+    <ClInclude Include="..\h\x-types.h" />
+    <ClInclude Include="..\src\common-standard.h" />
+    <ClInclude Include="..\h\x-MemCopy.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
