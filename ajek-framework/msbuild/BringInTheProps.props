@@ -15,7 +15,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepoRootDir)imports\h;$(RepoRootDir)ajek-framework\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RepoRootDir)imports\h;$(RepoRootDir)ajek-script\h;$(RepoRootDir)ajek-framework\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
   </ItemDefinitionGroup>

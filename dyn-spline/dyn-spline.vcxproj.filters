@@ -16,15 +16,6 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{3e11ec2d-8fb7-4b60-bdf7-8c2296a6f67b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ajek-framework">
-      <UniqueIdentifier>{fb28967e-74f8-4017-b45d-c90f662cc4c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ajek-framework\Public Include">
-      <UniqueIdentifier>{8d16aa54-2648-4672-8047-1323a45cd424}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ajek-framework\Private Include">
-      <UniqueIdentifier>{84ccecf0-817a-4191-8f4f-8b4004052d6a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -42,22 +33,10 @@
     <ClCompile Include="src\x-log_host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\common-standard.cpp">
-      <Filter>ajek-framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\x-stdlib.cpp">
-      <Filter>ajek-framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\x-string.cpp">
-      <Filter>ajek-framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\x-thread.cpp">
-      <Filter>ajek-framework</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\x-png-decode.cpp">
-      <Filter>ajek-framework</Filter>
-    </ClCompile>
     <ClCompile Include="src\x-gpu-colors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ajek-framework\src\common-standard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,78 +59,13 @@
     <ClInclude Include="src\x-gpu-ifc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ajek-framework\src\common-standard.h">
-      <Filter>ajek-framework\Private Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\msw-error.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\msw-redtape.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\sse_intrinsics.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-assertion.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-atomic.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-ForwardDefs.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-libPngEncoder.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-simd.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-stdlib.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-stl.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-string.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-TargetConfig.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-thread.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-types.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-ScopedMalloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-png-decode.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ajek-framework\h\x-BitmapData.h">
-      <Filter>ajek-framework\Public Include</Filter>
-    </ClInclude>
     <ClInclude Include="src\x-gpu-colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ajek-framework\h\x-MemCopy.inl">
-      <Filter>ajek-framework\Public Include</Filter>
-    </None>
     <None Include="src\x-gpu-colors.inl">
       <Filter>Header Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="ColorGradient.fx">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="HeightMappedQuad.fx">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
