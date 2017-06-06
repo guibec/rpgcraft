@@ -292,8 +292,26 @@ void InitSplineTest()
 	g_IndexBuffer		= dx11_CreateIndexBuffer(indices, sizeof(indices));
 }
 
+#include "ajek-script.h"
+
+void LoadLocalConfig()
+{
+	AjekScript_InitModuleList();
+
+	auto& env	= AjekScriptEnv_Get(ScriptEnv_AppConfig);
+	auto* L		= env.getLuaState();
+
+	env.LoadModule("config-local.lua");
+
+	auto path  = env.glob_get_string("ScriptsPath");
+	
+	log_host( "Path Test = %s", path.c_str() );
+}
+
 void DoGameInit()
 {
+	LoadLocalConfig();
+
 	xBitmapData  pngtex;
 	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
 
