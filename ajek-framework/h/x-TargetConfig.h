@@ -37,14 +37,28 @@
 #endif
 
 // --------------------------------------------------------------------------------------
-// TARGET_ORBIS
-//
+// Console Targets - XBOX, PS4, Wii, etc.
+
 #if !defined(TARGET_ORBIS)
 #	if defined(__ORBIS__)
 #		define TARGET_ORBIS		1
 #	else
 #		define TARGET_ORBIS		0
 #	endif
+#endif
+
+#if !defined(TARGET_XBONE)
+#	if defined(__XBONE__)
+#		define TARGET_XBONE		1
+#	else
+#		define TARGET_XBONE		0
+#	endif
+#endif
+
+#if TARGET_ORBIS || TARGET_XBONE
+#	define TARGET_CONSOLE		1
+#	else
+#	define TARGET_CONSOLE		0
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -93,7 +107,6 @@
 #if !defined(TARGET_LINUX) && !defined(TARGET_MSW) && !defined(TARGET_ORBIS)
 #	error Unsupported or undefined target platform.
 #endif
-
 
 // ======================================================================================
 //  Debug, Benchmark, QA, and Final Target configurations
