@@ -161,9 +161,6 @@ void xPrintLn		(const xString& msg) { xPrintLn_impl<false>(msg); }
 void xPrintLn_loud	(const xString& msg) { xPrintLn_impl<true >(msg); }
 
 // --------------------------------------------------------------------------------------
-// Host logs work almost the same as generic verbose logs, except they disregard virtual
-// ps2 cpu context info and always print host-centric time/context info instead.
-//
 void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 {
 	if (!fmt || !fmt[0])
@@ -207,4 +204,54 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 	}
 
 	//spamAbortCheck(buffer.GetLength() + 10);
+}
+
+void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list list)
+{
+	if (!fmt || !fmt[0])
+	{
+		// just treat it as a newline, no prefixing or other mess.
+		// (sometimes used to generate visual separation in the console output)
+
+		xScopedMutex lock(s_mtx_unilogger);
+		xOutputDebugString("\n");
+		if (s_myLog) fputs("\n", s_myLog);
+		return;
+	}
+
+	xString buffer;
+	if (moduleName && moduleName[0])
+		buffer.Format("%-8s", moduleName);
+	else
+		buffer = "        ";
+
+	vlog_append_host_clock(buffer);
+
+	if (fmt && fmt[0])
+	{
+		buffer.AppendFmtV(fmt, list);
+		buffer += "\n";
+	}
+
+	xScopedMutex lock(s_mtx_unilogger);
+
+	if (flags & xLogFlag_Important) { xOutputVerboseString(buffer); }
+	else							{ xOutputDebugString  (buffer); }
+
+	if (s_myLog)
+	{
+		fputs(buffer, s_myLog);
+		//fflush(s_myLog);		// fflush(nullptr) performend on sigsegv handler.
+		advanceMyLog(buffer.GetLength() + 10);
+	}
+
+	//spamAbortCheck(buffer.GetLength() + 10);
+}
+
+void flush_log()
+{
+	xScopedMutex lock(s_mtx_unilogger);
+	if(s_myLog) {
+		fflush(s_myLog);
+	}
 }
