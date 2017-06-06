@@ -11,6 +11,12 @@
 #include <limits.h>
 #include <stddef.h>
 
+// AJEK_SCRIPT - Define used to mark all the customizations and hacks that will no-doubt
+//    be applied to this lua codebase (may not be exhaustive).
+#ifndef AJEK_SCRIPT
+#	define AJEK_SCRIPT		1
+#endif
+
 
 /*
 ** ===================================================================
@@ -185,19 +191,34 @@
 ** In Windows, any exclamation mark ('!') in the path is replaced by the
 ** path of the directory of the executable file of the current process.
 */
-#define LUA_LDIR	"!\\lua\\"
-#define LUA_CDIR	"!\\"
-#define LUA_SHRDIR	"!\\..\\share\\lua\\" LUA_VDIR "\\"
-#define LUA_PATH_DEFAULT  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
-		LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
-		".\\?.lua;" ".\\?\\init.lua"
-#define LUA_CPATH_DEFAULT \
-		LUA_CDIR"?.dll;" \
-		LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
-		LUA_CDIR"loadall.dll;" ".\\?.dll"
+// AJEK_SCRIPT
+//   * Lua include files should be loaded relative to the CWD.
+//   * Absolute paths are supported in development environments only, and are
+//     specified at runtime via game engine application config.
+//   * CPATH is considered unused.  All C++ bindings should be provided by the
+//     game engine binary.  DLLs are not supported.  CPATH is therefore unspecified.
+#if AJEK_SCRIPT
+#	define LUA_LDIR	".\\lua-req\\"
+#	define LUA_CDIR	".\\"
+#	define LUA_PATH_DEFAULT  \
+			LUA_LDIR  "?.lua;"   LUA_LDIR  "?\\init.lua;" \
+			LUA_CDIR  "?.lua;"   LUA_CDIR  "?\\init.lua;"
 
+#	define LUA_CPATH_DEFAULT  ""
+#else
+#	define	LUA_LDIR	"!\\lua\\"
+#	define	LUA_CDIR	"!\\"
+#	define	LUA_SHRDIR	"!\\..\\share\\lua\\" LUA_VDIR "\\"
+#	define	LUA_PATH_DEFAULT  \
+			LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
+			LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
+			LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
+			".\\?.lua;" ".\\?\\init.lua"
+#	define	LUA_CPATH_DEFAULT \
+			LUA_CDIR"?.dll;" \
+			LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
+			LUA_CDIR"loadall.dll;" ".\\?.dll"
+#endif
 #else			/* }{ */
 
 #define LUA_ROOT	"/usr/local/"
@@ -777,7 +798,26 @@
 
 
 
+#if AJEK_SCRIPT
+#	define lua_writestring(s, l)		ajek_lua_printf("%s",(s))
+#	define lua_writeline()				ajek_lua_printf("\n")
+#	define lua_writestringerror(s, p)	ajek_lua_printf((s),(p))
+#	define lua_abort()					ajek_lua_abort()
+#endif
 
+// ============================================================
+
+#if defined(__GNUC__)
+#	define l_noret		void __attribute__((noreturn))
+#elif defined(_MSC_VER) && _MSC_VER >= 1200
+#	define l_noret		void __declspec(noreturn)
+#else
+#	define l_noret		void
+#endif
+
+extern void		ajek_lua_printf(const char* s, ...);
+extern l_noret	ajek_lua_abort ();
+// ============================================================
 
 #endif
 
