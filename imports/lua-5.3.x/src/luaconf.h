@@ -53,14 +53,13 @@
 /*
 ** By default, Lua on Windows use (some) specific Windows features
 */
-#if !defined(LUA_USE_C89) && defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32) && !defined(_WIN32_WCE)
 #define LUA_USE_WINDOWS  /* enable goodies for regular Windows */
 #endif
 
 
 #if defined(LUA_USE_WINDOWS)
 #define LUA_DL_DLL	/* enable support for DLL */
-#define LUA_USE_C89	/* broadly, Windows is C89 */
 #endif
 
 
@@ -185,6 +184,7 @@
 ** hierarchy or if you want to install your libraries in
 ** non-conventional directories.
 */
+
 #define LUA_VDIR	LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
 #if defined(_WIN32)	/* { */
 /*
