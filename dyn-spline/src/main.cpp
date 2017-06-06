@@ -13,6 +13,9 @@
 
 #include "Bezier2d.inl"
 
+
+DECLARE_MODULE_NAME("main");
+
 static const int const_zval = 0.1f;
 
 
