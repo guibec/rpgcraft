@@ -202,6 +202,10 @@ public:
 	__ai xString&		Append		( char src )					{ m_string += src;			return *this; }
 	__ai xString&		PopBack		()								{ m_string.pop_back();		return *this; }
 
+	// non-const data member is a C++17 addition.  For now it's entirely equivalent to const_cast it.
+	__ai const	char*	data		()	const						{ return m_string.data();			}
+	__ai		char*	data		()								{ return const_cast<char*>(m_string.data());	}
+
 	__ai xString&		Replace		( size_t pos1, size_t n1, const xString& src)	{ m_string.replace(pos1, n1, src.m_string); return *this; }
 	__ai const std::string& getBaseType() const						{ return m_string; }
 
@@ -300,7 +304,8 @@ protected:
 public:
 	toUTF8( const wchar_t* src );
 
-	__ai const char* c_str() const { return m_result.c_str(); }
+	__ai       char* data()			{ return m_result.data (); }
+	__ai const char* c_str() const	{ return m_result.c_str(); }
 };
 
 //
