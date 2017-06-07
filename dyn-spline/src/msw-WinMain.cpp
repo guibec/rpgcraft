@@ -3,11 +3,17 @@
 #include "x-string.h"
 #include "x-gpu-ifc.h"
 
+#include "ajek-script.h"
+
+
+#include <direct.h>		// for _getcwd()
+
+DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
-
 extern void			DoGameInit();
 extern void			Render();
+extern void			LoadLocalConfig();
 
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
@@ -82,10 +88,98 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 	return S_OK;
 }
 
+static inline bool _sopt_isWhitespace( char ch )
+{
+	return !ch
+		|| (ch == '\r') 
+		|| (ch == '\n')
+		|| (ch == ' ') 
+		|| (ch == '\t');
+}
+
+xString Host_GetCWD()
+{
+	char   buff[1024];
+	char*  ret = _getcwd(buff, 1024);
+	return ret ? xString(buff) : xString();
+}
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	// 
 	LogHostInit();
+
+	// Tokenizer.
+	//   * only care about double dash "--" anything lacking a double-dash prefix is an error.
+	//   * all switches require assignment operator '=', eg:
+	//        --option=value
+	//   * Boolean toggles are required to specify --arg=0 or --arg=1
+	//   * whitespace in options is disallowed
+	//   * Whitespace is handled by the shell command line processor, so any whitespace is assumed part of the value.
+	//   * environment variable expansion not supported (expected to be performed by shell)
+	//
+	// Windows-sepcific notes:
+	//   * __argv has double-quotes already processed, but unfortunately Windows has some rather dodgy quotes parsing,
+	//     so it's likely there'll be spurious quotes lying around when injecting Visual Studio EnvVars.  For now it's
+	//     responsibility of user to fix those.
+	//   * __argv does not process single quotes. These will be present and will result in malformed CLI syntax.
+	//
+	// The goal is to use lua for the bulk of cmdline parsing.  The only command line options to be
+	// parsed here are things that we want to be applied *before* the lua engine has been started.
+	//   * Configuration of log file things
+	//   * config-local.lua override
+	//   * visual studio script debug mode
+
+	// an assist to microsoft for being kind enough to just provide these as globals already.
+
+	auto g_argc = __argc;
+
+	for (int a=1; a<g_argc; ++a) {
+		//OutputDebugString( g_argv[a] );
+		//OutputDebugString( TEXT("\n") );
+
+#ifdef UNICODE
+		xString utf8(__wargv[a]);
+#else
+		xString utf8(__argv[a]);
+#endif
+		char optmp[128] = { 0 };
+
+		log_and_abort_on(!utf8.StartsWith("--"), "Invalid CLI option specified: %s", utf8.c_str());
+		int readpos  = 2;
+		int writepos = 0;
+		for(;;) {
+			log_and_abort_on(!utf8.data()[readpos] || readpos >= utf8.GetLength(),
+				"Unexpected end of CLI option while searching for '='\n   Option Text: %s", utf8.c_str()
+			);
+			log_and_abort_on(_sopt_isWhitespace(utf8.data()[readpos]), 
+				"Invalid whitespace detected in CLI lvalue: %s", utf8.c_str()
+			);
+			log_and_abort_on(writepos >= bulkof(optmp)-1, "CLI option text is too long!");
+
+			if (utf8.data()[readpos] == '=') break;
+			optmp[writepos] = utf8.data()[readpos];
+			++writepos;
+			++readpos;
+		}
+		log_and_abort_on(!writepos, "Invalid zero-length option: %s", utf8.c_str());
+		optmp[writepos+1] = 0;
+		xString val		(utf8.data() + readpos + 1);		// forward past '='
+		xString option	(optmp);
+		if (0) {
+			// start of list
+		}
+		elif(option == "script-dbg-relpath") {
+			// Visual Studio script debug mode:
+			// Script error messages should be printed relative to the solution directory.
+			AjekScript_SetDebugRelativePath(val);
+		}
+		elif (0) {
+			// end of list.
+		}
+	}
+
+	LoadLocalConfig();
 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
