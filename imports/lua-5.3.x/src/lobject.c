@@ -494,6 +494,11 @@ void luaO_chunkid (char *out, const char *source, size_t bufflen) {
     }
   }
   else if (*source == '@') {  /* file name */
+#if AJEK_SCRIPT
+	//   Allow host to convert filename into relative or absolute path.
+	//   Aids in script debugging things.
+	ajek_lua_ChunkId_Filename(out, source+1, bufflen);
+#else
     if (l <= bufflen)  /* small enough? */
       memcpy(out, source + 1, l * sizeof(char));
     else {  /* add '...' before rest of name */
@@ -501,6 +506,7 @@ void luaO_chunkid (char *out, const char *source, size_t bufflen) {
       bufflen -= LL(RETS);
       memcpy(out, source + 1 + l - bufflen, bufflen * sizeof(char));
     }
+#endif
   }
   else {  /* string; format as [string "source"] */
     const char *nl = strchr(source, '\n');  /* find first new line (if any) */
