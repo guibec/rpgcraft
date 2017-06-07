@@ -124,7 +124,10 @@ struct AjekScriptEnv
 	lua_string		glob_get_string	(const xString& varname)	const;
 };
 
-void			AjekScript_InitModuleList	();
-lua_State*		AjekScript_GetLuaState		(ScriptEnvironId moduleId);
-AjekScriptEnv&	AjekScriptEnv_Get			(ScriptEnvironId moduleId);
+extern void				AjekScript_InitModuleList			();
+extern lua_State*		AjekScript_GetLuaState				(ScriptEnvironId moduleId);
+extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xString& target);
+extern void				AjekScript_SetDebugRelativePath		(const xString& relpath);
+
+extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
 

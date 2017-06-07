@@ -17,6 +17,61 @@ DECLARE_MODULE_NAME("lua-main");
 
 bool g_script_log_verbose	= 1;
 
+static xString s_script_dbg_path_prefix;
+
+void AjekScript_SetDebugAbsolutePaths(const xString& cwd, const xString& target)
+{
+	// Paths internally are relative to the CWD, but when we log errors to console we
+	// want them to be relative to the dir specified here, which is typically the project 
+	// or solution dir (Visual Studio).
+
+	// Generating such relative paths isn't especially easy.  There's no built-in functions
+	// for such logic in C++ or Windows.  Maybe in the future ...
+
+	//  c:\aa\bb\cc\sln\file.sln
+	//  c:\aa\bb\dd\proj\file.txt
+	//
+	// Common Path = c:\aa\bb\
+	//
+	// 1. Convert both paths into absolute forms.
+	// 2. Remove common part from both (=UncommonSln, =UncommonTgt)
+	//       [MSDN PathCommonPrefix(), tho straight up string check should be fine once PathCanonicalize() is used]
+	// 3. replace all valid path parts with .. (=DotDots)
+	// 4. Path.Join(DotDots, UncommonTarget);
+
+
+	// For now: force paths to absolute:
+	s_script_dbg_path_prefix = cwd;
+}
+
+void AjekScript_SetDebugRelativePath(const xString& relpath)
+{
+	// Paths internally are relative to the CWD, but when we log errors to console we
+	// want them to be relative to the dir specified here, which is typically the project 
+	// or solution dir (Visual Studio).
+
+	s_script_dbg_path_prefix = relpath;
+}
+
+/* number of chars of a literal string without the ending \0 */
+#define LL(x)			(sizeof(x)/sizeof(char) - 1)
+#define addstr(a,b,l)	( memcpy(a,b,(l) * sizeof(char)), a += (l) )
+#define RETS			"..."
+
+extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t bufflen)
+{
+	xString result = xPath_Combine(s_script_dbg_path_prefix, source);
+
+	size_t l = result.GetLength();
+    if (l <= bufflen)  /* small enough? */
+		memcpy(out, result.c_str(), l * sizeof(char) + 1);
+    else {  /* add '...' before rest of name */
+		addstr(out, RETS, LL(RETS));
+		bufflen -= LL(RETS);
+		memcpy(out, result.c_str() + l - bufflen, bufflen * sizeof(char) + 1);
+    }
+}
+
 extern "C" void ajek_lua_printf(const char *fmt, ...)
 {
 	va_list list;
@@ -82,7 +137,7 @@ void AjekScript_Alloc()
 
 void AjekScript_InitModuleList()
 {
-	g_script_env[ScriptEnv_AppConfig].Alloc(); 
+	g_script_env[ScriptEnv_AppConfig]	.Alloc(); 
 
 	g_script_env[ScriptEnv_Game]		.Alloc(); 
 	g_script_env[ScriptEnv_Game]		.RegisterFrameworkLibs(); 
@@ -157,7 +212,6 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		// codes.  The filenames returned by Lua are relative to the CWD of the instance.
 
 		log_host( "\n%s", lua_tostring(m_L, -1) );
-		log_host( "\ndyn-spline\\%s", lua_tostring(m_L, -1) );
 		//luaBridge::s_script_syntax_error = true;
 	}
 

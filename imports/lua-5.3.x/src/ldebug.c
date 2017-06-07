@@ -633,7 +633,12 @@ const char *luaG_addinfo (lua_State *L, const char *msg, TString *src,
   else {  /* no source available; use "?" instead */
     buff[0] = '?'; buff[1] = '\0';
   }
+// AJEK_SCRIPT - MSVC-friendly error reporting.
+#ifdef LUA_USE_WINDOWS
   return luaO_pushfstring(L, "%s(%d): %s", buff, line, msg);
+#else
+  return luaO_pushfstring(L, "%s:%d: %s", buff, line, msg);
+#endif
 }
 
 
