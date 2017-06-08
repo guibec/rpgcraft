@@ -849,7 +849,24 @@ void luaV_execute (lua_State *L) {
         TValue *upval = cl->upvals[GETARG_A(i)]->v;
         TValue *rb = RKB(i);
         TValue *rc = RKC(i);
+
+#if AJEK_SCRIPT
+		// internal handling of creating new global variables.
+		//   Idea here is to catch typos meant to access local variables.
+		//   Lua's nature makes it infeasible to track these things at lex-parse stage due to
+		//   the number of language features that rely on resolving objects at execution (eg,
+		//   right here and right now).
+
+		const TValue *slot;
+		if (!luaV_fastset(L,upval,rb,slot,luaH_get,rc)) {
+			if (slot == luaO_nilobject && GETARG_A(i) == 0) {
+				Protect(ajek_warn_new_global(L));
+			}
+		    Protect(luaV_finishset(L,upval,rb,rc,slot));
+		}
+#else
         settableProtected(L, upval, rb, rc);
+#endif
         vmbreak;
       }
       vmcase(OP_SETUPVAL) {
