@@ -815,9 +815,11 @@
 #	define l_noret		void
 #endif
 
-extern void		ajek_lua_printf(const char* s, ...);
-extern l_noret	ajek_lua_abort ();
-extern void		ajek_lua_ChunkId_Filename(char* out, const char* source, size_t bufflen);
+struct lua_State;
+
+extern void		ajek_lua_printf				(const char* s, ...);
+extern l_noret	ajek_lua_abort				();
+extern void		ajek_lua_ChunkId_Filename	(char* out, const char* source, size_t bufflen);
 
 // ============================================================
 

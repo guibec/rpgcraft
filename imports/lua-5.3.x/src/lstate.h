@@ -230,6 +230,7 @@ LUAI_FUNC CallInfo *luaE_extendCI (lua_State *L);
 LUAI_FUNC void luaE_freeCI (lua_State *L);
 LUAI_FUNC void luaE_shrinkCI (lua_State *L);
 
+extern void		ajek_warn_new_global		(lua_State* L);
 
 #endif
 

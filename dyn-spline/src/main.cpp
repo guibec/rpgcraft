@@ -296,12 +296,20 @@ void InitSplineTest()
 
 void LoadLocalConfig()
 {
+	AjekScript_InitSettings();
 	AjekScript_InitModuleList();
 
 	auto& env	= AjekScriptEnv_Get(ScriptEnv_AppConfig);
 	auto* L		= env.getLuaState();
 
 	env.LoadModule("config-local.lua");
+
+	if (env.HasError()) {
+		// no runtime reloading of config-local is supported, since none of our meaningful
+		// subsystems are initialized anyway.  Fix and restart the app is the prescribed behavior.
+		log_and_abort( "Startup aborted due to Lua Config Error." );
+		exit (-1);
+	}
 
 	auto path  = env.glob_get_string("ScriptsPath");
 	

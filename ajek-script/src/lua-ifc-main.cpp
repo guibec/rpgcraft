@@ -15,9 +15,62 @@ extern "C" {
 
 DECLARE_MODULE_NAME("lua-main");
 
-bool g_script_log_verbose	= 1;
+struct AjekScriptSettings {
+	struct {
+		u32		lua_print_enabled		: 1;		// 0 to mute all lualib print() statements
+	};
 
-static xString s_script_dbg_path_prefix;
+	u64	all64;
+
+	void SetDefaultState() {
+		all64					= 0;
+		lua_print_enabled		= 1;
+	}
+};
+
+union AjekScriptTraceSettings {
+	struct {
+		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope 
+		u32		warn_enclosed_globals   : 1;		// warn when new globals are created outside module scope, eg. within any function
+		u32		error_enclosed_globals  : 1;		// error when new globals are created outside module scope, eg. within any function  (takes precedence over warn when enabled)
+		u32		trace_gcmem				: 1;		// enables gcmem usage checks at every entry and exit point for ajek framework libs
+	};
+
+	u64		all64;
+
+	void SetDefaultState() {
+		all64					= 0;
+
+		warn_module_globals		= 0;
+		warn_enclosed_globals   = 1;
+		error_enclosed_globals  = 1;
+		trace_gcmem				= 0;
+	}
+};
+
+AjekScriptSettings		g_ScriptConfig;
+AjekScriptTraceSettings	g_ScriptTrace;
+
+static bool		s_script_settings_initialized = 0;
+static xString	s_script_dbg_path_prefix;
+
+void AjekScriptEnv::PrintStackTrace()
+{
+	lua_Debug info1;
+
+	int level = 1;
+	while(lua_getstack(m_L, level, &info1))
+	{
+		lua_getinfo (m_L, "lS",		&info1);
+
+		lua_Debug info0;
+		lua_getstack(m_L, level-1,	&info0);
+		lua_getinfo (m_L, "n",		&info0);
+
+		log_host("    %s(%d) : %s()", info1.short_src, info1.currentline, info0.name ? info0.name : "(module)" );
+		++level;
+	}
+}
 
 void AjekScript_SetDebugAbsolutePaths(const xString& cwd, const xString& target)
 {
@@ -53,6 +106,44 @@ void AjekScript_SetDebugRelativePath(const xString& relpath)
 	s_script_dbg_path_prefix = relpath;
 }
 
+// luaL_error() is expected to be called from a C function (lualib), which means the parameter for "where" is 1,
+// when we actually need it to be zero when in the context fot he Lua VM itself.
+
+int luaVM_error (lua_State *L, const char *fmt, ...) {
+  va_list argp;
+  va_start(argp, fmt);
+  luaL_where(L, 0);
+  lua_pushvfstring(L, fmt, argp);
+  va_end(argp);
+  lua_concat(L, 2);
+  return lua_error(L);
+}
+
+extern "C" void ajek_warn_new_global(lua_State* L)
+{
+	lua_Debug info0;
+	lua_getstack(L, 0,		&info0);
+	lua_getinfo (L, "nlS",	&info0);
+
+	// Setting globals from module scope is OK unless full global trace is enabled.
+	if (!info0.name && !g_ScriptTrace.warn_module_globals) {
+		return;
+	}
+
+	if (info0.name && g_ScriptTrace.error_enclosed_globals) {
+		luaVM_error(L, "new global variable created outside module scope.\n");
+	}
+
+	if (info0.name && !g_ScriptTrace.warn_enclosed_globals) {
+		return;
+	}
+
+	warn_host("\n%s(%d): WARN: new global variable created", info0.short_src, info0.currentline);
+
+	// log function name in future?
+	//info0.name ? info0.name : "[module]", info0.name ? "()" : "" );
+}
+
 /* number of chars of a literal string without the ending \0 */
 #define LL(x)			(sizeof(x)/sizeof(char) - 1)
 #define addstr(a,b,l)	( memcpy(a,b,(l) * sizeof(char)), a += (l) )
@@ -76,7 +167,7 @@ extern "C" void ajek_lua_printf(const char *fmt, ...)
 {
 	va_list list;
 	va_start(list, fmt);
-	if (g_script_log_verbose) {
+	if (g_ScriptConfig.lua_print_enabled) {
 		_host_log_v(xLogFlag_Default, "Lua", fmt, list);
 		if (!TARGET_CONSOLE) {
 			// to support 'tail' utils via CLI
@@ -135,8 +226,17 @@ void AjekScript_Alloc()
 	// generate mspaces here, in the future.
 }
 
+void AjekScript_InitSettings()
+{
+	s_script_settings_initialized = 1;
+	g_ScriptConfig.SetDefaultState	();
+	g_ScriptTrace.SetDefaultState	();
+}
+
 void AjekScript_InitModuleList()
 {
+	bug_on(!s_script_settings_initialized);
+
 	g_script_env[ScriptEnv_AppConfig]	.Alloc(); 
 
 	g_script_env[ScriptEnv_Game]		.Alloc(); 
@@ -151,8 +251,16 @@ void AjekScriptEnv::Alloc()
 	luaL_openlibs(m_L);
 }
 
+void AjekScriptEnv::PrintLastError() const
+{
+	bug_on(!m_has_error);		// if not set then the upvalue's not going to be a lua error string ...
+	log_host_loud("\n%s", lua_tostring(m_L, -1));
+}
+
 void AjekScriptEnv::LoadModule(const xString& path)
 {
+	m_has_error = false;
+
 	bug_on (!m_L,  "Invalid object state: uninitialized script environment.");
 	bug_on (path.IsEmpty());
 	if (path.IsEmpty()) return;
@@ -171,23 +279,23 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
 	}
 
-	//assume(luaBridge::s_module_id == LuaModule_State_NotLoading);
-	//luaBridge::s_module_id = module_id;
+	//assume(s_module_id == LuaModule_State_NotLoading);
+	//s_module_id = module_id;
 
 	// parse and execute!
 	//   # Add '@' to front of string to inform LUA that it's a filename.
 	//     (lua will even automatically use ... to abbreviate long paths!)
 
 	if (ret != LUA_ERRSYNTAX) {
-		//if (luaBridge::g_config.trace_hooks || luaBridge::g_config.trace_functions) {
+		//if (trace_libajek) {
 		//	log_tooling("[FnTrace] ExecModule(\"%s\")", filename);
-		//	luaBridge::s_fntrace_nesting += '>';
+		//	s_fntrace_nesting += '>';
 		//}
 
 		ret = lua_pcall(m_L, 0, 0, 0);
 
-		//if (luaBridge::g_config.trace_hooks || luaBridge::g_config.trace_functions) {
-		//	luaBridge::s_fntrace_nesting.PopBack();
+		//if (trace_libajek) {
+		//	s_fntrace_nesting.PopBack();
 		//}
 	}
 
@@ -195,7 +303,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	//  # Free memory
 	//  # remove init-only APIs.
 
-	//luaBridge::s_module_id	= LuaModule_State_NotLoading;
+	//s_module_id	= LuaModule_State_NotLoading;
 	
 	// Error Handling!
 	//  # ScriptDebug fall into a recoverable SyntaxError state, from which the user can
@@ -211,14 +319,12 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		// Visual studio looks for src relative to the *.sln directory when resolving error
 		// codes.  The filenames returned by Lua are relative to the CWD of the instance.
 
-		log_host( "\n%s", lua_tostring(m_L, -1) );
-		//luaBridge::s_script_syntax_error = true;
+		m_has_error = true;
+		PrintLastError();
 	}
 
 	GCUSAGE(m_L);
 	// grammar checks
-//	luaBridge_GrammarCheck();
-
 }
 
 void AjekScriptEnv::RegisterFrameworkLibs()

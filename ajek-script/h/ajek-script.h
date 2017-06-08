@@ -104,13 +104,22 @@ struct AjekScriptEnv
 	lua_State*		m_L;
 	//AjekMspace*	m_mspace;		// Future custom mspace provision
 
+	bool			m_has_error;
+
 	AjekScriptEnv() {
-		m_L = nullptr;
+		m_L			= nullptr;
+		m_has_error	= false;
+	}
+
+	bool HasError() const {
+		return m_has_error;
 	}
 
 	void		Alloc					();
 	void		RegisterFrameworkLibs	();
 	void		LoadModule				(const xString& path);
+	void		PrintStackTrace			();
+	void		PrintLastError			() const;
 
 	lua_State*			getLuaState		();
 	const lua_State*	getLuaState		() const;
@@ -124,6 +133,7 @@ struct AjekScriptEnv
 	lua_string		glob_get_string	(const xString& varname)	const;
 };
 
+extern void				AjekScript_InitSettings				();
 extern void				AjekScript_InitModuleList			();
 extern lua_State*		AjekScript_GetLuaState				(ScriptEnvironId moduleId);
 extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xString& target);
