@@ -77,9 +77,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\lua-ifc-main.cpp" />
+    <ClCompile Include="..\src\ajek-script.cpp" />
     <ClInclude Include="..\h\ajek-script.h" />
-    <ClInclude Include="..\src\lua-ifc-internal.h" />
+    <ClInclude Include="..\src\ajek-script-internal.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
