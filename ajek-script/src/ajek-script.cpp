@@ -7,7 +7,7 @@
 #include "x-assertion.h"
 
 #include "ajek-script.h"
-#include "lua-ifc-internal.h"
+#include "ajek-script-internal.h"
 
 extern "C" {
 #	include "linit.c"
