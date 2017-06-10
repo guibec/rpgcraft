@@ -226,15 +226,15 @@ enum DbgBreakType
 };
 
 enum xLogFlag { 
-	xLogFlag_Default	= 0,
-	xLogFlag_Important	= (1 << 0),		// warnings or errors, honored by log_verbose only, also assumes NoRepeat.
+	xLogFlag_Default		= 0,
+	xLogFlag_Important		= (1 << 0),		// warnings or errors, honored by log_verbose only, also assumes NoRepeat.
+	xLogFlag_Undecorated	= (1 << 1),		// dnoes not print any timestamp information  (for lua/compiler errors)
 };
 
 extern void		_host_log			(uint flags, const char* moduleName, const char* fmt = nullptr, ...)	__verify_fmt(4, 5);
 extern void		_host_log_v			(uint flags, const char* moduleName, const char* fmt, va_list params);
 
 extern void		xPrintLn			(const xString& msg);
-extern void		xPrintLn_loud		(const xString& msg);
 extern void		flush_log			();
 
 extern void		xLogSetMaxSpamSize	(s64 newSize);

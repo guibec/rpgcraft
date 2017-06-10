@@ -620,10 +620,9 @@ inline __ai bool IsInInt32u(u64 x)	{ return (x <= 0xFFFFFFFFUL); }
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-#define NONCOPYABLE_OBJECT(classname)	\
-	private:									\
-	explicit classname(const classname&);		\
-	classname& operator=(const classname&)
+#define NONCOPYABLE_OBJECT(classname)					\
+	explicit classname(const classname&) = delete;		\
+	classname& operator=(const classname&) = delete
 
 
 // -------------------------------------------------------------

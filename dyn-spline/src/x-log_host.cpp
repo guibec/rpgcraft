@@ -74,12 +74,12 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const char* filepos, const char*
 		case DbgBreakType_Abort:	title = "Application Error";		break;
 
 		default:
-			xPrintLn_loud(xFmtStr("Unknown DbgBreakType Type = %d will be treated as abort (Application Error)", breakType));
+			xPrintLn(xFmtStr("Unknown DbgBreakType Type = %d will be treated as abort (Application Error)", breakType));
 			title = "Application Error";
 		break;
 	}
 
-	xPrintLn_loud( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", filepos, message.c_str(), context.c_str()) );
+	xPrintLn( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", filepos, message.c_str(), context.c_str()) );
 	_flush_all_that_filesystem_jazz();
 
 	assert_t breakit = assert_none;
@@ -138,27 +138,13 @@ static void vlog_append_host_clock(xString& dest)
 }
 
 // --------------------------------------------------------------------------------------
-template<bool isImportant>
-void xPrintLn_impl(const xString& msg)
+void xPrintLn(const xString& msg)
 {
 	xScopedMutex lock(s_mtx_unilogger);
 
-	//if(vlog_check_history(LogType_Verbose, NULL, msg))
-	//	return;
-
-	xString buffer = "        ";
-	vlog_append_host_clock(buffer);
-	buffer += msg;
-	buffer += "\n";
-
-	if (isImportant)		{ xOutputVerboseString(buffer); }
-	else					{ xOutputDebugString  (buffer); }
-	if (s_myLog)			{ fputs(buffer, s_myLog);		}
+	if (1)					{ xOutputVerboseString(msg + "\n"); }
+	if (s_myLog)			{ fputs(msg + "\n", s_myLog);		}
 }
-
-
-void xPrintLn		(const xString& msg) { xPrintLn_impl<false>(msg); }
-void xPrintLn_loud	(const xString& msg) { xPrintLn_impl<true >(msg); }
 
 // --------------------------------------------------------------------------------------
 void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
