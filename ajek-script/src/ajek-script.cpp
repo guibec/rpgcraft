@@ -238,24 +238,42 @@ void AjekScript_InitModuleList()
 	bug_on(!s_script_settings_initialized);
 
 	g_script_env[ScriptEnv_AppConfig]	.Alloc(); 
-
 	g_script_env[ScriptEnv_Game]		.Alloc(); 
-	g_script_env[ScriptEnv_Game]		.RegisterFrameworkLibs(); 
 }
 
 void AjekScriptEnv::Alloc()
 {
+	// Future MSPACE registration goes here.
+}
+
+void AjekScriptEnv::NewState()
+{
+	DisposeState();
+
 	m_L = luaL_newstate();
 	log_and_abort_on( !m_L, "Create new Lua state failed." );
 	log_host( "lua_stack = %s", cPtrStr(m_L) );
 	luaL_openlibs(m_L);
 }
 
+void AjekScriptEnv::DisposeState()
+{
+	if (!m_L)		return;
+
+	// Wipes entire Lua state --- should delete and re-create MSPACE as well.
+	log_host( "Disposing AjekScript Environment...");
+	lua_close(m_L);
+
+	m_L			= nullptr;
+	m_has_error = false;
+}
+
 void AjekScriptEnv::PrintLastError() const
 {
 	bug_on(!m_has_error);		// if not set then the upvalue's not going to be a lua error string ...
-	log_host_loud("\n%s", lua_tostring(m_L, -1));
+	xPrintLn( xFmtStr("\n%s", lua_tostring(m_L, -1)));
 }
+
 
 void AjekScriptEnv::LoadModule(const xString& path)
 {
@@ -400,10 +418,10 @@ lua_bool AjekScriptEnv::glob_get_bool(const xString& varname) const
 lua_string AjekScriptEnv::glob_get_string(const xString& varname) const
 {
 	lua_string	result;
-	size_t		out_len;
+
 	lua_getglobal(m_L, varname.c_str());
 	result.m_isNil = lua_isnil(m_L, -1);
-	result.m_value = lua_tolstring(m_L, -1, &out_len);
+	result.m_value = lua_tostring(m_L, -1);
 
 	if (!result.m_value) {
 		bug_on(!result.m_isNil);
@@ -413,6 +431,66 @@ lua_string AjekScriptEnv::glob_get_string(const xString& varname) const
 	return result;
 }
 
+LuaTableScope::~LuaTableScope() throw()
+{
+	if (m_env) {
+		m_env->m_open_global_table.Clear();
+	}
+	m_env = nullptr;
+}
+
+// Returns FALSE if varname is either nil or not a table.  It is considered the responsibility of the
+// caller to use glob_IsNil() check ahead of this call if they want to implement special handling of
+// nil separate from non-table-type behavior.
+LuaTableScope::LuaTableScope(AjekScriptEnv& env, const char* tableName)
+{
+	m_env = &env;
+
+	// TODO : Maybe this can be modified to automatically close out previous lua_getglobal stack... ?
+	bug_on_qa(!m_env->m_open_global_table.IsEmpty(), "Another global table is already opened.");
+
+	lua_getglobal(m_env->m_L, tableName);
+
+	m_isNil		=				lua_isnil  (m_env->m_L, -1);
+	m_isTable	= !m_isNil &&	lua_istable(m_env->m_L, -1);
+
+	if (m_isTable) {
+		m_env->m_open_global_table = tableName;
+	}
+}
+
+lua_string LuaTableScope::get_string(const xString& key)
+{
+	auto* L = m_env->m_L;
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+
+	lua_string	result;
+
+	// lua_tostring() modifies the table by converting integers to strings.
+	// This may not be desirable in some situations.  Think about it!
+
+	result.m_isNil = lua_isnil(L, -1);
+	result.m_value = lua_tostring(L, -1);
+
+	if (!result.m_value) {
+		bug_on(!result.m_isNil);
+		result.m_value = "";
+	}
+
+	lua_pop(L, 1);
+	return result;
+}
+
+
+//	env.table_get_string("ModulePath");
+
+// Retrieve results from lua_pcall
+//      /* retrieve result */
+//      if (!lua_isnumber(L, -1))
+//        error(L, "function `f' must return a number");
+//      z = lua_tonumber(L, -1);
+//      lua_pop(L, 1);  /* pop returned value */
 
 // Goals:
 //  1. create module for engine parameter setup.   Debug settings, running environment, paths, so on.
