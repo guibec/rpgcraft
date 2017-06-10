@@ -13,7 +13,7 @@ DECLARE_MODULE_NAME("winmain");
 extern void			LogHostInit();
 extern void			DoGameInit();
 extern void			Render();
-extern void			LoadPkgConfig();
+extern void			LoadPkgConfig(const xString& luaFile);
 
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
@@ -179,7 +179,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		}
 	}
 
-	LoadPkgConfig();
+	LoadPkgConfig("config-package-msw.lua");
 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
