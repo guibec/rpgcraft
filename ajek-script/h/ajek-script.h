@@ -99,12 +99,41 @@ struct lua_string {
 	}
 };
 
+struct AjekScriptEnv;
+
+class LuaTableScope
+{
+	NONCOPYABLE_OBJECT(LuaTableScope);
+
+public:
+	// TODO: Add LuaTableScope for opening a non-global table.
+	//    (function parameter or return value, etc)
+
+	LuaTableScope(AjekScriptEnv& m_env, const char* tableName);
+	~LuaTableScope() throw();
+
+	AjekScriptEnv*	m_env;		// also contains lua_State
+	bool			m_isNil;
+	bool			m_isTable;
+
+	bool			isNil		() const	{ return m_isNil;	}
+	bool			isTable		() const	{ return m_isTable; }
+
+	lua_u32			get_u32		(const xString& key)	const;
+	lua_s32			get_s32		(const xString& key)	const;
+	lua_s64			get_s64		(const xString& key)	const;
+	lua_float		get_float	(const xString& key)	const;
+	lua_bool		get_bool	(const xString& key)	const;
+	lua_string		get_string	(const xString& key);
+};
+
 struct AjekScriptEnv
 {
 	lua_State*		m_L;
 	//AjekMspace*	m_mspace;		// Future custom mspace provision
 
 	bool			m_has_error;
+	xString			m_open_global_table;
 
 	AjekScriptEnv() {
 		m_L			= nullptr;
@@ -116,8 +145,10 @@ struct AjekScriptEnv
 	}
 
 	void		Alloc					();
+	void		NewState				();
 	void		RegisterFrameworkLibs	();
 	void		LoadModule				(const xString& path);
+	void		DisposeState			();
 	void		PrintStackTrace			();
 	void		PrintLastError			() const;
 
