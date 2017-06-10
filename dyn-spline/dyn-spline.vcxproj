@@ -79,6 +79,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">common-standard.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="src\appConfig.cpp" />
     <ClCompile Include="src\Bezier2D.cpp" />
     <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\main.cpp" />

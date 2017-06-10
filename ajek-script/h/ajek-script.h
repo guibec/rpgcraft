@@ -1,6 +1,7 @@
 #pragma once
 
 #include "x-types.h"
+#include "x-string.h"
 
 extern "C" {
 #	include "lua.h"
