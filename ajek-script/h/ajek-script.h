@@ -170,6 +170,7 @@ extern void				AjekScript_InitModuleList			();
 extern lua_State*		AjekScript_GetLuaState				(ScriptEnvironId moduleId);
 extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xString& target);
 extern void				AjekScript_SetDebugRelativePath		(const xString& relpath);
+extern bool				AjekScript_LoadConfiguration		(AjekScriptEnv& env);
 
 extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
 

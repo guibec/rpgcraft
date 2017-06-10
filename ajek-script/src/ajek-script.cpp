@@ -16,19 +16,23 @@ extern "C" {
 DECLARE_MODULE_NAME("lua-main");
 
 struct AjekScriptSettings {
-	struct {
-		u32		lua_print_enabled		: 1;		// 0 to mute all lualib print() statements
+	union {
+		struct {
+			u32		lua_print_enabled		: 1;		// 0 to mute all lualib print() statements
+		};
+
+		u64	flags64;
 	};
 
-	u64	all64;
+	xString		path_to_modules;
 
 	void SetDefaultState() {
-		all64					= 0;
+		flags64					= 0;
 		lua_print_enabled		= 1;
 	}
 };
 
-union AjekScriptTraceSettings {
+struct AjekScriptTraceSettings {
 	struct {
 		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope 
 		u32		warn_enclosed_globals   : 1;		// warn when new globals are created outside module scope, eg. within any function
@@ -36,10 +40,10 @@ union AjekScriptTraceSettings {
 		u32		trace_gcmem				: 1;		// enables gcmem usage checks at every entry and exit point for ajek framework libs
 	};
 
-	u64		all64;
+	u64		flags64;
 
 	void SetDefaultState() {
-		all64					= 0;
+		flags64					= 0;
 
 		warn_module_globals		= 0;
 		warn_enclosed_globals   = 1;
@@ -50,9 +54,33 @@ union AjekScriptTraceSettings {
 
 AjekScriptSettings		g_ScriptConfig;
 AjekScriptTraceSettings	g_ScriptTrace;
+AjekScriptEnv			g_script_env[NUM_SCRIPT_ENVIRONMENTS];
 
 static bool		s_script_settings_initialized = 0;
 static xString	s_script_dbg_path_prefix;
+
+bool AjekScript_LoadConfiguration(AjekScriptEnv& env)
+{
+	LuaTableScope scriptConfig(env, "ScriptConfig");
+	if (scriptConfig.isNil()) {
+		warn_host("Missing configuration table 'ScriptConfig'.");
+		return false;
+	}
+	if (!scriptConfig.isTable()) {
+		warn_host("Invalid type for 'ScriptConfig' - it must be a table");
+		return false;
+	}
+
+	g_ScriptConfig.path_to_modules   = scriptConfig.get_string("ModulePath");
+	g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool("LuaPrintEnable");
+
+	log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
+	if (!g_ScriptConfig.lua_print_enabled) {
+		log_host_loud("   > Lua Print has been turned OFF!");
+	}
+
+	return true;
+}
 
 void AjekScriptEnv::PrintStackTrace()
 {
@@ -218,8 +246,6 @@ LUAMOD_API int luaopen_ajek (lua_State *L) {
   luaL_newlib(L, ajeklib);
   return 1;
 }
-
-AjekScriptEnv	g_script_env[NUM_SCRIPT_ENVIRONMENTS];
 
 void AjekScript_Alloc()
 {
@@ -409,7 +435,9 @@ lua_bool AjekScriptEnv::glob_get_bool(const xString& varname) const
 	lua_getglobal(m_L, varname.c_str());
 	result.m_isNil = lua_isnil(m_L, -1);
 
-	bug_on_qa( !lua_isboolean(m_L, -1), "%s isn't a boolean variable, it's %s.", varname.c_str(), lua_typename(m_L, lua_type(m_L, -1)) );
+	bug_on_qa( !lua_isboolean(m_L, -1), "Table member '%s': Expected bool but got %s.",
+		varname.c_str(), lua_typename(m_L, lua_type(m_L, -1))
+	);
 	result.m_value = lua_toboolean(m_L, -1);
 	lua_pop(m_L, 1);
 	return result;
@@ -459,17 +487,33 @@ LuaTableScope::LuaTableScope(AjekScriptEnv& env, const char* tableName)
 	}
 }
 
+lua_bool LuaTableScope::get_bool(const xString& key) const
+{
+	auto* L = m_env->m_L;
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+
+	lua_bool result;
+	result.m_isNil = lua_isnil(L, -1);
+
+	bug_on_qa( !lua_isboolean(L, -1), "Table member '%s': Expected bool but got %s.",
+		key.c_str(), lua_typename(L, lua_type(L, -1))
+	);
+	result.m_value = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	return result;
+}
+
 lua_string LuaTableScope::get_string(const xString& key)
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
     lua_gettable(L, -2);
 
-	lua_string	result;
-
 	// lua_tostring() modifies the table by converting integers to strings.
 	// This may not be desirable in some situations.  Think about it!
 
+	lua_string	result;
 	result.m_isNil = lua_isnil(L, -1);
 	result.m_value = lua_tostring(L, -1);
 

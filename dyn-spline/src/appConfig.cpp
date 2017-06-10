@@ -19,42 +19,31 @@ void AjekScript_PrintDebugReloadMsg() {
 	else						{ log_and_abort( __VA_ARGS__ ); }									\
 }
 
-static bool TryLoadPkgConfig()
+static bool TryLoadPkgConfig(const xString& luaFile)
 {
 	auto& env = AjekScriptEnv_Get(ScriptEnv_AppConfig);
 
 	env.NewState();
 	auto* L	= env.getLuaState();
 
-	env.LoadModule("config-package.lua");
+	bug_on(luaFile.IsEmpty());
+	env.LoadModule(luaFile);
 
 	if (env.HasError()) {
 		return false;
 	}
 
-	if (1) {
-		LuaTableScope scriptConfig(env, "ScriptConfig");
-		if (scriptConfig.isNil()) {
-			warn_host("Missing configuration table 'ScriptConfig'.");
-			return false;
-		}
-		if (!scriptConfig.isTable()) {
-			warn_host("Invalid definition of 'ScriptConfig' - it must be a table");
-			return false;
-		}
+	if (!AjekScript_LoadConfiguration(env)) { return false; }
 
-		auto path   = scriptConfig.get_string("ModulePath");
-		log_host( "Path Test = %s", path.c_str() );
-	}
 	return true;
 }
 
-void LoadPkgConfig()
+void LoadPkgConfig(const xString& luaFile)
 {
 	AjekScript_InitSettings();
 	AjekScript_InitModuleList();
 
-	while (!TryLoadPkgConfig()) {
+	while (!TryLoadPkgConfig(luaFile)) {
 		if (!xIsDebuggerAttached()) {
 			log_and_abort("Application aborted due to scriptConfig error."); 
 		}
