@@ -198,7 +198,7 @@
 //   * CPATH is considered unused.  All C++ bindings should be provided by the
 //     game engine binary.  DLLs are not supported.  CPATH is therefore unspecified.
 #if AJEK_SCRIPT
-#	define LUA_LDIR	".\\lua-req\\"
+#	define LUA_LDIR	".\\lua_req\\"
 #	define LUA_CDIR	".\\"
 #	define LUA_PATH_DEFAULT  \
 			LUA_LDIR  "?.lua;"   LUA_LDIR  "?\\init.lua;" \

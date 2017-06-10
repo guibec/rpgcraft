@@ -259,17 +259,17 @@ static __ai assert_t DoAssertionDialog( const xString& title, const xString& con
 
 	if (result == IDRETRY)
 	{
-		xPrintLn_loud( "*** DEBUG BREAK REQUESTED ***" );
+		xPrintLn( "*** DEBUG BREAK REQUESTED ***" );
 		return assert_break;
 	}
 	else if (result == IDABORT)
 	{
-		xPrintLn_loud( "*** TERMINATION REQUESTED ***" );
+		xPrintLn( "*** TERMINATION REQUESTED ***" );
 		return assert_terminate_app;
 	}
 	else if (result == IDIGNORE)
 	{
-		xPrintLn_loud( "*** all assertions of this type ignored! ***" );
+		xPrintLn( "*** all assertions of this type ignored! ***" );
 		return assert_ignore_all;
 	}
 	return assert_none;
