@@ -153,7 +153,3 @@ struct GPU_Colors {
 	static const float4 Yellow               ;
 	static const float4 YellowGreen          ;
 };
-
-#if !TOOLCHAIN_LTO_ENABLED
-#	include "x-gpu-colors.inl"
-#endif
