@@ -84,6 +84,7 @@
     <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
+    <ClCompile Include="src\test-spline.cpp" />
     <ClCompile Include="src\x-gpu-colors.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
