@@ -66,9 +66,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="src\x-gpu-colors.inl">
-      <Filter>Header Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>
