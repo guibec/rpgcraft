@@ -38,7 +38,6 @@ ID3D11DeviceContext1*   g_pImmediateContext1	= nullptr;
 IDXGISwapChain*         g_pSwapChain			= nullptr;
 IDXGISwapChain1*        g_pSwapChain1			= nullptr;
 
-ID3D11InputLayout*      g_pVertexLayout			= nullptr;
 ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
 ID3D11InputLayout*      g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS];
@@ -56,22 +55,9 @@ int g_curBufferIdx = 0;
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
 // * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
 
-struct DynamicVertexBufferSet {
-
-	// Vertex lists will need to be split according to their layout - namely their stride.
-	// eg, if some have texture UV data while others do not.
-	// It makes the most sense if the buffers are named after the vertex data types that they contain.
-	// Or more generically they can be named according to the buffer stride, since the underlying data
-	// is not important.
-
-	// For now just have the Simple buffer...
-
-	ID3D11Buffer*		Buffers[128]	= { nullptr };
-};
-
 
 int							g_DynVertBufferCount = 0;
-DynamicVertexBufferSet		g_DynVertBuffers[BackBufferCount];
+ID3D11Buffer*				g_DynVertBuffers[BackBufferCount][256];
 
 ID3D11SamplerState*			m_pTextureSampler = nullptr;
 
@@ -248,6 +234,7 @@ static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
 	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
+
 static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
 {
 	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -265,14 +252,27 @@ static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
 	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, 52,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
-const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayoutType layoutType)
+static const D3D11_INPUT_ELEMENT_DESC layout_multi_tex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		1, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+static const D3D11_INPUT_ELEMENT_DESC layout_multi_colortex1[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		2, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout layoutType)
 {
 	switch (layoutType)
 	{
-		case VertexBufferLayout_Color:		return layout_color;
-		case VertexBufferLayout_Tex1:		return layout_tex1;
-		case VertexBufferLayout_ColorTex1:	return layout_colortex1;
-		case VertexBufferLayout_ColorTex4:	return layout_colortex4;
+		case VertexBufferLayout_Color:				return layout_color;
+		case VertexBufferLayout_Tex1:				return layout_tex1;
+		case VertexBufferLayout_ColorTex1:			return layout_colortex1;
+		case VertexBufferLayout_ColorTex4:			return layout_colortex4;
 
 		default: unreachable();
 	}
@@ -281,7 +281,7 @@ const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayoutType
 	return nullptr;
 }
 
-int getVertexBufferLayoutSize(GPU_VertexBufferLayoutType layoutType)
+int getVertexBufferLayoutSize(GPU_VertexBufferLayout layoutType)
 {
 	switch (layoutType)
 	{
@@ -302,6 +302,28 @@ ID3DBlob* LoadShaderBlobVS(const xString& srcfile, const char* entryPointFn)
 	bug_on( !entryPointFn || !entryPointFn[0] );
 	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
 	return blob;
+}
+
+static void genInputLayouts()
+{
+	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
+	//        specifications defined within and supported by our engine.
+
+	HRESULT hr;
+	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
+		auto vbl = (GPU_VertexBufferLayout)i;
+		auto* IALayoutBlob = LoadShaderBlobVS("..\\ajek-framework\\shaders\\VertexInputLayouts.fx", toString(vbl));
+
+		// Create the input layout
+		hr = g_pd3dDevice->CreateInputLayout(
+			getVertexBufferLayout		(vbl),
+			getVertexBufferLayoutSize	(vbl),
+			IALayoutBlob->GetBufferPointer(),
+			IALayoutBlob->GetBufferSize(),
+			&g_pVertexLayouts[vbl]
+		);
+		IALayoutBlob->Release();
+	}
 }
 
 void dx11_InitDevice()
@@ -514,23 +536,8 @@ void dx11_InitDevice()
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f );
 
-	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
-	//        specifications defined within and supported by our engine.
+	genInputLayouts();
 
-	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
-		auto vbl = (GPU_VertexBufferLayoutType)i;
-		auto* IALayoutBlob = LoadShaderBlobVS("..\\ajek-framework\\shaders\\VertexInputLayouts.fx", toString(vbl));
-
-		// Create the input layout
-		hr = g_pd3dDevice->CreateInputLayout(
-			getVertexBufferLayout		(vbl),
-			getVertexBufferLayoutSize	(vbl),
-			IALayoutBlob->GetBufferPointer(),
-			IALayoutBlob->GetBufferSize(),
-			&g_pVertexLayouts[vbl]
-		);
-		IALayoutBlob->Release();
-	}
 	log_and_abort_on(FAILED(hr));
 }
 
@@ -606,7 +613,7 @@ void dx11_SetVertexBuffer( int bufferId, int shaderSlot, int _stride, int _offse
 	uint stride = _stride;
 	uint offset = _offset;
 
-	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx].Buffers[bufferId], &stride, &offset);
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx][bufferId], &stride, &offset);
 }
 
 void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset)
@@ -614,7 +621,7 @@ void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int 
 	uint stride = _stride;
 	uint offset = _offset;
 
-	g_pImmediateContext->IASetVertexBuffers(0, 1, (ID3D11Buffer**)&vbuffer.m_driverData, &stride, &offset);
+	g_pImmediateContext->IASetVertexBuffers(shaderSlot, 1, (ID3D11Buffer**)&vbuffer.m_driverData, &stride, &offset);
 }
 
 void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset)
@@ -638,7 +645,7 @@ void dx11_UploadDynamicBufferData(int bufferIdx, void* srcData, int sizeInBytes)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 
-	auto*   simple      = g_DynVertBuffers[g_curBufferIdx].Buffers[bufferIdx];
+	auto*   simple      = g_DynVertBuffers[g_curBufferIdx][bufferIdx];
 
 	g_pImmediateContext->Map(simple, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	xMemCopy(mappedResource.pData, srcData, sizeInBytes);
@@ -655,7 +662,7 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 		bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
 		bd.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
 
-		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_DynVertBuffers[i].Buffers[bufferIdx]);
+		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_DynVertBuffers[i][bufferIdx]);
 		bug_on (FAILED(hr));
 	}
 	g_DynVertBufferCount += 1;
