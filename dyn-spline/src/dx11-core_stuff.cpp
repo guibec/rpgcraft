@@ -269,10 +269,12 @@ const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout lay
 {
 	switch (layoutType)
 	{
-		case VertexBufferLayout_Color:				return layout_color;
-		case VertexBufferLayout_Tex1:				return layout_tex1;
-		case VertexBufferLayout_ColorTex1:			return layout_colortex1;
-		case VertexBufferLayout_ColorTex4:			return layout_colortex4;
+		case VertexBufferLayout_Color:					return layout_color;
+		case VertexBufferLayout_Tex1:					return layout_tex1;
+		case VertexBufferLayout_ColorTex1:				return layout_colortex1;
+		case VertexBufferLayout_ColorTex4:				return layout_colortex4;
+		case VertexBufferLayout_MultiSlot_Tex1:			return layout_multi_tex1;
+		case VertexBufferLayout_MultiSlot_ColorTex1:	return layout_multi_colortex1;
 
 		default: unreachable();
 	}
@@ -285,10 +287,12 @@ int getVertexBufferLayoutSize(GPU_VertexBufferLayout layoutType)
 {
 	switch (layoutType)
 	{
-		case VertexBufferLayout_Color:		return bulkof(layout_color		);
-		case VertexBufferLayout_Tex1:		return bulkof(layout_tex1		);
-		case VertexBufferLayout_ColorTex1:	return bulkof(layout_colortex1	);
-		case VertexBufferLayout_ColorTex4:	return bulkof(layout_colortex4	);
+		case VertexBufferLayout_Color:					return bulkof(layout_color				);
+		case VertexBufferLayout_Tex1:					return bulkof(layout_tex1				);
+		case VertexBufferLayout_ColorTex1:				return bulkof(layout_colortex1			);
+		case VertexBufferLayout_ColorTex4:				return bulkof(layout_colortex4			);
+		case VertexBufferLayout_MultiSlot_Tex1:			return bulkof(layout_multi_tex1			);
+		case VertexBufferLayout_MultiSlot_ColorTex1:	return bulkof(layout_multi_colortex1	);
 
 		default: unreachable();
 	}
@@ -544,7 +548,7 @@ void dx11_InitDevice()
 void dx11_SetInputLayout()
 {
 	// Set the input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[VertexBufferLayout_Tex1]);
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[VertexBufferLayout_MultiSlot_Tex1]);
 }
 
 bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
