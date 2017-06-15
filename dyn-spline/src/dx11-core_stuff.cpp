@@ -636,6 +636,11 @@ void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offs
 	g_pImmediateContext->IASetIndexBuffer( (ID3D11Buffer*)indexBuffer.m_driverData, format, offset);
 }
 
+void dx11_Draw(int indexCount, int startVertLoc)
+{
+	g_pImmediateContext->Draw(indexCount, startVertLoc);
+}
+
 void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
 {
 	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
