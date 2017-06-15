@@ -207,6 +207,7 @@ extern void					dx11_SetVertexBuffer			(int bufferId, int shaderSlot, int _strid
 extern void					dx11_UploadDynamicBufferData	(int bufferIdx, void* srcData, int sizeInBytes);
 extern void					dx11_SetIndexBuffer				(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset);
 extern void					dx11_DrawIndexed				(int indexCount, int startIndexLoc, int baseVertLoc);
+extern void					dx11_Draw						(int indexCount, int startVertLoc);
 extern void					dx11_SetPrimType				(GpuPrimitiveType primType);
 
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
