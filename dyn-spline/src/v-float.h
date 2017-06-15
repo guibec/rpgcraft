@@ -54,6 +54,24 @@ struct vFloat2
 
 	vFloat2() {}
 	vFloat2(float _x, float _y);
+
+	vFloat2& operator+=(const vFloat2& right) {
+		x += right.x;
+		y += right.y;
+		return *this;
+	}
+
+	vFloat2 operator+(const vFloat2& right) const {
+		return vFloat2(x + right.x, y + right.y);
+	}
+
+	vFloat2 operator/(const vFloat2& right) const {
+		return vFloat2(x / right.x, y / right.y);
+	}
+
+	vFloat2 operator*(const vFloat2& right) const {
+		return vFloat2(x * right.x, y * right.y);
+	}
 };
 
 inline vFloat4::vFloat4(float _x, float _y, float _z, float _w) {
