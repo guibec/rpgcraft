@@ -3,21 +3,29 @@
 #include "x-types.h"
 #include "x-simd.h"
 
-enum GPU_VertexBufferLayoutType {
+enum GPU_VertexBufferLayout {
 	VertexBufferLayout_Color,
 	VertexBufferLayout_Tex1,
 	VertexBufferLayout_ColorTex1,
 	VertexBufferLayout_ColorTex4,
+
+	VertexBufferLayout_MultiSlot_Tex1,
+	VertexBufferLayout_MultiSlot_ColorTex1,
+
 	VertexBufferLayout_NUM_LAYOUTS,
 };
 
-static inline __ai const char* toString(GPU_VertexBufferLayoutType layout) {
+static inline __ai const char* toString(GPU_VertexBufferLayout layout) {
 	switch(layout) {
 		CaseReturnString(VertexBufferLayout_Color		);
 		CaseReturnString(VertexBufferLayout_Tex1		);
 		CaseReturnString(VertexBufferLayout_ColorTex1	);
 		CaseReturnString(VertexBufferLayout_ColorTex4	);
 		CaseReturnString(VertexBufferLayout_NUM_LAYOUTS	);
+
+		CaseReturnString(VertexBufferLayout_MultiSlot_Tex1		);
+		CaseReturnString(VertexBufferLayout_MultiSlot_ColorTex1 );
+
 		default: __unreachable();
 	}
 	return "invalid";

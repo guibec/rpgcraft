@@ -64,3 +64,19 @@ VS_OUTPUT VertexBufferLayout_ColorTex4( VS_INPUT_COLORTEX4 input )
 	return result;
 }
 
+// MultiSlot are identical... just copied here for now to simplify logic in C++ side
+VS_OUTPUT VertexBufferLayout_MultiSlot_Tex1( VS_INPUT_TEX1 input )
+{
+	VS_OUTPUT result;
+	result.Pos = float4(input.Pos, 0.0f);
+	result.Color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return result;
+}
+
+VS_OUTPUT VertexBufferLayout_MultiSlot_ColorTex1( VS_INPUT_COLORTEX1 input )
+{
+	VS_OUTPUT result;
+	result.Pos = float4(input.Pos, 0.0f);
+	result.Color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return result;
+}
