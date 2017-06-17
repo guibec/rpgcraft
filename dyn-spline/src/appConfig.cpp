@@ -8,12 +8,6 @@
 DECLARE_MODULE_NAME("config");
 
 
-void AjekScript_PrintDebugReloadMsg() {
-	xPrintLn("");
-	xPrintLn("Debugger detected - Correct the problem in Lua and hit 'Continue' in debugger to reload and re-execute.");
-	xPrintLn("");
-}
-
 #define tryLoadLuaAgain(...) {																		\
 	if (xIsDebuggerAttached())  { AjekScript_PrintDebugReloadMsg(); __debugbreak(); return false; }	\
 	else						{ log_and_abort( __VA_ARGS__ ); }									\
