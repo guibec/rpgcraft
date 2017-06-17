@@ -19,7 +19,6 @@ DECLARE_MODULE_NAME("main");
 GPU_VertexBuffer		g_mesh_box2D;
 GPU_VertexBuffer		g_mesh_worldView;
 GPU_VertexBuffer		g_mesh_worldViewUV;
-int						g_vbuf_worldViewUV;
 
 GPU_IndexBuffer			g_idx_box2D;
 GPU_ShaderVS			g_ShaderVS;
@@ -30,6 +29,36 @@ bool					g_gpu_ForceWireframe	= false;
 GPU_TextureResource2D	tex_floor;
 GPU_TextureResource2D	tex_terrain;
 
+static const int TileSizeX = 8;
+static const int TileSizeY = 8;
+
+// TODO: Make this dynamic ...
+
+//static const int ViewMeshSizeX		= 128;
+//static const int ViewMeshSizeY		= 96;
+static int ViewMeshSizeX		= 24;
+static int ViewMeshSizeY		= 24;
+static int worldViewVerticiesCount = 0;
+
+GPU_TextureResource2D	tex_tile_ids;		// indexer into the provided texture set  (dims: ViewMeshSizeXY)
+GPU_TextureResource2D	tex_tile_rgba;		// tile-based lighting map                (dims: ViewMeshSizeXY)
+
+
+// ------------------------------------------------------------------------------------------------
+// struct TileMapVertex
+// ------------------------------------------------------------------------------------------------
+//  * Used to define the static (generally unchanging) visible tile map.
+//  * The UVs are hard-coded to always go from 0.0f to 1.0f across each quad.
+//
+// Actual UVs are calculated by the pixel shader -- it reads from tex_tile_ids to determine
+// the base offset of the tile, and then adds the VS-interpolated value range 0.0f - 1.0f to that
+// to smaple the texture.
+//
+// Note: Requires multi-resource support by the GPU.  No big deal for deaktops and consoles.  May
+//       not be widely available on mobile devices; or maybe it will be by the time we're interested
+//       in considering shipping the title for mobile.  So just going to assume multi-texture support
+//       for now... --jstine
+
 struct TileMapVertex {
 	vFloat3		xyz;
 	vFloat2		uv;
@@ -38,13 +67,6 @@ struct TileMapVertex {
 static const int WorldSizeX		= 1024;
 static const int WorldSizeY		= 1024;
 
-//static const int ViewMeshSizeX		= 128;
-//static const int ViewMeshSizeY		= 96;
-
-static const int ViewMeshSizeX		= 24;
-static const int ViewMeshSizeY		= 24;
-
-int		worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
 
 // xyz should probably fixed.  Only the camera and the UVs need to change.
 // UV, Lighting should be independenty stored in the future, to allow them to be updated at different update intervals.
@@ -94,9 +116,87 @@ void ProcGenTerrain()
 	}
 }
 
+int g_setCountX = 0;
+int g_setCountY = 0;
 
+void SceneBegin()
+{
+	// Populate view mesh according to world map information:
+	
+	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
+	vFloat2 t16uv = incr_set_uv / vFloat2(4.0f, 10.0f);
 
-void Render()
+	for (int y=0; y<ViewMeshSizeY; ++y) {
+		for (int x=0; x<ViewMeshSizeX; ++x) {
+			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
+			int setId = g_WorldMap[(y * WorldSizeX) + x].tilesetId;
+			int setX = setId % g_setCountX;
+			int setY = setId / g_setCountX;
+
+			// Look at surrounding tiles to decide how to match this tile...
+			// TODO: Try moving this into Lua?  As a proof-of-concept for rapid iteration?
+			//    Or is this not appropriate scope for scripting yet?  Hmm!
+
+			bool match_above1 = false;
+			bool match_below1 = false;
+			bool match_left1  = false;
+			bool match_right1 = false;
+
+			if (y > 0) {
+				int idx = ((y-1) * WorldSizeX) + (x+0);
+				match_above1 = (g_WorldMap[idx].tilesetId == setId);
+			}
+			
+			if (y < WorldSizeY-1) {
+				int idx = ((y+1) * WorldSizeX) + (x+0);
+				match_below1 = (g_WorldMap[idx].tilesetId == setId);
+			}
+
+			if (x > 0) {
+				int idx  = ((y+0) * WorldSizeX) + (x-1);
+				match_left1 = (g_WorldMap[idx].tilesetId == setId);
+			}
+
+			if (x < WorldSizeX-1) {
+				int idx = ((y+0) * WorldSizeX) + (x+1);
+				match_right1 = (g_WorldMap[idx].tilesetId == setId);
+			}
+
+			int subTileX = 0;
+			int subTileY = 0;
+
+			if (match_above1 && match_below1) {
+				if (!match_left1 || !match_right1) {
+					//subTileX = 0;
+					//subTileY = 1;
+				}
+			}
+
+			if (match_left1 && match_right1) {
+				//subTileX = 1;
+				if (match_above1) {
+					//subTileY = 4;
+				}
+			}
+
+			//subTileY += 3;
+
+			vFloat2 uv;
+			uv  = vFloat2(setX, setY)  * incr_set_uv;
+			uv += vFloat2(subTileX, subTileY) * t16uv;
+
+			g_ViewUV[vertexId + 0]		= uv + vFloat2( 0.00f,		0.00f );
+			g_ViewUV[vertexId + 1]		= uv + vFloat2( t16uv.x,	0.00f );
+			g_ViewUV[vertexId + 2]		= uv + vFloat2( 0.00f,		t16uv.y );
+			g_ViewUV[vertexId + 3]		= uv + vFloat2( t16uv.x,	0.00f );
+			g_ViewUV[vertexId + 4]		= uv + vFloat2( 0.00f,		t16uv.y );
+			g_ViewUV[vertexId + 5]		= uv + vFloat2( t16uv.x,	t16uv.y );
+		}
+	}
+
+}
+
+void SceneRender()
 {
 	// Clear the back buffer
 	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
@@ -170,19 +270,54 @@ void Render()
 //   * Terraria updates lighting at ~10fps, movement of lights is noticably behind player.
 //
 
-void DoGameInit()
+#include "ajek-script.h"
+
+bool TryDoGameInit(AjekScriptEnv& script)
 {
+	// Fetch Scene configuration from Lua.
+
+	script.NewState();
+	script.LoadModule("scripts/GameInit.lua");
+
+	if (script.HasError()) {
+		return false;
+	}
+
+	//if (auto& worldTab = script.glob_open_table("World"))
+	//{
+	//	WorldSizeX = worldTab.get<u32>("size");
+	//	WorldSizeX = worldTab.get<u32>("size");
+	//}
+
+	if (auto& worldViewTab = script.glob_open_table("WorldView"))
+	{
+		auto tileSheetFilename	= worldViewTab.get_string("TileSheet");
+
+		if (auto getMeshSize = worldViewTab.push_func("getMeshSize")) {
+			getMeshSize.pusharg("desktop");
+			getMeshSize.pusharg(1920.0f);
+			getMeshSize.pusharg(1080.0f);
+			getMeshSize.execcall(2);		// 2 - num return values
+			float SizeX = getMeshSize.getresult<float>();
+			float SizeY = getMeshSize.getresult<float>();
+
+			ViewMeshSizeX = int(std::ceilf(SizeX / TileSizeX));
+			ViewMeshSizeY = int(std::ceilf(SizeY / TileSizeY));
+
+			ViewMeshSizeX = std::min(ViewMeshSizeX, WorldSizeX);
+			ViewMeshSizeY = std::min(ViewMeshSizeY, WorldSizeY);
+			worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
+		}
+	}
+
 	xBitmapData  pngtex;
 	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
-
 	dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 
 	// Assume pngtex is rpgmaker layout for now.
 
-	int setCountX = pngtex.width	/ 64;
-	int setCountY = pngtex.height	/ (64 + 32);
-
-	vFloat2 incr_set_uv = vFloat2(1.0f / setCountX, 1.0f / setCountY);
+	g_setCountX = pngtex.width	/ 64;
+	g_setCountY = pngtex.height	/ (64 + 32);
 
 	g_WorldMap	  = (TerrainMapItem*)   xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
 	g_ViewMesh    = (vFloat3*) xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
@@ -217,75 +352,18 @@ void DoGameInit()
 
 
 	// Populate view mesh according to world map information:
-	// TODO: Change into a dynamicMesh and and move to SceneBegin() update loop.
-
+	
 	float incr_x =  (2.0f / ViewMeshSizeX);
 	float incr_y = -(2.0f / ViewMeshSizeY);
 
+	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
 	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 5.0f);
 
 	for (int y=0; y<ViewMeshSizeY; ++y) {
 		float vertY = 1.0f + (y * incr_y);
 		for (int x=0; x<ViewMeshSizeX; ++x) {
-			int setId = g_WorldMap[(y * WorldSizeX) + x].tilesetId;
-
-			int setX = setId % setCountX;
-			int setY = setId / setCountX;
-
-			// Look at surrounding tiles to decide how to match this tile...
-			// TODO: Try moving this into Lua?  As a proof-of-concept for rapid iteration?
-			//    Or is this not appropriate scope for scripting yet?  Hmm!
-
-			bool match_above1 = false;
-			bool match_below1 = false;
-			bool match_left1  = false;
-			bool match_right1 = false;
-
-			if (y > 0) {
-				int idx = ((y-1) * WorldSizeX) + (x+0);
-				match_above1 = (g_WorldMap[idx].tilesetId == setId);
-			}
-			
-			if (y < WorldSizeY-1) {
-				int idx = ((y+1) * WorldSizeX) + (x+0);
-				match_below1 = (g_WorldMap[idx].tilesetId == setId);
-			}
-
-			if (x > 0) {
-				int idx  = ((y+0) * WorldSizeX) + (x-1);
-				match_left1 = (g_WorldMap[idx].tilesetId == setId);
-			}
-
-			if (x < WorldSizeX-1) {
-				int idx = ((y+0) * WorldSizeX) + (x+1);
-				match_right1 = (g_WorldMap[idx].tilesetId == setId);
-			}
-
-			int subTileX = 0;
-			int subTileY = 0;
-
-			if (match_above1 && match_below1) {
-				if (!match_left1 || !match_right1) {
-					//subTileX = 0;
-					//subTileY = 1;
-				}
-			}
-
-			if (match_left1 && match_right1) {
-				//subTileX = 1;
-				if (match_above1) {
-					//subTileY = 4;
-				}
-			}
-
-			//subTileY += 3;
-
-			vFloat2 uv;
-			uv  = vFloat2(setX, setY)  * incr_set_uv;
-			uv += vFloat2(subTileX, subTileY) * t16uv;
-
-			float vertX = -1.0 + (x * incr_x);
 			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
+			float vertX = -1.0 + (x * incr_x);
 
 			g_ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		1.0f );
 			g_ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
@@ -294,6 +372,19 @@ void DoGameInit()
 			g_ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
 			g_ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
 			g_ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, 1.0f );
+		}
+	}
+
+	for (int y=0; y<ViewMeshSizeY; ++y) {
+		float vertY = 1.0f + (y * incr_y);
+		for (int x=0; x<ViewMeshSizeX; ++x) {
+			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
+
+			vFloat2 uv;
+			int setId = g_WorldMap[(y * WorldSizeX) + x].tilesetId;
+			int setX = setId % g_setCountX;
+			int setY = setId / g_setCountX;
+			uv  = vFloat2(setX, setY)  * incr_set_uv;
 
 			g_ViewUV[vertexId + 0]		= uv + vFloat2( 0.00f,		0.00f );
 			g_ViewUV[vertexId + 1]		= uv + vFloat2( t16uv.x,	0.00f );
@@ -307,29 +398,28 @@ void DoGameInit()
 	g_mesh_worldView   = dx11_CreateStaticMesh(g_ViewMesh, sizeof(g_ViewMesh[0]), worldViewVerticiesCount);
 	g_mesh_worldViewUV = dx11_CreateStaticMesh(g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
 
-	//g_vbuf_worldViewUV = dx11_CreateDynamicVertexBuffer(sizeof(vFloat2) * worldViewVerticiesCount);
-
-
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
-	extern void dx11_SetInputLayout();
 	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS, "HeightMappedQuad.fx", "PS");
 	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
 
-TileMapVertex vertices[] =
-{
-	{ vFloat3( -0.4f,  0.5f, 0.5f ), vFloat2(0.0f, 0.0f) },
-	{ vFloat3( -0.4f, -0.5f, 0.5f ), vFloat2(0.0f, 1.0f) },
-	{ vFloat3(  0.4f, -0.5f, 0.5f ), vFloat2(1.0f, 1.0f) },
-	{ vFloat3(  0.4f,  0.5f, 0.5f ), vFloat2(1.0f, 0.0f) }
+	// ---------------------------------------------------------------------------------------------
+	// Simple box for diagnostic purposes...
 
-	//{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
-	//{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
-	//{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
-	//{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
-};
+	TileMapVertex vertices[] =
+	{
+		{ vFloat3( -0.4f,  0.5f, 0.5f ), vFloat2(0.0f, 0.0f) },
+		{ vFloat3( -0.4f, -0.5f, 0.5f ), vFloat2(0.0f, 1.0f) },
+		{ vFloat3(  0.4f, -0.5f, 0.5f ), vFloat2(1.0f, 1.0f) },
+		{ vFloat3(  0.4f,  0.5f, 0.5f ), vFloat2(1.0f, 0.0f) }
+
+		//{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
+		//{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
+		//{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
+		//{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
+	};
 
 	s16 indices_box[] = {
 		0,1,3,
@@ -339,4 +429,26 @@ TileMapVertex vertices[] =
 
 	g_mesh_box2D = dx11_CreateStaticMesh(vertices, sizeof(vertices[0]), bulkof(vertices));
 	g_idx_box2D  = dx11_CreateIndexBuffer(indices_box, 6*2);
+	// ---------------------------------------------------------------------------------------------
+
+	return true;
+}
+
+void DoGameInit()
+{
+	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
+
+KeepTrying:
+	if (AjekScript_SetJmpIsOK(script)) {
+		TryDoGameInit(script);
+	}
+	else {
+		if (!xIsDebuggerAttached()) {
+			log_and_abort("Application aborted due to DoGameInit error."); 
+		}
+		AjekScript_PrintDebugReloadMsg();
+		script.PrintLastError();
+		__debugbreak();		// allows developer to resume after correcting errors.
+		goto KeepTrying;
+	}
 }

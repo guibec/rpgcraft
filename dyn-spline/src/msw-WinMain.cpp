@@ -12,7 +12,8 @@ DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
 extern void			DoGameInit();
-extern void			Render();
+extern void			SceneRender();
+extern void			SceneBegin();
 extern void			LoadPkgConfig(const xString& luaFile);
 
 HINSTANCE               g_hInst					= nullptr;
@@ -198,7 +199,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			DispatchMessage(&msg);
 		} else
 		{
-			Render();
+			SceneBegin();
+			SceneRender();
 		}
 	}
 

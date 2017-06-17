@@ -18,7 +18,7 @@ WorldView.getMeshSize = function(formFactor, displayResX, displayResY)
 	-- Ideal target is a max 2:1 zoom at 1920x1080 on a desktop
 
 
-	local x,y = 24,24		-- 2048, 2048
+	local x,y = 128,128		-- 2048, 2048
 	local aspect = displayResX / displayResY
 	
 	if DevForce ~= nil then
