@@ -316,7 +316,7 @@ void DoGameInit()
 	extern void dx11_SetInputLayout();
 	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS, "HeightMappedQuad.fx", "PS");
-	dx11_SetInputLayout();
+	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
 
 TileMapVertex vertices[] =
 {
