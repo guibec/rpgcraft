@@ -545,10 +545,10 @@ void dx11_InitDevice()
 	log_and_abort_on(FAILED(hr));
 }
 
-void dx11_SetInputLayout()
+void dx11_SetInputLayout(GPU_VertexBufferLayout layoutType)
 {
 	// Set the input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[VertexBufferLayout_MultiSlot_Tex1]);
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[layoutType]);
 }
 
 bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
