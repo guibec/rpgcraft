@@ -61,22 +61,14 @@ static xString	s_script_dbg_path_prefix;
 
 bool AjekScript_LoadConfiguration(AjekScriptEnv& env)
 {
-	LuaTableScope scriptConfig(env, "ScriptConfig");
-	if (scriptConfig.isNil()) {
-		warn_host("Missing configuration table 'ScriptConfig'.");
-		return false;
-	}
-	if (!scriptConfig.isTable()) {
-		warn_host("Invalid type for 'ScriptConfig' - it must be a table");
-		return false;
-	}
+	if (auto& scriptConfig = env.glob_open_table("ScriptConfig")) {
+		g_ScriptConfig.path_to_modules   = scriptConfig.get_string("ModulePath");
+		g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool("LuaPrintEnable");
 
-	g_ScriptConfig.path_to_modules   = scriptConfig.get_string("ModulePath");
-	g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool("LuaPrintEnable");
-
-	log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
-	if (!g_ScriptConfig.lua_print_enabled) {
-		log_host_loud("   > Lua Print has been turned OFF!");
+		log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
+		if (!g_ScriptConfig.lua_print_enabled) {
+			log_host_loud("   > Lua Print has been turned OFF!");
+		}
 	}
 
 	return true;
@@ -247,6 +239,12 @@ LUAMOD_API int luaopen_ajek (lua_State *L) {
   return 1;
 }
 
+void AjekScript_PrintDebugReloadMsg()
+{
+	xPrintLn("");
+	xPrintLn("Debugger detected - Correct the problem in Lua and hit 'Continue' in debugger to reload and re-execute.");
+}
+
 void AjekScript_Alloc()
 {
 	// generate mspaces here, in the future.
@@ -276,7 +274,8 @@ void AjekScriptEnv::NewState()
 {
 	DisposeState();
 
-	m_L = luaL_newstate();
+	m_error	= AsError_None;
+	m_L		= luaL_newstate();
 	log_and_abort_on( !m_L, "Create new Lua state failed." );
 	log_host( "lua_stack = %s", cPtrStr(m_L) );
 	luaL_openlibs(m_L);
@@ -286,28 +285,46 @@ void AjekScriptEnv::DisposeState()
 {
 	if (!m_L)		return;
 
+
 	// Wipes entire Lua state --- should delete and re-create MSPACE as well.
 	log_host( "Disposing AjekScript Environment...");
-	lua_close(m_L);
 
+	lua_close(m_L);
+	m_error		= AsError_None;		// important to clear this: error info is on the lua stack
 	m_L			= nullptr;
-	m_has_error = false;
 }
+
 
 void AjekScriptEnv::PrintLastError() const
 {
-	bug_on(!m_has_error);		// if not set then the upvalue's not going to be a lua error string ...
+	bug_on(!HasError());		// if not set then the upvalue's not going to be a lua error string ...
 	xPrintLn( xFmtStr("\n%s", lua_tostring(m_L, -1)));
 }
 
+AjekScriptError cvtLuaErrorToAjekError(int lua_error) 
+{
+	switch (lua_error) {
+		case LUA_YIELD		:	bug("LUA_YIELD.  HOW??");						break;
+		case LUA_ERRRUN		:	return AsError_Runtime;							break;
+		case LUA_ERRSYNTAX	:	return AsError_Syntax;							break;
+		case LUA_ERRMEM		:	bug_qa("Lua Out Of Memory Error!");				break;
+		case LUA_ERRGCMM	:	bug_qa("Lua Garbage Collector Failure!");		break;
+		case LUA_ERRERR		:	return AsError_Assertion;						break;
+
+		default				:	bug_qa("Lua unknown error code = %d", lua_error);
+	}
+
+	return AsError_Environment;
+}
 
 void AjekScriptEnv::LoadModule(const xString& path)
 {
-	m_has_error = false;
-
-	bug_on (!m_L,  "Invalid object state: uninitialized script environment.");
+	bug_on (!m_L,						"Invalid object state: uninitialized script environment.");
+	bug_on (m_error != AsError_None,	"Invalid object state: script error is pending.");
 	bug_on (path.IsEmpty());
-	if (path.IsEmpty()) return;
+
+	if (m_error != AsError_None)	return;
+	if (path.IsEmpty())				return;
 
 	//ScopedFpRoundMode	nearest;
 
@@ -363,8 +380,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		// Visual studio looks for src relative to the *.sln directory when resolving error
 		// codes.  The filenames returned by Lua are relative to the CWD of the instance.
 
-		m_has_error = true;
-		PrintLastError();
+		ThrowError(cvtLuaErrorToAjekError(ret));
 	}
 
 	GCUSAGE(m_L);
@@ -402,19 +418,19 @@ lua_State* AjekScript_GetLuaState(ScriptEnvironId moduleId)
 	return g_script_env[moduleId].getLuaState();
 }
 
-bool AjekScriptEnv::glob_IsNil(const xString& varname) const
+bool AjekScriptEnv::glob_IsNil(const char* varname) const
 {
-	lua_getglobal(m_L, varname.c_str());
+	lua_getglobal(m_L, varname);
 	bool result = !!lua_isnil(m_L, -1);
 	lua_pop(m_L, 1);
 	return result;
 
 }
 
-lua_s32	AjekScriptEnv::glob_get_s32(const xString& varname) const
+lua_s32	AjekScriptEnv::glob_get_s32(const char* varname) const
 {
 	lua_s32	result;
-	lua_getglobal(m_L, varname.c_str());
+	lua_getglobal(m_L, varname);
 	result.m_isNil = lua_isnil(m_L, -1);
 
 	s64 intval = luaL_checkinteger(m_L, -1);
@@ -429,25 +445,25 @@ lua_s32	AjekScriptEnv::glob_get_s32(const xString& varname) const
 	return result;
 }
 
-lua_bool AjekScriptEnv::glob_get_bool(const xString& varname) const
+lua_bool AjekScriptEnv::glob_get_bool(const char* varname) const
 {
 	lua_bool result;
-	lua_getglobal(m_L, varname.c_str());
+	lua_getglobal(m_L, varname);
 	result.m_isNil = lua_isnil(m_L, -1);
 
 	bug_on_qa( !lua_isboolean(m_L, -1), "Table member '%s': Expected bool but got %s.",
-		varname.c_str(), lua_typename(m_L, lua_type(m_L, -1))
+		varname, lua_typename(m_L, lua_type(m_L, -1))
 	);
 	result.m_value = lua_toboolean(m_L, -1);
 	lua_pop(m_L, 1);
 	return result;
 }
 
-lua_string AjekScriptEnv::glob_get_string(const xString& varname) const
+lua_string AjekScriptEnv::glob_get_string(const char* varname) const
 {
 	lua_string	result;
 
-	lua_getglobal(m_L, varname.c_str());
+	lua_getglobal(m_L, varname);
 	result.m_isNil = lua_isnil(m_L, -1);
 	result.m_value = lua_tostring(m_L, -1);
 
@@ -459,35 +475,82 @@ lua_string AjekScriptEnv::glob_get_string(const xString& varname) const
 	return result;
 }
 
+bool AjekScriptEnv::SetJmpForError()
+{
+	bug_on_qa(m_has_setjmp);
+	m_has_setjmp = 1;
+	int result = setjmp(m_jmpbuf);
+	m_has_setjmp = (result == 0);
+	return m_has_setjmp;
+}
+
+bool AjekScriptEnv::ThrowError(AjekScriptError errorcode)
+{
+	m_error = errorcode;
+
+	if (m_has_setjmp) {
+		// Do not log last error here -- 
+		//    assume the error handler may want to do it's own error msg printout
+		longjmp(m_jmpbuf, 1);
+	}
+	else {
+		PrintLastError();
+	}
+
+	// always return false, this is just a convenience function for friendly semantics caller-side
+	return false;
+}
+
 LuaTableScope::~LuaTableScope() throw()
 {
 	if (m_env) {
-		m_env->m_open_global_table.Clear();
+		// Perform a stack check against when the table was opened.
 	}
 	m_env = nullptr;
+}
+
+LuaTableScope::LuaTableScope(LuaTableScope&& rvalue) {
+	auto&& dest = std::move(*this);
+	xObjCopy(dest, rvalue);
+	rvalue.m_env = nullptr;		// disabled destructor.
+}
+
+LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequired)
+{
+	lua_getglobal(m_L, tableName);
+
+	LuaTableScope result = LuaTableScope(*this);
+
+	if (isRequired && result.isNil()) {
+		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
+		ThrowError(AsError_Environment);
+	}
+	
+	if (!lua_istable(m_L, -1)) {
+		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
+		ThrowError(AsError_Environment);
+	}
+	return result;
 }
 
 // Returns FALSE if varname is either nil or not a table.  It is considered the responsibility of the
 // caller to use glob_IsNil() check ahead of this call if they want to implement special handling of
 // nil separate from non-table-type behavior.
-LuaTableScope::LuaTableScope(AjekScriptEnv& env, const char* tableName)
+LuaTableScope::LuaTableScope(AjekScriptEnv& env)
 {
+	// TODO: Internally get an address to this specific stack object.
+	//   using index2addr() style resolution, specifically this:
+	//
+	//    else if (!ispseudo(idx)) {  /* negative index */
+    //       api_check(L, idx != 0 && -idx <= L->top - (ci->func + 1), "invalid index");
+    //       return L->top + idx;
+	//    }
+
 	m_env = &env;
-
-	// TODO : Maybe this can be modified to automatically close out previous lua_getglobal stack... ?
-	bug_on_qa(!m_env->m_open_global_table.IsEmpty(), "Another global table is already opened.");
-
-	lua_getglobal(m_env->m_L, tableName);
-
-	m_isNil		=				lua_isnil  (m_env->m_L, -1);
-	m_isTable	= !m_isNil &&	lua_istable(m_env->m_L, -1);
-
-	if (m_isTable) {
-		m_env->m_open_global_table = tableName;
-	}
+	m_isNil	= lua_isnil(m_env->m_L, -1);
 }
 
-lua_bool LuaTableScope::get_bool(const xString& key) const
+lua_bool LuaTableScope::get_bool(const char* key) const
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
@@ -497,14 +560,14 @@ lua_bool LuaTableScope::get_bool(const xString& key) const
 	result.m_isNil = lua_isnil(L, -1);
 
 	bug_on_qa( !lua_isboolean(L, -1), "Table member '%s': Expected bool but got %s.",
-		key.c_str(), lua_typename(L, lua_type(L, -1))
+		key, lua_typename(L, lua_type(L, -1))
 	);
 	result.m_value = lua_toboolean(L, -1);
 	lua_pop(L, 1);
 	return result;
 }
 
-lua_string LuaTableScope::get_string(const xString& key)
+lua_string LuaTableScope::get_string(const char* key)
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
@@ -526,6 +589,95 @@ lua_string LuaTableScope::get_string(const xString& key)
 	return result;
 }
 
+LuaFuncScope LuaTableScope::push_func(const char* key)
+{
+	auto* L = m_env->m_L;
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+
+	bug_on (!lua_isfunction(L, -1));
+
+	return LuaFuncScope(m_env);
+}
+
+void AjekScriptEnv::pushvalue(const xString& string)
+{
+	lua_pushstring(m_L, string);
+}
+
+void AjekScriptEnv::pushvalue(const float& number)
+{
+	lua_pushnumber(m_L, number);
+}
+
+void AjekScriptEnv::pushvalue(const lua_func& function)
+{
+	lua_pushcfunction(m_L, function.m_value);
+}
+
+void AjekScriptEnv::pushvalue(s64 integer)
+{
+}
+
+
+template<> u32	AjekScriptEnv::to(int idx) const
+{
+	return lua_tointeger(m_L, idx);
+}
+
+template<> s32	AjekScriptEnv::to(int idx) const
+{
+	return lua_tointeger(m_L, idx);
+}
+
+template<> s64	AjekScriptEnv::to(int idx) const
+{
+	return lua_tointeger(m_L, idx);
+}
+
+void AjekScriptEnv::pop(int num)
+{
+	lua_pop(m_L, num);
+}
+
+bool AjekScriptEnv::call(int nArgs, int nRet)
+{
+	int result = lua_pcall(m_L, nArgs, nRet, 0);
+	if (result) {
+		ThrowError(cvtLuaErrorToAjekError(result));
+	}
+	return true;
+}
+
+LuaFuncScope::LuaFuncScope(LuaFuncScope&& rvalue) {
+	auto&& dest = std::move(*this);
+	xObjCopy(dest, rvalue);
+	rvalue.m_env = nullptr;		// disabled destructor.
+}
+
+bool LuaFuncScope::execcall(int nRet) {
+	bug_on(!m_env);
+	m_env->call(m_numargs, nRet);
+	m_cur_retval = 0;
+	return true;
+}
+
+LuaFuncScope::LuaFuncScope(AjekScriptEnv& env) {
+	m_env = &env;
+
+}
+
+LuaFuncScope::LuaFuncScope(AjekScriptEnv* env) {
+	m_env   = env;
+	m_isNil = lua_isnil(m_env->m_L, -1);
+}
+
+LuaFuncScope::~LuaFuncScope() throw() {
+	if (m_env) {
+		m_env->pop(m_cur_retval);
+		m_env = nullptr;
+	}
+}
 
 //	env.table_get_string("ModulePath");
 

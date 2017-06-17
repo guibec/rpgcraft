@@ -3,6 +3,8 @@
 #include "x-types.h"
 #include "x-string.h"
 
+#include "x-MemCopy.inl"
+
 extern "C" {
 #	include "lua.h"
 }
@@ -100,7 +102,51 @@ struct lua_string {
 	}
 };
 
+struct lua_func {
+	lua_CFunction	m_value;
+	bool			m_isNil;
+
+	bool isnil() const {
+		return m_isNil;
+	}
+};
+
+
 struct AjekScriptEnv;
+
+class LuaFuncScope
+{
+	NONCOPYABLE_OBJECT(LuaFuncScope);
+
+public:
+	AjekScriptEnv*	m_env;					// also contains lua_State
+	int				m_cur_retval= 0;			// current return value being read
+	bool			m_isNil		= true;
+	int				m_numargs	= 0;		// number of argument pushes to pop after finished.
+
+	explicit LuaFuncScope(AjekScriptEnv& env);
+	explicit LuaFuncScope(AjekScriptEnv* env);
+	LuaFuncScope(LuaFuncScope&& rvalue);
+	~LuaFuncScope() throw();
+
+
+	operator bool() const {
+		return !m_isNil;
+	}
+
+
+public:
+	template< typename T >
+	void			pusharg			(const T& value);
+	template< typename T >
+	T				getresult		();
+
+	bool			execcall		(int nRet=0);
+
+};
+
+#define AsApi_Required		(true)			// must not be 'nil' !
+#define AsApi_Optional		(false)			// 'nil' is allowed
 
 class LuaTableScope
 {
@@ -110,39 +156,58 @@ public:
 	// TODO: Add LuaTableScope for opening a non-global table.
 	//    (function parameter or return value, etc)
 
-	LuaTableScope(AjekScriptEnv& m_env, const char* tableName);
+	explicit LuaTableScope(AjekScriptEnv& m_env);
+	LuaTableScope(LuaTableScope&& rvalue);
 	~LuaTableScope() throw();
+
+
+	operator bool() const {
+		return !m_isNil;
+	}
 
 	AjekScriptEnv*	m_env;		// also contains lua_State
 	bool			m_isNil;
-	bool			m_isTable;
 
+public:
 	bool			isNil		() const	{ return m_isNil;	}
-	bool			isTable		() const	{ return m_isTable; }
 
-	lua_u32			get_u32		(const xString& key)	const;
-	lua_s32			get_s32		(const xString& key)	const;
-	lua_s64			get_s64		(const xString& key)	const;
-	lua_float		get_float	(const xString& key)	const;
-	lua_bool		get_bool	(const xString& key)	const;
-	lua_string		get_string	(const xString& key);
+	lua_u32			get_u32		(const char* key)	const;
+	lua_s32			get_s32		(const char* key)	const;
+	lua_s64			get_s64		(const char* key)	const;
+	lua_float		get_float	(const char* key)	const;
+	lua_bool		get_bool	(const char* key)	const;
+	lua_string		get_string	(const char* key);
+
+	LuaFuncScope	push_func	(const char* key);
+};
+
+// AjekScriptError -
+//   Thought: not sure if we need a special code for Assertions (Which are analogous to LUA_ERRERR)
+enum AjekScriptError {
+	AsError_None		= 0,			// no error!
+	AsError_Environment = 1,			// error while reading from global environment tables
+	AsError_Syntax		= 2,			// syntax error while parsing/compiling lua script
+	AsError_Runtime		= 3,			// runtime error during lua script execution (eg, accessing nil value)
+	AsError_Assertion	= 4,			// An error invoked by way of assert() or error()		
 };
 
 struct AjekScriptEnv
 {
 	lua_State*		m_L;
-	//AjekMspace*	m_mspace;		// Future custom mspace provision
+	//AjekMspace*	m_mspace;			// Future custom mspace provision
 
-	bool			m_has_error;
-	xString			m_open_global_table;
+	AjekScriptError	m_error;			// error result of most recent operations
+	jmp_buf			m_jmpbuf;			// jump buffer target on error
+	bool			m_has_setjmp;
 
 	AjekScriptEnv() {
-		m_L			= nullptr;
-		m_has_error	= false;
+		m_L				= nullptr;
+		m_error			= AsError_None;
+		m_has_setjmp	= false;
 	}
 
 	bool HasError() const {
-		return m_has_error;
+		return (m_error != AsError_None);
 	}
 
 	void		Alloc					();
@@ -153,16 +218,40 @@ struct AjekScriptEnv
 	void		PrintStackTrace			();
 	void		PrintLastError			() const;
 
+	bool		SetJmpForError			();
+	bool		ThrowError				(AjekScriptError errorcode);
+
 	lua_State*			getLuaState		();
 	const lua_State*	getLuaState		() const;
 
-	bool			glob_IsNil		(const xString& varname)	const;
-	lua_u32			glob_get_u32	(const xString& varname)	const;
-	lua_s32			glob_get_s32	(const xString& varname)	const;
-	lua_s64			glob_get_s64	(const xString& varname)	const;
-	lua_float		glob_get_float	(const xString& varname)	const;
-	lua_bool		glob_get_bool	(const xString& varname)	const;
-	lua_string		glob_get_string	(const xString& varname)	const;
+// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide 
+// clear and explicit specialization of supported incoming types.
+
+	void			pushvalue			(const xString&		string);
+	void			pushvalue			(const float&		number);
+	void			pushvalue			(const lua_func&	function);
+	void			pushvalue			(s64				integer);
+
+	template<typename T>	T			to			(int stackidx)	const;
+
+	template<>				u32			to 			(int stackidx)	const;
+	template<>				s32			to			(int stackidx)	const;
+	template<>				s64			to			(int stackidx)	const;
+	template<>				float		to			(int stackidx)	const;
+	template<>				bool		to			(int stackidx)	const;
+	template<>				xString		to			(int stackidx)	const;
+
+	bool			call			(int nArgs, int nRet);
+	void			pop				(int num);
+
+	bool			glob_IsNil		(const char* varname)	const;
+	lua_u32			glob_get_u32	(const char* varname)	const;
+	lua_s32			glob_get_s32	(const char* varname)	const;
+	lua_s64			glob_get_s64	(const char* varname)	const;
+	lua_float		glob_get_float	(const char* varname)	const;
+	lua_bool		glob_get_bool	(const char* varname)	const;
+	lua_string		glob_get_string	(const char* varname)	const;
+	LuaTableScope	glob_open_table	(const char* tableName, bool isRequired = AsApi_Required);
 };
 
 extern void				AjekScript_InitSettings				();
@@ -171,6 +260,38 @@ extern lua_State*		AjekScript_GetLuaState				(ScriptEnvironId moduleId);
 extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xString& target);
 extern void				AjekScript_SetDebugRelativePath		(const xString& relpath);
 extern bool				AjekScript_LoadConfiguration		(AjekScriptEnv& env);
+extern void				AjekScript_PrintDebugReloadMsg		();
 
 extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
 
+// Registers an error handler setjmp point.
+// Returns 1 if OK to run the function in question.
+// Returns 0 if the function was run and an error occurred.
+#define AjekScript_SetJmpIsOK(env)	(env.m_has_setjmp = (setjmp(env.m_jmpbuf)==0))
+
+// Supports any type also supported by underlying AjekScriptEnv::pushvalue().
+// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide 
+// clear and explicit specialization of supported incoming types.
+template< typename T >
+inline void LuaFuncScope::pusharg(const T& anyvalue)
+{
+	bug_on(!m_env);
+	++m_numargs;
+	return m_env->pushvalue(anyvalue);
+}
+
+template< typename T >
+inline T LuaFuncScope::getresult() {
+	bug_on(!m_env);
+	return m_env->to<T>(-1 - m_cur_retval);
+	m_cur_retval += 1;
+}
+
+template<typename T> T AjekScriptEnv::to(int stackidx) const {
+	T.Unsupported_Template_Parameter();		// generates a decent compiler error! :)
+}
+
+template<> float AjekScriptEnv::to(int idx) const
+{
+	return lua_tonumber(m_L, idx);
+}
