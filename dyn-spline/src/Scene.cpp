@@ -12,13 +12,16 @@
 typedef std::list<SceneMessage> SceneMessageList;
 
 
-xMutex				s_mtx_MsgQueue;
-SceneMessageList	s_MsgQueue;
-u32					s_scene_isPaused;
+static thread_t				s_thr_scene_producer;
+static xMutex				s_mtx_MsgQueue;
+static SceneMessageList		s_MsgQueue;
+static u32					s_scene_isPaused;
+
+static bool					s_scene_initialized			= false;
 
 void Scene_InitMessages()
 {
-	s_mtx_MsgQueue.Create("EmuMsgQueueVM");
+	s_mtx_MsgQueue.Create("SceneMsgQueue");
 }
 
 void Scene_ShutdownMessages()
@@ -32,7 +35,7 @@ bool Scene_HasPendingMessages()
 	return !s_MsgQueue.empty();
 }
 
-void Scene_PostMessage( int msgId, IntPtr payload )
+void Scene_PostMessage(SceneMessageId msgId, sptr payload)
 {
 	xScopedMutex lock(s_mtx_MsgQueue);
 	s_MsgQueue.push_back( SceneMessage(msgId, payload) );
@@ -75,19 +78,17 @@ void Scene_DrainMsgQueue()
 				s_scene_isPaused	^= SceneStopReason_Developer;
 				//step_exec			 = !s_scene_isPaused;
 			} break;
+
+			case SceneMsg_Reload: {
+				auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
+				s_scene_initialized = false;
+			} break;
 		}
 	}
 }
 
-static bool s_scene_initialized			= false;
-
 void Scene_ForceUpdateScripts()
 {
-	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
-
-	if (script.HasError()) {
-		s_scene_initialized = false;
-	}
 }
 
 __ai bool SceneInitialized() {
@@ -115,3 +116,45 @@ __ni void SceneInit()
 	}
 }
 
+static void* SceneProducerThreadProc(void*)
+{
+	while(1)
+	{
+		Scene_DrainMsgQueue();
+
+		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
+			
+		}
+
+		if (!SceneInitialized()) {
+			SceneInit();
+		}
+
+		if (SceneInitialized()) {
+			SceneBegin();
+			SceneRender();
+		}
+
+		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Background)) {
+			xThreadSleep(64);
+		}
+		else {
+			// TODO : framerate pacing (vsync disabled)
+			//     Measure time from prev to current frame, determine amount of time we
+			//     want to sleep.
+			xThreadSleep(10);
+		}
+	}
+
+	return nullptr;
+}
+
+void Scene_CreateThreads()
+{
+	thread_create(s_thr_scene_producer, SceneProducerThreadProc, "SceneProducer", _256kb);
+}
+
+bool Scene_HasStopReason(u32 stopReason)
+{
+	return (s_scene_isPaused & stopReason) != 0;
+}
