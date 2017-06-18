@@ -24,6 +24,7 @@ static std::chrono::steady_clock::time_point s_HostLogTimer;
 void LogHostInit()
 {
 	s_mtx_unilogger.Create();
+	s_HostLogTimer = std::chrono::steady_clock::now();
 }
 
 static void _debugBreakContext( xString& context, const char* filepos, const char* funcname, const char* cond )

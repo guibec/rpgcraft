@@ -2,8 +2,10 @@
 
 #include "x-string.h"
 #include "x-gpu-ifc.h"
+#include "x-thread.h"
 
 #include "ajek-script.h"
+#include "Scene.h"
 
 
 #include <direct.h>		// for _getcwd()
@@ -11,9 +13,7 @@
 DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
-extern void			DoGameInit();
-extern void			SceneRender();
-extern void			SceneBegin();
+
 extern void			LoadPkgConfig(const xString& luaFile);
 
 HINSTANCE               g_hInst					= nullptr;
@@ -38,8 +38,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 		break;
 
-
 		case WM_KEYDOWN: {
+			// Force check and reload scripts if user presses any key while lua is in
+			// an error state.
+			Scene_PostMessage(SceneMsg_ReloadScripts, 0);
+
 			WPARAM param = wParam;
 			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
 			if (c == 'W' || c == 'w') {
@@ -103,6 +106,46 @@ xString Host_GetCWD()
 	char   buff[1024];
 	char*  ret = _getcwd(buff, 1024);
 	return ret ? xString(buff) : xString();
+}
+
+static thread_t s_thr_scene_producer;
+
+bool DrainMsgQueue() 
+{
+	MSG msg = { 0 };
+
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+
+		if (msg.message == WM_QUIT) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void* SceneProducerThreadProc(void*)
+{
+	while(1)
+	{
+		if (!SceneInitialized()) {
+			SceneInit();
+		}
+
+		SceneBegin();
+		SceneRender();
+
+		// TODO : framerate pacing (vsync disabled)
+		//     Measure time from prev to current frame, determine amount of time we
+		//     want to sleep.
+
+		xThreadSleep(10);
+	}
+
+	return nullptr;
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -182,32 +225,40 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	LoadPkgConfig("config-package-msw.lua");
 
+	// -----------------------------------------------------------
+	// Init message recievers asap
+	//   .. so that things that might want to queue msgs during init can do so...
+	Scene_InitMessages();
+	// -----------------------------------------------------------
+
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
 	dx11_InitDevice();
 
-	DoGameInit();
+	// Drain the message queue first before starting game threads.
+	// No especially good reason for this -- there's just a bunch of poo in the windows
+	// message queue after window creation and stuff, and I like to drain it all in as
+	// synchronous an environment as possible.  --jstine
 
-	// Main message loop
-	MSG msg = { 0 };
-	while (WM_QUIT != msg.message)
-	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		} else
-		{
-			SceneBegin();
-			SceneRender();
+	if (DrainMsgQueue()) {
+
+		thread_create(s_thr_scene_producer, SceneProducerThreadProc, "SceneProducer", _256kb);
+
+		// Main message loop
+		// Just handle messages here.  Don't want the msg loop doing anything that might take more
+		// than a couple milliseconds.  Long jobs should always be dispatched to other threads.
+
+		while (DrainMsgQueue()) {
+			WaitMessage();
 		}
 	}
 
 	dx11_CleanupDevice();
-	return (int)msg.wParam;
-}
+	Scene_ShutdownMessages();
 
+	return 0;
+}
 
 // --------------------------------------------------------------------------------------
 bool xIsDebuggerAttached()
