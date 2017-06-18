@@ -39,15 +39,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case WM_KEYDOWN: {
-			// Force check and reload scripts if user presses any key while lua is in
-			// an error state.
-			Scene_PostMessage(SceneMsg_ReloadScripts, 0);
 
 			WPARAM param = wParam;
 			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
+
 			if (c == 'W' || c == 'w') {
 				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
 			}
+
+			if (c == 'R' || c == 'r') {
+				Scene_PostMessage(SceneMsg_Reload, 0);
+			}
+
 		}break;
 
 		default:
@@ -108,9 +111,7 @@ xString Host_GetCWD()
 	return ret ? xString(buff) : xString();
 }
 
-static thread_t s_thr_scene_producer;
-
-bool DrainMsgQueue() 
+bool Msw_DrainMsgQueue() 
 {
 	MSG msg = { 0 };
 
@@ -125,27 +126,6 @@ bool DrainMsgQueue()
 	}
 
 	return true;
-}
-
-void* SceneProducerThreadProc(void*)
-{
-	while(1)
-	{
-		if (!SceneInitialized()) {
-			SceneInit();
-		}
-
-		SceneBegin();
-		SceneRender();
-
-		// TODO : framerate pacing (vsync disabled)
-		//     Measure time from prev to current frame, determine amount of time we
-		//     want to sleep.
-
-		xThreadSleep(10);
-	}
-
-	return nullptr;
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -241,15 +221,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	// message queue after window creation and stuff, and I like to drain it all in as
 	// synchronous an environment as possible.  --jstine
 
-	if (DrainMsgQueue()) {
+	if (Msw_DrainMsgQueue()) {
 
-		thread_create(s_thr_scene_producer, SceneProducerThreadProc, "SceneProducer", _256kb);
+		Scene_CreateThreads();
 
 		// Main message loop
 		// Just handle messages here.  Don't want the msg loop doing anything that might take more
 		// than a couple milliseconds.  Long jobs should always be dispatched to other threads.
 
-		while (DrainMsgQueue()) {
+		while (Msw_DrainMsgQueue()) {
 			WaitMessage();
 		}
 	}

@@ -88,9 +88,7 @@ struct TerrainMapItem {
 };
 
 TerrainMapItem*		g_WorldMap;
-
-vFloat3*	g_ViewMesh;
-vFloat2*	g_ViewUV;
+vFloat2*			g_ViewUV;		// temporarily global - will localize later.
 
 // Probably in tile coordinates with fractional being partial-tile position
 float g_playerX;
@@ -318,9 +316,11 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	g_setCountX = pngtex.width	/ 64;
 	g_setCountY = pngtex.height	/ (64 + 32);
 
-	g_WorldMap	  = (TerrainMapItem*)   xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-	g_ViewMesh    = (vFloat3*) xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
-	g_ViewUV	  = (vFloat2*) xMalloc(worldViewVerticiesCount * sizeof(vFloat2));
+	vFloat3*	ViewMesh;
+
+	g_WorldMap	= (TerrainMapItem*)   xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
+	ViewMesh	= (vFloat3*) xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
+	g_ViewUV	= (vFloat2*) xMalloc(worldViewVerticiesCount * sizeof(vFloat2));
 
 	g_playerX = 0;
 	g_playerY = 0;
@@ -364,13 +364,13 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
 			float vertX = -1.0 + (x * incr_x);
 
-			g_ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		1.0f );
-			g_ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
-			g_ViewMesh[vertexId + 2]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
+			ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		1.0f );
+			ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
+			ViewMesh[vertexId + 2]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
 
-			g_ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
-			g_ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
-			g_ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, 1.0f );
+			ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
+			ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
+			ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, 1.0f );
 		}
 	}
 
@@ -394,7 +394,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		}
 	}
 
-	g_mesh_worldView   = dx11_CreateStaticMesh(g_ViewMesh, sizeof(g_ViewMesh[0]), worldViewVerticiesCount);
+	g_mesh_worldView   = dx11_CreateStaticMesh(ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
 	g_mesh_worldViewUV = dx11_CreateStaticMesh(g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
 
 	ProcGenTerrain();
