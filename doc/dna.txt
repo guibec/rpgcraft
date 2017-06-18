@@ -1,33 +1,36 @@
 Riot:
 http://www.riotgames.com/riot-manifesto#5
 
-Netflix:
-  * L'anti-process
-  * Payer les gens au meilleur prix
-  * Ne pas compter les heures.
-  * Mettre dehors les gens non productif (??)
+Twitch:
+  * Outsource any tools not related to the job: Modeanalytics, Cloudfare, GMail, GoogleDocs, Slak, etc.
+  * Trust all employees, give them access to all systems by default, including calendars.
+  * Some really strong values in action:
+    * Take critism well: Anyone can send comments to any other team. Your first response should be "Thank you".
+    * Work backwards: Find the goal you want to reach, and figure out how to reach there after.
+    * Shared vision over coordination: Enemy of speed is requiring everyone to agree. Avoid this. Instead have same vision and let people work at their respective tasks.
 
-Virgin:
+Netflix:
+  * Do not let process get in the way
+  * Pay people the highest salary, they will leave only if the values do not match
+  * Do not count hours
 
 Google:
 http://www.wired.com/2015/09/google-2-billion-lines-codeand-one-place
-  * Code source centralisé et partagé à tous
-  * Aucun fork de Framework.
+  * Centralized and openly accessible source code
+  * No forks
   * Peer Bonus: http://blog.bonus.ly/a-look-at-googles-peer-to-peer-bonus-system/
-      * Idée de première implémentation: https://bonus.ly/#demo
+      * Idea for first implementation: https://bonus.ly/#demo
   * 20% time in action: http://googleblog.blogspot.com/2006/05/googles-20-percent-time-in-action.html
-  * Bouffe gratuite
-	  
-2K Games:
+  * Free food
 
 Ubisoft:
-  * Tout le système de niveau et d'évaluation/mentorat.
-  * La mentalité forte du build système.
-  * Survey d'équipe et de compagnie.
-  * Mail du CEO à chaque trimestre.
+  * Employee level system and mentor system
+  * Build system methodology
+  * Team and company survey
+  * CEO quarterly letter
 
 Frima:
-  * Le système d'achievement
+  * Achievement system
 
 Microsoft:
   * Le ownership: http://www.joelonsoftware.com/articles/TwoStories.html
