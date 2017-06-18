@@ -3,11 +3,14 @@ http://www.riotgames.com/riot-manifesto#5
 
 Twitch:
   * Outsource any tools not related to the job: Modeanalytics, Cloudfare, GMail, GoogleDocs, Slak, etc.
-  * Trust all employees, give them access to all systems by default, including calendars.
+  * Trust all employees, give them access to all systems by default, including calendars. Transparency is default.
+  * Weekly all-hands. Really. Weekly. Every week. All the time. There's nothing to hide.
   * Some really strong values in action:
     * Take critism well: Anyone can send comments to any other team. Your first response should be "Thank you".
     * Work backwards: Find the goal you want to reach, and figure out how to reach there after.
     * Shared vision over coordination: Enemy of speed is requiring everyone to agree. Avoid this. Instead have same vision and let people work at their respective tasks.
+    * Commitment not compliance. Do things because you believe they are right. Not because you have been told to them. If things don't make sense, ask questions.
+    * Info: https://venturebeat.com/2016/05/24/twitch-ceo-describes-values-to-drive-the-company-onward/
 
 Netflix:
   * Do not let process get in the way
