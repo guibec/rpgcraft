@@ -194,11 +194,14 @@ void SceneBegin()
 
 }
 
+bool s_CanRenderScene = false;
+
 void SceneRender()
 {
+	if (!s_CanRenderScene) return;
+
 	// Clear the back buffer
 	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
-
 
 	//
 	// Update variables
@@ -271,9 +274,10 @@ void SceneRender()
 
 bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
-	// Fetch Scene configuration from Lua.
+	s_CanRenderScene = false;
 
-#if 0
+#if 1
+	// Fetch Scene configuration from Lua.
 	script.NewState();
 	script.LoadModule("scripts/GameInit.lua");
 
@@ -404,8 +408,9 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		}
 	}
 
-	g_mesh_worldView   = dx11_CreateStaticMesh(ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
-	g_mesh_worldViewUV = dx11_CreateStaticMesh(g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
+	dx11_CreateStaticMesh(g_mesh_worldView,		ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
+	dx11_CreateStaticMesh(g_mesh_worldViewUV,	g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
+
 
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
@@ -436,9 +441,10 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	};
 
 
-	g_mesh_box2D = dx11_CreateStaticMesh(vertices, sizeof(vertices[0]), bulkof(vertices));
-	g_idx_box2D  = dx11_CreateIndexBuffer(indices_box, 6*2);
+	dx11_CreateStaticMesh(g_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
+	dx11_CreateIndexBuffer(g_idx_box2D, indices_box, 6*2);
 	// ---------------------------------------------------------------------------------------------
 
+	s_CanRenderScene = 1;
 	return true;
 }

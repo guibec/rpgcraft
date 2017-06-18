@@ -137,8 +137,10 @@ DXGI_FORMAT get_DXGI_Format(GPU_ResourceFmt bitmapFmt)
 
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
-//
 // With VS 11, we could load up prebuilt .cso files instead...
+//
+// Memory Leak Warning:  On Intel Integrated GPU driver (i630) a memory leak occurs when
+// compiling shaders.  Unknown at this time if the leak is DX11 or Intel driver.
 //--------------------------------------------------------------------------------------
 HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -157,7 +159,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 #endif
 
 	ID3DBlob* pErrorBlob = nullptr;
-	Defer( { if (pErrorBlob) pErrorBlob->Release(); } );
+	Defer( { if (pErrorBlob) { pErrorBlob->Release(); pErrorBlob = nullptr; } } );
 
 	// Note on compiler macros: 
 	//   Macros should match exactly what's being used to precompile shaders via the makefile.
@@ -172,6 +174,8 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 
 #endif
 
+	// Memory Leak Warning:  On Intel Integrated GPU driver (i630) a memory leak occurs when
+	// compiling shaders.  Unknown at this time if the leak is DX11 or Intel driver.
 	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
 		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
 
@@ -189,6 +193,9 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 
 ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel)
 {
+	// TODO: Add a cache system to avoid recompiling shaders unless the shader file has actually been modified.
+	// Rationale: the leak in D3DCompileFromFile() interferes with using the Heap Graph as a leak checker.
+
 	HRESULT hr = S_OK;
 	ID3DBlob* ppBlobOut;
 
@@ -555,19 +562,12 @@ bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* e
 {
 	HRESULT hr;
 
+	auto& shader = ptr_cast<ID3D11VertexShader* &>(dest.m_driverData);
+	if (shader) { shader->Release(); shader = nullptr; }
+
 	bug_on( !entryPointFn || !entryPointFn[0] );
 	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
 	if (!blob) return false;
-
-	auto& shader = ptr_cast<ID3D11VertexShader* &>(dest.m_driverData);
-	if (shader) {
-		log_host(
-			"Unloading existing vertex shader resource:\n"
-			" > %s",
-			cPtrStr(shader)
-		);
-		shader->Release();
-	}
 
 	hr = g_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
 	log_and_abort_on(FAILED(hr));
@@ -580,19 +580,12 @@ bool dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* e
 {
 	HRESULT hr;
 
+	auto& shader = ptr_cast<ID3D11PixelShader* &>(dest.m_driverData);
+	if (shader) { shader->Release(); shader = nullptr; }
+
 	bug_on( !entryPointFn || !entryPointFn[0] );
 	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "ps_4_0");
 	if (!blob) return false;
-
-	auto& shader = ptr_cast<ID3D11PixelShader* &>(dest.m_driverData);
-	if (shader) {
-		log_host(
-			"Unloading existing fragment shader resource:\n"
-			" > %s",
-			cPtrStr(shader)
-		);
-		shader->Release();
-	}
 
 	hr = g_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
 	log_and_abort_on(FAILED(hr));
@@ -678,8 +671,11 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 	return bufferIdx;
 }
 
-GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, int vertexCount)
+void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSizeInBytes, int vertexCount)
 {
+	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData );
+	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+
 	D3D11_BUFFER_DESC bd = {};
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -690,14 +686,15 @@ GPU_VertexBuffer dx11_CreateStaticMesh(void* vertexData, int itemSizeInBytes, in
 	InitData.pSysMem = vertexData;
 
 	GPU_VertexBuffer result;
-	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, (ID3D11Buffer**)&result.m_driverData );
-
+	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &buffer );
 	bug_on(FAILED(hr));
-	return result;
 }
 
-GPU_IndexBuffer dx11_CreateIndexBuffer(void* indexBuffer, int bufferSize)
+void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int bufferSize)
 {
+	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData );
+	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+
 	D3D11_SUBRESOURCE_DATA	InitData	= {};
 	D3D11_BUFFER_DESC		bd			= {};
 
@@ -707,11 +704,8 @@ GPU_IndexBuffer dx11_CreateIndexBuffer(void* indexBuffer, int bufferSize)
 	bd.CPUAccessFlags	= 0;
 	InitData.pSysMem	= indexBuffer;
 
-	ID3D11Buffer* handle;
-	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &handle );
+	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &buffer );
 	bug_on (FAILED(hr));
-
-	return (GPU_IndexBuffer)handle;
 }
 
 void dx11_BackbufferSwap()
@@ -758,6 +752,9 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 
 	auto&	texture		= ptr_cast<ID3D11Texture2D*&>			(dest.m_driverData_tex );
 	auto&	textureView	= ptr_cast<ID3D11ShaderResourceView*&>	(dest.m_driverData_view);
+
+	if (dest.m_driverData_view) { textureView	->Release(); textureView	= nullptr; }
+	if (dest.m_driverData_tex)	{ texture		->Release(); texture		= nullptr; }
 
 	// See if format is supported for auto-gen mipmaps (varies by feature level)
 	// (Must have context and shader-view to auto generate mipmaps)
