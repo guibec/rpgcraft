@@ -84,6 +84,7 @@
     <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\test-spline.cpp" />
     <ClCompile Include="src\x-gpu-colors.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
@@ -91,6 +92,7 @@
   <ItemGroup>
     <ClInclude Include="src\Bezier2D.h" />
     <ClInclude Include="src\mswStandard.h" />
+    <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\v-float.h" />
     <ClInclude Include="src\x-gpu-colors.h" />
     <ClInclude Include="src\x-gpu-ifc.h" />

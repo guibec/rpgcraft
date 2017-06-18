@@ -238,7 +238,6 @@ void SceneRender()
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
 	dx11_BackbufferSwap();
-	xThreadSleep(20);
 }
 
 // Size notes:
@@ -272,7 +271,7 @@ void SceneRender()
 
 #include "ajek-script.h"
 
-bool TryDoGameInit(AjekScriptEnv& script)
+bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
 	// Fetch Scene configuration from Lua.
 
@@ -432,23 +431,4 @@ bool TryDoGameInit(AjekScriptEnv& script)
 	// ---------------------------------------------------------------------------------------------
 
 	return true;
-}
-
-void DoGameInit()
-{
-	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
-
-KeepTrying:
-	if (AjekScript_SetJmpIsOK(script)) {
-		TryDoGameInit(script);
-	}
-	else {
-		if (!xIsDebuggerAttached()) {
-			log_and_abort("Application aborted due to DoGameInit error."); 
-		}
-		AjekScript_PrintDebugReloadMsg();
-		script.PrintLastError();
-		__debugbreak();		// allows developer to resume after correcting errors.
-		goto KeepTrying;
-	}
 }
