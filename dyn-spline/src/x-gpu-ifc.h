@@ -149,6 +149,16 @@ struct GPU_ShaderFS {
 	GPU_ShaderFS(const void* driverData = nullptr);
 };
 
+// Dynamic vertex buffers are multi-instanced, with one bound to each backbuffer in the swap chain.
+// This allows the SceneBegin() system to update vertex buffers without blocking against draw operations
+// being performed on the previous scene.
+struct GPU_DynVsBuffer {
+	int		m_buffer_idx;
+	explicit GPU_DynVsBuffer(int m_buffer_idx = -1);
+
+	bool IsValid() const { return m_buffer_idx >= 0; }
+};
+
 struct GPU_ShaderResource {
 	sptr		m_driverData_view;
 
@@ -184,6 +194,10 @@ inline GPU_VertexBuffer::GPU_VertexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
 
+inline GPU_DynVsBuffer::GPU_DynVsBuffer(int idx) {
+	m_buffer_idx = idx;
+}
+
 inline GPU_IndexBuffer::GPU_IndexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
@@ -196,23 +210,23 @@ extern void					dx11_InitDevice();
 extern void					dx11_CleanupDevice();
 
 extern void					dx11_BackbufferSwap				();
-extern int					dx11_CreateDynamicVertexBuffer	(int bufferSizeInBytes);
+extern void					dx11_CreateDynamicVertexBuffer	(GPU_DynVsBuffer& dest, int bufferSizeInBytes);
 extern void					dx11_CreateStaticMesh			(GPU_VertexBuffer&	dest, void* vertexData, int itemSizeInBytes, int vertexCount);
 extern void					dx11_CreateIndexBuffer			(GPU_IndexBuffer&	dest, void* indexBuffer, int bufferSize);
 extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
 
-extern void					dx11_BindShaderVS				(GPU_ShaderVS& vs);
-extern void					dx11_BindShaderFS				(GPU_ShaderFS& fs);
-extern void					dx11_SetVertexBuffer			(int bufferId, int shaderSlot, int _stride, int _offset);
-extern void					dx11_UploadDynamicBufferData	(int bufferIdx, void* srcData, int sizeInBytes);
-extern void					dx11_SetIndexBuffer				(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset);
+extern void					dx11_BindShaderVS				(const GPU_ShaderVS& vs);
+extern void					dx11_BindShaderFS				(const GPU_ShaderFS& fs);
+extern void					dx11_SetVertexBuffer			(const GPU_DynVsBuffer&  vbuffer, int shaderSlot, int _stride, int _offset);
+extern void					dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
+extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, void* srcData, int sizeInBytes);
+extern void					dx11_SetIndexBuffer				(const GPU_IndexBuffer& indexBuffer, int bitsPerIndex, int offset);
 extern void					dx11_DrawIndexed				(int indexCount, int startIndexLoc, int baseVertLoc);
 extern void					dx11_Draw						(int indexCount, int startVertLoc);
 extern void					dx11_SetPrimType				(GpuPrimitiveType primType);
 
 extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
-extern void					dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
 extern void					dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
 
 
