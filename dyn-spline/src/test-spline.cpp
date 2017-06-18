@@ -18,7 +18,7 @@ static const int		numTrisPerCurve		    =  numStepsPerCurve;
 static const int		numVertexesPerCurve	    = (numTrisPerCurve * 3);
 static const int		SimpleVertexBufferSize  = (numTrisPerCurve*4) + 1;
 
-int						g_VertexBufferId;
+GPU_DynVsBuffer			g_VertexBufferId;
 GPU_IndexBuffer			g_IndexBuffer;
 
 
@@ -82,7 +82,7 @@ void SplineTest_Init()
 	assume(vidx <= SimpleVertexBufferSize);
 	assume(iidx <= bulkof(indices));
 
-	g_VertexBufferId	= dx11_CreateDynamicVertexBuffer(sizeof(SimpleVertex) * SimpleVertexBufferSize);
+	dx11_CreateDynamicVertexBuffer(g_VertexBufferId, sizeof(SimpleVertex) * SimpleVertexBufferSize);
 	dx11_CreateIndexBuffer(g_IndexBuffer, indices, sizeof(indices));
 }
 
@@ -208,7 +208,7 @@ void SplineTest_Render()
 	// ------------------------------------------------------------------------------------------
 	// Update Spline Vertex Information
 
-	if (g_VertexBufferId) {
+	if (g_VertexBufferId.IsValid()) {
 		dx11_UploadDynamicBufferData(g_VertexBufferId, vertices, sizeof(vertices));
 	}
 

@@ -55,9 +55,36 @@ int g_curBufferIdx = 0;
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
 // * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
 
+enum DynBufferType {
+	DynBuffer_Free,			// not allocated
+	DynBuffer_Vertex,
+	DynBuffer_Input,
+	DynBuffer_Resource,		// shader / texture resource
+};
 
-int							g_DynVertBufferCount = 0;
-ID3D11Buffer*				g_DynVertBuffers[BackBufferCount][256];
+const char* enumToString(const DynBufferType& id)
+{
+	switch(id) {
+		CaseReturnString(DynBuffer_Free			);
+		CaseReturnString(DynBuffer_Vertex		);
+		CaseReturnString(DynBuffer_Input		);
+		CaseReturnString(DynBuffer_Resource		);
+		default:	break;
+	}
+
+	unreachable_qa("Invalid or unknown DynBufferType=%d", id);
+	return "unknown";
+}
+
+
+struct DynBufferItem
+{
+	ID3D11Buffer*			m_dx11_buffer;
+	DynBufferType			m_type;
+};
+
+//int							g_DynVertBufferCount = 0;
+DynBufferItem				g_DynVertBuffers[BackBufferCount][256];
 
 ID3D11SamplerState*			m_pTextureSampler = nullptr;
 
@@ -339,6 +366,8 @@ static void genInputLayouts()
 
 void dx11_InitDevice()
 {
+	xMemZero(g_DynVertBuffers);
+
 	HRESULT hr = S_OK;
 
 	RECT rc;
@@ -593,24 +622,32 @@ bool dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* e
 	return true;
 }
 
-void dx11_BindShaderVS(GPU_ShaderVS& vs)
+void dx11_BindShaderVS(const GPU_ShaderVS& vs)
 {
 	auto&	shader	= ptr_cast<ID3D11VertexShader* const&>(vs.m_driverData);
 	g_pImmediateContext->VSSetShader(shader, nullptr, 0);
 }
 
-void dx11_BindShaderFS(GPU_ShaderFS& fs)
+void dx11_BindShaderFS(const GPU_ShaderFS& fs)
 {
 	auto&	shader	= ptr_cast<ID3D11PixelShader* const&>(fs.m_driverData);
 	g_pImmediateContext->PSSetShader(shader, nullptr, 0);
 }
 
-void dx11_SetVertexBuffer( int bufferId, int shaderSlot, int _stride, int _offset)
+void dx11_SetVertexBuffer(const GPU_DynVsBuffer& src, int shaderSlot, int _stride, int _offset)
 {
 	uint stride = _stride;
 	uint offset = _offset;
 
-	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_DynVertBuffers[g_curBufferIdx][bufferId], &stride, &offset);
+	bug_on(!src.IsValid());
+	if (!src.IsValid()) return;
+
+	auto& buffer = g_DynVertBuffers[g_curBufferIdx][src.m_buffer_idx];
+	bug_on_qa(buffer.m_type != DynBuffer_Vertex, "DynamicVertexBuffer expected '%s' but got '%s'",
+		enumToString(DynBuffer_Vertex),
+		enumToString(buffer.m_type)
+	);
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &buffer.m_dx11_buffer, &stride, &offset);
 }
 
 void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset)
@@ -621,7 +658,7 @@ void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int 
 	g_pImmediateContext->IASetVertexBuffers(shaderSlot, 1, (ID3D11Buffer**)&vbuffer.m_driverData, &stride, &offset);
 }
 
-void dx11_SetIndexBuffer(GPU_IndexBuffer indexBuffer, int bitsPerIndex, int offset)
+void dx11_SetIndexBuffer(const GPU_IndexBuffer& indexBuffer, int bitsPerIndex, int offset)
 {
 	DXGI_FORMAT format;
 	switch (bitsPerIndex) {
@@ -643,20 +680,39 @@ void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
 	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
 }
 
-void dx11_UploadDynamicBufferData(int bufferIdx, void* srcData, int sizeInBytes)
+void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, void* srcData, int sizeInBytes)
 {
+	// Trying to decide between assert or silent ignore if the buffer is not initialized...
+	// Or we could have a "dx11_TryUploadDynamicBufferData" too!
+
+	bug_on(!src.IsValid());
+	if (!src.IsValid()) return;
+
 	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 
-	auto*   simple      = g_DynVertBuffers[g_curBufferIdx][bufferIdx];
+	auto&   simple      = g_DynVertBuffers[g_curBufferIdx][src.m_buffer_idx];
 
-	g_pImmediateContext->Map(simple, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	bug_on_qa(simple.m_type == DynBuffer_Free);
+	g_pImmediateContext->Map(simple.m_dx11_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	xMemCopy(mappedResource.pData, srcData, sizeInBytes);
-	g_pImmediateContext->Unmap(simple, 0);
+	g_pImmediateContext->Unmap(simple.m_dx11_buffer, 0);
 }
 
-int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
+void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes)
 {
-	int bufferIdx = g_DynVertBufferCount;
+	// TODO : Improve search algo efficiency...
+	int bufferIdx = dest.m_buffer_idx;
+
+	if (dest.m_buffer_idx < 0) {
+		for(int i=0; i<bulkof(g_DynVertBuffers[0]); ++i) {
+			if (g_DynVertBuffers[0]->m_type == DynBuffer_Free) {
+				bufferIdx = i;
+				break;
+			}
+		}
+	}
+	log_and_abort_on(bufferIdx < 0, "Ran out of Dynamic buffer handles");
+
 	for (int i=0; i<BackBufferCount; ++i) {
 		D3D11_BUFFER_DESC bd = {};
 		bd.Usage			= D3D11_USAGE_DYNAMIC;
@@ -664,11 +720,18 @@ int dx11_CreateDynamicVertexBuffer(int bufferSizeInBytes)
 		bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
 		bd.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
 
-		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_DynVertBuffers[i][bufferIdx]);
+		auto& buffer = g_DynVertBuffers[i][bufferIdx];
+		bug_on_qa(buffer.m_type != DynBuffer_Vertex, "DynamicVertexBuffer expected '%s' but got '%s'",
+			enumToString(DynBuffer_Vertex),
+			enumToString(buffer.m_type)
+		);
+
+		if (buffer.m_dx11_buffer)  { buffer.m_dx11_buffer->Release();  buffer.m_dx11_buffer = nullptr; }
+		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer.m_dx11_buffer);
 		bug_on (FAILED(hr));
 	}
-	g_DynVertBufferCount += 1;
-	return bufferIdx;
+
+	dest.m_buffer_idx = bufferIdx;
 }
 
 void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSizeInBytes, int vertexCount)
