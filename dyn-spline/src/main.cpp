@@ -229,7 +229,7 @@ void SceneRender()
 	//dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
 	//dx11_DrawIndexed(6, 0,  0);
 
-	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(g_ViewMesh[0]), 0);
+	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
 	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
 	dx11_Draw(worldViewVerticiesCount, 0);
 
@@ -273,6 +273,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
 	// Fetch Scene configuration from Lua.
 
+#if 0
 	script.NewState();
 	script.LoadModule("scripts/GameInit.lua");
 
@@ -306,6 +307,12 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 			worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
 		}
 	}
+#endif
+
+
+	ViewMeshSizeX = 24;
+	ViewMeshSizeY = 24;
+	worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
 
 	xBitmapData  pngtex;
 	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
@@ -316,11 +323,14 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	g_setCountX = pngtex.width	/ 64;
 	g_setCountY = pngtex.height	/ (64 + 32);
 
-	vFloat3*	ViewMesh;
+	vFloat3*	ViewMesh = nullptr;		Defer( { xFree(ViewMesh); ViewMesh = nullptr; } );
 
-	g_WorldMap	= (TerrainMapItem*)   xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-	ViewMesh	= (vFloat3*) xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
-	g_ViewUV	= (vFloat2*) xMalloc(worldViewVerticiesCount * sizeof(vFloat2));
+	xFree(g_WorldMap);	g_WorldMap	= nullptr;
+	xFree(g_ViewUV);	g_ViewUV	= nullptr;
+
+	g_WorldMap	= (TerrainMapItem*)	xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
+	ViewMesh	= (vFloat3*)		xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
+	g_ViewUV	= (vFloat2*)		xMalloc(worldViewVerticiesCount * sizeof(vFloat2));
 
 	g_playerX = 0;
 	g_playerY = 0;
