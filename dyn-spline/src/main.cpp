@@ -276,6 +276,11 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
 	s_CanRenderScene = false;
 
+	// default test values in case script loading is bypassed.
+	ViewMeshSizeX = 24;
+	ViewMeshSizeY = 24;
+	worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
+
 #if 1
 	// Fetch Scene configuration from Lua.
 	script.NewState();
@@ -312,11 +317,6 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		}
 	}
 #endif
-
-
-	ViewMeshSizeX = 24;
-	ViewMeshSizeY = 24;
-	worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
 
 	xBitmapData  pngtex;
 	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
@@ -410,7 +410,6 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	dx11_CreateStaticMesh(g_mesh_worldView,		ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
 	dx11_CreateStaticMesh(g_mesh_worldViewUV,	g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
-
 
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
