@@ -83,7 +83,7 @@ void SplineTest_Init()
 	assume(iidx <= bulkof(indices));
 
 	g_VertexBufferId	= dx11_CreateDynamicVertexBuffer(sizeof(SimpleVertex) * SimpleVertexBufferSize);
-	g_IndexBuffer		= dx11_CreateIndexBuffer(indices, sizeof(indices));
+	dx11_CreateIndexBuffer(g_IndexBuffer, indices, sizeof(indices));
 }
 
 

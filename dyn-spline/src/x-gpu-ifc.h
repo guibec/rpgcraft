@@ -197,8 +197,8 @@ extern void					dx11_CleanupDevice();
 
 extern void					dx11_BackbufferSwap				();
 extern int					dx11_CreateDynamicVertexBuffer	(int bufferSizeInBytes);
-extern GPU_VertexBuffer		dx11_CreateStaticMesh			(void* vertexData, int itemSizeInBytes, int vertexCount);
-extern GPU_IndexBuffer		dx11_CreateIndexBuffer			(void* indexBuffer, int bufferSize);
+extern void					dx11_CreateStaticMesh			(GPU_VertexBuffer&	dest, void* vertexData, int itemSizeInBytes, int vertexCount);
+extern void					dx11_CreateIndexBuffer			(GPU_IndexBuffer&	dest, void* indexBuffer, int bufferSize);
 extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
 
 extern void					dx11_BindShaderVS				(GPU_ShaderVS& vs);
