@@ -4,9 +4,10 @@
 #include "x-assertion.h"
 #include "x-string.h"
 #include "x-thread.h"
+
+#include "x-host-ifc.h"
 #include "x-gpu-ifc.h"
 #include "x-gpu-colors.h"
-
 #include "x-png-decode.h"
 
 #include "Bezier2D.h"
@@ -195,6 +196,13 @@ void SceneBegin()
 }
 
 bool s_CanRenderScene = false;
+
+
+void SceneInputLogic()
+{
+	// TODO : Add some keyboard handler magic here ... !!
+	//Host_IsKeyPressed('a');
+}
 
 void SceneRender()
 {

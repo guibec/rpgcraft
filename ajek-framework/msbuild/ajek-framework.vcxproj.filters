@@ -72,6 +72,9 @@
     <ClInclude Include="..\src\common-standard.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\h\x-host-ifc.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">
