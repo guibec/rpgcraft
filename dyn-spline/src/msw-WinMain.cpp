@@ -3,6 +3,7 @@
 #include "x-string.h"
 #include "x-gpu-ifc.h"
 #include "x-thread.h"
+#include "x-host-ifc.h"
 
 #include "ajek-script.h"
 #include "Scene.h"
