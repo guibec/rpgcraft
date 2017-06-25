@@ -1,10 +1,3 @@
-New Version:
-  * Turn based battle.
-  * Can see enemy on screen: Final Fantasy Mystic Quest / Lufia 2
---> Easier to pace progression.
---> No need to play with action related control.
---> Can copy existing math formulas.
-
 Version FPP Requirement:
   * Fun World Generation
 Improve world generation algorithm using varied biome instead of random mess as it looks like right now
@@ -25,11 +18,9 @@ Add sound effects
 
   * Add progression similar to Buff Knight. Just getting further away. Improve gameplay loop & progression. Keep battle fast and simple.
 
-
-Old Version:
 Crafting 
   * Crafting recipe (json)
-  * Need to find recipe ?
+  * Recipe shown to you, potentially if you have seen the ingredients before.
   * Crafting UI
   * Create a torch
 
@@ -51,9 +42,6 @@ Combat Mechanics
   * Critical Hit
      * Mechanic
 	 * Display of text (Critical Hit!)
-  * Combo
-     * Mechanic
-	 * Display of text (
 
 XP Shard
   * Can be pickup
@@ -79,24 +67,6 @@ Fix object size ratio
 General
   * Stronger enemies farther away
   
-Add music
-  -> http://gamedev.stackexchange.com/questions/1045/where-is-quality-paid-game-music
-  -> http://www.premiumbeat.com/royalty_free_music/songs/power-trailer-percussion 30$/track
-  -> Audacity to record sound temporary http://audacity.sourceforge.net/
-  -> Title Screen: Hope Will Prevail (premiumbeat)
-  -> Boss Battle: Bonecrusher, Speed Action Scene (sur rail)
-Add sound effects
-Improve world generation algorithm using varied biome instead of random mess as it looks like right now
-  * http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/ 
-  * Plain
-  * Ocean
-  * Desert
-  * Forest
-  * Mountain
-Improve object placement - allow getting stuck & unstuck yourself
-Improve digging
- * Allow digging in direction of mouse cursor
- 
 Tech
  * Auto-versioning
  * Check for C# 6.0 support: https://bitbucket.org/alexzzzz/unity-c-5.0-and-6.0-integration/src
@@ -105,7 +75,6 @@ Meta
   * Web Page
   * Trailer Video
   * Readme 
-
 
 <-- VERSION FP
 
@@ -130,52 +99,3 @@ Chat System
 
 Multiplayer
   * Using libgren for UDP connexion https://github.com/lidgren/lidgren-network-gen3
-
-<-- Progression
-
-Basic FPP
-Initial 
-  * Field: Grass + Trees at center, Middle ground. Outer mountain ring
-  * Player cut trees with his basic tool.
-  * Player obtain woods
-  * Player craft woods into walls
-  * Player craft woods into doors
-  * Player places walls to make a house
-  * Player places a door.
-
-Getting used to the game
-  * Enemy spawns after 2 minutes of gaming
-  * Player is protected when being inside the house
-  * Pleave leave the house.
-  * Player attack and kills enemies
-  * Enemy leaves XP shards and gold
-  * Player obtains these objects.
-  * XP is added to the XP inventory and GOLD is added to the GOLD inventory
-  
-Exploration
-  * Player explores the map and find surrounding mountain
-  * Player digs through mountains
-  * Certain mountains are collered differently.
-  * Player obtains special resources when digging through them.
-  * Harder enemy types are encountered near the mountains.
-  * Enemies perform magic attack (Secret of Mana).
-    * Self-targetting auto-attack.
-  * Player is unable to continue or he will certainly die.
-
-Return to home  
-  * Player crafts magic with various resource he has obtained.
-  * MP "bar" appears
-  * Player can now uses magic that consume resources/MP.
-  
-Exploration #2
-  * Player now has a easier time to defeat enemies in mountain
-  * Player may target them from a distance.
-  * Player may heal himself through magic or items.
-
-Exploration #3
-  * Going through mountain, player finds chest.
-  * Chest contains items to help him.
-  * Some chests are surrounded by swamp which hurt the player (badly) when trying to reach it.
-  
-Exploration #4
-  * Player finds mountains that are unbreakable with his current equipment.
