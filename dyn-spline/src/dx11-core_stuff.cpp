@@ -417,7 +417,7 @@ void dx11_InitDevice()
 	log_and_abort_on (FAILED(hr));
 
 	//  * DX Docs recommend always having MSAA enabled.
-	//  * Depth Bias options are pretty much jsut for shadow implementations
+	//  * Depth Bias options are pretty much just for shadow implementations
 	//  * FrontCounterClockwise is *probably* a system-wide setting.  Can't think of a good reason to have
 	//    models with mixed clockwise/counter-clockwise vertex order.  Preprocess them bitches!
 	//  * Wireframe of any raster state should be created, simply for debugging purposes.
@@ -553,13 +553,20 @@ void dx11_InitDevice()
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 
+	// TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
+	//        and texture WRAP vs. CLAMP.  Point sampling and wrapping might be useful for some
+	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
+	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
+
+	pragma_todo("Implement Sampler Binding API.")
+
 	D3D11_SAMPLER_DESC samplerDesc = {};
 
 //	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
 	samplerDesc.MinLOD			= 0;
 	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
