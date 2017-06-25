@@ -288,22 +288,45 @@ typedef void VoidFunc();
 
 #endif
 
-
-// --------------------------------------------------------------------------------------
 #define EXPECT_FALSE(a)				EXPECT((a), (false))
 #define EXPECT_TRUE(a)				EXPECT((a), (true))
+
 // --------------------------------------------------------------------------------------
+//  pragma_todo    (macro)
+// --------------------------------------------------------------------------------------
+// Used to produce handy-dandy messages like:
+//    1> C:\Source\Project\main.cpp(47): Reminder: Fix this problem!
+
+#define macro_Stringize( L )			#L 
+#define macro_MakeString( M, L )		M(L)
+#define _pragmahelper_Line				macro_MakeString( macro_Stringize, __LINE__ )
+#define _pragmahelper_location			__FILE__ "(" _pragmahelper_Line "): "
+
+#if !defined(SHOW_PRAGMA_TODO)
+#	define SHOW_PRAGMA_TODO			1
+#endif
+
+#if SHOW_PRAGMA_TODO
+#	if defined(_MSC_VER)
+#		define pragma_todo(...)		__pragma	(message        (_pragmahelper_location "-TODO- " __VA_ARGS__))
+#	else
+#		define pragma_todo(...)		_Pragma		(STR(GCC warning(_pragmahelper_location "-TODO- " __VA_ARGS__)))
+#	endif
+#else
+#	define pragma_todo(...)
+#endif
 
 
 // --------------------------------------------------------------------------------------
 // FMT_SIZET / FMT_U64 / FMT_S64
 // --------------------------------------------------------------------------------------
+//  # Recommended engineers use cHexStr()/cDecStr() instead (see x-string.h).  It Just Works, in
+//    a cleaner and better way, especially if the fundamental types being displayed are promoted
+//    or demoted.
 //  # MSVC does not yet support 'z' modifier on printf, so this macro is needed until its C99
 //    compliance develops into a less ugly flower.
 //  # MSVC and GCC finally agree on %lld in 32 bit land, which is not much of a consolation since
 //    they now do NOT agree in x64 land.
-//  # Recommended engineers use cDecStr() instead (see x-string.h).  It Just Works, in a cleaner
-//    and better way, especially if the fundamental types being displayed are promoted or demoted.
 //
 #ifdef _MSC_VER
 #	define FMT_SIZET	"%Iu"
