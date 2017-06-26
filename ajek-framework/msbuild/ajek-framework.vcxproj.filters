@@ -13,6 +13,9 @@
     <ClCompile Include="..\src\x-string.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\kpad.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">
@@ -76,6 +79,9 @@
       <Filter>Public Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\h\x-chrono.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-pad.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
   </ItemGroup>
