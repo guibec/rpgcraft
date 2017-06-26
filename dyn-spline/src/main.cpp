@@ -9,10 +9,9 @@
 #include "x-gpu-ifc.h"
 #include "x-gpu-colors.h"
 #include "x-png-decode.h"
+#include "v-float.h"
 
-#include "Bezier2D.h"
-
-#include "Bezier2d.inl"
+#include "Entity.h"
 
 
 DECLARE_MODULE_NAME("main");
@@ -22,12 +21,16 @@ GPU_VertexBuffer		g_mesh_worldView;
 GPU_VertexBuffer		g_mesh_worldViewUV;
 
 GPU_IndexBuffer			g_idx_box2D;
-GPU_ShaderVS			g_ShaderVS;
-GPU_ShaderFS			g_ShaderFS;
+GPU_ShaderVS			g_ShaderVS_Tiler;
+GPU_ShaderFS			g_ShaderFS_Tiler;
+
+GPU_ShaderVS			g_ShaderVS_Spriter;
+GPU_ShaderFS			g_ShaderFS_Spriter;
 
 bool					g_gpu_ForceWireframe	= false;
 
 GPU_TextureResource2D	tex_floor;
+GPU_TextureResource2D	tex_chars;
 GPU_TextureResource2D	tex_terrain;
 
 static const int TileSizeX = 8;
@@ -37,13 +40,12 @@ static const int TileSizeY = 8;
 
 //static const int ViewMeshSizeX		= 128;
 //static const int ViewMeshSizeY		= 96;
-static int ViewMeshSizeX		= 24;
-static int ViewMeshSizeY		= 24;
-static int worldViewVerticiesCount = 0;
+static int ViewMeshSizeX			= 24;
+static int ViewMeshSizeY			= 24;
+static int worldViewVerticiesCount	= 0;
 
 GPU_TextureResource2D	tex_tile_ids;		// indexer into the provided texture set  (dims: ViewMeshSizeXY)
 GPU_TextureResource2D	tex_tile_rgba;		// tile-based lighting map                (dims: ViewMeshSizeXY)
-
 
 // ------------------------------------------------------------------------------------------------
 // struct TileMapVertex
@@ -99,6 +101,9 @@ float g_playerY;
 static const int TerrainTileW = 256;
 static const int TerrainTileH = 256;
 
+static DrawableEntityContainer		g_drawable_entities;
+
+// --------------------------------------------------------------------------------------
 float s_ProcTerrain_Height[TerrainTileW][TerrainTileH];
 
 void ProcGenTerrain()
@@ -114,6 +119,7 @@ void ProcGenTerrain()
 		}
 	}
 }
+// --------------------------------------------------------------------------------------
 
 int g_setCountX = 0;
 int g_setCountY = 0;
@@ -193,7 +199,11 @@ void SceneBegin()
 		}
 	}
 
+	// Sort various sprite batches
+
+	
 }
+
 
 bool s_CanRenderScene = false;
 
@@ -203,6 +213,21 @@ void SceneInputLogic()
 	// TODO : Add some keyboard handler magic here ... !!
 	//Host_IsKeyPressed('a');
 }
+
+struct PlayerSprite : public IDrawableEntity
+{
+	virtual void Draw() const
+	{
+		dx11_BindShaderVS(g_ShaderVS_Spriter);
+		dx11_BindShaderFS(g_ShaderFS_Spriter);
+		dx11_SetInputLayout(VertexBufferLayout_Tex1);
+
+		dx11_BindShaderResource(tex_chars, 0);
+		dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
+		dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
+		dx11_DrawIndexed(6, 0,  0);
+	}
+};
 
 void SceneRender()
 {
@@ -226,8 +251,9 @@ void SceneRender()
 
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 
-	dx11_BindShaderVS(g_ShaderVS);
-	dx11_BindShaderFS(g_ShaderFS);
+	dx11_BindShaderVS(g_ShaderVS_Tiler);
+	dx11_BindShaderFS(g_ShaderFS_Tiler);
+	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
 
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_floor, 0);
@@ -236,13 +262,14 @@ void SceneRender()
 	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 
 
-	//dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
-	//dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
-	//dx11_DrawIndexed(6, 0,  0);
-
 	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
 	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
 	dx11_Draw(worldViewVerticiesCount, 0);
+
+	for(const auto* const& entity : g_drawable_entities.ForEachAlpha())
+	{
+		entity->Draw();
+	}
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
@@ -326,14 +353,22 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	}
 #endif
 
-	xBitmapData  pngtex;
-	png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
-	dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+	if (1) {
+		xBitmapData  pngtex;
+		png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+		dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 
-	// Assume pngtex is rpgmaker layout for now.
+		// Assume pngtex is rpgmaker layout for now.
 
-	g_setCountX = pngtex.width	/ 64;
-	g_setCountY = pngtex.height	/ (64 + 32);
+		g_setCountX = pngtex.width	/ 64;
+		g_setCountY = pngtex.height	/ (64 + 32);
+	}
+
+	if (1) {
+		xBitmapData  pngtex;
+		png_LoadFromFile(pngtex, "..\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+		dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+	}
 
 	vFloat3*	ViewMesh = nullptr;		Defer( { xFree(ViewMesh); ViewMesh = nullptr; } );
 
@@ -422,9 +457,11 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	ProcGenTerrain();
 	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
-	dx11_LoadShaderVS(g_ShaderVS, "HeightMappedQuad.fx", "VS");
-	dx11_LoadShaderFS(g_ShaderFS, "HeightMappedQuad.fx", "PS");
-	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
+	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
+	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
+
+	dx11_LoadShaderVS(g_ShaderVS_Spriter, "Sprite.fx", "VS");
+	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
 	// ---------------------------------------------------------------------------------------------
 	// Simple box for diagnostic purposes...
@@ -451,6 +488,9 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_CreateStaticMesh(g_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
 	dx11_CreateIndexBuffer(g_idx_box2D, indices_box, 6*2);
 	// ---------------------------------------------------------------------------------------------
+
+
+	g_drawable_entities.Add(new PlayerSprite());
 
 	s_CanRenderScene = 1;
 	return true;
