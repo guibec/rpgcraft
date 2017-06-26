@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\kpad.cpp" />
     <ClCompile Include="..\src\x-png-decode.cpp" />
     <ClCompile Include="..\src\x-stdlib.cpp" />
     <ClCompile Include="..\src\x-string.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="..\h\x-ForwardDefs.h" />
     <ClInclude Include="..\h\x-host-ifc.h" />
     <ClInclude Include="..\h\x-libPngEncoder.h" />
+    <ClInclude Include="..\h\x-pad.h" />
     <ClInclude Include="..\h\x-png-decode.h" />
     <ClInclude Include="..\h\x-ScopedMalloc.h" />
     <ClInclude Include="..\h\x-simd.h" />
