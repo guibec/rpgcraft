@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\msw\msw-chrono.cpp" />
     <ClCompile Include="..\src\msw\msw-dualshock4.cpp" />
     <ClCompile Include="..\src\msw\msw-GetLastError.cpp" />
     <ClCompile Include="..\src\msw\msw-keyboard.cpp" />
