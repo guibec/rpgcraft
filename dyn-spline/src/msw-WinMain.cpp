@@ -4,6 +4,7 @@
 #include "x-gpu-ifc.h"
 #include "x-thread.h"
 #include "x-host-ifc.h"
+#include "x-chrono.h"
 
 #include "ajek-script.h"
 #include "Scene.h"
@@ -14,6 +15,7 @@
 DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
+extern void			MSW_InitChrono();
 
 extern void			LoadPkgConfig(const xString& luaFile);
 
@@ -131,7 +133,8 @@ bool Msw_DrainMsgQueue()
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	// 
+	HostClockTick::Init();
+	MSW_InitChrono();
 	LogHostInit();
 
 	// Tokenizer.

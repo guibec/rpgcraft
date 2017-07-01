@@ -85,6 +85,7 @@
     <ClInclude Include="..\h\x-assertion.h" />
     <ClInclude Include="..\h\x-atomic.h" />
     <ClInclude Include="..\h\x-BitmapData.h" />
+    <ClInclude Include="..\h\x-chrono.h" />
     <ClInclude Include="..\h\x-ForwardDefs.h" />
     <ClInclude Include="..\h\x-host-ifc.h" />
     <ClInclude Include="..\h\x-libPngEncoder.h" />

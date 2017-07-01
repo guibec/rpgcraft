@@ -75,6 +75,9 @@
     <ClInclude Include="..\h\x-host-ifc.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
+    <ClInclude Include="..\h\x-chrono.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">

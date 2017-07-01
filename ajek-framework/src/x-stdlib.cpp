@@ -1,5 +1,6 @@
 
 #include "common-standard.h"
+#include "x-chrono.h"
 
 #if USE_GLIBC_MACRO_FIXUP
 #	undef __unused
@@ -745,3 +746,13 @@ void xStrCopy(char* dest, size_t destLen, const char* src, size_t srcLen)
 #endif
 }
 
+// x-chrono.h things  (not in a mood to put these in their own module, yet...)
+
+host_tick_t		HostClockTick::s_ticks_per_second;
+float			HostClockTick::s_ticks_per_second_f;
+
+void HostClockTick::Init()
+{
+	s_ticks_per_second		= Host_GetProcessTickRate();
+	s_ticks_per_second_f	= s_ticks_per_second;
+}
