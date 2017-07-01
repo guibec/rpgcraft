@@ -3,7 +3,7 @@
 #include "x-thread.h"
 #include "x-assertion.h"
 
-#include <chrono>
+#include "x-chrono.h"
 
 
 // s_mylog_MaxFileSize
@@ -15,16 +15,13 @@
 const			s64				s_mylog_MaxFileSize	= _256mb;
 const			s64				s_spam_maxSize		= _4gb * 4;		// a generous 16gb!
 
-static xMutex	s_mtx_unilogger;
-static FILE*	s_myLog				= nullptr;
-static s64		s_myLog_Written		= 0;
-
-static std::chrono::steady_clock::time_point s_HostLogTimer;
+static xMutex			s_mtx_unilogger;
+static FILE*			s_myLog				= nullptr;
+static s64				s_myLog_Written		= 0;
 
 void LogHostInit()
 {
 	s_mtx_unilogger.Create();
-	s_HostLogTimer = std::chrono::steady_clock::now();
 }
 
 static void _debugBreakContext( xString& context, const char* filepos, const char* funcname, const char* cond )
@@ -127,15 +124,7 @@ static void advanceMyLog( int numChars )
 // --------------------------------------------------------------------------------------
 static void vlog_append_host_clock(xString& dest)
 {
-	xScopedMutex lock(s_mtx_unilogger);
-
-	auto newtime = std::chrono::steady_clock::now();
-
-	lock.Unlock();
-
-	typedef std::chrono::duration<double> seconds_d;
-	auto secs = std::chrono::duration_cast<seconds_d>(newtime - s_HostLogTimer);
-	dest.AppendFmt("[%8.03fsec] ", secs);
+	dest.AppendFmt("[%8.03fsec] ", Host_GetProcessTicks().asSeconds());
 }
 
 // --------------------------------------------------------------------------------------
