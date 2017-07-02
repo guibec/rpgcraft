@@ -52,9 +52,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (c == 'R' || c == 'r') {
 				Scene_PostMessage(SceneMsg_Reload, 0);
+				Scene_PostMessage(SceneMsg_StartExec, SceneStopReason_ScriptError);
 			}
 
-		}break;
+		} break;
 
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
