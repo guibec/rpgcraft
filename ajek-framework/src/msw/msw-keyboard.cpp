@@ -6,15 +6,24 @@ DECLARE_MODULE_NAME("x-kbd");
 
 extern HWND g_hWnd;		// must be provided by application's msw-WinMain.cpp
 
+// ConvertFromMswVK
+// Warning: this function is unused and is incomplete at this time.  It's going to have gaps
+// in its coverage.  It's suitable for creating developer keyboard hooks but should not be used
+// for consumer keyboard behavior.
 VirtKey_t ConvertFromMswVK( UINT key )
 {
+	if (key >= 'A' && key <= 'Z')	return (VirtKey_t)key;
+	if (key >= '0' && key <= '9')	return (VirtKey_t)key;
+
 	switch (key)
 	{
 		case VK_ESCAPE:		return VirtKey::Escape;
 		case VK_RETURN:		return VirtKey::Enter;
-		case VK_SEPARATOR:	return VirtKey::Separator;
+		case VK_TAB:		return VirtKey::Tab;
 		case VK_OEM_2:		return VirtKey::Slash;				// +shift for Question (US layout)
 		case VK_OEM_3:		return VirtKey::BackQuote;			// +shift for tilde	   (US layout)
+		case VK_SEPARATOR:	return VirtKey::Separator;
+		
 		case VK_NEXT:		return VirtKey::PageDown;
 		case VK_PRIOR:		return VirtKey::PageUp;
 		case VK_DELETE:		return VirtKey::Delete;
@@ -24,6 +33,7 @@ VirtKey_t ConvertFromMswVK( UINT key )
 		case VK_DOWN:		return VirtKey::ArrowDown;
 		case VK_LEFT:		return VirtKey::ArrowLeft;
 		case VK_RIGHT:		return VirtKey::ArrowRight;
+
 
 		case VK_NUMPAD1:	return VirtKey::KeyPad_1;
 		case VK_NUMPAD2:	return VirtKey::KeyPad_2;
@@ -62,6 +72,68 @@ VirtKey_t ConvertFromMswVK( UINT key )
 	};
 }
 
+UINT ConvertToMswVK( VirtKey_t ours )
+{
+	switch (ours)
+	{
+		case VirtKey::Escape		:	return VK_ESCAPE		;
+		case VirtKey::Enter			:	return VK_RETURN		;
+		case VirtKey::Tab			:	return VK_TAB			;
+		case VirtKey::Separator		:	return VK_SEPARATOR		;
+		case VirtKey::Slash			:	return VK_OEM_2			;	// +shift for Question (US layout)
+		case VirtKey::BackQuote		:	return VK_OEM_3			;	// +shift for tilde	   (US layout)
+
+		case VirtKey::PageDown		:	return VK_NEXT			;
+		case VirtKey::PageUp		:	return VK_PRIOR			;
+		case VirtKey::Delete		:	return VK_DELETE		;
+		case VirtKey::Home			:	return VK_HOME			;
+		case VirtKey::End			:	return VK_END			;
+		case VirtKey::ArrowUp		:	return VK_UP			;
+		case VirtKey::ArrowDown		:	return VK_DOWN			;
+		case VirtKey::ArrowLeft		:	return VK_LEFT			;
+		case VirtKey::ArrowRight	:	return VK_RIGHT			;
+
+		case VirtKey::KeyPad_1		:	return VK_NUMPAD1;
+		case VirtKey::KeyPad_2		:	return VK_NUMPAD2;
+		case VirtKey::KeyPad_3		:	return VK_NUMPAD3;
+		case VirtKey::KeyPad_4		:	return VK_NUMPAD4;
+		case VirtKey::KeyPad_5		:	return VK_NUMPAD5;
+		case VirtKey::KeyPad_6		:	return VK_NUMPAD6;
+		case VirtKey::KeyPad_7		:	return VK_NUMPAD7;
+		case VirtKey::KeyPad_8		:	return VK_NUMPAD8;
+		case VirtKey::KeyPad_9		:	return VK_NUMPAD9;
+		case VirtKey::KeyPad_0		:	return VK_NUMPAD0;
+
+		case VirtKey::F1			:	return VK_F1;		
+		case VirtKey::F2			:	return VK_F2;		
+		case VirtKey::F3			:	return VK_F3;		
+		case VirtKey::F4			:	return VK_F4;		
+		case VirtKey::F5			:	return VK_F5;		
+		case VirtKey::F6			:	return VK_F6;		
+		case VirtKey::F7			:	return VK_F7;		
+		case VirtKey::F8			:	return VK_F8;		
+		case VirtKey::F9			:	return VK_F9;		
+		case VirtKey::F10			:	return VK_F10;	
+		case VirtKey::F11			:	return VK_F11;	
+		case VirtKey::F12			:	return VK_F12;	
+
+		case VirtKey::LShift		:	return VK_LSHIFT		;	
+		case VirtKey::RShift		:	return VK_RSHIFT		;
+		case VirtKey::LCtrl			:	return VK_LCONTROL		;
+		case VirtKey::RCtrl			:	return VK_RCONTROL		;
+		case VirtKey::LAlt			:	return VK_LMENU			;	
+		case VirtKey::RAlt			:	return VK_RMENU			;	
+		case VirtKey::LWin			:	return VK_LWIN			;	
+		case VirtKey::RWin			:	return VK_RWIN			;
+
+		default:
+			// assume it's some alphanumeric character (1:1 mapping with ascii)
+			return (UINT)ours;
+	};
+
+	return 0;
+}
+
 bool Host_HasWindowFocus()
 {
 	HWND fore = GetForegroundWindow();
@@ -73,7 +145,7 @@ bool Host_HasWindowFocus()
 bool Host_IsKeyPressedGlobally(VirtKey_t vk_code)
 {
 	if (vk_code == VirtKey::Unmapped) return false;
-	return (::GetAsyncKeyState(vk_code) & 0x8000u) != 0;
+	return (::GetAsyncKeyState(ConvertToMswVK(vk_code)) & 0x8000u) != 0;
 }
 
 bool Host_IsKeyPressedGlobally(const VirtKeyBindingPair& pair)
