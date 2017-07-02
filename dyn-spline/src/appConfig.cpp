@@ -7,12 +7,6 @@
 
 DECLARE_MODULE_NAME("config");
 
-
-#define tryLoadLuaAgain(...) {																		\
-	if (xIsDebuggerAttached())  { AjekScript_PrintDebugReloadMsg(); __debugbreak(); return false; }	\
-	else						{ log_and_abort( __VA_ARGS__ ); }									\
-}
-
 static bool TryLoadPkgConfig(const xString& luaFile)
 {
 	auto& env = AjekScriptEnv_Get(ScriptEnv_AppConfig);
@@ -41,7 +35,7 @@ void LoadPkgConfig(const xString& luaFile)
 		if (!xIsDebuggerAttached()) {
 			log_and_abort("Application aborted due to scriptConfig error."); 
 		}
-		AjekScript_PrintDebugReloadMsg();
+		AjekScript_PrintBreakReloadMsg();
 		__debugbreak();		// allows developer to resume after correcting errors.
 	}
 }

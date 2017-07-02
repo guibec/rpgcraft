@@ -239,10 +239,16 @@ LUAMOD_API int luaopen_ajek (lua_State *L) {
   return 1;
 }
 
+void AjekScript_PrintBreakReloadMsg()
+{
+	xPrintLn("");
+	xPrintLn("Debugger detected - Correct the problem and hit 'Continue' in debugger to reload and re-execute.");
+}
+
 void AjekScript_PrintDebugReloadMsg()
 {
 	xPrintLn("");
-	xPrintLn("Debugger detected - Correct the problem in Lua and hit 'Continue' in debugger to reload and re-execute.");
+	xPrintLn("Execution paused due to error - Correct the problem and hit 'R' to reload and re-execute.");
 }
 
 void AjekScript_Alloc()
@@ -297,8 +303,9 @@ void AjekScriptEnv::DisposeState()
 
 void AjekScriptEnv::PrintLastError() const
 {
-	bug_on(!HasError());		// if not set then the upvalue's not going to be a lua error string ...
-	xPrintLn( xFmtStr("\n%s", lua_tostring(m_L, -1)));
+	if (HasError()) {		// if not set then the upvalue's not going to be a lua error string ...
+		xPrintLn( xFmtStr("\n%s", lua_tostring(m_L, -1)));
+	}
 }
 
 AjekScriptError cvtLuaErrorToAjekError(int lua_error) 
@@ -475,15 +482,6 @@ lua_string AjekScriptEnv::glob_get_string(const char* varname) const
 	return result;
 }
 
-bool AjekScriptEnv::SetJmpForError()
-{
-	bug_on_qa(m_has_setjmp);
-	m_has_setjmp = 1;
-	int result = setjmp(m_jmpbuf);
-	m_has_setjmp = (result == 0);
-	return m_has_setjmp;
-}
-
 bool AjekScriptEnv::ThrowError(AjekScriptError errorcode)
 {
 	m_error = errorcode;
@@ -491,7 +489,7 @@ bool AjekScriptEnv::ThrowError(AjekScriptError errorcode)
 	if (m_has_setjmp) {
 		// Do not log last error here -- 
 		//    assume the error handler may want to do it's own error msg printout
-		longjmp(m_jmpbuf, 1);
+		longjmp(*m_jmpbuf, 1);
 	}
 	else {
 		PrintLastError();

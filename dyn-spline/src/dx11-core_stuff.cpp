@@ -47,9 +47,9 @@ XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 
 GPU_RenderTarget		g_gpu_BackBuffer;
+int						g_curBufferIdx = 0;
 
-int g_curBufferIdx = 0;
-
+xString					s_LastErrorMessage;
 
 // * Vertex Buffers are Mostly Dynamic.
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
@@ -202,13 +202,18 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 #endif
 
 	// Memory Leak Warning:  On Intel Integrated GPU driver (i630) a memory leak occurs when
-	// compiling shaders.  Unknown at this time if the leak is DX11 or Intel driver.
+	// compiling shaders.  Unknown at this time if the leak is DX11 affecting all GPUs, or Intel
+	// driver affecting only my GPU.  --jstine
+
 	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
 		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
 
 	if (FAILED(hr)) {
 		if (pErrorBlob) {
-			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+			s_LastErrorMessage = reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer());
+		}
+		elif (hr == D3D11_ERROR_FILE_NOT_FOUND || hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+			s_LastErrorMessage.Format("Shader file not found: %S", szFileName);
 		}
 		else {
 			log_and_abort("D3DCompileFromFile(%S) failed with no errorBlob, hr=0x%08x", szFileName, hr);
@@ -216,6 +221,31 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 	}
 
 	return hr;
+}
+
+#include "x-MemCopy.inl"
+
+static	bool		s_has_setjmp;
+static 	jmp_buf*	s_jmp_buffer;
+
+void dx11_SetJmpCatch(jmp_buf& jmpbuf)
+{
+	bug_on_qa(s_has_setjmp);
+	s_jmp_buffer = &jmpbuf;
+	s_has_setjmp = 1;
+	s_LastErrorMessage.Clear();
+}
+
+void dx11_SetJmpFinalize()
+{
+	s_has_setjmp = 0;
+}
+
+void dx11_PrintLastError()
+{
+	if (!s_LastErrorMessage.IsEmpty()) {
+		xPrintLn(s_LastErrorMessage);
+	}
 }
 
 ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel)
@@ -227,12 +257,14 @@ ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LP
 	ID3DBlob* ppBlobOut;
 
 	hr = TryCompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &ppBlobOut);
-	if (FAILED(hr)) {
-		MessageBox(nullptr,
-			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK
-		);
+	if(FAILED(hr)) {
+		if (s_has_setjmp) {
+			longjmp(*s_jmp_buffer, 1);
+		}
+		else {
+			OutputDebugStringA(s_LastErrorMessage);
+		}
 	}
-
 	return ppBlobOut;
 }
 
