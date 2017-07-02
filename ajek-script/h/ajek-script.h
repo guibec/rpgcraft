@@ -197,7 +197,7 @@ struct AjekScriptEnv
 	//AjekMspace*	m_mspace;			// Future custom mspace provision
 
 	AjekScriptError	m_error;			// error result of most recent operations
-	jmp_buf			m_jmpbuf;			// jump buffer target on error
+	jmp_buf*		m_jmpbuf;			// jump buffer target on error
 	bool			m_has_setjmp;
 
 	AjekScriptEnv() {
@@ -218,7 +218,6 @@ struct AjekScriptEnv
 	void		PrintStackTrace			();
 	void		PrintLastError			() const;
 
-	bool		SetJmpForError			();
 	bool		ThrowError				(AjekScriptError errorcode);
 
 	lua_State*			getLuaState		();
@@ -252,6 +251,16 @@ struct AjekScriptEnv
 	lua_bool		glob_get_bool	(const char* varname)	const;
 	lua_string		glob_get_string	(const char* varname)	const;
 	LuaTableScope	glob_open_table	(const char* tableName, bool isRequired = AsApi_Required);
+
+	void SetJmpCatch(jmp_buf& buf) {
+		bug_on_qa(m_has_setjmp);
+		m_jmpbuf		= &buf;
+		m_has_setjmp	= 1;
+	}
+
+	void SetJmpFinalize() {
+		m_has_setjmp	= 0;
+	}
 };
 
 extern void				AjekScript_InitSettings				();
@@ -261,6 +270,7 @@ extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xStri
 extern void				AjekScript_SetDebugRelativePath		(const xString& relpath);
 extern bool				AjekScript_LoadConfiguration		(AjekScriptEnv& env);
 extern void				AjekScript_PrintDebugReloadMsg		();
+extern void				AjekScript_PrintBreakReloadMsg		();
 
 extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
 

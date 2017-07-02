@@ -95,6 +95,12 @@ __ai bool SceneInitialized() {
 	return s_scene_initialized;
 }
 
+static jmp_buf	s_jmp_buf;
+
+extern void dx11_SetJmpCatch			(jmp_buf& jmpbuf);
+extern void dx11_SetJmpFinalize			();
+extern void dx11_PrintLastError			();
+
 __ni void SceneInit()
 {
 	if (s_scene_initialized) {
@@ -103,17 +109,26 @@ __ni void SceneInit()
 
 	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
 
-	if (AjekScript_SetJmpIsOK(script)) {
+	if (setjmp(s_jmp_buf) == 0) {
+		script.SetJmpCatch	(s_jmp_buf);
+		dx11_SetJmpCatch	(s_jmp_buf);
 		Scene_TryLoadInit(script);
 		s_scene_initialized = true;
 	}
 	else {
+		xPrintLn("");
 		if (!xIsDebuggerAttached()) {
 			log_and_abort("Application aborted due to DoGameInit error."); 
 		}
-		AjekScript_PrintDebugReloadMsg();
 		script.PrintLastError();
+		dx11_PrintLastError();
+		Scene_PostMessage(SceneMsg_StopExec, SceneStopReason_ScriptError);
+		AjekScript_PrintDebugReloadMsg();
 	}
+
+	script.SetJmpFinalize	();
+	dx11_SetJmpFinalize		();
+
 }
 
 static void* SceneProducerThreadProc(void*)
@@ -123,7 +138,12 @@ static void* SceneProducerThreadProc(void*)
 		Scene_DrainMsgQueue();
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
-			
+
+		}
+
+		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Background)) {
+			xThreadSleep(64);
+			continue;
 		}
 
 		if (!SceneInitialized()) {
@@ -135,15 +155,10 @@ static void* SceneProducerThreadProc(void*)
 			SceneRender();
 		}
 
-		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Background)) {
-			xThreadSleep(64);
-		}
-		else {
-			// TODO : framerate pacing (vsync disabled)
-			//     Measure time from prev to current frame, determine amount of time we
-			//     want to sleep.
-			xThreadSleep(10);
-		}
+		// TODO : framerate pacing (vsync disabled)
+		//     Measure time from prev to current frame, determine amount of time we
+		//     want to sleep.
+		xThreadSleep(10);
 	}
 
 	return nullptr;
