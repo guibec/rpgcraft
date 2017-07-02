@@ -1,6 +1,7 @@
 #pragma once
 
 #include "x-types.h"
+#include "x-host-ifc.h"
 
 // --------------------------------------------------------------------------------------
 //  PadInputButtons / PadInputAxis  (enum)
@@ -30,6 +31,36 @@ enum PadButtonId
 
 	NUM_PAD_INPUT_BUTTONS
 };
+
+//extern const char* enum_toString(const PadButtonId& id);
+
+static inline const char* enumToString(const PadButtonId& id)
+{
+	// devnote: would prefer this in a pad.cpp file, once one exists...
+
+	static const int o = bulkof("PadBtnId");
+	switch(id) {
+		CaseReturnString2(o, PadBtnId_DPad_Up		);
+		CaseReturnString2(o, PadBtnId_DPad_Right	);
+		CaseReturnString2(o, PadBtnId_DPad_Down		);
+		CaseReturnString2(o, PadBtnId_DPad_Left		);
+		CaseReturnString2(o, PadBtnId_TriangleY		);
+		CaseReturnString2(o, PadBtnId_CircleB		);
+		CaseReturnString2(o, PadBtnId_CrossA		);
+		CaseReturnString2(o, PadBtnId_SquareX		);
+		CaseReturnString2(o, PadBtnId_Options		);
+		CaseReturnString2(o, PadBtnId_ViewMap		);
+		CaseReturnString2(o, PadBtnId_L1			);
+		CaseReturnString2(o, PadBtnId_R1			);
+		CaseReturnString2(o, PadBtnId_LStick		);
+		CaseReturnString2(o, PadBtnId_RStick		);
+		
+		default: 
+			unreachable_qa("invalid pad button id");
+	}
+	return "unknown";
+}
+
 
 static const u32		PadBtnMsk_DPad_Up		= (1UL << PadBtnId_DPad_Up		);
 static const u32		PadBtnMsk_DPad_Right	= (1UL << PadBtnId_DPad_Right	);
@@ -74,8 +105,10 @@ union PadButtonState
 
 struct PadAxisState
 {
-	float LStick;		// range -1.0f to 1.0f
-	float RStick;		// range -1.0f to 1.0f
+	float LStick_X;		// range -1.0f to 1.0f
+	float LStick_Y;		// range -1.0f to 1.0f
+	float RStick_X;		// range -1.0f to 1.0f
+	float RStick_Y;		// range -1.0f to 1.0f
 
 	float L2;			// range 0.0f to 1.0f
 	float R2;			// range 0.0f to 1.0f
@@ -90,6 +123,68 @@ struct PadState
 
 
 // KPad - Keyboard-to-Pad Input Interface
+// (may be moved to its own header in the future)
 
-extern void		KPad_GetState		(PadState& dest);
-extern void		KPad_CreateThread	();
+struct KPadAxisMapPair {
+	VirtKeyBindingPair	neg;
+	VirtKeyBindingPair	pos;
+};
+
+struct KPadAxisTickPair {
+	HostClockTick		neg;
+	HostClockTick		pos;
+};
+
+struct KPadAxisPressPair {
+	bool				neg;
+	bool				pos;
+};
+
+struct KPad_AxisEventInfo
+{
+	KPadAxisTickPair	LStick_X;
+	KPadAxisTickPair	LStick_Y;
+
+	KPadAxisTickPair	RStick_X;
+	KPadAxisTickPair	RStick_Y;
+
+	HostClockTick		L2;		
+	HostClockTick		R2;		
+};
+
+struct KPad_AxisPressState
+{
+	KPadAxisPressPair	LStick_X;		
+	KPadAxisPressPair	LStick_Y;		
+
+	KPadAxisPressPair	RStick_X;		
+	KPadAxisPressPair	RStick_Y;		
+
+	bool				L2;				
+	bool				R2;				
+};
+
+struct KPad_AxisMapping
+{
+	KPadAxisMapPair			LStick_X;
+	KPadAxisMapPair			LStick_Y;
+
+	KPadAxisMapPair			RStick_X;
+	KPadAxisMapPair			RStick_Y;
+
+	VirtKey_t				L2;
+	VirtKey_t				R2;
+};
+
+
+extern void		KPad_SetMapping			(const VirtKeyBindingPair (&newmap)[NUM_PAD_INPUT_BUTTONS]);
+extern void		KPad_SetMapping			(const KPad_AxisMapping& newmap);
+extern void		KPad_GetMapping			(VirtKeyBindingPair (&dest)[NUM_PAD_INPUT_BUTTONS]);
+extern void		KPad_GetMapping			(KPad_AxisMapping& dest);
+
+extern void		KPad_GetState			(PadState& dest);
+extern void		KPad_CreateThread		();
+
+
+extern const VirtKeyBindingPair		g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS];
+extern const KPad_AxisMapping		g_kpad_axs_map_default;

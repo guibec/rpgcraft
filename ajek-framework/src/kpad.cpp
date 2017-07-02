@@ -3,7 +3,6 @@
 #include "x-stl.h"
 #include "x-assertion.h"
 #include "x-string.h"
-
 #include "x-thread.h"
 #include "x-chrono.h"
 #include "x-pad.h"
@@ -11,67 +10,38 @@
 
 DECLARE_MODULE_NAME("kpad");
 
+#if 0
+#	define trace_kpad(...)		log_host( __VA_ARGS__ )
+#else
+#	define trace_kpad(...)
+#endif
+
 #include "x-MemCopy.inl"
 
-struct AxisMapPair {
-	VirtKeyBindingPair	neg;
-	VirtKeyBindingPair	pos;
-};
+// ------------------------------------------------------------------------------------------------
+// Note: this mapping is useful for a console-centric keyboard layout, but probably not great
+// for PC-centric keyboard.  A better system for native PC keyboard is to define a set of game
+// actions and then have both keyboard and pad map to that.
+//
+// We'll need a little bit more open-ended architecture for that:
+//   * remove fixed-sized arrays that currently depend on NUM_PAD_INPUT_BUTTONS
+//   * replace with open-ended array of length specified by game
+//   * remove any explicit reference to PadBtn enumeration -- game will have its own enum separately.
+//
+// These changes are for button mapping only.  There shouldn't be any changes required to axis
+// mapping except that, possibly, some of the axes won't even be bound to the keyboard in
+// practice -- mouse or touch replacing certain behaviors that would be bound to r-stick on
+// console gamepad, for example.
+// ------------------------------------------------------------------------------------------------
 
-struct AxisTickPair {
-	HostClockTick		neg;
-	HostClockTick		pos;
-};
-
-struct AxisPressPair {
-	bool			neg;
-	bool			pos;
-};
-
-struct KPad_AxisEventInfo
+const VirtKeyBindingPair g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS] =
 {
-	AxisTickPair	LStick_X;
-	AxisTickPair	LStick_Y;
-
-	AxisTickPair	RStick_X;
-	AxisTickPair	RStick_Y;
-
-	HostClockTick	L2;		
-	HostClockTick	R2;		
-};
-
-struct KPad_AxisPressState
-{
-	AxisPressPair	LStick_X;		
-	AxisPressPair	LStick_Y;		
-
-	AxisPressPair	RStick_X;		
-	AxisPressPair	RStick_Y;		
-
-	bool			L2;				
-	bool			R2;				
-};
-
-struct KPad_AxisMapping
-{
-	AxisMapPair			LStick_X;
-	AxisMapPair			LStick_Y;
-
-	AxisMapPair			RStick_X;
-	AxisMapPair			RStick_Y;
-
-	VirtKey_t			L2;
-	VirtKey_t			R2;
-};
-
-static const VirtKeyBindingPair s_kdb_to_pad_btn_Default[NUM_PAD_INPUT_BUTTONS] =
-{
-	{ 'W',					VirtKey::Unmapped	},	// PadBtn_DPad_Up
-	{ 'D',					VirtKey::Unmapped	},	// PadBtn_DPad_Right
-	{ 'S',					VirtKey::Unmapped	},	// PadBtn_DPad_Down
-	{ 'A',					VirtKey::Unmapped	},	// PadBtn_DPad_Left
-	{ VirtKey::Escape,		VirtKey::Unmapped	},	// PadBtn_Options
-	{ VirtKey::Enter,		VirtKey::Unmapped	},	// PadBtn_ViewMap
+	{ VirtKey::ArrowLeft,	VirtKey::Unmapped	},	// PadBtn_DPad_Up
+	{ VirtKey::ArrowRight,	VirtKey::Unmapped	},	// PadBtn_DPad_Right
+	{ VirtKey::ArrowUp,		VirtKey::Unmapped	},	// PadBtn_DPad_Down
+	{ VirtKey::ArrowDown,	VirtKey::Unmapped	},	// PadBtn_DPad_Left
+	{ VirtKey::BackQuote,	VirtKey::Unmapped	},	// PadBtn_Options
+	{ VirtKey::Tab,			VirtKey::Unmapped	},	// PadBtn_ViewMap
 
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_TriangleY
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_CircleB	
@@ -85,12 +55,12 @@ static const VirtKeyBindingPair s_kdb_to_pad_btn_Default[NUM_PAD_INPUT_BUTTONS] 
 };
 
 
-static const KPad_AxisMapping s_kdb_to_pad_axis_Default = []() {
+const KPad_AxisMapping g_kpad_axs_map_default = []() {
 	KPad_AxisMapping init;
-	init.LStick_X.neg	= { VirtKey::ArrowLeft,		VirtKey::Unmapped	};
-	init.LStick_X.pos	= { VirtKey::ArrowRight,	VirtKey::Unmapped	};
-	init.LStick_Y.neg	= { VirtKey::ArrowUp,   	VirtKey::Unmapped	};
-	init.LStick_Y.pos	= { VirtKey::ArrowDown,		VirtKey::Unmapped	};
+	init.LStick_X.neg	= { 'W',					VirtKey::Unmapped	};
+	init.LStick_X.pos	= { 'D',					VirtKey::Unmapped	};
+	init.LStick_Y.neg	= { 'S',					VirtKey::Unmapped	};
+	init.LStick_Y.pos	= { 'A',					VirtKey::Unmapped	};
 
 	init.RStick_X.neg	= { 'G',					VirtKey::Unmapped	};
 	init.RStick_X.pos	= { 'J',					VirtKey::Unmapped	};
@@ -102,14 +72,12 @@ static const KPad_AxisMapping s_kdb_to_pad_axis_Default = []() {
 	return init;
 }();
 
-static VirtKeyBindingPair		s_kdb_to_pad_btn_map [NUM_PAD_INPUT_BUTTONS];
-static KPad_AxisMapping			s_kdb_to_pad_axs_map;
+static VirtKeyBindingPair	s_kpad_btn_map [NUM_PAD_INPUT_BUTTONS];
+static KPad_AxisMapping		s_kpad_axs_map;
 
-#include "x-thread.h"
-
-static PadState		s_async_pad_state;
-static xMutex		s_mtx_padstate;
-static thread_t		s_thr_gamepad_input;
+static PadState				s_async_pad_state;
+static xMutex				s_mtx_padstate;
+static thread_t				s_thr_gamepad_input;
 
 
 struct AxisPressStatePair {
@@ -117,7 +85,7 @@ struct AxisPressStatePair {
 	bool			pos;
 };
 
-static float update_stick_axis(const HostClockTick& cur_tick, const AxisMapPair& axis_map, AxisTickPair& press_tick, AxisPressPair& prev_state)
+static float update_stick_axis(const HostClockTick& cur_tick, const KPadAxisMapPair& axis_map, KPadAxisTickPair& press_tick, KPadAxisPressPair& prev_state, const char* diagName)
 {
 	bool press_neg = Host_IsKeyPressedGlobally(axis_map.neg.primary);
 	bool press_pos = Host_IsKeyPressedGlobally(axis_map.pos.primary);
@@ -127,20 +95,24 @@ static float update_stick_axis(const HostClockTick& cur_tick, const AxisMapPair&
 	if (press_neg) {
 		if (!prev_state.neg) {	// new press event
 			press_tick.neg = cur_tick;
+			trace_kpad("Axis Event    %-10s = PRESSED", diagName);
 		}
 	}
 	else {
 		if (prev_state.neg) {	// new release event
+			trace_kpad("Axis Event    %-10s = RELEASED", diagName);
 		}
 	}				
 
 	if (press_pos) {
 		if (!prev_state.pos) {	// new press event
 			press_tick.pos = cur_tick;
+			trace_kpad("Axis Event    %-10s = PRESSED", diagName);
 		}
 	}
 	else {
 		if (prev_state.pos) {	// new release event
+			trace_kpad("Axis Event    %-10s = RELEASED", diagName);
 		}
 	}
 
@@ -151,7 +123,7 @@ static float update_stick_axis(const HostClockTick& cur_tick, const AxisMapPair&
 
 	if (press_neg || press_pos) {
 		if (press_neg && press_pos) {
-			if (press_tick.neg < press_tick.pos) {
+			if (press_tick.neg > press_tick.pos) {
 				press_pos = 0;
 			}
 			else {
@@ -162,6 +134,9 @@ static float update_stick_axis(const HostClockTick& cur_tick, const AxisMapPair&
 		newval = press_neg ? -1.0f : 1.0f;
 	}
 
+	if (newval) {
+		log_host("Axis Value    %-10s = %4.1f", diagName, newval);
+	}
 	return newval;
 }
 
@@ -176,13 +151,15 @@ static void* PadInputThreadProc(void*)
 	xMemZero(s_last_press_tick_btn);
 	xMemZero(s_last_press_tick_axs);
 	xMemZero(local_state);
+	xMemZero(axis_press_state);
 
-	auto cur_tick = Host_GetProcessTicks();
 
 	while(1) {
+		auto cur_tick = Host_GetProcessTicks();
+
 		int btn_idx = -1;
 		for(int btn_idx=0; btn_idx<NUM_PAD_INPUT_BUTTONS; ++btn_idx) {
-			const auto& btnpair	= s_kdb_to_pad_btn_map	[btn_idx];
+			const auto& btnpair	= s_kpad_btn_map	[btn_idx];
 			auto& last_press	= s_last_press_tick_btn	[btn_idx];
 
 			bool isPressed		= Host_IsKeyPressedGlobally(btnpair);
@@ -191,12 +168,14 @@ static void* PadInputThreadProc(void*)
 			if (isPressed) {
 				if (!prevPressState) {
 					// new press event, record the timestamp
+					trace_kpad("Button Event  %-10s = PRESSED", enumToString((PadButtonId)btn_idx));
 					last_press = cur_tick;
 				}
 			}
 			else {
 				if (prevPressState) {
 					// new release event.  do something here, maybe?
+					trace_kpad("Button Event  %-10s = RELEASED", enumToString((PadButtonId)btn_idx));
 				}
 			}
 
@@ -214,21 +193,39 @@ static void* PadInputThreadProc(void*)
 		// Such that if user presses Left, then presses Right without releasing Left, favor Right.
 
 		if (1) {
-			auto&		axis_value		= local_state.axis		.LStick;
-			const auto& axis_map		= s_kdb_to_pad_axs_map	.LStick_X;
+			const auto& axis_map		= s_kpad_axs_map	.LStick_X;
 			auto&		press_time		= s_last_press_tick_axs	.LStick_X;
+			auto&		axis_value		= local_state.axis		.LStick_X;
 			auto&		prevPressState	= axis_press_state		.LStick_X;
 
-			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState);
+			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState, "LStick_X");
 		}
 
 		if (1) {
-			auto&		axis_value		= local_state.axis		.RStick;
-			const auto& axis_map		= s_kdb_to_pad_axs_map	.RStick_X;
+			const auto& axis_map		= s_kpad_axs_map	.LStick_Y;
+			auto&		press_time		= s_last_press_tick_axs	.LStick_Y;
+			auto&		axis_value		= local_state.axis		.LStick_Y;
+			auto&		prevPressState	= axis_press_state		.LStick_Y;
+
+			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState, "LStick_Y");
+		}
+
+		if (1) {
+			const auto& axis_map		= s_kpad_axs_map	.RStick_X;
 			auto&		press_time		= s_last_press_tick_axs	.RStick_X;
+			auto&		axis_value		= local_state.axis		.RStick_X;
 			auto&		prevPressState	= axis_press_state		.RStick_X;
 
-			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState);
+			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState, "RStick_X");
+		}
+
+		if (1) {
+			const auto& axis_map		= s_kpad_axs_map	.RStick_Y;
+			auto&		press_time		= s_last_press_tick_axs	.RStick_Y;
+			auto&		axis_value		= local_state.axis		.RStick_Y;
+			auto&		prevPressState	= axis_press_state		.RStick_Y;
+
+			axis_value = update_stick_axis(cur_tick, axis_map, press_time, prevPressState, "RStick_Y");
 		}
 
 		pragma_todo("Implement keyboard bindings for L2/R2 analog paddle axis");
@@ -266,6 +263,27 @@ void KPad_GetState(PadState& dest)
 	//xScopedMutex lock(s_mtx_padstate);
 	xObjCopy(dest, s_async_pad_state);
 }
+
+void KPad_SetMapping(const VirtKeyBindingPair (&newmap)[NUM_PAD_INPUT_BUTTONS])
+{
+	xObjCopy(s_kpad_btn_map, newmap);
+}
+
+void KPad_SetMapping(const KPad_AxisMapping& newmap)
+{
+	xObjCopy(s_kpad_axs_map, newmap);
+}
+
+void KPad_GetMapping(VirtKeyBindingPair (&dest)[NUM_PAD_INPUT_BUTTONS])
+{
+	xObjCopy(dest, s_kpad_btn_map);
+}
+
+void KPad_GetMapping(KPad_AxisMapping& dest)
+{
+	xObjCopy(dest, s_kpad_axs_map);
+}
+
 
 void KPad_CreateThread()
 {
