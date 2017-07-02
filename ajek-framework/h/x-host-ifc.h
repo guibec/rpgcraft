@@ -16,9 +16,11 @@ namespace VirtKey
 		Unmapped = 0,
 		Escape   = 0x1000,
 		Enter,
+		Tab,
 		Slash,
-		Separator,		// backslash or pipe (\|)
 		BackQuote,
+		Separator,		// backslash or pipe (\|)  [not available on JP keyboards]
+
 		PageDown,
 		PageUp,
 		Delete,
@@ -28,6 +30,7 @@ namespace VirtKey
 		ArrowLeft,
 		ArrowDown,
 		ArrowRight,
+
 
 		KeyPad_1,
 		KeyPad_2,
