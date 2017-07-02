@@ -3,6 +3,7 @@
 #include "x-types.h"
 
 typedef u64 host_tick_t;
+typedef s64 tick_delta_t;
 
 struct HostClockTick {
 
@@ -28,10 +29,13 @@ struct HostClockTick {
 
 	__ai bool operator==(const HostClockTick& right) const { return m_val == right.m_val; }
 	__ai bool operator!=(const HostClockTick& right) const { return m_val != right.m_val; }
-	__ai bool operator> (const HostClockTick& right) const { return m_val >  right.m_val; }
-	__ai bool operator>=(const HostClockTick& right) const { return m_val >= right.m_val; }
-	__ai bool operator< (const HostClockTick& right) const { return m_val <  right.m_val; }
-	__ai bool operator<=(const HostClockTick& right) const { return m_val <= right.m_val; }
+
+	// Delta-time comparisons used to avoid overflow conundruns.
+
+	__ai bool operator> (const HostClockTick& right) const { return tick_delta_t(m_val - right.m_val) >  0; }
+	__ai bool operator>=(const HostClockTick& right) const { return tick_delta_t(m_val - right.m_val) >= 0; }
+	__ai bool operator< (const HostClockTick& right) const { return tick_delta_t(m_val - right.m_val) <  0; }
+	__ai bool operator<=(const HostClockTick& right) const { return tick_delta_t(m_val - right.m_val) <= 0; }
 
 };
 
