@@ -25,6 +25,14 @@ struct HostClockTick {
 	__ai	double		asSeconds			() const	{ return (double(m_val) *       1.0)			/ s_ticks_per_second_f;	}
 	__ai	double		asMinutes			() const	{ return (double(m_val) * (1.0 / (60.0      )))	/ s_ticks_per_second_f;	}
 	__ai	double		asHours				() const	{ return (double(m_val) * (1.0 / (60.0*60.0 )))	/ s_ticks_per_second_f;	}
+
+	__ai bool operator==(const HostClockTick& right) const { return m_val == right.m_val; }
+	__ai bool operator!=(const HostClockTick& right) const { return m_val != right.m_val; }
+	__ai bool operator> (const HostClockTick& right) const { return m_val >  right.m_val; }
+	__ai bool operator>=(const HostClockTick& right) const { return m_val >= right.m_val; }
+	__ai bool operator< (const HostClockTick& right) const { return m_val <  right.m_val; }
+	__ai bool operator<=(const HostClockTick& right) const { return m_val <= right.m_val; }
+
 };
 
 // For getting system date information it should be preferable to use std::chrono, which has frameworks
