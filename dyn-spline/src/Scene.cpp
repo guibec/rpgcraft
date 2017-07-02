@@ -4,10 +4,14 @@
 #include "x-assertion.h"
 #include "x-string.h"
 #include "x-thread.h"
+#include "x-chrono.h"
+#include "x-pad.h"
+#include "x-host-ifc.h"
 
 #include "Scene.h"
 #include "ajek-script.h"
 
+DECLARE_MODULE_NAME("scene");
 
 typedef std::list<SceneMessage> SceneMessageList;
 
@@ -131,8 +135,39 @@ __ni void SceneInit()
 
 }
 
+static bool s_repeating_char[128];
+
+static bool IsKeyPressedGlobally(char c)
+{
+	if (IsKeyPressedGlobally(c)) {
+		bool result = !s_repeating_char[c];
+		s_repeating_char[c] = 1;
+		return result;
+	}
+	else {
+		s_repeating_char[c] = 0;
+	}
+}
+
+static void* GlobalKeyboardThreadProc(void*)
+{
+	xMemZero(s_repeating_char);
+
+	auto modifiers	= Host_GetKeyModifier();
+
+	// Repeater detection should be bound to the key and not to modifiers.
+	// therefore always check key FIRST, and then modifiers within...
+
+	if (IsKeyPressedGlobally('R')) {
+		if (modifiers.CtrlWin()) {
+			// todo.
+		}
+	}
+}
+
 static void* SceneProducerThreadProc(void*)
 {
+
 	while(1)
 	{
 		Scene_DrainMsgQueue();
@@ -142,7 +177,7 @@ static void* SceneProducerThreadProc(void*)
 		}
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Background)) {
-			xThreadSleep(64);
+			xThreadSleep(32);
 			continue;
 		}
 
@@ -158,7 +193,7 @@ static void* SceneProducerThreadProc(void*)
 		// TODO : framerate pacing (vsync disabled)
 		//     Measure time from prev to current frame, determine amount of time we
 		//     want to sleep.
-		xThreadSleep(10);
+		xThreadSleep(16/2);
 	}
 
 	return nullptr;
