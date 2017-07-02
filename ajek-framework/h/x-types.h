@@ -650,4 +650,4 @@ inline __ai bool IsInInt32u(u64 x)	{ return (x <= 0xFFFFFFFFUL); }
 // into strings (enums where simple char* arrays fail).
 //
 #define CaseReturnString( caseName )		case caseName: return # caseName
-#define CaseReturnString2(caseName, ofs )	case caseName: return # caseName + (ofs)
+#define CaseReturnString2( ofs, caseName )	case caseName: return # caseName + (ofs)

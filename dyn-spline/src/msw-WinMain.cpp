@@ -5,6 +5,7 @@
 #include "x-thread.h"
 #include "x-host-ifc.h"
 #include "x-chrono.h"
+#include "x-pad.h"
 
 #include "ajek-script.h"
 #include "Scene.h"
@@ -221,6 +222,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	dx11_InitDevice();
 
+	KPad_SetMapping(g_kpad_btn_map_default);
+	KPad_SetMapping(g_kpad_axs_map_default);
+
 	// Drain the message queue first before starting game threads.
 	// No especially good reason for this -- there's just a bunch of poo in the windows
 	// message queue after window creation and stuff, and I like to drain it all in as
@@ -228,6 +232,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	if (Msw_DrainMsgQueue()) {
 
+		KPad_CreateThread();
 		Scene_CreateThreads();
 
 		// Main message loop
