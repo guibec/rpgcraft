@@ -193,7 +193,7 @@ static void* PadInputThreadProc(void*)
 		// Such that if user presses Left, then presses Right without releasing Left, favor Right.
 
 		if (1) {
-			const auto& axis_map		= s_kpad_axs_map	.LStick_X;
+			const auto& axis_map		= s_kpad_axs_map		.LStick_X;
 			auto&		press_time		= s_last_press_tick_axs	.LStick_X;
 			auto&		axis_value		= local_state.axis		.LStick_X;
 			auto&		prevPressState	= axis_press_state		.LStick_X;
@@ -202,7 +202,7 @@ static void* PadInputThreadProc(void*)
 		}
 
 		if (1) {
-			const auto& axis_map		= s_kpad_axs_map	.LStick_Y;
+			const auto& axis_map		= s_kpad_axs_map		.LStick_Y;
 			auto&		press_time		= s_last_press_tick_axs	.LStick_Y;
 			auto&		axis_value		= local_state.axis		.LStick_Y;
 			auto&		prevPressState	= axis_press_state		.LStick_Y;
@@ -211,7 +211,7 @@ static void* PadInputThreadProc(void*)
 		}
 
 		if (1) {
-			const auto& axis_map		= s_kpad_axs_map	.RStick_X;
+			const auto& axis_map		= s_kpad_axs_map		.RStick_X;
 			auto&		press_time		= s_last_press_tick_axs	.RStick_X;
 			auto&		axis_value		= local_state.axis		.RStick_X;
 			auto&		prevPressState	= axis_press_state		.RStick_X;
@@ -220,7 +220,7 @@ static void* PadInputThreadProc(void*)
 		}
 
 		if (1) {
-			const auto& axis_map		= s_kpad_axs_map	.RStick_Y;
+			const auto& axis_map		= s_kpad_axs_map		.RStick_Y;
 			auto&		press_time		= s_last_press_tick_axs	.RStick_Y;
 			auto&		axis_value		= local_state.axis		.RStick_Y;
 			auto&		prevPressState	= axis_press_state		.RStick_Y;
@@ -258,8 +258,15 @@ static void* PadInputThreadProc(void*)
 	}
 }
 
+
+//void KPad_SetButtonEventCount(int count) {
+// TODO: Create this, to give game open-ended control over supported keyboard command events.
+//       (see comment at top of gile for details)
+//}
+
 void KPad_GetState(PadState& dest)
 {
+	// See notes in thread keyboard polling thread for why mutex lock has been removed.
 	//xScopedMutex lock(s_mtx_padstate);
 	xObjCopy(dest, s_async_pad_state);
 }
