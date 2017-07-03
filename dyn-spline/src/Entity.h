@@ -4,124 +4,311 @@
 #include "x-stl.h"
 
 #include <set>
+#include <unordered_set>
+#include <queue>
 
-class ITickableEntity
+class	ITickableEntity;
+class	IDrawableEntity;
+struct	EntityContainerEvent;
+
+
+enum EntityContainerEvent_t
+{
+	ECEvt_EntityAdd,
+	ECEvt_EntityRemove,
+};
+
+union SaltedOrderId
+{
+	struct {
+		u32		m_salt;
+		u32		m_order;
+	};
+
+	u64		m_fullSortOrder;
+
+	SaltedOrderId() {
+		m_fullSortOrder = 0;
+	}
+
+	u32 Salt() const {
+		return m_fullSortOrder & ((1ULL<<32)-1);
+	}
+
+	u32 Order() const {
+		return m_fullSortOrder >> 32;
+	}
+
+	SaltedOrderId& SetSalt(u32 salt) {
+		//m_fullSortOrder = (m_fullSortOrder & (u64(UINT32_MAX)<<32)) | salt;
+		m_salt = salt;
+		return *this;
+	}
+
+	SaltedOrderId& SetOrder(u32 order) {
+		//m_fullSortOrder = (u64(order) << 32) | (m_fullSortOrder & UINT32_MAX);
+		m_order = order;
+		return *this;
+	}
+
+	bool operator< (const SaltedOrderId& right) const { return m_fullSortOrder <  right.m_fullSortOrder; }
+	bool operator<=(const SaltedOrderId& right) const { return m_fullSortOrder <= right.m_fullSortOrder; }
+	bool operator> (const SaltedOrderId& right) const { return m_fullSortOrder >  right.m_fullSortOrder; }
+	bool operator>=(const SaltedOrderId& right) const { return m_fullSortOrder >= right.m_fullSortOrder; }
+};
+
+extern SaltedOrderId MakeSaltedOrder(const ITickableEntity* entity, u32 order);
+extern SaltedOrderId MakeSaltedOrder(const IDrawableEntity* entity, u32 order);
+
+struct TickableEntityItem
+{
+	ITickableEntity*	entity;
+	SaltedOrderId		tickOrderSalted;
+};
+
+struct DrawableEntityItem
+{
+	const IDrawableEntity*	entity;
+	SaltedOrderId			drawOrderSalted;
+};
+
+// Needed only for TickableEntityContainer, due to DrawableEntityContainer being const iterator at all times.
+// (modification of drawable entity list during draw is invalid.  It can only be modified from tick context).
+struct EntityContainerEvent
+{
+	EntityContainerEvent_t		evtId;
+	TickableEntityItem			target;
+};
+
+typedef std::queue<EntityContainerEvent> EntityContainerEventQueue;
+
+class ISpawnId
 {
 public:
-	float			TickOrder;
+	virtual u64		GetSpawnId() const=0;
+};
 
+class ITickableEntity : public virtual ISpawnId
+{
 public:
 	virtual void	Tick()=0;
 };
 
-class IDrawableEntity
+class IDrawableEntity : public virtual ISpawnId
 {
-public:
-	float			DrawOrder;
-
 public:
 	virtual void	Draw() const=0;
 };
 
 struct CompareTickableEntity_Greater {
-	bool operator()(const ITickableEntity* const& _Left, const ITickableEntity* const& _Right) const {
-		return (_Left->TickOrder > _Right->TickOrder);
+	bool operator()(const TickableEntityItem& _Left, const TickableEntityItem& _Right) const {
+		return (_Left.tickOrderSalted > _Right.tickOrderSalted);
 	}
 };
 
 struct CompareTickableEntity_Less {
-	bool operator()(const ITickableEntity* const& _Left, const ITickableEntity* const& _Right) const {
-		return (_Left->TickOrder < _Right->TickOrder);
+	bool operator()(const TickableEntityItem& _Left, const TickableEntityItem& _Right) const {
+		return (_Left.tickOrderSalted < _Right.tickOrderSalted);
 	}
 };
 
 struct CompareDrawableEntity_Greater {
-	bool operator()(const IDrawableEntity* const& _Left, const IDrawableEntity* const& _Right) const {
-		return (_Left->DrawOrder > _Right->DrawOrder);
+	bool operator()(const DrawableEntityItem& _Left, const DrawableEntityItem& _Right) const {
+		return (_Left.drawOrderSalted > _Right.drawOrderSalted);
 	}
 };
 
 struct CompareDrawableEntity_Less {
-	bool operator()(const IDrawableEntity* const& _Left, const IDrawableEntity* const& _Right) const {
-		return (_Left->DrawOrder < _Right->DrawOrder);
+	bool operator()(const DrawableEntityItem& _Left, const DrawableEntityItem& _Right) const {
+		return (_Left.drawOrderSalted < _Right.drawOrderSalted);
 	}
 };
 
-// Sorted by TickOrder
-template< typename SortPred >
-struct TickableEntityContainerTmpl {
-	typedef std::multiset<ITickableEntity*, SortPred> StlContainerType;
+class FunctHashEntityItem {
+public:
+	__xi size_t operator()(const TickableEntityItem& input) const {
+		bug_on(uptr(input.entity) & 15, "Unaligned entity pointer detected.");
+		return uptr(input.entity) >> 4;
+	}
 
-	StlContainerType	m_entityList;
+	__xi size_t operator()(const DrawableEntityItem& input) const {
+		bug_on(uptr(input.entity) & 15, "Unaligned entity pointer detected.");
+		return uptr(input.entity) >> 4;
+	}
+};
 
-	pragma_todo("Add priority_queue to proxy addition and removal of entities during container list processing")
+class FunctEqualEntityItem {
+public:
+	__xi bool operator()(const TickableEntityItem& left, const TickableEntityItem& right) const {
+		return left.entity == right.entity;
+	}
 
-	auto	Add			(ITickableEntity*		entity)	{ return m_entityList.insert(entity); }
-	auto	Remove		(const ITickableEntity* entity) { return m_entityList.erase (entity); }
+	__xi bool operator()(const DrawableEntityItem& left, const DrawableEntityItem& right) const {
+		return left.entity == right.entity;
+	}
+};
 
-	// -----------------------------------------------------------------------
-	// `for each()` interface implementation
-	//
-	// DevNote: If we hide these behind a scoped interface, then we can use the scoped ifc to automatically
-	// invoke usage of the queue proxy for list modifications and/or bug on other bad behavior during list
-	// processing (via checking list for consistency when the object leaves scope).
+struct TickableEntityContainer {
+	typedef std::unordered_set<TickableEntityItem, FunctHashEntityItem,FunctEqualEntityItem>		HashedContainerType;
+	typedef std::set<TickableEntityItem, CompareTickableEntity_Less>								OrderedContainerType;
 
-	__ai auto		begin	()			{ return m_entityList.begin();	}
-	__ai auto		end		()			{ return m_entityList.end();	}
+	HashedContainerType			m_hashed;
+	OrderedContainerType		m_ordered;			// ordered by priority
+	EntityContainerEventQueue	m_evt_queue;
+	int							m_max_container_size;
+	int							m_iterator_mode;
 
-	__ai auto		cbegin	()	const	{ return m_entityList.cbegin();	}
-	__ai auto		cend	()	const	{ return m_entityList.cend();	}
-	// -----------------------------------------------------------------------
+	void		_Add			(const TickableEntityItem& entityInfo);
+	void		Remove			(ITickableEntity* entity);
+	void		ExecEventQueue	();
+
+	__ai void Add(ITickableEntity* entity, int orderId) {
+		_Add( { entity, MakeSaltedOrder(entity, orderId) } );
+	}
+
+	auto	ForEachForward		();
+	auto	ForEachReverse		();
+
+	void EnterIteratorMode() {
+		m_iterator_mode += 1;
+	}
+
+	void LeaveIteratorMode() {
+		bug_on (m_iterator_mode <= 0);
+		m_iterator_mode -= 1;
+
+		if (!m_iterator_mode) {
+			ExecEventQueue();
+		}
+	}
 };
 
 // Sorted by DrawOrder
-template< typename SortPred >
-struct DrawableEntityContainerTmpl {
-	typedef std::multiset<const IDrawableEntity*, SortPred> StlContainerType;
+struct DrawableEntityContainer {
+	typedef std::unordered_set<DrawableEntityItem, FunctHashEntityItem,FunctEqualEntityItem>		HashedContainerType;
+	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>							OrderedContainerType;
 
-	StlContainerType	m_entityList;
+	HashedContainerType				m_hashed;
+	OrderedContainerType			m_ordered;
 
-	auto	Add			(const IDrawableEntity* entity)	{ return m_entityList.insert(entity); }
-	auto	Remove		(const IDrawableEntity* entity) { return m_entityList.erase (entity); }
+	// Add/Remove note: 
+	//  * modification of drawable entity list during draw is invalid.  It can only be modified from tick context/
 
-	// -----------------------------------------------------------------------
-	// `for each()` interface implementation
+	void	_Add		(const DrawableEntityItem& entity);
+	void	Remove		(const IDrawableEntity* entity);
 
-	__ai auto		begin		()			{ return m_entityList.begin();		}
-	__ai auto		end			()			{ return m_entityList.end();		}
-	__ai auto		rbegin		()			{ return m_entityList.rbegin();		}
-	__ai auto		rend		()			{ return m_entityList.rend();		}
+	__ai void Add(IDrawableEntity* entity, u32 order) {
+		_Add( { entity, MakeSaltedOrder(entity, order) } );
+	}
 
-	__ai auto		cbegin		()	const	{ return m_entityList.cbegin();		}
-	__ai auto		cend		()	const	{ return m_entityList.cend();		}
-
-	__ai auto		crbegin		()	const	{ return m_entityList.crbegin();	}
-	__ai auto		crend		()	const	{ return m_entityList.crend();		}
-	// -----------------------------------------------------------------------
-
-	auto ForEachAlpha() const;
+	auto ForEachOpaque	() const;
+	auto ForEachAlpha	() const;
 };
 
-typedef TickableEntityContainerTmpl<CompareTickableEntity_Less>		TickableEntityContainer;
-typedef DrawableEntityContainerTmpl<CompareDrawableEntity_Less>		DrawableEntityContainer;
+struct TickableEntityForeachIfc_Forward
+{
+	TickableEntityContainer*	m_entityList;
 
+	TickableEntityForeachIfc_Forward(TickableEntityContainer& src) {
+		m_entityList = &src;
+		m_entityList->EnterIteratorMode();
+	}
 
-struct DrawableEntityForeachIfc
+	~TickableEntityForeachIfc_Forward() throw()
+	{
+		if (m_entityList) {
+			m_entityList->LeaveIteratorMode();
+			m_entityList = nullptr;
+		}
+	}
+
+	__ai auto begin		()	const { return m_entityList->m_ordered.begin();		}
+	__ai auto end		()	const { return m_entityList->m_ordered.end();		}
+	__ai auto cbegin	()	const { return m_entityList->m_ordered.begin();		}
+	__ai auto cend		()	const { return m_entityList->m_ordered.end();		}
+
+};
+
+struct TickableEntityForeachIfc_Reverse
+{
+	TickableEntityContainer*	m_entityList;
+
+	TickableEntityForeachIfc_Reverse(TickableEntityContainer& src) {
+		m_entityList = &src;
+		m_entityList->EnterIteratorMode();
+	}
+
+	~TickableEntityForeachIfc_Reverse() throw()
+	{
+		if (m_entityList) {
+			m_entityList->LeaveIteratorMode();
+			m_entityList = nullptr;
+		}
+	}
+
+	__ai auto begin		()	const { return m_entityList->m_ordered.rbegin();	}
+	__ai auto end		()	const { return m_entityList->m_ordered.rend();		}
+	__ai auto cbegin	()	const { return m_entityList->m_ordered.rbegin();	}
+	__ai auto cend		()	const { return m_entityList->m_ordered.rend();		}
+
+};
+
+struct DrawableEntityForeachIfc_OpaqueOrder
 {
 	const DrawableEntityContainer*	m_entityList;
 
-	DrawableEntityForeachIfc(const DrawableEntityContainer& src) {
+	DrawableEntityForeachIfc_OpaqueOrder(const DrawableEntityContainer& src) {
 		m_entityList = &src;
 	}
 
-	__ai auto begin		()	const { return m_entityList->crbegin();		}
-	__ai auto end		()	const { return m_entityList->crend();		}
-	__ai auto cbegin	()	const { return m_entityList->crbegin();		}
-	__ai auto cend		()	const { return m_entityList->crend();		}
+	__ai auto begin		()	const { return m_entityList->m_ordered.cbegin();	}
+	__ai auto end		()	const { return m_entityList->m_ordered.cend();		}
+	__ai auto cbegin	()	const { return m_entityList->m_ordered.cbegin();	}
+	__ai auto cend		()	const { return m_entityList->m_ordered.cend();		}
 
 };
 
-template< typename SortPred >
-auto DrawableEntityContainerTmpl<SortPred>::ForEachAlpha() const {
-	return DrawableEntityForeachIfc(*this);
+struct DrawableEntityForeachIfc_AlphaOrder
+{
+	const DrawableEntityContainer*	m_entityList;
+
+	DrawableEntityForeachIfc_AlphaOrder(const DrawableEntityContainer& src) {
+		m_entityList = &src;
+	}
+
+	__ai auto begin		()	const { return m_entityList->m_ordered.crbegin();	}
+	__ai auto end		()	const { return m_entityList->m_ordered.crend();		}
+	__ai auto cbegin	()	const { return m_entityList->m_ordered.crbegin();	}
+	__ai auto cend		()	const { return m_entityList->m_ordered.crend();		}
+
+};
+
+// ------------------------------------------------------------------------------------------------
+
+inline auto TickableEntityContainer::ForEachForward()
+{
+	return TickableEntityForeachIfc_Forward(*this);
+}
+
+inline auto TickableEntityContainer::ForEachReverse()
+{
+	return TickableEntityForeachIfc_Reverse(*this);
+}
+
+inline auto DrawableEntityContainer::ForEachOpaque() const {
+	return DrawableEntityForeachIfc_OpaqueOrder(*this);
+}
+
+inline auto DrawableEntityContainer::ForEachAlpha() const {
+	return DrawableEntityForeachIfc_AlphaOrder(*this);
+}
+
+inline SaltedOrderId MakeSaltedOrder(const ITickableEntity* entity, u32 order)
+{
+	return SaltedOrderId().SetOrder(order).SetSalt(entity->GetSpawnId());
+}
+
+inline SaltedOrderId MakeSaltedOrder(const IDrawableEntity* entity, u32 order)
+{
+	return SaltedOrderId().SetOrder(order).SetSalt(entity->GetSpawnId());
 }
