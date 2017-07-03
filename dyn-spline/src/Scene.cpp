@@ -11,9 +11,12 @@
 #include "Scene.h"
 #include "ajek-script.h"
 
+#include <queue>
+
+
 DECLARE_MODULE_NAME("scene");
 
-typedef std::list<SceneMessage> SceneMessageList;
+typedef std::queue<SceneMessage> SceneMessageList;
 
 
 static thread_t				s_thr_scene_producer;
@@ -42,7 +45,7 @@ bool Scene_HasPendingMessages()
 void Scene_PostMessage(SceneMessageId msgId, sptr payload)
 {
 	xScopedMutex lock(s_mtx_MsgQueue);
-	s_MsgQueue.push_back( SceneMessage(msgId, payload) );
+	s_MsgQueue.push( SceneMessage(msgId, payload) );
 }
 
 static __ai u32 _getStopReason(u64 payload)
@@ -60,7 +63,7 @@ void Scene_DrainMsgQueue()
 	while (!s_MsgQueue.empty())
 	{
 		SceneMessage msg = s_MsgQueue.front();
-		s_MsgQueue.pop_front();
+		s_MsgQueue.pop();
 		lock.Unlock();
 		processed = true;
 
