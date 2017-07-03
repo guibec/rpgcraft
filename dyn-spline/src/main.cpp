@@ -214,8 +214,64 @@ void SceneInputLogic()
 	//Host_IsKeyPressed('a');
 }
 
-struct PlayerSprite : public IDrawableEntity
+static u32 s_entity_spawn_id = 1;
+
+#include "x-atomic.h"
+
+u32 getNewEntitySpawnId()
 {
+	int result = AtomicInc((s32&)s_entity_spawn_id);
+	if (result == 0) {
+		// wrapped around the world.  impressive.
+		log_host("super-secret impossible easter egg found!");
+		// but zero is an invalid spawn ID, so discard it:
+		result = AtomicInc((s32&)s_entity_spawn_id);
+	}
+	return result;
+}
+
+template< typename T >
+T* CreateEntity()
+{
+	T* entity = placement_new(T);
+	return entity;
+}
+
+class EntityStdImpl : public IDrawableEntity, public ITickableEntity
+{
+private:
+	NONCOPYABLE_OBJECT(EntityStdImpl);
+
+public:
+	u32	 m_spawnId = 0;
+
+protected:
+	EntityStdImpl() {
+		auto newSpawnId = getNewEntitySpawnId();
+		m_spawnId		= newSpawnId;
+	}
+
+public:
+	virtual u64 GetSpawnId() const {
+		return m_spawnId;
+	}
+};
+
+
+class PlayerSprite : public EntityStdImpl
+{
+private:
+	NONCOPYABLE_OBJECT(PlayerSprite);
+
+public:
+	PlayerSprite() : EntityStdImpl() {
+	}
+
+public:
+	virtual void Tick()
+	{
+	}
+
 	virtual void Draw() const
 	{
 		dx11_BindShaderVS(g_ShaderVS_Spriter);
@@ -266,8 +322,9 @@ void SceneRender()
 	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
 	dx11_Draw(worldViewVerticiesCount, 0);
 
-	for(const auto* const& entity : g_drawable_entities.ForEachAlpha())
+	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
+		const auto* const& entity = entitem.entity;
 		entity->Draw();
 	}
 
@@ -490,7 +547,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	// ---------------------------------------------------------------------------------------------
 
 
-	g_drawable_entities.Add(new PlayerSprite());
+	g_drawable_entities.Add(CreateEntity<PlayerSprite>(), 1.0f);
 
 	s_CanRenderScene = 1;
 	return true;
