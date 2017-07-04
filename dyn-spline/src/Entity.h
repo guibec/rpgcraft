@@ -60,6 +60,12 @@ union SaltedOrderId
 extern SaltedOrderId MakeSaltedOrder(const ITickableEntity* entity, u32 order);
 extern SaltedOrderId MakeSaltedOrder(const IDrawableEntity* entity, u32 order);
 
+struct EntityUIDItem
+{
+	u32					uid;
+	SaltedOrderId		saltedOrder;
+};
+
 struct TickableEntityItem
 {
 	ITickableEntity*	entity;
@@ -85,7 +91,7 @@ typedef std::queue<EntityContainerEvent> EntityContainerEventQueue;
 class ISpawnId
 {
 public:
-	virtual u64		GetSpawnId() const=0;
+	virtual u32		GetSpawnId() const=0;
 };
 
 class ITickableEntity : public virtual ISpawnId
@@ -132,15 +138,18 @@ public:
 	}
 
 	__xi size_t operator()(const DrawableEntityItem& input) const {
-		bug_on(uptr(input.entity) & 15, "Unaligned entity pointer detected.");
 		return uptr(input.entity) >> 4;
+	}
+
+	__xi size_t operator()(const SaltedOrderId& input) const {
+		return input.Salt();
 	}
 };
 
 class FunctEqualEntityItem {
 public:
-	__xi bool operator()(const TickableEntityItem& left, const TickableEntityItem& right) const {
-		return left.entity == right.entity;
+	__xi bool operator()(const SaltedOrderId& left, const SaltedOrderId& right) const {
+		return left.Salt() == right.Salt();
 	}
 
 	__xi bool operator()(const DrawableEntityItem& left, const DrawableEntityItem& right) const {
@@ -148,8 +157,11 @@ public:
 	}
 };
 
+// --------------------------------------------------------------------------------------
+//  TickableEntityContainer
+// --------------------------------------------------------------------------------------
 struct TickableEntityContainer {
-	typedef std::unordered_set<TickableEntityItem, FunctHashEntityItem,FunctEqualEntityItem>		HashedContainerType;
+	typedef std::unordered_set<SaltedOrderId, FunctHashEntityItem, FunctEqualEntityItem>			HashedContainerType;
 	typedef std::set<TickableEntityItem, CompareTickableEntity_Less>								OrderedContainerType;
 
 	HashedContainerType			m_hashed;
@@ -183,10 +195,12 @@ struct TickableEntityContainer {
 	}
 };
 
-// Sorted by DrawOrder
+// --------------------------------------------------------------------------------------
+//  DrawableEntityContainer
+// --------------------------------------------------------------------------------------
 struct DrawableEntityContainer {
-	typedef std::unordered_set<DrawableEntityItem, FunctHashEntityItem,FunctEqualEntityItem>		HashedContainerType;
-	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>							OrderedContainerType;
+	typedef std::unordered_set<SaltedOrderId, FunctHashEntityItem, FunctEqualEntityItem>			HashedContainerType;
+	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>								OrderedContainerType;
 
 	HashedContainerType				m_hashed;
 	OrderedContainerType			m_ordered;
@@ -197,8 +211,8 @@ struct DrawableEntityContainer {
 	void	_Add		(const DrawableEntityItem& entity);
 	void	Remove		(const IDrawableEntity* entity);
 
-	__ai void Add(IDrawableEntity* entity, u32 order) {
-		_Add( { entity, MakeSaltedOrder(entity, order) } );
+	__ai void Add(const IDrawableEntity* entity, u32 order) {
+		_Add( { static_cast<const IDrawableEntity*>(entity), MakeSaltedOrder(entity, order) } );
 	}
 
 	auto ForEachOpaque	() const;
@@ -236,6 +250,18 @@ struct TickableEntityForeachIfc_Reverse
 	TickableEntityForeachIfc_Reverse(TickableEntityContainer& src) {
 		m_entityList = &src;
 		m_entityList->EnterIteratorMode();
+	}
+
+	TickableEntityForeachIfc_Reverse(TickableEntityForeachIfc_Reverse&& rvalue)
+	{
+		m_entityList		= rvalue.m_entityList;
+		rvalue.m_entityList = nullptr;
+	}
+
+	TickableEntityForeachIfc_Reverse& operator=(TickableEntityForeachIfc_Reverse&& rvalue)
+	{
+		std::swap(m_entityList, rvalue.m_entityList);
+		return *this;
 	}
 
 	~TickableEntityForeachIfc_Reverse() throw()

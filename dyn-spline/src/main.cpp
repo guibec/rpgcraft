@@ -237,34 +237,34 @@ T* CreateEntity()
 	return entity;
 }
 
-class EntityStdImpl : public IDrawableEntity, public ITickableEntity
+class BasicEntitySpawnId : public virtual ISpawnId
 {
 private:
-	NONCOPYABLE_OBJECT(EntityStdImpl);
+	NONCOPYABLE_OBJECT(BasicEntitySpawnId);
 
 public:
 	u32	 m_spawnId = 0;
 
 protected:
-	EntityStdImpl() {
+	BasicEntitySpawnId() {
 		auto newSpawnId = getNewEntitySpawnId();
 		m_spawnId		= newSpawnId;
 	}
 
 public:
-	virtual u64 GetSpawnId() const {
+	virtual u32 GetSpawnId() const {
 		return m_spawnId;
 	}
 };
 
 
-class PlayerSprite : public EntityStdImpl
+class PlayerSprite : public virtual BasicEntitySpawnId, public virtual IDrawableEntity
 {
 private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	PlayerSprite() : EntityStdImpl() {
+	PlayerSprite() : BasicEntitySpawnId() {
 	}
 
 public:
