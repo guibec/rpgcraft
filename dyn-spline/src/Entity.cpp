@@ -17,7 +17,7 @@ void TickableEntityContainer::ExecEventQueue()
 void TickableEntityContainer::_Add(const TickableEntityItem& entityInfo)
 {
 	if (!m_iterator_mode) {
-		m_hashed	.insert(entityInfo);
+		m_hashed	.insert(entityInfo.tickOrderSalted);
 		m_ordered	.insert(entityInfo);
 	}
 	else {
@@ -27,7 +27,7 @@ void TickableEntityContainer::_Add(const TickableEntityItem& entityInfo)
 
 void TickableEntityContainer::Remove(ITickableEntity* entity)
 {
-	auto hashit = m_hashed.find({ entity, SaltedOrderId() });
+	auto hashit = m_hashed.find( SaltedOrderId().SetSalt(entity->GetSpawnId()) );
 
 	if (hashit == m_hashed.end()) {
 		// item not found... ?
@@ -35,30 +35,29 @@ void TickableEntityContainer::Remove(ITickableEntity* entity)
 	}
 
 	if (!m_iterator_mode) {
-
-		m_ordered.erase(*hashit);
+		m_ordered.erase({ entity, *hashit });
 		m_hashed.erase(hashit);
 	}
 	else {
-		m_evt_queue.push( { ECEvt_EntityRemove, TickableEntityItem { entity, hashit->tickOrderSalted } } );
+		m_evt_queue.push({ ECEvt_EntityRemove, TickableEntityItem { entity, *hashit } });
 	}
 }
 
 void DrawableEntityContainer::_Add(const DrawableEntityItem& entityInfo)
 {
-	m_hashed	.insert(entityInfo);
+	m_hashed	.insert(entityInfo.drawOrderSalted);
 	m_ordered	.insert(entityInfo);
 }
 
 void DrawableEntityContainer::Remove(const IDrawableEntity* entity)
 {
-	auto hashit = m_hashed.find({ entity, SaltedOrderId() });
+	auto hashit = m_hashed.find(SaltedOrderId().SetSalt(entity->GetSpawnId()));
 
 	if (hashit == m_hashed.end()) {
 		// item not found... ?
 		return;
 	}
 
-	m_ordered.erase(*hashit);
+	m_ordered.erase({ entity, *hashit });
 	m_hashed.erase(hashit);
 }
