@@ -206,38 +206,36 @@ inline GPU_RenderTarget::GPU_RenderTarget(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
 
-extern void					dx11_InitDevice();
-extern void					dx11_CleanupDevice();
+extern void					dx11_InitDevice					();
+extern void					dx11_CleanupDevice				();
+extern void					dx11_SetJmpCatch				(jmp_buf& jmpbuf);
+extern void					dx11_SetJmpFinalize				();
+extern void					dx11_PrintLastError				();
 
 extern void					dx11_BackbufferSwap				();
 extern void					dx11_CreateDynamicVertexBuffer	(GPU_DynVsBuffer& dest, int bufferSizeInBytes);
 extern void					dx11_CreateStaticMesh			(GPU_VertexBuffer&	dest, void* vertexData, int itemSizeInBytes, int vertexCount);
 extern void					dx11_CreateIndexBuffer			(GPU_IndexBuffer&	dest, void* indexBuffer, int bufferSize);
 extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
+extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, void* srcData, int sizeInBytes);
 
+extern bool					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
+extern bool					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
+extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
+extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
+
+extern void					dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
 extern void					dx11_BindShaderVS				(const GPU_ShaderVS& vs);
 extern void					dx11_BindShaderFS				(const GPU_ShaderFS& fs);
 extern void					dx11_SetVertexBuffer			(const GPU_DynVsBuffer&  vbuffer, int shaderSlot, int _stride, int _offset);
 extern void					dx11_SetVertexBuffer			(const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset);
-extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, void* srcData, int sizeInBytes);
 extern void					dx11_SetIndexBuffer				(const GPU_IndexBuffer& indexBuffer, int bitsPerIndex, int offset);
-extern void					dx11_DrawIndexed				(int indexCount, int startIndexLoc, int baseVertLoc);
-extern void					dx11_Draw						(int indexCount, int startVertLoc);
 extern void					dx11_SetPrimType				(GpuPrimitiveType primType);
 
-extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
-extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
-extern void					dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
-
-
-extern bool					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
-extern bool					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
-
 extern void					dx11_ClearRenderTarget			(const GPU_RenderTarget& target, const float4& color);
+extern void					dx11_DrawIndexed				(int indexCount, int startIndexLoc, int baseVertLoc);
+extern void					dx11_Draw						(int indexCount, int startVertLoc);
 
 
 extern bool					g_gpu_ForceWireframe;
-
-
-
 extern GPU_RenderTarget		g_gpu_BackBuffer;

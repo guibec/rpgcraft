@@ -7,6 +7,7 @@
 #include "x-chrono.h"
 #include "x-pad.h"
 #include "x-host-ifc.h"
+#include "x-gpu-ifc.h"
 
 #include "Scene.h"
 #include "ajek-script.h"
@@ -103,10 +104,6 @@ __ai bool SceneInitialized() {
 }
 
 static jmp_buf	s_jmp_buf;
-
-extern void dx11_SetJmpCatch			(jmp_buf& jmpbuf);
-extern void dx11_SetJmpFinalize			();
-extern void dx11_PrintLastError			();
 
 __ni void SceneInit()
 {
