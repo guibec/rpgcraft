@@ -139,6 +139,11 @@ struct GPU_IndexBuffer {
 	GPU_IndexBuffer(const void* driverData = nullptr);
 };
 
+struct GPU_ConstantBuffer {
+	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	GPU_ConstantBuffer(const void* driverData = nullptr);
+};
+
 struct GPU_ShaderVS {
 	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_ShaderVS(const void* driverData = nullptr);
@@ -202,6 +207,10 @@ inline GPU_IndexBuffer::GPU_IndexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
 
+inline GPU_ConstantBuffer::GPU_ConstantBuffer(const void* driverData) {
+	m_driverData = (s64)driverData;
+}
+
 inline GPU_RenderTarget::GPU_RenderTarget(const void* driverData) {
 	m_driverData = (s64)driverData;
 }
@@ -216,6 +225,7 @@ extern void					dx11_BackbufferSwap				();
 extern void					dx11_CreateDynamicVertexBuffer	(GPU_DynVsBuffer& dest, int bufferSizeInBytes);
 extern void					dx11_CreateStaticMesh			(GPU_VertexBuffer&	dest, void* vertexData, int itemSizeInBytes, int vertexCount);
 extern void					dx11_CreateIndexBuffer			(GPU_IndexBuffer&	dest, void* indexBuffer, int bufferSize);
+extern void					dx11_CreateConstantBuffer		(GPU_ConstantBuffer& dest, int bufferSize);
 extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
 extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, void* srcData, int sizeInBytes);
 
@@ -224,6 +234,7 @@ extern bool					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile
 extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
 
+extern void					dx11_BindConstantBuffer			(const GPU_ConstantBuffer& buffer, int startSlot);
 extern void					dx11_BindShaderResource			(const GPU_ShaderResource& res, int startSlot=0);
 extern void					dx11_BindShaderVS				(const GPU_ShaderVS& vs);
 extern void					dx11_BindShaderFS				(const GPU_ShaderFS& fs);
