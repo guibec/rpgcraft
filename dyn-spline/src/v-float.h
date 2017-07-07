@@ -74,6 +74,33 @@ struct vFloat2
 	}
 };
 
+struct vInt2
+{
+	int	x;
+	int	y;
+
+	vInt2() {}
+	vInt2(int _x, int _y);
+
+	vInt2& operator+=(const vInt2& right) {
+		x += right.x;
+		y += right.y;
+		return *this;
+	}
+
+	vInt2 operator+(const vInt2& right) const {
+		return vInt2(x + right.x, y + right.y);
+	}
+
+	vInt2 operator/(const vInt2& right) const {
+		return vInt2(x / right.x, y / right.y);
+	}
+
+	vInt2 operator*(const vInt2& right) const {
+		return vInt2(x * right.x, y * right.y);
+	}
+};
+
 inline vFloat4::vFloat4(float _x, float _y, float _z, float _w) {
 	x = _x;
 	y = _y;
@@ -122,6 +149,11 @@ inline vFloat3::vFloat3(vFloat2 _xy, float _z) {
 }
 
 inline vFloat2::vFloat2(float _x, float _y) {
+	x = _x;
+	y = _y;
+}
+
+inline vInt2::vInt2(int _x, int _y) {
 	x = _x;
 	y = _y;
 }

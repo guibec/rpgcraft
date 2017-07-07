@@ -742,7 +742,7 @@ void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
 	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
 }
 
-void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, void* srcData, int sizeInBytes)
+void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcData, int sizeInBytes)
 {
 	// Trying to decide between assert or silent ignore if the buffer is not initialized...
 	// Or we could have a "dx11_TryUploadDynamicBufferData" too!
@@ -847,7 +847,7 @@ void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
     bug_on (FAILED(hr));
 }
 
-void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, void* data)
+void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* data)
 {
 	auto&	drvbuf	= ptr_cast<ID3D11Buffer* const &>(buffer.m_driverData);
 	g_pImmediateContext->UpdateSubresource(drvbuf, 0, nullptr, data, 0, 0 );
