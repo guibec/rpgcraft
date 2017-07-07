@@ -18,6 +18,9 @@
 
 DECLARE_MODULE_NAME("dx11");
 
+#include "x-MemCopy.inl"
+
+
 #define ptr_cast		reinterpret_cast
 
 using namespace DirectX;
@@ -27,7 +30,8 @@ static const int BackBufferCount = 3;
 extern HINSTANCE		g_hInst;
 extern HWND				g_hWnd;
 
-ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_];
+ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
+ID3D11InputLayout*      g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS] = {};
 
 D3D_DRIVER_TYPE         g_driverType			= D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel			= D3D_FEATURE_LEVEL_11_0;
@@ -38,9 +42,13 @@ ID3D11DeviceContext1*   g_pImmediateContext1	= nullptr;
 IDXGISwapChain*         g_pSwapChain			= nullptr;
 IDXGISwapChain1*        g_pSwapChain1			= nullptr;
 
-ID3D11Buffer*           g_pConstantBuffer		= nullptr;
 
-ID3D11InputLayout*      g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS];
+struct ConstantBuffer
+{
+	XMMATRIX			World;
+	XMMATRIX			View;
+	XMMATRIX			Projection;
+};
 
 XMMATRIX                g_World;
 XMMATRIX                g_View;
@@ -223,8 +231,6 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 	return hr;
 }
 
-#include "x-MemCopy.inl"
-
 static	bool		s_has_setjmp;
 static 	jmp_buf*	s_jmp_buffer;
 
@@ -270,16 +276,31 @@ ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LP
 
 void dx11_CleanupDevice()
 {
-	// ... one of these isn't like all the others... !!!
+	if (g_pImmediateContext) {
+		g_pImmediateContext->ClearState();
+	}
 
-	if (g_pImmediateContext)	g_pImmediateContext		->ClearState();
+	for(auto& layout : g_pVertexLayouts) {
+		layout->Release();
+		layout = nullptr;
+	}
 
-	if (g_pSwapChain1)			g_pSwapChain1			->Release();
-	if (g_pSwapChain)			g_pSwapChain			->Release();
-	if (g_pImmediateContext1)	g_pImmediateContext1	->Release();
-	if (g_pImmediateContext)	g_pImmediateContext		->Release();
-	if (g_pd3dDevice1)			g_pd3dDevice1			->Release();
-	if (g_pd3dDevice)			g_pd3dDevice			->Release();
+	for(auto& stateA : g_RasterState) {
+		for(auto& stateB : stateA) {
+			for(auto& stateC : stateB) {
+				stateC->Release();
+				stateC = nullptr;
+			}
+		}
+	}
+	
+
+	if (g_pSwapChain1)			{ g_pSwapChain1			->Release();	g_pSwapChain1			= nullptr;	}
+	if (g_pSwapChain)			{ g_pSwapChain			->Release();	g_pSwapChain			= nullptr;	}
+	if (g_pImmediateContext1)	{ g_pImmediateContext1	->Release();	g_pImmediateContext1	= nullptr;	}
+	if (g_pImmediateContext)	{ g_pImmediateContext	->Release();	g_pImmediateContext		= nullptr;	}
+	if (g_pd3dDevice1)			{ g_pd3dDevice1			->Release();	g_pd3dDevice1			= nullptr;	}
+	if (g_pd3dDevice)			{ g_pd3dDevice			->Release();	g_pd3dDevice			= nullptr;	}
 }
 
 // Our gpu interface provides a set of standard vertex buffer layouts to meet most of our common
@@ -378,6 +399,8 @@ static void genInputLayouts()
 {
 	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
 	//        specifications defined within and supported by our engine.
+
+	pragma_todo("Remove dependency on VertexInputLayouts.fx and allow for runtime-specified input layouts.");
 
 	HRESULT hr;
 	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
@@ -810,6 +833,45 @@ void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int buffer
 	bug_on (FAILED(hr));
 }
 
+void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
+{
+	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData);
+	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+
+    D3D11_BUFFER_DESC bd = {};
+	bd.Usage			= D3D11_USAGE_DEFAULT;
+	bd.ByteWidth		= bufferSize;
+	bd.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags	= 0;
+    auto hr = g_pd3dDevice->CreateBuffer( &bd, nullptr, &buffer );
+    bug_on (FAILED(hr));
+}
+
+void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, void* data)
+{
+	auto&	drvbuf	= ptr_cast<ID3D11Buffer* const &>(buffer.m_driverData);
+	g_pImmediateContext->UpdateSubresource(drvbuf, 0, nullptr, data, 0, 0 );
+
+	// Implementation warning:  Yes, nvidia suggests using map(DISCARD)/unmap() instead of UpdateSubresource.
+	// This is not to be implemented blindly.
+	//  1. using map/memcpy/unmap within this function alone may not help.  The point is to avoid the memcpy()
+	//     not to avoid the call to UpdateSubresource (which calls memcpy internally).  Thus, to use map/unmap
+	//     correctly, the new data must be calculated and written directly to GPU, bypassing *any* heap-allocated
+	//     staging area.  Only then is memcpy avoided.
+	//
+	//  2. using map/calc/write/unmap without our own double-buffering of the resource is risky.  Not all GPU
+	//     drivers can be expected to perform renaming operations on MAP_DISCARD.  If buffer renaming is not
+	//     supported by the driver, then attempts to update the buffer will lead to CPU/GPU stalls.   In other
+	//     words:  good perf for nvidia users, maybe tragically bad perf for people running intel drivers that
+	//     came with their Windows OEM.
+	//
+	// On the other hand, there's a good chance that our implementation of xMemCopy is more efficient than the
+	// driver's implementation.  The driver likely uses some overblown memcpy() that does 8 size checks before
+	// moving a single byte of data, and is terribly slow for small-data constant updates.  Ours uses movsd,
+	// and could be optimized further by providing a template version of this function that knows constant size
+	// of the input data.
+}
+
 void dx11_BackbufferSwap()
 {
 	g_pSwapChain->Present(0, 0);
@@ -845,8 +907,17 @@ void dx11_SetRasterState(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRast
 void dx11_BindShaderResource(const GPU_ShaderResource& res, int startSlot)
 {
 	auto&	resourceView	= ptr_cast<ID3D11ShaderResourceView* const&>(res.m_driverData_view);
+	g_pImmediateContext->VSSetShaderResources( startSlot, 1, &resourceView );
 	g_pImmediateContext->PSSetShaderResources( startSlot, 1, &resourceView );
 }
+
+void dx11_BindConstantBuffer(const GPU_ConstantBuffer& buffer, int startSlot)
+{
+	auto&	drvbuf			= ptr_cast<ID3D11Buffer* const &>(buffer.m_driverData);
+	g_pImmediateContext->VSSetConstantBuffers(startSlot, 1, &drvbuf);
+	g_pImmediateContext->PSSetConstantBuffers(startSlot, 1, &drvbuf);
+}
+
 
 void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format)
 {
@@ -955,32 +1026,3 @@ void dx11_ClearRenderTarget(const GPU_RenderTarget& target, const float4& color)
 {
 	g_pImmediateContext->ClearRenderTargetView((ID3D11RenderTargetView*)target.m_driverData, color.f);
 }
-
-#if 0
-
-IWICImagingFactory* factory = nullptr;
-
-void WIC_Initialize()
-{
-	IWICImagingFactory* factory = nullptr;
-
-	HRESULT hr = CoCreateInstance(
-		CLSID_WICImagingFactory2,
-		nullptr,
-		CLSCTX_INPROC_SERVER,
-		__uuidof(IWICImagingFactory2),
-		(LPVOID*)&factory
-	);
-}
-
-void WIC_TextureFromFile(const xString& filename)
-{
-	IWICBitmapDecoder decoder;
-	HRESULT hr = pWIC->CreateDecoderFromFilename(fileName, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
-	bug_on(FAILED(hr));
-
-	IWICBitmapFrameDecode frame;
-	hr = decoder->GetFrame(0, frame.GetAddressOf());
-}
-
-#endif
