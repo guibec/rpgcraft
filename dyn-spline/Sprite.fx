@@ -8,7 +8,7 @@ SamplerState	samLinear	: register( s0 );
 //--------------------------------------------------------------------------------------
 cbuffer ConstantBuffer : register( b0 )
 {
-	matrix World;
+//	matrix World;
 	matrix View;
 	matrix Projection;
 }

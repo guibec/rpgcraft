@@ -840,7 +840,7 @@ void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
 
     D3D11_BUFFER_DESC bd = {};
 	bd.Usage			= D3D11_USAGE_DEFAULT;
-	bd.ByteWidth		= bufferSize;
+	bd.ByteWidth		= (bufferSize + 15) & ~15;
 	bd.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags	= 0;
     auto hr = g_pd3dDevice->CreateBuffer( &bd, nullptr, &buffer );

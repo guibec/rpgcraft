@@ -8,9 +8,14 @@ SamplerState	samLinear	: register( s0 );
 //--------------------------------------------------------------------------------------
 cbuffer ConstantBuffer : register( b0 )
 {
-	matrix World;
+//	matrix World;
 	matrix View;
 	matrix Projection;
+}
+
+cbuffer ConstantBuffer1 : register( b1 )
+{
+	float2	TileMapDisp;
 }
 
 //--------------------------------------------------------------------------------------
