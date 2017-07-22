@@ -102,7 +102,7 @@
 #endif
 
 #if (_MSC_VER >= 1900)
-#	include "intrin.h"
+#	include <intrin.h>
 #endif
 
 #include <stdint.h>
