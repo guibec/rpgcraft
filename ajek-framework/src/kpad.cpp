@@ -135,7 +135,7 @@ static float update_stick_axis(const HostClockTick& cur_tick, const KPadAxisMapP
 	}
 
 	if (newval) {
-		log_host("Axis Value    %-10s = %4.1f", diagName, newval);
+		trace_kpad("Axis Value    %-10s = %4.1f", diagName, newval);
 	}
 	return newval;
 }
