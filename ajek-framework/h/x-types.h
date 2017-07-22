@@ -39,6 +39,8 @@
 
 #	pragma warning(disable: 4311)		// pointer truncation from 'void *' to 'u32'
 #	pragma warning(disable: 4302)		// truncation from 'void *' to 'u32'
+
+# 	pragma warning(disable: 4250)		// 'class' inherits 'base::interface' via dominance
 #endif
 
 // --------------------------------------------------------------------------------------

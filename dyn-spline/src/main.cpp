@@ -267,14 +267,14 @@ struct GPU_ViewCameraConsts
 	XMMATRIX Projection;
 };
 
-struct GPU_SpriteConsts
+struct GPU_TileMapConstants
 {
-	XMMATRIX World;
-	XMMATRIX View;
-	XMMATRIX Projection;
+	vFloat2 TileAlignedDisp;
 };
 
 GPU_ConstantBuffer		g_gpu_constbuf;
+GPU_ConstantBuffer		g_cnstbuf_TileMap;
+
 extern XMMATRIX         g_Projection;
 
 class ViewCamera :
@@ -282,22 +282,70 @@ class ViewCamera :
 	public virtual ITickableEntity
 {
 public:
+	u128					m_Eye;
+	u128					m_At;
+	u128					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
 	GPU_ViewCameraConsts	m_Consts;
 
 	ViewCamera() : BasicEntitySpawnId() {
 	}
 
-	virtual void Tick() {
-		XMVECTOR Eye	= XMVectorSet( 0.0f, 0.0f, -1.0f, 0.0f );
-		XMVECTOR At		= XMVectorSet( 0.0f, 0.0f,  0.0f, 0.0f );
-		XMVECTOR Up		= XMVectorSet( 0.0f, 5.0f,  0.0f, 0.0f );		// X is angle.  Y is just +/- (orientation)? Z is unused?
+	// Eye and At should move laterally together so that the eye is always looking straight down
+	// at a specific point on the map.
+	// UP : X is angle.  Y is sign-indicator only (flip axis) --  Z is unused?
 
-		m_Consts.View		= XMMatrixLookAtLH(Eye, At, Up);
+	virtual void Tick() {
+		m_Eye	= XMVectorSet( 2.0f, 0.0f, -1.0f, 0.0f );
+		m_At	= XMVectorSet( 2.0f, 0.0f,  0.0f, 0.0f );
+		m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+
+		m_Consts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
 		m_Consts.Projection = g_Projection;
 	}
 };
 
-static ViewCamera g_ViewCamera;
+class TileMapLayer :
+	public virtual BasicEntitySpawnId,
+	public virtual ITickableEntity
+{
+public:
+	TileMapLayer() : BasicEntitySpawnId() {
+	}
+
+	// Eye and At should move laterally together so that the eye is always looking straight down
+	// at a specific point on the map.
+
+	virtual void Tick() {
+	}
+
+	virtual void Draw() const;
+};
+
+static ViewCamera		g_ViewCamera;
+static TileMapLayer*	g_TileMap;
+
+void TileMapLayer::Draw() const
+{
+	GPU_TileMapConstants	m_TileMapConsts;
+
+	// determine tile map draw position according to camera position.
+
+	m_TileMapConsts.TileAlignedDisp = vFloat2(floorf(g_ViewCamera.m_Eye.xf), floorf(g_ViewCamera.m_Eye.yf));
+
+	dx11_BindShaderVS(g_ShaderVS_Tiler);
+	dx11_BindShaderFS(g_ShaderFS_Tiler);
+	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
+
+//	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
+	dx11_BindShaderResource(tex_floor, 0);
+
+	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
+	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
+
+	dx11_BindConstantBuffer(g_cnstbuf_TileMap, 1);
+
+	dx11_Draw(worldViewVerticiesCount, 0);
+}
 
 class PlayerSprite :	
 	public virtual BasicEntitySpawnId,
@@ -308,7 +356,6 @@ private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	GPU_SpriteConsts		m_Consts;
 
 public:
 	PlayerSprite() : BasicEntitySpawnId() {
@@ -317,9 +364,6 @@ public:
 public:
 	virtual void Tick()
 	{
-		m_Consts.World		= XMMatrixIdentity();
-		m_Consts.View		= XMMatrixTranspose(g_ViewCamera.m_Consts.View);
-		m_Consts.Projection = XMMatrixTranspose(g_ViewCamera.m_Consts.Projection);
 	}
 
 	virtual void Draw() const
@@ -327,12 +371,9 @@ public:
 		dx11_BindShaderVS(g_ShaderVS_Spriter);
 		dx11_BindShaderFS(g_ShaderFS_Spriter);
 		dx11_SetInputLayout(VertexBufferLayout_Tex1);
-		dx11_UpdateConstantBuffer(g_gpu_constbuf, &m_Consts);
-
 		dx11_BindShaderResource(tex_chars, 0);
 		dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 		dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
-		dx11_BindConstantBuffer(g_gpu_constbuf, 0);
 		dx11_DrawIndexed(6, 0,  0);
 	}
 };
@@ -359,26 +400,21 @@ void SceneRender()
 
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 
-	dx11_BindShaderVS(g_ShaderVS_Tiler);
-	dx11_BindShaderFS(g_ShaderFS_Tiler);
-	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
-
-	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
-	dx11_BindShaderResource(tex_floor, 0);
-
-	//g_pImmediateContext->DrawIndexed((numVertexesPerCurve*4), 0,  0);
-	//g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
-
-
-	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
-	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
-	dx11_Draw(worldViewVerticiesCount, 0);
-
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
 		auto* const& entity = entitem.entity;
 		entity->Tick();
 	}
+
+	GPU_ViewCameraConsts	m_ViewConsts;
+	m_ViewConsts.View		= XMMatrixTranspose(g_ViewCamera.m_Consts.View);
+	m_ViewConsts.Projection = XMMatrixTranspose(g_ViewCamera.m_Consts.Projection);
+
+	dx11_UpdateConstantBuffer(g_gpu_constbuf, &m_ViewConsts);
+	dx11_BindConstantBuffer(g_gpu_constbuf, 0);
+	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
+
+	g_TileMap->Draw();
 
 	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
@@ -604,13 +640,15 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_CreateIndexBuffer(g_idx_box2D, indices_box, 6*2);
 	// ---------------------------------------------------------------------------------------------
 
+	g_TileMap = CreateEntity<TileMapLayer>();
 
 	auto* player = CreateEntity<PlayerSprite>();
 	g_tickable_entities.Add(&g_ViewCamera, 1);
 	g_tickable_entities.Add(player, 10);
 	g_drawable_entities.Add(player, 10);
 
-	dx11_CreateConstantBuffer(g_gpu_constbuf, sizeof(GPU_SpriteConsts));
+	dx11_CreateConstantBuffer(g_gpu_constbuf,		sizeof(GPU_ViewCameraConsts));
+	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(float2));
 
 	s_CanRenderScene = 1;
 	return true;
