@@ -243,9 +243,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			WaitMessage();
 		}
 	}
-
+	Scene_ShutdownThreads();
 	dx11_CleanupDevice();
-	Scene_ShutdownMessages();
 
 	return 0;
 }
