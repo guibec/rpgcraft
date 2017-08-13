@@ -270,6 +270,7 @@ struct GPU_ViewCameraConsts
 struct GPU_TileMapConstants
 {
 	vFloat2 TileAlignedDisp;
+	vFloat2	padding;
 };
 
 GPU_ConstantBuffer		g_gpu_constbuf;
@@ -291,12 +292,13 @@ public:
 	}
 
 	// Eye and At should move laterally together so that the eye is always looking straight down
-	// at a specific point on the map.
+	// at a specific point on the map (X/Y equal).
+	// Eye.Z controls the zoom of the view.
 	// UP : X is angle.  Y is sign-indicator only (flip axis) --  Z is unused?
 
 	virtual void Tick() {
-		m_Eye	= XMVectorSet( 2.0f, 0.0f, -1.0f, 0.0f );
-		m_At	= XMVectorSet( 2.0f, 0.0f,  0.0f, 0.0f );
+		m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
+		m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
 		m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
 
 		m_Consts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
@@ -342,6 +344,7 @@ void TileMapLayer::Draw() const
 	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
 	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
 
+	dx11_UpdateConstantBuffer(g_cnstbuf_TileMap, &m_TileMapConsts);
 	dx11_BindConstantBuffer(g_cnstbuf_TileMap, 1);
 
 	dx11_Draw(worldViewVerticiesCount, 0);
@@ -368,12 +371,13 @@ public:
 
 	virtual void Draw() const
 	{
-		dx11_BindShaderVS(g_ShaderVS_Spriter);
-		dx11_BindShaderFS(g_ShaderFS_Spriter);
-		dx11_SetInputLayout(VertexBufferLayout_Tex1);
-		dx11_BindShaderResource(tex_chars, 0);
-		dx11_SetVertexBuffer(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
-		dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
+		dx11_BindShaderVS		(g_ShaderVS_Spriter);
+		dx11_BindShaderFS		(g_ShaderFS_Spriter);
+		dx11_SetInputLayout		(VertexBufferLayout_Tex1);
+		dx11_BindShaderResource	(tex_chars, 0);
+		dx11_SetVertexBuffer	(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
+		dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
+
 		dx11_DrawIndexed(6, 0,  0);
 	}
 };
@@ -559,26 +563,33 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 
 	// Populate view mesh according to world map information:
-	
-	float incr_x =  (2.0f / ViewMeshSizeX);
-	float incr_y = -(2.0f / ViewMeshSizeY);
+
+	float fullMeshSizeX = ViewMeshSizeX; //4.0;
+	float fullMeshSizeY = ViewMeshSizeY; //3.0;
+
+	float incr_x =  (fullMeshSizeX / ViewMeshSizeX);
+	float incr_y = -(fullMeshSizeY / ViewMeshSizeY);
+	float defzval = 0.0f;
 
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
-	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 5.0f);
+	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
 	for (int y=0; y<ViewMeshSizeY; ++y) {
-		float vertY = 1.0f + (y * incr_y);
+		// + 0.5f to place tiles according to center of tile (rather than upper-left)
+		float vertY = (fullMeshSizeY * 0.5f) + (y * incr_y) + 0.5f;
 		for (int x=0; x<ViewMeshSizeX; ++x) {
 			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
-			float vertX = -1.0 + (x * incr_x);
+			// - 0.5f to place tiles according to center of tile (rather than upper-left)
+			float vertX = (fullMeshSizeX * -0.5f) + (x * incr_x) - 0.5f;
 
-			ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		1.0f );
-			ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
-			ViewMesh[vertexId + 2]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
+			ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		defzval );
+			ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		defzval );
+			ViewMesh[vertexId + 2]	= vFloat3( vertX + 0,		vertY + incr_y, defzval );
+			ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		defzval );
+			ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, defzval );
+			ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, defzval );
 
-			ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		1.0f );
-			ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, 1.0f );
-			ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, 1.0f );
+			//log_host( "x,y == %5.2f, %5.2f", vertX, vertY );
 		}
 	}
 
@@ -615,19 +626,23 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
 	// ---------------------------------------------------------------------------------------------
-	// Simple box for diagnostic purposes...
+
+	// TODO - Base the sprite mesh size on the tile size of the world map .. ?
+	// Such that all sprites are described in tile units (floats/fractional ok).
+	// and tile units have a defined pixel size, so we can convert from pixels->tiles for
+	// precision tile/sprite placement.
+	// woo!!!
+
 
 	TileMapVertex vertices[] =
 	{
-		{ vFloat3( -0.4f,  0.5f, 0.5f ), vFloat2(0.0f,  32.0f) },
-		{ vFloat3( -0.4f, -0.5f, 0.5f ), vFloat2(0.0f,  64.0f) },
-		{ vFloat3(  0.4f, -0.5f, 0.5f ), vFloat2(24.0f, 64.0f) },
-		{ vFloat3(  0.4f,  0.5f, 0.5f ), vFloat2(24.0f, 32.0f) }
+		// UV is in pixels (as it should be).
+		// XYZ is in tiles .. where Z is expected to be 1.0f
 
-		//{ vFloat3( -1.0f,  1.0f, 0.5f ), vFloat2(0.0f, 0.0f) },
-		//{ vFloat3( -1.0f, -1.0f, 0.5f ), vFloat2(0.0f, 1.0f) },
-		//{ vFloat3(  1.0f, -1.0f, 0.5f ), vFloat2(1.0f, 1.0f) },
-		//{ vFloat3(  1.0f,  1.0f, 0.5f ), vFloat2(1.0f, 0.0f) }
+		{ vFloat3( -0.5f,  0.5f, 0.0f ), vFloat2( 0.0f, 32.0f) },
+		{ vFloat3( -0.5f, -0.5f, 0.0f ), vFloat2( 0.0f, 64.0f) },
+		{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
+		{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 	};
 
 	s16 indices_box[] = {

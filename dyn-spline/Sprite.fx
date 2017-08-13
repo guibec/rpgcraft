@@ -35,6 +35,7 @@ static matrix Identity =
     { 0, 0, 1, 0 },
     { 0, 0, 0, 1 }
 };
+
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
@@ -43,13 +44,9 @@ VS_OUTPUT VS( VS_INPUT input )
 	VS_OUTPUT outp;
 
 	outp.Pos = float4(input.Pos, 1.0f);
-
-	//output.Pos = mul( Pos, World );
 	outp.Pos = mul( outp.Pos, View );
 	outp.Pos = mul( outp.Pos, Projection );
-	//outp.Pos	= mul( outp.Pos, Identity );
-	//outp.Pos	= float4(outp.Pos, 1.0f) * float4(0.7f, 0.86f, 1.0f, 1.0f);
-	//outp.Pos	= float4(input.Pos, 1.0f);
+
 	outp.Color	= float4(input.UV, 0.0f, 1.0f);
 	outp.UV		= input.UV;
 
