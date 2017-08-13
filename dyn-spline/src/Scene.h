@@ -14,10 +14,13 @@
 enum SceneMessageId {
 	SceneMsg_Reload					= 100,		// forces reloading of entire scene (scripts, textures, etc)
 
+	SceneMsg_Shutdown				= 200,
+
 	SceneMsg_StopExec				= 530,
 	SceneMsg_StartExec				= 531,
 	SceneMsg_ToggleExec				= 532,
 	SceneMsg_StepExec				= 533,
+
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -31,6 +34,7 @@ static const u32 SceneStopReason_Developer			= 1ul << 0;		// Pause exec via 'P',
 static const u32 SceneStopReason_ScriptError		= 1ul << 1;		// Debugging of script
 static const u32 SceneStopReason_Background			= 1ul << 4;		// Game has been placed in the background (console/mobile specific, maybe)
 static const u32 SceneStopReason_Dialog				= 1ul << 5;		// Similar to Background but refers to self-made dialogs rather than system0imposed background execution
+static const u32 _SceneStopReason_Shutdown			= 1ul << 7;		// Scene thread is being shut down for good (do not use directly -- invoked by SceneMsg_Shutdown)
 // ------------------------------------------------------------------------------------------------
 
 struct SceneMessage
@@ -47,6 +51,7 @@ struct SceneMessage
 };
 
 extern void			Scene_CreateThreads			();
+extern void			Scene_ShutdownThreads		();
 
 extern bool			SceneInitialized			();
 extern void			SceneInit					();
@@ -54,7 +59,6 @@ extern void			SceneRender					();
 extern void			SceneBegin					();
 
 extern void			Scene_InitMessages			();
-extern void			Scene_ShutdownMessages		();
 extern bool			Scene_HasPendingMessages	();
 extern bool			Scene_TryLoadInit			(AjekScriptEnv& script);
 

@@ -22,19 +22,26 @@ typedef std::queue<SceneMessage> SceneMessageList;
 
 static thread_t				s_thr_scene_producer;
 static xMutex				s_mtx_MsgQueue;
+static xSemaphore			s_sem_thread_done;		
 static SceneMessageList		s_MsgQueue;
 static u32					s_scene_isPaused;
 
 static bool					s_scene_initialized			= false;
+static bool					s_scene_thread_running		= false;
 
 void Scene_InitMessages()
 {
 	s_mtx_MsgQueue.Create("SceneMsgQueue");
+	s_sem_thread_done.Create();
 }
 
-void Scene_ShutdownMessages()
+// Provided for debugging, not meant to be called in normal operation.
+// By design we want mutexes to stay live until the process dies, that way any dependent
+// threads that might try to lock/unlock the mutex won't crash while shutdown progresses.
+void Scene_CleanupThreadObjects()
 {
 	s_mtx_MsgQueue.Delete();
+	s_sem_thread_done.Delete();
 }
 
 bool Scene_HasPendingMessages()
@@ -90,6 +97,10 @@ void Scene_DrainMsgQueue()
 			case SceneMsg_Reload: {
 				auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
 				s_scene_initialized = false;
+			} break;
+
+			case SceneMsg_Shutdown: {
+				s_scene_isPaused |= _SceneStopReason_Shutdown;
 			} break;
 		}
 	}
@@ -172,6 +183,10 @@ static void* SceneProducerThreadProc(void*)
 	{
 		Scene_DrainMsgQueue();
 
+		if (Scene_HasStopReason(_SceneStopReason_Shutdown)) {
+			log_host("SceneThread has been shutdown.");
+			break;
+		}
 		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
 
 		}
@@ -193,15 +208,26 @@ static void* SceneProducerThreadProc(void*)
 		// TODO : framerate pacing (vsync disabled)
 		//     Measure time from prev to current frame, determine amount of time we
 		//     want to sleep.
-		xThreadSleep(16/2);
+		//xThreadSleep(16/2);
 	}
+
+	s_sem_thread_done.Post();
 
 	return nullptr;
 }
 
 void Scene_CreateThreads()
 {
+	s_scene_thread_running = true;
 	thread_create(s_thr_scene_producer, SceneProducerThreadProc, "SceneProducer", _256kb);
+}
+
+void Scene_ShutdownThreads()
+{
+	if (!s_scene_thread_running) return;
+	Scene_PostMessage(SceneMsg_Shutdown, 0);
+	s_sem_thread_done.WaitWithTimeout(2000);
+	s_scene_thread_running = false;
 }
 
 bool Scene_HasStopReason(u32 stopReason)
