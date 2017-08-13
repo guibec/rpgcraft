@@ -128,12 +128,12 @@ void ProcGenTerrain()
 int g_setCountX = 0;
 int g_setCountY = 0;
 
-void SceneBegin()
+void TileMapView_PopulateUVs()
 {
 	// Populate view mesh according to world map information:
 	
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
-	vFloat2 t16uv = incr_set_uv / vFloat2(4.0f, 10.0f);
+	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
 	for (int y=0; y<ViewMeshSizeY; ++y) {
 		for (int x=0; x<ViewMeshSizeX; ++x) {
@@ -204,13 +204,15 @@ void SceneBegin()
 	}
 
 	// Sort various sprite batches
-
-	
 }
 
 
 bool s_CanRenderScene = false;
 
+void SceneBegin()
+{
+	TileMapView_PopulateUVs();
+}
 
 void SceneInputLogic()
 {
@@ -563,12 +565,10 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 
 	// Populate view mesh according to world map information:
+	// Mesh size is 1.0f per tile.  Y axis is inverted per standard 3D orientation
 
-	float fullMeshSizeX = ViewMeshSizeX; //4.0;
-	float fullMeshSizeY = ViewMeshSizeY; //3.0;
-
-	float incr_x =  (fullMeshSizeX / ViewMeshSizeX);
-	float incr_y = -(fullMeshSizeY / ViewMeshSizeY);
+	float incr_x =  1.0f;
+	float incr_y = -1.0f;
 	float defzval = 0.0f;
 
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
@@ -576,11 +576,11 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	for (int y=0; y<ViewMeshSizeY; ++y) {
 		// + 0.5f to place tiles according to center of tile (rather than upper-left)
-		float vertY = (fullMeshSizeY * 0.5f) + (y * incr_y) + 0.5f;
+		float vertY = (ViewMeshSizeY * 0.5f) + (y * incr_y) + 0.5f;
 		for (int x=0; x<ViewMeshSizeX; ++x) {
 			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
 			// - 0.5f to place tiles according to center of tile (rather than upper-left)
-			float vertX = (fullMeshSizeX * -0.5f) + (x * incr_x) - 0.5f;
+			float vertX = (ViewMeshSizeX * -0.5f) + (x * incr_x) - 0.5f;
 
 			ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		defzval );
 			ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		defzval );
@@ -593,25 +593,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		}
 	}
 
-	for (int y=0; y<ViewMeshSizeY; ++y) {
-		float vertY = 1.0f + (y * incr_y);
-		for (int x=0; x<ViewMeshSizeX; ++x) {
-			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
-
-			vFloat2 uv;
-			int setId = g_WorldMap[(y * WorldSizeX) + x].tilesetId;
-			int setX = setId % g_setCountX;
-			int setY = setId / g_setCountX;
-			uv  = vFloat2(setX, setY)  * incr_set_uv;
-
-			g_ViewUV[vertexId + 0]		= uv + vFloat2( 0.00f,		0.00f );
-			g_ViewUV[vertexId + 1]		= uv + vFloat2( t16uv.x,	0.00f );
-			g_ViewUV[vertexId + 2]		= uv + vFloat2( 0.00f,		t16uv.y );
-			g_ViewUV[vertexId + 3]		= uv + vFloat2( t16uv.x,	0.00f );
-			g_ViewUV[vertexId + 4]		= uv + vFloat2( 0.00f,		t16uv.y );
-			g_ViewUV[vertexId + 5]		= uv + vFloat2( t16uv.x,	t16uv.y );
-		}
-	}
+	TileMapView_PopulateUVs();
 
 	dx11_CreateStaticMesh(g_mesh_worldView,		ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
 	dx11_CreateStaticMesh(g_mesh_worldViewUV,	g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
