@@ -34,7 +34,7 @@ static const u32 SceneStopReason_Developer			= 1ul << 0;		// Pause exec via 'P',
 static const u32 SceneStopReason_ScriptError		= 1ul << 1;		// Debugging of script
 static const u32 SceneStopReason_Background			= 1ul << 4;		// Game has been placed in the background (console/mobile specific, maybe)
 static const u32 SceneStopReason_Dialog				= 1ul << 5;		// Similar to Background but refers to self-made dialogs rather than system0imposed background execution
-static const u32 _SceneStopReason_Shutdown			= 1ul << 7;		// Scene thread is being shut down for good (do not use directly -- invoked by SceneMsg_Shutdown)
+static const u32 _SceneStopReason_Shutdown			= 1ul << 7;		// Scene thread is being shut down for good (do not use directly -- invoked by Scene_ShutdownThreads)
 // ------------------------------------------------------------------------------------------------
 
 struct SceneMessage

@@ -276,13 +276,17 @@ ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LP
 
 void dx11_CleanupDevice()
 {
+	if (!g_pd3dDevice) return;
+
 	if (g_pImmediateContext) {
 		g_pImmediateContext->ClearState();
 	}
 
 	for(auto& layout : g_pVertexLayouts) {
-		layout->Release();
-		layout = nullptr;
+		if (layout) {
+			layout->Release();
+			layout = nullptr;
+		}
 	}
 
 	for(auto& stateA : g_RasterState) {

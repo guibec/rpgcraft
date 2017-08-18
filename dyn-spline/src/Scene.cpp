@@ -208,7 +208,7 @@ static void* SceneProducerThreadProc(void*)
 		// TODO : framerate pacing (vsync disabled)
 		//     Measure time from prev to current frame, determine amount of time we
 		//     want to sleep.
-		//xThreadSleep(16/2);
+		xThreadSleep(16/2);
 	}
 
 	s_sem_thread_done.Post();

@@ -39,6 +39,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case WM_DESTROY:
+			Scene_ShutdownThreads();
+			dx11_CleanupDevice();
 			PostQuitMessage(0);
 		break;
 
