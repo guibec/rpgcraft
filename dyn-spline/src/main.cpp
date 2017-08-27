@@ -107,24 +107,6 @@ static const int TerrainTileH = 256;
 static TickableEntityContainer		g_tickable_entities;
 static DrawableEntityContainer		g_drawable_entities;
 
-// --------------------------------------------------------------------------------------
-float s_ProcTerrain_Height[TerrainTileW][TerrainTileH];
-
-void ProcGenTerrain()
-{
-	// Generate a heightmap!
-	
-	// Base heightmap on several interfering waves.
-
-	for (int y=0; y<TerrainTileH; ++y) {
-		for (int x=0; x<TerrainTileW; ++x) {
-			float continental_wave = std::sinf((y+x) * 0.006);
-			s_ProcTerrain_Height[y][x] = continental_wave; // * 32767.0f;
-		}
-	}
-}
-// --------------------------------------------------------------------------------------
-
 int g_setCountX = 0;
 int g_setCountY = 0;
 
@@ -435,7 +417,7 @@ void SceneRender()
 
 // Size notes:
 //   * Tiles are 16x16
-//   * Full coverage of 1920x1080 is approximately 120x68 titles.20170613h:\
+//   * Full coverage of 1920x1080 is approximately 120x68 titles.
 
 //   * 1024x1024 tile world comes to 96mb -- which is close to 12-screens worth of world to explore
 //      * OK for single player, but multiplayer should be able to go larger.
@@ -597,9 +579,6 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	dx11_CreateStaticMesh(g_mesh_worldView,		ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
 	dx11_CreateStaticMesh(g_mesh_worldViewUV,	g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
-
-	ProcGenTerrain();
-	dx11_CreateTexture2D(tex_terrain, s_ProcTerrain_Height, TerrainTileW, TerrainTileH, GPU_ResourceFmt_R32_FLOAT);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
