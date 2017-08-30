@@ -251,6 +251,8 @@ extern void					dx11_SetPrimType				(GpuPrimitiveType primType);
 
 extern void					dx11_ClearRenderTarget			(const GPU_RenderTarget& target, const float4& color);
 extern void					dx11_DrawIndexed				(int indexCount, int startIndexLoc, int baseVertLoc);
+extern void					dx11_DrawInstanced				(int vertsPerInstance, int instanceCount, int startVertLoc, int startInstanceLoc);
+extern void					dx11_DrawIndexedInstanced		(int indexesPerInstance, int instanceCount, int startIndex, int baseVertex, int startInstance);
 extern void					dx11_Draw						(int indexCount, int startVertLoc);
 
 
