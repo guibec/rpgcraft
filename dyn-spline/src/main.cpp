@@ -20,8 +20,8 @@ using namespace DirectX;
 DECLARE_MODULE_NAME("main");
 
 GPU_VertexBuffer		g_mesh_box2D;
-GPU_VertexBuffer		g_mesh_worldView;
-GPU_VertexBuffer		g_mesh_worldViewUV;
+GPU_VertexBuffer		g_mesh_tile;
+GPU_VertexBuffer		g_mesh_worldViewTileID;
 
 GPU_IndexBuffer			g_idx_box2D;
 GPU_ShaderVS			g_ShaderVS_Tiler;
@@ -32,6 +32,7 @@ GPU_ShaderFS			g_ShaderFS_Spriter;
 
 bool					g_gpu_ForceWireframe	= false;
 
+GPU_TextureResource2D	tex_8x8;
 GPU_TextureResource2D	tex_floor;
 GPU_TextureResource2D	tex_chars;
 GPU_TextureResource2D	tex_terrain;
@@ -45,6 +46,7 @@ static const int TileSizeY = 8;
 //static const int ViewMeshSizeY		= 96;
 static int ViewMeshSizeX			= 24;
 static int ViewMeshSizeY			= 24;
+static int worldViewInstanceCount	= 0;
 static int worldViewVerticiesCount	= 0;
 
 GPU_TextureResource2D	tex_tile_ids;		// indexer into the provided texture set  (dims: ViewMeshSizeXY)
@@ -94,7 +96,7 @@ struct TerrainMapItem {
 };
 
 TerrainMapItem*		g_WorldMap;
-vFloat2*			g_ViewUV;		// temporarily global - will localize later.
+u32*				g_ViewTileID;	// temporarily global - will localize later.
 
 // Probably in tile coordinates with fractional being partial-tile position
 float g_playerX;
@@ -119,10 +121,12 @@ void TileMapView_PopulateUVs()
 
 	for (int y=0; y<ViewMeshSizeY; ++y) {
 		for (int x=0; x<ViewMeshSizeX; ++x) {
-			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
-			int setId = g_WorldMap[(y * WorldSizeX) + x].tilesetId;
-			int setX = setId % g_setCountX;
-			int setY = setId / g_setCountX;
+			int instanceId	= ((y*ViewMeshSizeX) + x);
+			int vertexId	= instanceId * 6;
+
+			int setId		= g_WorldMap[(y * WorldSizeX) + x].tilesetId;
+			int setX		= setId % g_setCountX;
+			int setY		= setId / g_setCountX;
 
 			// Look at surrounding tiles to decide how to match this tile...
 			// TODO: Try moving this into Lua?  As a proof-of-concept for rapid iteration?
@@ -171,17 +175,13 @@ void TileMapView_PopulateUVs()
 			}
 
 			//subTileY += 3;
+			
+			g_ViewTileID[instanceId]  = (setY * g_setCountX) + setX;
+			g_ViewTileID[instanceId] += (subTileY * 4) + subTileX;
 
 			vFloat2 uv;
 			uv  = vFloat2(setX, setY)  * incr_set_uv;
 			uv += vFloat2(subTileX, subTileY) * t16uv;
-
-			g_ViewUV[vertexId + 0]		= uv + vFloat2( 0.00f,		0.00f );
-			g_ViewUV[vertexId + 1]		= uv + vFloat2( t16uv.x,	0.00f );
-			g_ViewUV[vertexId + 2]		= uv + vFloat2( 0.00f,		t16uv.y );
-			g_ViewUV[vertexId + 3]		= uv + vFloat2( t16uv.x,	0.00f );
-			g_ViewUV[vertexId + 4]		= uv + vFloat2( 0.00f,		t16uv.y );
-			g_ViewUV[vertexId + 5]		= uv + vFloat2( t16uv.x,	t16uv.y );
 		}
 	}
 
@@ -253,8 +253,11 @@ struct GPU_ViewCameraConsts
 
 struct GPU_TileMapConstants
 {
-	vFloat2 TileAlignedDisp;
-	vFloat2	padding;
+	vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
+	vInt2	SrcTexSizeInTiles;
+	vFloat2	SrcTexTileSizeUV;
+	u32		TileMapSizeX;
+	u32		TileMapSizeY;
 };
 
 GPU_ConstantBuffer		g_gpu_constbuf;
@@ -290,6 +293,20 @@ public:
 	}
 };
 
+struct TileMeshVertex
+{
+	vFloat2		xy;
+	vFloat2		uv;
+};
+
+static TileMeshVertex g_SingleTileMesh[] =
+{
+	{ vFloat2(0.0f,  0.0f), vFloat2(0.0f,  0.0f) },
+	{ vFloat2(0.0f,  1.0f), vFloat2(0.0f,  1.0f) },
+	{ vFloat2(1.0f,  1.0f), vFloat2(1.0f,  1.0f) },
+	{ vFloat2(1.0f,  0.0f), vFloat2(1.0f,  0.0f) },
+};
+
 class TileMapLayer :
 	public virtual BasicEntitySpawnId,
 	public virtual ITickableEntity
@@ -316,22 +333,28 @@ void TileMapLayer::Draw() const
 
 	// determine tile map draw position according to camera position.
 
-	m_TileMapConsts.TileAlignedDisp = vFloat2(floorf(g_ViewCamera.m_Eye.xf), floorf(g_ViewCamera.m_Eye.yf));
+	m_TileMapConsts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.xf), floorf(g_ViewCamera.m_Eye.yf));
+	m_TileMapConsts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
+	m_TileMapConsts.SrcTexTileSizeUV	= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
+	m_TileMapConsts.TileMapSizeX		= ViewMeshSizeX;
+	m_TileMapConsts.TileMapSizeY		= ViewMeshSizeY;
 
 	dx11_BindShaderVS(g_ShaderVS_Tiler);
 	dx11_BindShaderFS(g_ShaderFS_Tiler);
-	dx11_SetInputLayout(VertexBufferLayout_MultiSlot_Tex1);
+	dx11_SetInputLayout(VertexBufferLayout_TileMap);
 
 //	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_floor, 0);
 
-	dx11_SetVertexBuffer(g_mesh_worldView,   0, sizeof(vFloat3), 0);
-	dx11_SetVertexBuffer(g_mesh_worldViewUV, 1, sizeof(g_ViewUV[0]), 0);
+	dx11_SetVertexBuffer(g_mesh_tile,				0, sizeof(g_SingleTileMesh[0]), 0);
+	dx11_SetVertexBuffer(g_mesh_worldViewTileID,	1, sizeof(g_ViewTileID[0]), 0);
+	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
 
 	dx11_UpdateConstantBuffer(g_cnstbuf_TileMap, &m_TileMapConsts);
 	dx11_BindConstantBuffer(g_cnstbuf_TileMap, 1);
+	dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
+	dx11_DrawIndexedInstanced(6, worldViewInstanceCount, 0, 0, 0);
 
-	dx11_Draw(worldViewVerticiesCount, 0);
 }
 
 class PlayerSprite :	
@@ -453,7 +476,8 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	// default test values in case script loading is bypassed.
 	ViewMeshSizeX = 24;
 	ViewMeshSizeY = 24;
-	worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
+	worldViewInstanceCount	= ViewMeshSizeY * ViewMeshSizeX;
+	worldViewVerticiesCount = worldViewInstanceCount * 6;
 
 #if 1
 	// Fetch Scene configuration from Lua.
@@ -487,7 +511,8 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 			ViewMeshSizeX = std::min(ViewMeshSizeX, WorldSizeX);
 			ViewMeshSizeY = std::min(ViewMeshSizeY, WorldSizeY);
-			worldViewVerticiesCount = ViewMeshSizeY * ViewMeshSizeX * 6;
+			worldViewInstanceCount  = ViewMeshSizeY * ViewMeshSizeX;
+			worldViewVerticiesCount = worldViewInstanceCount * 6;
 		}
 	}
 #endif
@@ -509,14 +534,11 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 	}
 
-	vFloat3*	ViewMesh = nullptr;		Defer( { xFree(ViewMesh); ViewMesh = nullptr; } );
-
-	xFree(g_WorldMap);	g_WorldMap	= nullptr;
-	xFree(g_ViewUV);	g_ViewUV	= nullptr;
+	xFree(g_WorldMap);		g_WorldMap		= nullptr;
+	xFree(g_ViewTileID);	g_ViewTileID	= nullptr;
 
 	g_WorldMap	= (TerrainMapItem*)	xMalloc(WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-	ViewMesh	= (vFloat3*)		xMalloc(worldViewVerticiesCount * sizeof(vFloat3));
-	g_ViewUV	= (vFloat2*)		xMalloc(worldViewVerticiesCount * sizeof(vFloat2));
+	g_ViewTileID= (u32*)			xMalloc(worldViewInstanceCount	* sizeof(u32));
 
 	g_playerX = 0;
 	g_playerY = 0;
@@ -525,7 +547,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	for (int y=0; y<WorldSizeY; ++y) {
 		for (int x=0; x<WorldSizeX; ++x) {
-			g_WorldMap[(y * WorldSizeX) + x].tilesetId = 13;
+			g_WorldMap[(y * WorldSizeX) + x].tilesetId = 11;
 		}
 	}
 
@@ -545,40 +567,10 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-1)].tilesetId = 20;
 	}
 
-
-	// Populate view mesh according to world map information:
-	// Mesh size is 1.0f per tile.  Y axis is inverted per standard 3D orientation
-
-	float incr_x =  1.0f;
-	float incr_y = -1.0f;
-	float defzval = 0.0f;
-
-	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
-	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
-
-	for (int y=0; y<ViewMeshSizeY; ++y) {
-		// + 0.5f to place tiles according to center of tile (rather than upper-left)
-		float vertY = (ViewMeshSizeY * 0.5f) + (y * incr_y) + 0.5f;
-		for (int x=0; x<ViewMeshSizeX; ++x) {
-			int vertexId = ((y*ViewMeshSizeX) + x) * 6;
-			// - 0.5f to place tiles according to center of tile (rather than upper-left)
-			float vertX = (ViewMeshSizeX * -0.5f) + (x * incr_x) - 0.5f;
-
-			ViewMesh[vertexId + 0]	= vFloat3( vertX + 0,		vertY + 0,		defzval );
-			ViewMesh[vertexId + 1]	= vFloat3( vertX + incr_x,  vertY + 0,		defzval );
-			ViewMesh[vertexId + 2]	= vFloat3( vertX + 0,		vertY + incr_y, defzval );
-			ViewMesh[vertexId + 3]	= vFloat3( vertX + incr_x,  vertY + 0,		defzval );
-			ViewMesh[vertexId + 4]	= vFloat3( vertX + 0,		vertY + incr_y, defzval );
-			ViewMesh[vertexId + 5]	= vFloat3( vertX + incr_x,  vertY + incr_y, defzval );
-
-			//log_host( "x,y == %5.2f, %5.2f", vertX, vertY );
-		}
-	}
-
 	TileMapView_PopulateUVs();
 
-	dx11_CreateStaticMesh(g_mesh_worldView,		ViewMesh,   sizeof(ViewMesh[0]),   worldViewVerticiesCount);
-	dx11_CreateStaticMesh(g_mesh_worldViewUV,	g_ViewUV,   sizeof(g_ViewUV[0]),   worldViewVerticiesCount);
+	dx11_CreateStaticMesh(g_mesh_tile,				g_SingleTileMesh,	sizeof(g_SingleTileMesh[0]),	6);
+	dx11_CreateStaticMesh(g_mesh_worldViewTileID,	g_ViewTileID,		sizeof(g_ViewTileID[0]),		worldViewInstanceCount);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
@@ -624,7 +616,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	g_drawable_entities.Add(player, 10);
 
 	dx11_CreateConstantBuffer(g_gpu_constbuf,		sizeof(GPU_ViewCameraConsts));
-	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(float2));
+	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
 
 	s_CanRenderScene = 1;
 	return true;
