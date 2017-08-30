@@ -24,7 +24,10 @@ cbuffer ConstantBuffer1 : register( b1 )
 	//    This value can be set to 0 in the frontend and the full mesh data can be
 	//    populated on every frame.
 
-	float4	TileAlignedDisp;
+	float2	TileAlignedDisp;
+	uint2 	SrcTexSizeInTiles;
+	float2	SrcTexTileSizeUV;
+	uint2   TileMapSizeXY;
 }
 
 //--------------------------------------------------------------------------------------
@@ -32,6 +35,14 @@ struct VS_INPUT
 {	
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
+};
+
+struct VS_INPUT_TILEMAP
+{	
+	float3 Pos		: POSITION;
+	float2 UV		: TEXCOORD0;
+	uint   TileID	: mTileID;
+	float2 Color	: COLOR;
 };
 
 //--------------------------------------------------------------------------------------
@@ -45,20 +56,41 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-VS_OUTPUT VS( VS_INPUT input )
+VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint vertexID : SV_VertexID
 {
+	// note: move floor(View) calculation to shader and remove global.
+	//  
+	//    The XY of View is discarded since the tilemap is already limited to the user's immediate
+	//    viewable area.  TileAlignedDisp is used to shift the static mesh to match the view.
+
+	// Tile vertices are specified in normalized units from 0.0f to 1.0f,
+	// which makes math for translating the values into their display position pretty simple.
+	// But as a consequence, the Y coordinate must be inverted to conform to standard UP+Y coords.
+
 	VS_OUTPUT outp;
-	outp.Pos = float4(input.Pos, 1.0f);
+
+	uint2  tile_xy = uint2( instID % TileMapSizeXY.x, instID / TileMapSizeXY.x);
+	float2 incr_xy = float2(1.0f, 1.0f);
+	float2 disp_xy = (TileMapSizeXY * -0.5f) + (tile_xy * incr_xy) - 0.5f;
+
+	// Position Calculation
+	outp.Pos	 = float4(input.Pos, 1.0f);
+	outp.Pos	+= float4(disp_xy, 0.0f, 0.0f);
+	outp.Pos.y	*= -1.0f;		// +Y is UP!
 	outp.Pos.xy += TileAlignedDisp;
-	outp.Pos = mul( outp.Pos, View );
-	outp.Pos = mul( outp.Pos, Projection );
+	outp.Pos	 = mul( outp.Pos, View );
+	outp.Pos	 = mul( outp.Pos, Projection );
 
-	// just for diag/testing ...
-	//outp.Pos	= float4(input.Pos, 1.0f) * float4(0.7f, 0.86f, 1.0f, 1.0f);
-	//outp.Pos	= float4(input.Pos, 1.0f);
-
-	outp.Color	= float4(input.UV, 0.0f, 1.0f);
+	// Texture UV Calculation
+	float2  incr_set_uv = 1.0f / SrcTexSizeInTiles;
+	uint2   tiletex_uv  = uint2( input.TileID % SrcTexSizeInTiles.x, input.TileID / SrcTexSizeInTiles.x);
 	outp.UV		= input.UV;
+	outp.UV		= input.UV * SrcTexTileSizeUV;
+	outp.UV	   += float2(tiletex_uv * incr_set_uv);
+
+	// Color & Lighting Calculation  (not implemented)
+	outp.Color	= float4(1.0f, 0.0f, 0.0f, 1.0f);
+
 	return outp;
 }
 
@@ -68,6 +100,11 @@ VS_OUTPUT VS( VS_INPUT input )
 //--------------------------------------------------------------------------------------
 float4 PS( VS_OUTPUT input ) : SV_Target
 {
+	//return input.Color;
+	//float4 result = txHeightMap.Sample( samLinear, input.UV );
+	//result *= input.Color;
+	//return result;
+
 	//return float4( input.Pos.xy * 0.001f, 0.0f, 1.0f );   
 	return txHeightMap.Sample( samLinear, input.UV );
 
