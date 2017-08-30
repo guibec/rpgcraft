@@ -756,6 +756,16 @@ void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
 	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
 }
 
+void dx11_DrawInstanced(int vertsPerInstance, int instanceCount, int startVertLoc, int startInstanceLoc)
+{
+	g_pImmediateContext->DrawInstanced(vertsPerInstance, instanceCount, startVertLoc, startInstanceLoc);
+}
+
+void dx11_DrawIndexedInstanced(int indexesPerInstance, int instanceCount, int startIndex, int baseVertex, int startInstance)
+{
+	g_pImmediateContext->DrawIndexedInstanced(indexesPerInstance, instanceCount, startIndex, baseVertex, startInstance);
+}
+
 void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcData, int sizeInBytes)
 {
 	// Trying to decide between assert or silent ignore if the buffer is not initialized...
