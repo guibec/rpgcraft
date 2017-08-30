@@ -356,6 +356,14 @@ static const D3D11_INPUT_ELEMENT_DESC layout_multi_colortex1[] =
 	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		2, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
+static const D3D11_INPUT_ELEMENT_DESC layout_tilemap[] =
+{
+	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 8,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "mTileID",	0, DXGI_FORMAT_R32_UINT,			1, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+};
+
 const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout layoutType)
 {
 	switch (layoutType)
@@ -364,6 +372,7 @@ const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout lay
 		case VertexBufferLayout_Tex1:					return layout_tex1;
 		case VertexBufferLayout_ColorTex1:				return layout_colortex1;
 		case VertexBufferLayout_ColorTex4:				return layout_colortex4;
+		case VertexBufferLayout_TileMap:				return layout_tilemap;
 		case VertexBufferLayout_MultiSlot_Tex1:			return layout_multi_tex1;
 		case VertexBufferLayout_MultiSlot_ColorTex1:	return layout_multi_colortex1;
 
@@ -382,6 +391,7 @@ int getVertexBufferLayoutSize(GPU_VertexBufferLayout layoutType)
 		case VertexBufferLayout_Tex1:					return bulkof(layout_tex1				);
 		case VertexBufferLayout_ColorTex1:				return bulkof(layout_colortex1			);
 		case VertexBufferLayout_ColorTex4:				return bulkof(layout_colortex4			);
+		case VertexBufferLayout_TileMap:				return bulkof(layout_tilemap			);
 		case VertexBufferLayout_MultiSlot_Tex1:			return bulkof(layout_multi_tex1			);
 		case VertexBufferLayout_MultiSlot_ColorTex1:	return bulkof(layout_multi_colortex1	);
 
