@@ -8,9 +8,11 @@ enum GPU_VertexBufferLayout {
 	VertexBufferLayout_Tex1,
 	VertexBufferLayout_ColorTex1,
 	VertexBufferLayout_ColorTex4,
+	VertexBufferLayout_TileMap,
 
 	VertexBufferLayout_MultiSlot_Tex1,
 	VertexBufferLayout_MultiSlot_ColorTex1,
+
 
 	VertexBufferLayout_NUM_LAYOUTS,
 };
@@ -21,11 +23,14 @@ static inline __ai const char* toString(GPU_VertexBufferLayout layout) {
 		CaseReturnString(VertexBufferLayout_Tex1		);
 		CaseReturnString(VertexBufferLayout_ColorTex1	);
 		CaseReturnString(VertexBufferLayout_ColorTex4	);
-		CaseReturnString(VertexBufferLayout_NUM_LAYOUTS	);
+
+		CaseReturnString(VertexBufferLayout_TileMap		);
 
 		CaseReturnString(VertexBufferLayout_MultiSlot_Tex1		);
 		CaseReturnString(VertexBufferLayout_MultiSlot_ColorTex1 );
 
+
+		CaseReturnString(VertexBufferLayout_NUM_LAYOUTS	);
 		default: __unreachable();
 	}
 	return "invalid";
