@@ -115,6 +115,10 @@ __ai bool SceneInitialized() {
 }
 
 
+extern void			DbgFont_LoadInit		(AjekScriptEnv& script);
+extern void			DbgFont_Render			();
+
+
 __ni void SceneInit()
 {
 	if (s_scene_initialized) {
@@ -130,6 +134,7 @@ __ni void SceneInit()
 	if (result == 0) {
 		script.SetJmpCatch	(s_jmp_buf);
 		dx11_SetJmpCatch	(s_jmp_buf);
+		DbgFont_LoadInit	(script);
 		Scene_TryLoadInit	(script);
 		s_scene_initialized = true;
 	}

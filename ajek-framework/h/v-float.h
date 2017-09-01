@@ -9,7 +9,7 @@
 // Packing is critical.  When working with data on CPU, use u128 as much as possible, and then
 // shuffle-pack data into vFloat for backend processing.
 
-__pragma(pack(push,1))
+BEGIN_GPU_DATA_STRUCTS
 
 struct 	vFloat4;
 struct	vFloat3;
@@ -166,4 +166,4 @@ struct SimpleVertex
 } __packed;
 
 
-__pragma(pack(pop))
+END_GPU_DATA_STRUCTS

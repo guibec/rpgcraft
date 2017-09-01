@@ -12,6 +12,7 @@
 #include "v-float.h"
 
 #include "Entity.h"
+#include "UniformMeshes.h"
 
 #include <DirectXMath.h>
 
@@ -32,7 +33,6 @@ GPU_ShaderFS			g_ShaderFS_Spriter;
 
 bool					g_gpu_ForceWireframe	= false;
 
-GPU_TextureResource2D	tex_8x8;
 GPU_TextureResource2D	tex_floor;
 GPU_TextureResource2D	tex_chars;
 GPU_TextureResource2D	tex_terrain;
@@ -48,9 +48,6 @@ static int ViewMeshSizeX			= 24;
 static int ViewMeshSizeY			= 24;
 static int worldViewInstanceCount	= 0;
 static int worldViewVerticiesCount	= 0;
-
-GPU_TextureResource2D	tex_tile_ids;		// indexer into the provided texture set  (dims: ViewMeshSizeXY)
-GPU_TextureResource2D	tex_tile_rgba;		// tile-based lighting map                (dims: ViewMeshSizeXY)
 
 // ------------------------------------------------------------------------------------------------
 // struct TileMapVertex
@@ -293,20 +290,6 @@ public:
 	}
 };
 
-struct TileMeshVertex
-{
-	vFloat2		xy;
-	vFloat2		uv;
-};
-
-static TileMeshVertex g_SingleTileMesh[] =
-{
-	{ vFloat2(0.0f,  0.0f), vFloat2(0.0f,  0.0f) },
-	{ vFloat2(0.0f,  1.0f), vFloat2(0.0f,  1.0f) },
-	{ vFloat2(1.0f,  1.0f), vFloat2(1.0f,  1.0f) },
-	{ vFloat2(1.0f,  0.0f), vFloat2(1.0f,  0.0f) },
-};
-
 class TileMapLayer :
 	public virtual BasicEntitySpawnId,
 	public virtual ITickableEntity
@@ -346,7 +329,7 @@ void TileMapLayer::Draw() const
 //	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_floor, 0);
 
-	dx11_SetVertexBuffer(g_mesh_tile,				0, sizeof(g_SingleTileMesh[0]), 0);
+	dx11_SetVertexBuffer(g_mesh_tile,				0, sizeof(g_mesh_UniformQuad[0]), 0);
 	dx11_SetVertexBuffer(g_mesh_worldViewTileID,	1, sizeof(g_ViewTileID[0]), 0);
 	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
 
@@ -481,7 +464,6 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 #if 1
 	// Fetch Scene configuration from Lua.
-	script.NewState();
 	script.LoadModule("scripts/GameInit.lua");
 
 	if (script.HasError()) {
@@ -569,7 +551,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	TileMapView_PopulateUVs();
 
-	dx11_CreateStaticMesh(g_mesh_tile,				g_SingleTileMesh,	sizeof(g_SingleTileMesh[0]),	6);
+	dx11_CreateStaticMesh(g_mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 	dx11_CreateStaticMesh(g_mesh_worldViewTileID,	g_ViewTileID,		sizeof(g_ViewTileID[0]),		worldViewInstanceCount);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
@@ -598,14 +580,8 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 		{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 	};
 
-	s16 indices_box[] = {
-		0,1,3,
-		1,3,2
-	};
-
-
 	dx11_CreateStaticMesh(g_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
-	dx11_CreateIndexBuffer(g_idx_box2D, indices_box, 6*2);
+	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 	// ---------------------------------------------------------------------------------------------
 
 	g_TileMap = CreateEntity<TileMapLayer>();

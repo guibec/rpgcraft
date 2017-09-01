@@ -293,6 +293,9 @@ typedef void VoidFunc();
 #define EXPECT_FALSE(a)				EXPECT((a), (false))
 #define EXPECT_TRUE(a)				EXPECT((a), (true))
 
+#define BEGIN_GPU_DATA_STRUCTS		__pragma(pack(push,1))
+#define END_GPU_DATA_STRUCTS		__pragma(pack(pop))
+
 // --------------------------------------------------------------------------------------
 //  pragma_todo    (macro)
 // --------------------------------------------------------------------------------------
