@@ -81,12 +81,14 @@
     </ClCompile>
     <ClCompile Include="src\appConfig.cpp" />
     <ClCompile Include="src\Bezier2D.cpp" />
+    <ClCompile Include="src\DbgFont.cpp" />
     <ClCompile Include="src\dx11-core_stuff.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\test-spline.cpp" />
+    <ClCompile Include="src\UniformMeshes.cpp" />
     <ClCompile Include="src\x-gpu-colors.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
@@ -95,6 +97,7 @@
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\mswStandard.h" />
     <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\UniformMeshes.h" />
     <ClInclude Include="src\v-float.h" />
     <ClInclude Include="src\x-gpu-colors.h" />
     <ClInclude Include="src\x-gpu-ifc.h" />
@@ -124,6 +127,20 @@
     <ProjectReference Include="..\imports\lua-5.3.x\lua-5.3.x.vcxproj">
       <Project>{6388ee6e-722d-4712-93c1-5a7ef1da91e0}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DbgFont.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Sprite.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="TileMap.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
