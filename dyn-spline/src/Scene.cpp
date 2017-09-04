@@ -114,7 +114,6 @@ __ai bool SceneInitialized() {
 	return s_scene_initialized;
 }
 
-static jmp_buf	s_jmp_buf;
 
 __ni void SceneInit()
 {
@@ -123,14 +122,21 @@ __ni void SceneInit()
 	}
 
 	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
+	script.NewState();
 
-	if (setjmp(s_jmp_buf) == 0) {
+	jmp_buf	s_jmp_buf;
+
+	int result = setjmp(s_jmp_buf);
+	if (result == 0) {
 		script.SetJmpCatch	(s_jmp_buf);
 		dx11_SetJmpCatch	(s_jmp_buf);
-		Scene_TryLoadInit(script);
+		Scene_TryLoadInit	(script);
 		s_scene_initialized = true;
 	}
-	else {
+	elif (result == 2) {
+		script.RethrowError();
+	}
+	elif (result == 1) {
 		xPrintLn("");
 		if (!xIsDebuggerAttached()) {
 			log_and_abort("Application aborted due to DoGameInit error."); 

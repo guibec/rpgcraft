@@ -171,14 +171,19 @@ public:
 public:
 	bool			isNil		() const	{ return m_isNil;	}
 
+	lua_s32			get_s32		(int keyidx)		const;
+
 	lua_u32			get_u32		(const char* key)	const;
 	lua_s32			get_s32		(const char* key)	const;
 	lua_s64			get_s64		(const char* key)	const;
 	lua_float		get_float	(const char* key)	const;
 	lua_bool		get_bool	(const char* key)	const;
 	lua_string		get_string	(const char* key);
+	LuaTableScope	get_table	(const char* key);
 
 	LuaFuncScope	push_func	(const char* key);
+
+	void			PrintTable	();
 };
 
 // AjekScriptError -
@@ -193,12 +198,13 @@ enum AjekScriptError {
 
 struct AjekScriptEnv
 {
-	lua_State*		m_L;
-	//AjekMspace*	m_mspace;			// Future custom mspace provision
+	lua_State*			m_L;
+	//AjekMspace*		m_mspace;			// Future custom mspace provision
+	jmp_buf*			m_jmpbuf;			// jump buffer target on error
+	bool				m_has_setjmp;
 
-	AjekScriptError	m_error;			// error result of most recent operations
-	jmp_buf*		m_jmpbuf;			// jump buffer target on error
-	bool			m_has_setjmp;
+volatile
+	AjekScriptError		m_error;			// error result of most recent operations (volatile due to const-castness tricks)
 
 	AjekScriptEnv() {
 		m_L				= nullptr;
@@ -218,7 +224,8 @@ struct AjekScriptEnv
 	void		PrintStackTrace			();
 	void		PrintLastError			() const;
 
-	bool		ThrowError				(AjekScriptError errorcode);
+	bool		ThrowError				(AjekScriptError errorcode) const;
+	void		RethrowError			();
 
 	lua_State*			getLuaState		();
 	const lua_State*	getLuaState		() const;
@@ -244,6 +251,9 @@ struct AjekScriptEnv
 	void			pop				(int num);
 
 	bool			glob_IsNil		(const char* varname)	const;
+
+	lua_s32			get_s32			(int stackidx = -1)		const;
+
 	lua_u32			glob_get_u32	(const char* varname)	const;
 	lua_s32			glob_get_s32	(const char* varname)	const;
 	lua_s64			glob_get_s64	(const char* varname)	const;
@@ -252,16 +262,15 @@ struct AjekScriptEnv
 	lua_string		glob_get_string	(const char* varname)	const;
 	LuaTableScope	glob_open_table	(const char* tableName, bool isRequired = AsApi_Required);
 
-	void SetJmpCatch(jmp_buf& buf) {
-		bug_on_qa(m_has_setjmp);
-		m_jmpbuf		= &buf;
-		m_has_setjmp	= 1;
-	}
+	template<typename T>
+	void			_check_int_trunc	(T result, int stackidx, const char* funcname, const char* varname = "") const;
+	void			_throw_type_mismatch(const char* key, const char* expected_type)	const;
+	void			_throw_type_mismatch(int keyidx, const char* expected_type)			const;
 
-	void SetJmpFinalize() {
-		m_has_setjmp	= 0;
-	}
+	void			SetJmpCatch		(jmp_buf& buf);
+	void			SetJmpFinalize	();
 };
+
 
 extern void				AjekScript_InitSettings				();
 extern void				AjekScript_InitModuleList			();
