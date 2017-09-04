@@ -65,14 +65,14 @@
 /* in POSIX, try _longjmp/_setjmp (more efficient) */
 #define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
 #define LUAI_TRY(L,c,a)		if (_setjmp((c)->b) == 0) { a }
-#define luai_jmpbuf		jmp_buf
+#define luai_jmpbuf			jmp_buf
 
 #else							/* }{ */
 
 /* ISO C handling with long jumps */
 #define LUAI_THROW(L,c)		longjmp((c)->b, 1)
 #define LUAI_TRY(L,c,a)		if (setjmp((c)->b) == 0) { a }
-#define luai_jmpbuf		jmp_buf
+#define luai_jmpbuf			jmp_buf
 
 #endif							/* } */
 
@@ -86,7 +86,6 @@ struct lua_longjmp {
   luai_jmpbuf b;
   volatile int status;  /* error code */
 };
-
 
 static void seterrorobj (lua_State *L, int errcode, StkId oldtop) {
   switch (errcode) {
@@ -111,6 +110,10 @@ l_noret luaD_throw (lua_State *L, int errcode) {
   if (L->errorJmp) {  /* thread has an error handler? */
     L->errorJmp->status = errcode;  /* set status */
     LUAI_THROW(L, L->errorJmp);  /* jump to it */
+  }
+  else if (L->jmpbuf_default) {
+	L->errorStatus = errcode;
+	longjmp(*L->jmpbuf_default, 2);
   }
   else {  /* thread has no error handler */
     global_State *g = G(L);
