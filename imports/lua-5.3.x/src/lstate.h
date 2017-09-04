@@ -13,6 +13,7 @@
 #include "ltm.h"
 #include "lzio.h"
 
+#include <setjmp.h>
 
 /*
 
@@ -170,7 +171,12 @@ struct lua_State {
   UpVal *openupval;  /* list of open upvalues in this stack */
   GCObject *gclist;
   struct lua_State *twups;  /* list of threads with open upvalues */
-  struct lua_longjmp *errorJmp;  /* current error recover point */
+  struct lua_longjmp* errorJmp;  /* current error recover point */
+
+// AJEK-SCRIPT    ----- >
+  jmp_buf* jmpbuf_default;  /* default/universal error recover point if errorJmp is unassigned */
+  int errorStatus;  /* error result set before jumping to jmpbuf_default */
+// <--------------------
   CallInfo base_ci;  /* CallInfo for first level (C calling Lua) */
   volatile lua_Hook hook;
   ptrdiff_t errfunc;  /* current error handling function (stack index) */
