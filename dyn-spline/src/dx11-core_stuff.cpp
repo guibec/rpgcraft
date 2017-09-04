@@ -805,12 +805,13 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 
 	if (dest.m_buffer_idx < 0) {
 		for(int i=0; i<bulkof(g_DynVertBuffers[0]); ++i) {
-			if (g_DynVertBuffers[0]->m_type == DynBuffer_Free) {
+			if (g_DynVertBuffers[0][i].m_type == DynBuffer_Free) {
 				bufferIdx = i;
 				break;
 			}
 		}
 	}
+
 	log_and_abort_on(bufferIdx < 0, "Ran out of Dynamic buffer handles");
 
 	for (int i=0; i<BackBufferCount; ++i) {
@@ -821,14 +822,13 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 		bd.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
 
 		auto& buffer = g_DynVertBuffers[i][bufferIdx];
-		bug_on_qa(buffer.m_type != DynBuffer_Vertex, "DynamicVertexBuffer expected '%s' but got '%s'",
-			enumToString(DynBuffer_Vertex),
-			enumToString(buffer.m_type)
-		);
-
-		if (buffer.m_dx11_buffer)  { buffer.m_dx11_buffer->Release();  buffer.m_dx11_buffer = nullptr; }
+		if (buffer.m_dx11_buffer) {
+			buffer.m_dx11_buffer->Release();
+			buffer.m_dx11_buffer = nullptr;
+		}
 		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer.m_dx11_buffer);
 		bug_on (FAILED(hr));
+		buffer.m_type = DynBuffer_Vertex;
 	}
 
 	dest.m_buffer_idx = bufferIdx;
@@ -888,6 +888,7 @@ void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
 void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* data)
 {
 	auto&	drvbuf	= ptr_cast<ID3D11Buffer* const &>(buffer.m_driverData);
+	bug_on(!drvbuf, "Uninitialized ConstantBuffer resource");
 	g_pImmediateContext->UpdateSubresource(drvbuf, 0, nullptr, data, 0, 0 );
 
 	// Implementation warning:  Yes, nvidia suggests using map(DISCARD)/unmap() instead of UpdateSubresource.
