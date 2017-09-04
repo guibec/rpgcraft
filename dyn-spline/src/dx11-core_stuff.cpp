@@ -663,7 +663,7 @@ void dx11_SetInputLayout(GPU_VertexBufferLayout layoutType)
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[layoutType]);
 }
 
-bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
+bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	HRESULT hr;
 
@@ -681,7 +681,7 @@ bool dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* e
 	return true;
 }
 
-bool dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
+bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	HRESULT hr;
 
@@ -698,15 +698,29 @@ bool dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* e
 	return true;
 }
 
+void dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
+{
+	auto result = dx11_TryLoadShaderVS(dest, srcfile, entryPointFn);
+	bug_on(!result, "Errors during shader compiler and no error handler is registered.");
+}
+
+void dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
+{
+	auto result = dx11_TryLoadShaderFS(dest, srcfile, entryPointFn);
+	bug_on(!result, "Errors during shader compiler and no error handler is registered.");
+}
+
 void dx11_BindShaderVS(const GPU_ShaderVS& vs)
 {
 	auto&	shader	= ptr_cast<ID3D11VertexShader* const&>(vs.m_driverData);
+	bug_on(!shader, "Uninitialized VS shader resource.");
 	g_pImmediateContext->VSSetShader(shader, nullptr, 0);
 }
 
 void dx11_BindShaderFS(const GPU_ShaderFS& fs)
 {
 	auto&	shader	= ptr_cast<ID3D11PixelShader* const&>(fs.m_driverData);
+	bug_on(!shader, "Uninitialized FS shader resource.");
 	g_pImmediateContext->PSSetShader(shader, nullptr, 0);
 }
 

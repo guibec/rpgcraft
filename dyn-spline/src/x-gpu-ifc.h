@@ -235,8 +235,10 @@ extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void*
 extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, const void* srcData, int sizeInBytes);
 extern void					dx11_UpdateConstantBuffer		(const GPU_ConstantBuffer& buffer, const void* data);
 
-extern bool					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
-extern bool					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
+extern bool					dx11_TryLoadShaderVS			(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
+extern bool					dx11_TryLoadShaderFS			(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
+extern void					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
+extern void					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
 extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
 
