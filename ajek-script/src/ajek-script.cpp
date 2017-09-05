@@ -537,20 +537,6 @@ bool AjekScriptEnv::ThrowError(AjekScriptError errorcode) const
 	return false;
 }
 
-LuaTableScope::~LuaTableScope() throw()
-{
-	if (m_env) {
-		// Perform a stack check against when the table was opened.
-	}
-	m_env = nullptr;
-}
-
-LuaTableScope::LuaTableScope(LuaTableScope&& rvalue) {
-	auto&& dest = std::move(*this);
-	xObjCopy(dest, rvalue);
-	rvalue.m_env = nullptr;		// disabled destructor.
-}
-
 LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequired)
 {
 	lua_getglobal(m_L, tableName);
@@ -569,21 +555,29 @@ LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequi
 	return result;
 }
 
+LuaTableScope::~LuaTableScope() throw()
+{
+	if (m_env) {
+		// Perform a stack check against when the table was opened.
+		lua_settop(m_env->m_L, m_top);
+	}
+	m_env = nullptr;
+}
+
+LuaTableScope::LuaTableScope(LuaTableScope&& rvalue) {
+	auto&& dest = std::move(*this);
+	xObjCopy(dest, rvalue);
+	rvalue.m_env = nullptr;		// disabled destructor.
+}
+
 // Returns FALSE if varname is either nil or not a table.  It is considered the responsibility of the
 // caller to use glob_IsNil() check ahead of this call if they want to implement special handling of
 // nil separate from non-table-type behavior.
 LuaTableScope::LuaTableScope(AjekScriptEnv& env)
 {
-	// TODO: Internally get an address to this specific stack object.
-	//   using index2addr() style resolution, specifically this:
-	//
-	//    else if (!ispseudo(idx)) {  /* negative index */
-    //       api_check(L, idx != 0 && -idx <= L->top - (ci->func + 1), "invalid index");
-    //       return L->top + idx;
-	//    }
-
-	m_env = &env;
+	m_env	= &env;
 	m_isNil	= lua_isnil(m_env->m_L, -1);
+	m_top	= lua_gettop(m_env->m_L) - 1;
 }
 
 void AjekScriptEnv::_throw_type_mismatch(const char* key, const char* expected_type) const
@@ -609,12 +603,17 @@ void AjekScriptEnv::_throw_type_mismatch(int keyidx, const char* expected_type) 
 	ThrowError(AsError_Runtime);
 }
 
+void LuaTableScope::_internal_gettable() const {
+	auto* L = m_env->m_L;
+	int topidx = m_top - lua_gettop(L);
+    lua_gettable(L, topidx);
+}
 
 lua_s32 LuaTableScope::get_s32(int keyidx) const
 {
 	auto* L = m_env->m_L;
     lua_pushinteger(L, keyidx);
-    lua_gettable(L, -2);
+	_internal_gettable();
 	
 	lua_s32 result = m_env->get_s32();
 	m_env->_check_int_trunc(result, -1, "get_s32");
@@ -651,7 +650,7 @@ lua_bool LuaTableScope::get_bool(const char* key) const
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
-    lua_gettable(L, -2);
+    _internal_gettable();
 
 	lua_bool result;
 	result.m_isNil = lua_isnil(L, -1);
@@ -667,18 +666,14 @@ lua_bool LuaTableScope::get_bool(const char* key) const
 	return result;
 }
 
-lua_string LuaTableScope::get_string(const char* key)
+lua_string LuaTableScope::_impl_get_string() const
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
-    lua_gettable(L, -2);
-
-	// lua_tostring() modifies the table by converting integers to strings.
-	// This may not be desirable in some situations.  Think about it!
+    _internal_gettable();
 
 	lua_string	result;
 	result.m_isNil = lua_isnil(L, -1);
-	result.m_value = lua_tostring(L, -1);
+	result.m_value = lua_tolstring(L, -1, &result.m_length);
 
 	if (!result.m_value) {
 		bug_on(!result.m_isNil);
@@ -689,11 +684,53 @@ lua_string LuaTableScope::get_string(const char* key)
 	return result;
 }
 
+lua_string LuaTableScope::_impl_conv_string()
+{
+	auto* L = m_env->m_L;
+    _internal_gettable();
+
+	// lua_tostring()   modifies the table by converting integers to strings (generally not good for us)
+	// lua_tolstring()  pushes a new string onto heap/stack, and also resolves __string and __name meta-table refs.  Good!
+
+	//   Since lua_tolstring() pushes a new value onto the stack, it becomes necessary to unwind
+	//   the part of the stack that has our table info in it, and re-push it after the tolstring reference.
+	//   (note: simply re-pushing table info is OK, unless we expected to be running hundreds of these
+	//    operations during a single C call invocation.  Excess stack contents are discarded on return
+	//    from pcall and after APIs finish walking tables, etc).
+
+	lua_string	result;
+	result.m_isNil	= lua_isnil(L, -1);
+	result.m_value	= luaL_tolstring(L, -1, &result.m_length);
+
+	if (!result.m_value) {
+		bug_on(!result.m_isNil);
+		result.m_value = "";
+	}
+
+	//lua_pop(L, 1);		// do not call?
+
+	return result;
+}
+
+lua_string LuaTableScope::get_string(int keyidx) const
+{
+	auto* L = m_env->m_L;
+    lua_pushinteger(L, keyidx);
+	return _impl_get_string();
+}
+
+lua_string LuaTableScope::get_string(const char* key) const
+{
+	auto* L = m_env->m_L;
+    lua_pushstring(L, key);
+	return _impl_get_string();
+}
+
 LuaTableScope LuaTableScope::get_table(const char* key)
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
-    lua_gettable(L, -2);
+    _internal_gettable();
 
 	LuaTableScope result (*m_env);
 
@@ -708,7 +745,7 @@ LuaFuncScope LuaTableScope::push_func(const char* key)
 {
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
-    lua_gettable(L, -2);
+    _internal_gettable();
 
 	bug_on (!lua_isfunction(L, -1));
 
