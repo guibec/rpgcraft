@@ -67,8 +67,8 @@ union DbgColor
 
 struct DbgFontSheet
 {
-	int			xsize;
-	int			ysize;
+	int2	size;
+
 	DbgChar*	charmap;
 	DbgColor*	colormap;
 
@@ -79,12 +79,11 @@ struct DbgFontSheet
 	} gpu;
 
 	struct {
-		int		xsize;
-		int		ysize;
+		int2	size;
 		const GPU_TextureResource2D*	texture;
 	} font;
 
-	void		AllocSheet		(int width_pix, int height_pix);
+	void		AllocSheet		(int2 sizeInPix);
 };
 
 struct DbgFontDrawItem
@@ -105,18 +104,18 @@ DbgFontSheet					g_ConsoleSheet;
 DbgFontSheet					g_DbgFontOverlay;
 bool							s_canRender = false;
 
-void DbgFontSheet::AllocSheet(int width_pix, int height_pix)
+void DbgFontSheet::AllocSheet(int2 sizeInPix)
 {
 	xFree(charmap);
 	charmap = nullptr;
 
-	xsize		 = width_pix	/ font.xsize;
-	ysize		 = height_pix	/ font.ysize;
-	charmap		 = (DbgChar*) xMalloc(ysize * xsize * sizeof(DbgChar));
-	colormap	 = (DbgColor*)xMalloc(ysize * xsize * sizeof(DbgColor));
+	size.x		= sizeInPix.x	/ font.size.x;
+	size.y		= sizeInPix.y	/ font.size.y;
+	charmap		= (DbgChar*) xMalloc(size.y * size.x * sizeof(DbgChar));
+	colormap	= (DbgColor*)xMalloc(size.y * size.x * sizeof(DbgColor));
 
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, ysize * xsize);
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, ysize * xsize);
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x);
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x);
 }
 
 struct DbgFontMeshVertex
@@ -125,13 +124,50 @@ struct DbgFontMeshVertex
 	vFloat2		uv;
 };
 
+template< typename T >
+void table_get_xy(T& dest, LuaTableScope& table)
+{
+	auto xs = table.get_s32("x");
+	auto ys = table.get_s32("y");
+
+	if (xs.isnil()) { xs = table.get_s32(1); }
+	if (ys.isnil()) { ys = table.get_s32(2); }
+
+	if (xs.isnil() || ys.isnil()) {
+		bug_qa("Invalid table layout for expected Int2 parameter.");
+		// Todo: expose a ThrowError that pushes message onto Lua stack and invokes longjmp.
+		// Pre-req: must have a single global lua state for all scene magic.
+		//ThrowError
+	}
+
+	dest.x = xs;
+	dest.y = ys;
+}
+
+template< typename T >
+bool table_get_xy(T& dest, LuaTableScope& table, const char* subtable)
+{
+	bug_on(!subtable);
+	if (auto& subtab = table.get_table(subtable)) {
+		table_get_xy(dest, subtab);
+		return true;
+	}
+	return false;
+}
+
 void DbgFont_LoadInit(AjekScriptEnv& script)
 {
 	s_canRender = 0;
 
-	const char* dbgConTextureFile = "..\\8x8font.png";
-	g_ConsoleSheet.font.xsize		= 8;
-	g_ConsoleSheet.font.ysize		= 8;
+	const char* dbgConTextureFile	= "..\\8x8font.png";
+	g_ConsoleSheet.font.size		= { 8, 8 };
+	g_DbgFontOverlay.font.size		= { 8, 8 };
+	int2 consoleSizeInPix			= { 1280, 960 };
+	int2 overlaySizeInPix			= { 1920, 1080 };
+
+	lua_string consoleShaderFile;
+	lua_string consoleShaderEntryVS;
+	lua_string consoleShaderEntryFS;
 
 	script.LoadModule("scripts/DbgConsole.lua");
 
@@ -142,20 +178,24 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 	if (auto& dbgtable = script.glob_open_table("DbgConsole"))
 	{
 		dbgConTextureFile = dbgtable.get_string("Texture");
-		if (auto& sizetab = dbgtable.get_table("CharSize"))
-		{
-			auto xs = sizetab.get_s32(1);
-			auto ys = sizetab.get_s32(2);
+		table_get_xy(g_ConsoleSheet.font.size,	dbgtable, "CharSize");
+		table_get_xy(consoleSizeInPix,			dbgtable, "SheetSize");
 
-			if (xs.isnil()) { xs = sizetab.get_s32("x"); }
-			if (ys.isnil()) { ys = sizetab.get_s32("y"); }
+		if (auto& shadertab = dbgtable.get_table("Shader")) {
+			consoleShaderFile		= shadertab.get_string("Filename");
+			consoleShaderEntryVS	= shadertab.get_string("CallVS");
+			consoleShaderEntryFS	= shadertab.get_string("CallFS");
 
-			g_ConsoleSheet.font.xsize = xs;
-			g_ConsoleSheet.font.ysize = ys;
+			if (consoleShaderFile.isnil()) {
+				if (1)								{ consoleShaderFile		= shadertab.get_string(1); }
+				if (consoleShaderEntryVS.isnil())	{ consoleShaderEntryVS	= shadertab.get_string(2); }
+				if (consoleShaderEntryFS.isnil())	{ consoleShaderEntryFS	= shadertab.get_string(3); }
+			}
 		}
-
-
 	}
+
+
+
 //	auto woot = DbgConPkg.get_table("font");
 
 	if (1) {
@@ -164,15 +204,11 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 		dx11_CreateTexture2D(tex_8x8, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 	}
 
-	g_ConsoleSheet.font.xsize		= 8;
-	g_ConsoleSheet.font.ysize		= 8;
 	g_ConsoleSheet.font.texture		= &tex_8x8;
-	g_ConsoleSheet.AllocSheet(1280, 960);	// 1280 for 4:3 ratio console, 960 to leave some margin at the bottom.
+	g_ConsoleSheet.AllocSheet(consoleSizeInPix);
 
-	g_DbgFontOverlay.font.xsize		= 8;
-	g_DbgFontOverlay.font.ysize		= 8;
 	g_DbgFontOverlay.font.texture	= &tex_8x8;
-	g_DbgFontOverlay.AllocSheet(1920,1080);
+	g_DbgFontOverlay.AllocSheet(overlaySizeInPix);
 
 	dx11_LoadShaderVS(s_ShaderVS_DbgFont, "DbgFont.fx", "VS");
 	dx11_LoadShaderFS(s_ShaderFS_DbgFont, "DbgFont.fx", "PS");
@@ -189,7 +225,7 @@ void DbgFont_Render()
 
 	// Update dynamic vertex buffers.
 
-	int overlayMeshSize = g_DbgFontOverlay.xsize * g_DbgFontOverlay.ysize;
+	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
 
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
@@ -197,8 +233,8 @@ void DbgFont_Render()
 	// Render!
 
 	g_DbgFontOverlay.gpu.consts.SrcTexTileSizeUV	= vFloat2(1.0f / 128, 1.0f);
-	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.xsize;
-	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.ysize;
+	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
+	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
 
 	dx11_BindShaderVS(s_ShaderVS_DbgFont);
 	dx11_BindShaderFS(s_ShaderFS_DbgFont);
