@@ -87,6 +87,7 @@ struct lua_bool {
 
 struct lua_string {
 	const char*	m_value;
+	size_t		m_length;
 	bool		m_isNil;
 
 	bool isnil() const {
@@ -166,19 +167,26 @@ public:
 	}
 
 	AjekScriptEnv*	m_env;		// also contains lua_State
+	int				m_top;
 	bool			m_isNil;
+
+protected:
+	lua_string		_impl_get_string		() const;
+	lua_string		_impl_conv_string		();
+	void			_internal_gettable		() const;
 
 public:
 	bool			isNil		() const	{ return m_isNil;	}
 
 	lua_s32			get_s32		(int keyidx)		const;
+	lua_string		get_string	(int keyidx)		const;
 
 	lua_u32			get_u32		(const char* key)	const;
 	lua_s32			get_s32		(const char* key)	const;
 	lua_s64			get_s64		(const char* key)	const;
 	lua_float		get_float	(const char* key)	const;
 	lua_bool		get_bool	(const char* key)	const;
-	lua_string		get_string	(const char* key);
+	lua_string		get_string	(const char* key)	const;
 	LuaTableScope	get_table	(const char* key);
 
 	LuaFuncScope	push_func	(const char* key);
