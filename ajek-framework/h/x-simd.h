@@ -470,6 +470,54 @@ union float4 {
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
 
+union int2 {
+	struct {
+		int		x, y;
+	};
+
+	struct {
+		int		z, w;
+	};
+
+	struct {
+		int		u, v;
+	};
+
+	u64			_i64val;
+
+	// note: intentionally omitted u64 operator assignment.
+
+	__ai operator const u64&		()			{ return _i64val;		}
+
+	__ai bool operator==( const int2& right ) const	{ return _i64val == right._i64val; }
+	__ai bool operator!=( const int2& right ) const	{ return _i64val != right._i64val; }
+};
+
+union int4 {
+	struct {
+		int		x,y,z,w;
+	};
+
+	struct {
+		int		xy,zw;
+	};
+
+	struct {
+		int		u,v;
+	};
+
+	u128	q;
+
+	__ai operator __m128&			()			{ return q.qf;	}
+	__ai operator u128&				()			{ return q;		}
+
+	__ai operator const __m128&		() const	{ return q.qf;	}
+	__ai operator const u128&		() const	{ return q;		}
+
+	__ai bool operator==( const u128& right ) const	{ return q == right; }
+	__ai bool operator!=( const u128& right ) const	{ return q != right; }
+};
+
 
 static_assert( sizeof(u128) == 16, "A u128 is is not 128 bits long is scarcely a u128 at all!" );
 
