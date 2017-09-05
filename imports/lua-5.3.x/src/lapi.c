@@ -389,6 +389,19 @@ LUA_API const char *lua_tolstring (lua_State *L, int idx, size_t *len) {
 }
 
 
+// AJEK-SCRIPT - returns null if the referenced value is not a native lus string type (TSTRING)
+LUA_API const char *lua_tolstring_t (lua_State *L, int idx, size_t *len) {
+  StkId o = index2addr(L, idx);
+  if (!ttisstring(o)) {
+	  if (len != NULL) *len = 0;
+      return NULL;
+  }
+  if (len != NULL)
+    *len = vslen(o);
+  return svalue(o);
+}
+
+
 LUA_API size_t lua_rawlen (lua_State *L, int idx) {
   StkId o = index2addr(L, idx);
   switch (ttype(o)) {
