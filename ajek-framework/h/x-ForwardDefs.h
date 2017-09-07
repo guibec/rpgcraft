@@ -32,5 +32,8 @@ class	xMutex;
 class	xCondVar;
 class	xScopedMutex;
 
+// --------------------------------------------------------
+//  ajek-script.h
+// --------------------------------------------------------
 
-class	BaseTextFileWriter;
+struct lua_string;

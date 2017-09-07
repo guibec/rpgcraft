@@ -74,29 +74,6 @@ inline int sprintf_s(  char (&dest)[size], const char* fmt, ... )
 	return result;
 }
 
-#elif TARGET_ORBIS
-
-// ORBIS supports sprintf_s, but it doesn't kindly support the C++ templated varieties
-// included with MSVC.  So let's roll our own here:
-
-//	ORBIS SDK4.00: ORBIS supports a part templated sprintf_s.
-#	if (SCE_ORBIS_SDK_VERSION >> 16) < 0x0400
-template< size_t size >
-inline int vsprintf_s(  char (&dest)[size], const char* fmt, va_list list )
-{
-	return vsprintf_s( dest, size, fmt, list );
-}
-
-template< size_t size >
-inline int sprintf_s(  char (&dest)[size], const char* fmt, ... )
-{
-	va_list list;
-	va_start(list, fmt);
-	int result = vsprintf_s( dest, size, fmt, list );
-	va_end(list);
-	return result;
-}
-#	endif
 #endif
 
 // And nothing rolls this version yet, which allows the use of redefinable pointers
@@ -118,7 +95,6 @@ inline int sprintf_s(  char (*&dest)[size], const char* fmt, ... )
 	va_end(list);
 	return result;
 }
-
 
 typedef char			tChar;
 typedef std::string		tString;
@@ -166,10 +142,10 @@ public:
 
 	xString() {}
 
-	xString( const char* src )
-		: m_string( src )
-	{
-	}
+	xString(const char* src)
+		: m_string( src ) { }
+
+	xString(const lua_string& lua_str);
 
 #if TARGET_MSW
 	xString( const wchar_t* src )
@@ -233,6 +209,7 @@ public:
 	__ai xString&		Replace		( size_t pos1, size_t n1, const xString& src)	{ m_string.replace(pos1, n1, src.m_string); return *this; }
 	__ai const std::string& getBaseType() const						{ return m_string; }
 
+	     xString&		operator=	( const lua_string& src );
 	__ai xString&		operator=	( const char* src )				{ if (!src) m_string.clear(); else m_string = src;	return *this;	}
 	__ai xString&		operator+=	( const xString& src )			{ Append(src);		return *this;	}
 	__ai xString&		operator+=	( char src )					{ Append(src);		return *this;	}
