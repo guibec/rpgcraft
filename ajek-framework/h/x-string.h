@@ -25,7 +25,7 @@
 // gcc's vsn* versions will only append a '\0' if it fits within the 'count' field!
 // So to fix this problem, we just always append '\0' as the last character in the
 // string buffer, which will guarantee the string always ends with a null-byte.
-// This should make the functions interchangeable... (unless you are relying on 
+// This should make the functions interchangeable... (unless you are relying on
 // the end of the string buffer to not be modified at-all when the formatted string
 // is smaller than the buffer... but in that case you should've specified a smaller
 // 'size' limit :p) -ncardell

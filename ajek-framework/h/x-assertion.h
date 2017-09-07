@@ -225,7 +225,7 @@ enum DbgBreakType
 	DbgBreakType_Abort,
 };
 
-enum xLogFlag { 
+enum xLogFlag {
 	xLogFlag_Default		= 0,
 	xLogFlag_Important		= (1 << 0),		// warnings or errors, honored by log_verbose only, also assumes NoRepeat.
 	xLogFlag_Undecorated	= (1 << 1),		// dnoes not print any timestamp information  (for lua/compiler errors)
@@ -289,7 +289,7 @@ extern bool		xIsDebuggerAttached	();
 #else
 #	define		log_and_abort(...)					(			 (__stop())
 #	define		log_and_abort_on(cond,...)			( (cond) &&  (__stop(), true) )
-#	define		abort_var(...)		
+#	define		abort_var(...)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -370,7 +370,7 @@ extern bool		xIsDebuggerAttached	();
 #undef ASSUME
 
 // -------------------------------------------------------------------------------------
-// Ignorable assertions are not supported on 
+// Ignorable assertions are not supported on
 #if !defined(ALLOW_IGNORABLE_ASSERT)
 #	if TARGET_ORBIS || TARGET_RELEASE
 #		define ALLOW_IGNORABLE_ASSERT		0

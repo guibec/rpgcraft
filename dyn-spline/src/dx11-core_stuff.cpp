@@ -184,8 +184,8 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
-	// Setting this flag improves the shader debugging experience, but still allows 
-	// the shaders to be optimized and to run exactly the way they will run in 
+	// Setting this flag improves the shader debugging experience, but still allows
+	// the shaders to be optimized and to run exactly the way they will run in
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
 
@@ -196,7 +196,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 	ID3DBlob* pErrorBlob = nullptr;
 	Defer( { if (pErrorBlob) { pErrorBlob->Release(); pErrorBlob = nullptr; } } );
 
-	// Note on compiler macros: 
+	// Note on compiler macros:
 	//   Macros should match exactly what's being used to precompile shaders via the makefile.
 	//   One possible way to do this is to have the project file write the active shader macro
 	//   configuration into some larger macro that we process here and then pass to the runtime
@@ -297,7 +297,7 @@ void dx11_CleanupDevice()
 			}
 		}
 	}
-	
+
 
 	if (g_pSwapChain1)			{ g_pSwapChain1			->Release();	g_pSwapChain1			= nullptr;	}
 	if (g_pSwapChain)			{ g_pSwapChain			->Release();	g_pSwapChain			= nullptr;	}
@@ -502,7 +502,7 @@ void dx11_InitDevice()
 		TRUE,				//BOOL DepthClipEnable;
 		FALSE,				//BOOL ScissorEnable;
 		TRUE,				//BOOL MultisampleEnable;
-		FALSE				//BOOL AntialiasedLineEnable;        
+		FALSE				//BOOL AntialiasedLineEnable;
 	};
 
 	for (int fill=0; fill<_GPU_Fill_Count_; ++fill) {
@@ -930,7 +930,7 @@ void dx11_SetPrimType(GpuPrimitiveType primType)
 
 		default: unreachable("");
 	}
-	
+
 	g_pImmediateContext->IASetPrimitiveTopology(dxPrimTopology);
 }
 
@@ -994,9 +994,9 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 	desc.Usage				= D3D11_USAGE_DEFAULT;
 	desc.CPUAccessFlags		= 0;
 
-	desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE; 
+	desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE;
 	desc.MiscFlags			= 0;
-	
+
 	if (autogen_mipmaps)
 	{
 		desc.BindFlags	   |= D3D11_BIND_RENDER_TARGET;

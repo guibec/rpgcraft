@@ -543,17 +543,17 @@ struct u128_iter
 		__asm__("tzcnt %[curL], %[lntz];"
 				"tzcnt %[curH], %[hntz];"
 				"movq  %[curL],%%rax;"
-				"movq  %[curH],%%rdx;"				
+				"movq  %[curH],%%rdx;"
 				"addq  $-1, %[curL];"
 				"adcq  $-1, %[curH];"
 				"andq  %%rax, %[curL];"
-				"andq  %%rdx, %[curH];"	
+				"andq  %%rdx, %[curH];"
 				: [lntz] "=r" (lntz),
 				  [hntz] "=r" (hntz),
 				  [curL] "+&r"(_current.sd[0]),
 				  [curH] "+&r"(_current.sd[1])
 				:: "rax", "rdx");
-				  
+
 		ntz = (lntz == 64) ? hntz + 64 : lntz;
 #else
 		if (_current.sd[0] != 0) {

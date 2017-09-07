@@ -123,7 +123,7 @@ __ai size_t _vscprintf( const char* fmt, va_list args )
 	//      the outgoing length of a formatted string.
 	//   3. PS4 libs always to parameter verification internally for all types of printf(), so
 	//      vsnprintf(nullptr) should always be just as secure as vsnprintf_s() anyway.
- 
+
 	va_list l2;
 	va_copy(l2, args);
 	auto result = vsnprintf( nullptr, 0, fmt, l2);

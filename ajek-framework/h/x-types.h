@@ -178,8 +178,8 @@ typedef void VoidFunc();
 
 #	define foreach( typeVar, srclist ) 	for( typeVar : srclist)
 
-#	define PRAGMA_OPTIMIZE_BEGIN()	
-#	define PRAGMA_OPTIMIZE_END()	
+#	define PRAGMA_OPTIMIZE_BEGIN()
+#	define PRAGMA_OPTIMIZE_END()
 
 // These are defined in sys/param.h, included by kernel.h.  For shame.  --jstine
 
@@ -238,8 +238,8 @@ typedef void VoidFunc();
 
 #	define foreach( typeVar, srclist ) 	for( typeVar : srclist)
 
-#	define PRAGMA_OPTIMIZE_BEGIN()	
-#	define PRAGMA_OPTIMIZE_END()	
+#	define PRAGMA_OPTIMIZE_BEGIN()
+#	define PRAGMA_OPTIMIZE_END()
 
 // ================================================================================================
 #elif defined(_MSC_VER)
@@ -302,7 +302,7 @@ typedef void VoidFunc();
 // Used to produce handy-dandy messages like:
 //    1> C:\Source\Project\main.cpp(47): Reminder: Fix this problem!
 
-#define macro_Stringize( L )			#L 
+#define macro_Stringize( L )			#L
 #define macro_MakeString( M, L )		M(L)
 #define _pragmahelper_Line				macro_MakeString( macro_Stringize, __LINE__ )
 #define _pragmahelper_location			__FILE__ "(" _pragmahelper_Line "): "
@@ -461,7 +461,7 @@ static const s64 _4gb	= _1gb * 4;
 #	define __eai				__forceinline
 #else
 #	define __ai
-#	define __eai			
+#	define __eai
 #endif
 
 #if INLINE_FUNCTIONS
@@ -640,7 +640,7 @@ inline __ai bool IsInInt32u(u64 x)	{ return (x <= 0xFFFFFFFFUL); }
 
 #define DECLARE_MODULE_NAME_CLASS( name )	static		__unused const char* const s_ModuleName;
 #define DECLARE_MODULE_NAME_LOCAL( name )	static		__unused const char* const s_ModuleName = name;
-#define DECLARE_MODULE_NAME( name )			namespace { __unused const char* const s_ModuleName = name; } 
+#define DECLARE_MODULE_NAME( name )			namespace { __unused const char* const s_ModuleName = name; }
 
 // -------------------------------------------------------------
 //                     C++ Class Macros

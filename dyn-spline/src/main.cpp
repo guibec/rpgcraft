@@ -112,7 +112,7 @@ int g_setCountY = 0;
 void TileMapView_PopulateUVs()
 {
 	// Populate view mesh according to world map information:
-	
+
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
 	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
@@ -138,7 +138,7 @@ void TileMapView_PopulateUVs()
 				int idx = ((y-1) * WorldSizeX) + (x+0);
 				match_above1 = (g_WorldMap[idx].tilesetId == setId);
 			}
-			
+
 			if (y < WorldSizeY-1) {
 				int idx = ((y+1) * WorldSizeX) + (x+0);
 				match_below1 = (g_WorldMap[idx].tilesetId == setId);
@@ -172,7 +172,7 @@ void TileMapView_PopulateUVs()
 			}
 
 			//subTileY += 3;
-			
+
 			g_ViewTileID[instanceId]  = (setY * g_setCountX) + setX;
 			g_ViewTileID[instanceId] += (subTileY * 4) + subTileX;
 
@@ -340,7 +340,7 @@ void TileMapLayer::Draw() const
 
 }
 
-class PlayerSprite :	
+class PlayerSprite :
 	public virtual BasicEntitySpawnId,
 	public virtual IDrawableEntity,
 	public virtual ITickableEntity

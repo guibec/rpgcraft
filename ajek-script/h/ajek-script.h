@@ -29,7 +29,7 @@ struct lua_s64 {
 	}
 
 	operator s64() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -42,7 +42,7 @@ struct lua_s32 {
 	}
 
 	operator s32() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -55,7 +55,7 @@ struct lua_u32 {
 	}
 
 	operator u32() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -68,7 +68,7 @@ struct lua_float {
 	}
 
 	operator float() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -81,7 +81,7 @@ struct lua_bool {
 	}
 
 	operator bool() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -95,11 +95,11 @@ struct lua_string {
 	}
 
 	operator const char*() const {
-		return m_value; 
+		return m_value;
 	}
 
 	const char* c_str() const {
-		return m_value; 
+		return m_value;
 	}
 };
 
@@ -201,7 +201,7 @@ enum AjekScriptError {
 	AsError_Environment = 1,			// error while reading from global environment tables
 	AsError_Syntax		= 2,			// syntax error while parsing/compiling lua script
 	AsError_Runtime		= 3,			// runtime error during lua script execution (eg, accessing nil value)
-	AsError_Assertion	= 4,			// An error invoked by way of assert() or error()		
+	AsError_Assertion	= 4,			// An error invoked by way of assert() or error()
 };
 
 struct AjekScriptEnv
@@ -238,7 +238,7 @@ volatile
 	lua_State*			getLuaState		();
 	const lua_State*	getLuaState		() const;
 
-// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide 
+// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide
 // clear and explicit specialization of supported incoming types.
 
 	void			pushvalue			(const xString&		string);
@@ -297,7 +297,7 @@ extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
 #define AjekScript_SetJmpIsOK(env)	(env.m_has_setjmp = (setjmp(env.m_jmpbuf)==0))
 
 // Supports any type also supported by underlying AjekScriptEnv::pushvalue().
-// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide 
+// AjekScriptEnv::pushvalue() is intentionally *not* templated, as a way to provide
 // clear and explicit specialization of supported incoming types.
 template< typename T >
 inline void LuaFuncScope::pusharg(const T& anyvalue)
