@@ -159,6 +159,27 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 {
 	s_canRender = 0;
 
+	// TODO:
+	//  What might be nice here is to build all the known tables and populate them with defaults during
+	//  a lua-environment-init step.  Members can be given metadata comments, if desired.  Once populated,
+	//  the tables can be displayed using Lua Inspect module (should be included in the repo), eg:
+    //
+	//     $ print(inspect(DbgConsole))
+	//
+	//  ... which neatly displays all members supported by the game engine, including metadata comments,
+	//  if provided.
+	//
+	//  Likewise, the console itself can support TAB autocompletion based on table inspection.  Would be
+	//  super-cool, right?
+	//
+	// Drawbacks:
+	//   * inspect(table) is not available from external editors.
+	//       Workaround: full inspection dump can be written as plaintext or JSON when process starts, and
+	//       can be used at a minimum provide a copy/paste template for setting up assignment lists for data-
+	//       driven structures.  Advanced integration could include autocomplete -- minimal usefulness for
+	//       data-driven things, but higher usefulness for function-driven things.
+	//
+
 	const char* dbgConTextureFile	= "..\\8x8font.png";
 	g_ConsoleSheet.font.size		= { 8, 8 };
 	g_DbgFontOverlay.font.size		= { 8, 8 };
@@ -210,8 +231,8 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 	g_DbgFontOverlay.font.texture	= &tex_8x8;
 	g_DbgFontOverlay.AllocSheet(overlaySizeInPix);
 
-	dx11_LoadShaderVS(s_ShaderVS_DbgFont, "DbgFont.fx", "VS");
-	dx11_LoadShaderFS(s_ShaderFS_DbgFont, "DbgFont.fx", "PS");
+	dx11_LoadShaderVS(s_ShaderVS_DbgFont, consoleShaderFile, consoleShaderEntryVS);
+	dx11_LoadShaderFS(s_ShaderFS_DbgFont, consoleShaderFile, consoleShaderEntryFS);
 
 	dx11_CreateConstantBuffer(s_cnstbuf_DbgFontSheet, sizeof(g_DbgFontOverlay.gpu.consts));
 	dx11_CreateIndexBuffer(s_idx_UniformQuad, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
