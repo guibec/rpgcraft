@@ -95,7 +95,6 @@ inline int sprintf_s(  char (*&dest)[size], const char* fmt, ... )
 	return result;
 }
 
-
 typedef char			tChar;
 typedef std::string		tString;
 
@@ -142,10 +141,10 @@ public:
 
 	xString() {}
 
-	xString( const char* src )
-		: m_string( src )
-	{
-	}
+	xString(const char* src)
+		: m_string( src ) { }
+
+	xString(const lua_string& lua_str);
 
 #if TARGET_MSW
 	xString( const wchar_t* src )
@@ -209,6 +208,7 @@ public:
 	__ai xString&		Replace		( size_t pos1, size_t n1, const xString& src)	{ m_string.replace(pos1, n1, src.m_string); return *this; }
 	__ai const std::string& getBaseType() const						{ return m_string; }
 
+	     xString&		operator=	( const lua_string& src );
 	__ai xString&		operator=	( const char* src )				{ if (!src) m_string.clear(); else m_string = src;	return *this;	}
 	__ai xString&		operator+=	( const xString& src )			{ Append(src);		return *this;	}
 	__ai xString&		operator+=	( char src )					{ Append(src);		return *this;	}

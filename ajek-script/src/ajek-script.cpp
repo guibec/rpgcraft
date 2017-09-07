@@ -509,6 +509,7 @@ void AjekScriptEnv::SetJmpCatch(jmp_buf& buf) {
 
 void AjekScriptEnv::SetJmpFinalize() {
 	m_L->jmpbuf_default = nullptr;
+	m_has_setjmp		= 0;
 }
 
 void AjekScriptEnv::RethrowError()

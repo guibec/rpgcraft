@@ -103,6 +103,14 @@ struct lua_string {
 	}
 };
 
+inline xString&	xString::operator=( const lua_string& lua_str ) {
+	m_string.assign(lua_str.c_str(), lua_str.m_length);
+	return *this;
+}
+
+inline xString::xString(const lua_string& lua_str)	: m_string(lua_str.c_str(), lua_str.m_length) { }
+//inline xString::xString(lua_string&& lua_str)	: m_string(lua_str.c_str(), lua_str.m_length) { }
+
 struct lua_func {
 	lua_CFunction	m_value;
 	bool			m_isNil;
