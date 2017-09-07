@@ -28,7 +28,7 @@
 // All known versions of Visual Studio and GCC make alignment assumptions when PMOVSX/ZX or
 // INSERTPS are used to fetch contents from memory, which will generally break most intended
 // uses of these intrinsics.  (result is an invalid access crash caused by a preceding movqda).
-// The bug occurs most frequently when optimizations are disabled, however can also 
+// The bug occurs most frequently when optimizations are disabled, however can also
 // happen when optimizations are enabled in specific (rare) circumstances.
 //
 // Various forms of pointer typecast appear to convince the optimizer to use indirect-memory
@@ -76,7 +76,7 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 
-#if !defined(I_INTRIN_AVX) && (_MSC_VER >= 1600) 
+#if !defined(I_INTRIN_AVX) && (_MSC_VER >= 1600)
 #	include <immintrin.h>	// VS2010+ supports AVX
 #	define I_INTRIN_AVX	1
 #endif	// _MSC_VER >= 1600
@@ -460,7 +460,7 @@ StInl void i_haddpd		(__m128& dest, __m128 a, __m128 b)	{ dest = DtoF(_mm_hadd_p
 StInl void i_hsubps		(__m128& dest, __m128 a, __m128 b)	{ dest = FtoF(_mm_hsub_ps(FtoF(a), FtoF(b))); }
 StInl void i_hsubpd		(__m128& dest, __m128 a, __m128 b)	{ dest = DtoF(_mm_hsub_pd(FtoD(a), FtoD(b))); }
 
-// LDDQU 
+// LDDQU
 StInl void i_lddqu		(__m128& dest, memsrc_m128i* src)	{ dest = ItoF(_mm_lddqu_si128((__m128i*)src)); }
 
 // MASKMOVDQU
@@ -631,7 +631,7 @@ StInl void i_pavgw		(__m128& dest, __m128 a, __m128 b)	{ dest = ItoF(_mm_avg_epu
 // PBLENDVB
 StInl void i_pblendvb	(__m128& dest, __m128 a, __m128 b, __m128 mask)			{ dest = ItoF(_mm_blendv_epi8(FtoI(a), FtoI(b), FtoI(mask))); }
 
-// PBLENDW	
+// PBLENDW
 template<int mask> tmplInl void i_pblendw_(__m128& dest, __m128 a, __m128 b)	{ dest = ItoF(_mm_blend_epi16(FtoI(a), FtoI(b), mask)); }
 #define i_pblendw(dest, a, b, mask) i_pblendw_<mask>(dest, a, b)  // mask needs to be a constant expression / integer literal
 
@@ -817,7 +817,7 @@ StInl void i_pmuludq	(__m128& dest, __m128 a, __m128 b)	{ dest = ItoF(_mm_mul_ep
 // PSADBW - Compute Sum of Absolute Differences
 StInl void i_psadbw		(__m128& dest, __m128 a, __m128 b)	{ dest = ItoF(_mm_sad_epu8(FtoI(a), FtoI(b))); }
 
-// PSHUFB 
+// PSHUFB
 StInl void i_pshufb		(__m128& dest, __m128 a, __m128 b)				{ dest = ItoF(_mm_shuffle_epi8(FtoI(a), FtoI(b))); }
 StInl void i_pshufb		(__m128& dest, __m128 a, const u8 shufTbl[16])	{ dest = ItoF(_mm_shuffle_epi8(FtoI(a), *(__m128i*)shufTbl)); }
 
@@ -836,7 +836,7 @@ template<int n> tmplInl void i_vpermilps_(__m128& dest,__m128 a)  { dest = FtoF(
 #define i_vpermilps(dest, a, imm)  i_vpermilps_ <imm>(dest, a)
 #else
 // without AVX, pshufd can be used as a drop-in replacement for fixed permutations.
-#define i_vpermilps(dest, a, imm)  i_pshufd_    <imm>(dest, a) 
+#define i_vpermilps(dest, a, imm)  i_pshufd_    <imm>(dest, a)
 #endif
 
 

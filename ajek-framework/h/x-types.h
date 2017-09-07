@@ -296,7 +296,7 @@ typedef void VoidFunc();
 // Used to produce handy-dandy messages like:
 //    1> C:\Source\Project\main.cpp(47): Reminder: Fix this problem!
 
-#define macro_Stringize( L )			#L 
+#define macro_Stringize( L )			#L
 #define macro_MakeString( M, L )		M(L)
 #define _pragmahelper_Line				macro_MakeString( macro_Stringize, __LINE__ )
 #define _pragmahelper_location			__FILE__ "(" _pragmahelper_Line "): "

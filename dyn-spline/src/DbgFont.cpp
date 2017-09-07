@@ -212,7 +212,7 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 
 	dx11_LoadShaderVS(s_ShaderVS_DbgFont, "DbgFont.fx", "VS");
 	dx11_LoadShaderFS(s_ShaderFS_DbgFont, "DbgFont.fx", "PS");
-	
+
 	dx11_CreateConstantBuffer(s_cnstbuf_DbgFontSheet, sizeof(g_DbgFontOverlay.gpu.consts));
 	dx11_CreateIndexBuffer(s_idx_UniformQuad, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 

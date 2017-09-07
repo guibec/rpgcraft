@@ -22,7 +22,7 @@ typedef std::queue<SceneMessage> SceneMessageList;
 
 static thread_t				s_thr_scene_producer;
 static xMutex				s_mtx_MsgQueue;
-static xSemaphore			s_sem_thread_done;		
+static xSemaphore			s_sem_thread_done;
 static SceneMessageList		s_MsgQueue;
 static u32					s_scene_isPaused;
 
@@ -144,7 +144,7 @@ __ni void SceneInit()
 	elif (result == 1) {
 		xPrintLn("");
 		if (!xIsDebuggerAttached()) {
-			log_and_abort("Application aborted due to DoGameInit error."); 
+			log_and_abort("Application aborted due to DoGameInit error.");
 		}
 		script.PrintLastError();
 		dx11_PrintLastError();

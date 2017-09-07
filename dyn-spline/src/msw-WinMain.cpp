@@ -105,9 +105,9 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 static inline bool _sopt_isWhitespace( char ch )
 {
 	return !ch
-		|| (ch == '\r') 
+		|| (ch == '\r')
 		|| (ch == '\n')
-		|| (ch == ' ') 
+		|| (ch == ' ')
 		|| (ch == '\t');
 }
 
@@ -118,7 +118,7 @@ xString Host_GetCWD()
 	return ret ? xString(buff) : xString();
 }
 
-bool Msw_DrainMsgQueue() 
+bool Msw_DrainMsgQueue()
 {
 	MSG msg = { 0 };
 
@@ -184,7 +184,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			log_and_abort_on(!utf8.data()[readpos] || readpos >= utf8.GetLength(),
 				"Unexpected end of CLI option while searching for '='\n   Option Text: %s", utf8.c_str()
 			);
-			log_and_abort_on(_sopt_isWhitespace(utf8.data()[readpos]), 
+			log_and_abort_on(_sopt_isWhitespace(utf8.data()[readpos]),
 				"Invalid whitespace detected in CLI lvalue: %s", utf8.c_str()
 			);
 			log_and_abort_on(writepos >= bulkof(optmp)-1, "CLI option text is too long!");

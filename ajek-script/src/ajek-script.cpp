@@ -34,7 +34,7 @@ struct AjekScriptSettings {
 
 struct AjekScriptTraceSettings {
 	struct {
-		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope 
+		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope
 		u32		warn_enclosed_globals   : 1;		// warn when new globals are created outside module scope, eg. within any function
 		u32		error_enclosed_globals  : 1;		// error when new globals are created outside module scope, eg. within any function  (takes precedence over warn when enabled)
 		u32		trace_gcmem				: 1;		// enables gcmem usage checks at every entry and exit point for ajek framework libs
@@ -95,7 +95,7 @@ void AjekScriptEnv::PrintStackTrace()
 void AjekScript_SetDebugAbsolutePaths(const xString& cwd, const xString& target)
 {
 	// Paths internally are relative to the CWD, but when we log errors to console we
-	// want them to be relative to the dir specified here, which is typically the project 
+	// want them to be relative to the dir specified here, which is typically the project
 	// or solution dir (Visual Studio).
 
 	// Generating such relative paths isn't especially easy.  There's no built-in functions
@@ -120,7 +120,7 @@ void AjekScript_SetDebugAbsolutePaths(const xString& cwd, const xString& target)
 void AjekScript_SetDebugRelativePath(const xString& relpath)
 {
 	// Paths internally are relative to the CWD, but when we log errors to console we
-	// want them to be relative to the dir specified here, which is typically the project 
+	// want them to be relative to the dir specified here, which is typically the project
 	// or solution dir (Visual Studio).
 
 	s_script_dbg_path_prefix = relpath;
@@ -267,8 +267,8 @@ void AjekScript_InitModuleList()
 {
 	bug_on(!s_script_settings_initialized);
 
-	g_script_env[ScriptEnv_AppConfig]	.Alloc(); 
-	g_script_env[ScriptEnv_Game]		.Alloc(); 
+	g_script_env[ScriptEnv_AppConfig]	.Alloc();
+	g_script_env[ScriptEnv_Game]		.Alloc();
 }
 
 void AjekScriptEnv::Alloc()
@@ -308,7 +308,7 @@ void AjekScriptEnv::PrintLastError() const
 	}
 }
 
-AjekScriptError cvtLuaErrorToAjekError(int lua_error) 
+AjekScriptError cvtLuaErrorToAjekError(int lua_error)
 {
 	switch (lua_error) {
 		case LUA_YIELD		:	bug("LUA_YIELD.  HOW??");						break;
@@ -373,7 +373,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	//  # remove init-only APIs.
 
 	//s_module_id	= LuaModule_State_NotLoading;
-	
+
 	// Error Handling!
 	//  # ScriptDebug fall into a recoverable SyntaxError state, from which the user can
 	//    modify scripts and then resume execution.
@@ -525,7 +525,7 @@ bool AjekScriptEnv::ThrowError(AjekScriptError errorcode) const
 	const_cast<AjekScriptEnv*>(this)->m_error = errorcode;
 
 	if (m_has_setjmp) {
-		// Do not log last error here -- 
+		// Do not log last error here --
 		//    assume the error handler may want to do it's own error msg printout
 		longjmp(*m_jmpbuf, 1);
 	}
@@ -547,7 +547,7 @@ LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequi
 		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
 		ThrowError(AsError_Environment);
 	}
-	
+
 	if (!result.isNil() && !lua_istable(m_L, -1)) {
 		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
 		ThrowError(AsError_Environment);
@@ -614,7 +614,7 @@ lua_s32 LuaTableScope::get_s32(int keyidx) const
 	auto* L = m_env->m_L;
     lua_pushinteger(L, keyidx);
 	_internal_gettable();
-	
+
 	lua_s32 result = m_env->get_s32();
 	m_env->_check_int_trunc(result, -1, "get_s32");
 
@@ -632,7 +632,7 @@ lua_s32 LuaTableScope::get_s32(const char* key) const
 	auto* L = m_env->m_L;
     lua_pushstring(L, key);
     lua_gettable(L, -2);
-	
+
 	lua_s32 result = m_env->get_s32();
 	m_env->_check_int_trunc(result, -1, "get_s32", key);
 
@@ -655,7 +655,7 @@ lua_bool LuaTableScope::get_bool(const char* key) const
 	lua_bool result;
 	result.m_isNil = lua_isnil(L, -1);
 	result.m_value = lua_toboolean(L, -1);
-	
+
 	// strings, ints, numbers are OK.  But make an API for it because it should be a standard rule...
 	pragma_todo("Relax bool type checking here to include non-table values.");
 	if (!result.isnil() && !lua_isboolean(L, -1)) {
@@ -756,7 +756,7 @@ void LuaTableScope::PrintTable()
 {
 	auto* L = m_env->m_L;
 	lua_pushnil(L);
-	while(lua_next(L, -2)) { 
+	while(lua_next(L, -2)) {
 		const char* val = lua_tostring(L, -1);
 		const char* key = lua_tostring(L, -2);
 
