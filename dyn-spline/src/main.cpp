@@ -372,6 +372,8 @@ public:
 	}
 };
 
+extern void DbgFont_Render();
+
 void SceneRender()
 {
 	if (!s_CanRenderScene) return;
@@ -417,6 +419,8 @@ void SceneRender()
 	}
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
+
+	DbgFont_Render();
 
 	dx11_BackbufferSwap();
 }
