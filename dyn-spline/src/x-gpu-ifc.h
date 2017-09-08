@@ -9,6 +9,7 @@ enum GPU_VertexBufferLayout {
 	VertexBufferLayout_ColorTex1,
 	VertexBufferLayout_ColorTex4,
 	VertexBufferLayout_TileMap,
+	VertexBufferLayout_DbgFont,
 
 	VertexBufferLayout_MultiSlot_Tex1,
 	VertexBufferLayout_MultiSlot_ColorTex1,
@@ -25,6 +26,7 @@ static inline __ai const char* toString(GPU_VertexBufferLayout layout) {
 		CaseReturnString(VertexBufferLayout_ColorTex4	);
 
 		CaseReturnString(VertexBufferLayout_TileMap		);
+		CaseReturnString(VertexBufferLayout_DbgFont		);
 
 		CaseReturnString(VertexBufferLayout_MultiSlot_Tex1		);
 		CaseReturnString(VertexBufferLayout_MultiSlot_ColorTex1 );

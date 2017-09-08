@@ -48,15 +48,21 @@ struct GPU_DbgFontConstants
 
 /*{*/ BEGIN_GPU_DATA_STRUCTS	// ---------------------------------------------------
 
-typedef u8	DbgChar;
+// Notes:
+//  * In order to use u8 character information, the inputs to the shader must be provided as
+//    textures rather than Vertex Buffers.  This is needed because vertex buffers have buffer
+//    stride and alignment limitations.  I've had issues getting texture.Load() to work correctly,
+//    so for now using space-inefficient 32-bit vertex buffer formats.
+
+typedef u32	DbgChar;
 
 union DbgColor
 {
 	struct {
-		u8		a,b,g,r;
+		float		a,b,g,r;
 	};
 
-	u32		rgba;
+	u128		rgba;
 
 	// rgba - could be changed to a u8 clut into a color table, if performance of dbgfont
 	// is a problem later on.  (seems unlikely)
@@ -114,8 +120,8 @@ void DbgFontSheet::AllocSheet(int2 sizeInPix)
 	charmap		= (DbgChar*) xMalloc(size.y * size.x * sizeof(DbgChar));
 	colormap	= (DbgColor*)xMalloc(size.y * size.x * sizeof(DbgColor));
 
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x);
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x);
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ));
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor));
 }
 
 struct DbgFontMeshVertex
@@ -204,8 +210,8 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 
 		if (auto& shadertab = dbgtable.get_table("Shader")) {
 			consoleShaderFile		= shadertab.get_string("Filename");
-			consoleShaderEntryVS	= shadertab.get_string("CallVS");
-			consoleShaderEntryFS	= shadertab.get_string("CallFS");
+			consoleShaderEntryVS	= shadertab.get_string("VS");
+			consoleShaderEntryFS	= shadertab.get_string("FS");
 
 			if (consoleShaderFile.isnil()) {
 				if (1)								{ consoleShaderFile		= shadertab.get_string(1); }
@@ -215,9 +221,6 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 		}
 	}
 
-
-
-//	auto woot = DbgConPkg.get_table("font");
 
 	if (1) {
 		xBitmapData  pngtex;
@@ -237,6 +240,8 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 	dx11_CreateConstantBuffer(s_cnstbuf_DbgFontSheet, sizeof(g_DbgFontOverlay.gpu.consts));
 	dx11_CreateIndexBuffer(s_idx_UniformQuad, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 
+	dx11_CreateStaticMesh(s_mesh_anychar,	g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
+
 	s_canRender = 1;
 }
 
@@ -248,29 +253,34 @@ void DbgFont_Render()
 
 	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
 
+	for(int i=0; i<overlayMeshSize; ++i) {
+		g_DbgFontOverlay.charmap[i] = 'A'; // + (i % 20);
+	}
+
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
 
-	// Render!
-
 	g_DbgFontOverlay.gpu.consts.SrcTexTileSizeUV	= vFloat2(1.0f / 128, 1.0f);
+	g_DbgFontOverlay.gpu.consts.SrcTexSizeInTiles	= vInt2(128,1);
 	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
 	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
+	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet, &g_DbgFontOverlay.gpu.consts);
+
+	// Render!
 
 	dx11_BindShaderVS(s_ShaderVS_DbgFont);
 	dx11_BindShaderFS(s_ShaderFS_DbgFont);
-	dx11_SetInputLayout(VertexBufferLayout_TileMap);
+	dx11_SetInputLayout(VertexBufferLayout_DbgFont);
 
 //	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_8x8, 0);
 
 	dx11_SetVertexBuffer(s_mesh_anychar,					0, sizeof(g_mesh_UniformQuad[0]), 0);
 	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_charmap,	1, sizeof(DbgChar),  0);
-	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_rgbamap,	1, sizeof(DbgColor), 0);
+	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_rgbamap,	2, sizeof(DbgColor), 0);
 
 	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
 
-	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet, &g_DbgFontOverlay.gpu.consts);
 	dx11_BindConstantBuffer(s_cnstbuf_DbgFontSheet, 0);
 	dx11_SetIndexBuffer(s_idx_UniformQuad, 16, 0);
 	dx11_DrawIndexedInstanced(6, overlayMeshSize, 0, 0, 0);

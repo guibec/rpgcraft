@@ -1,26 +1,26 @@
 
 
 struct VS_INPUT_COLOR
-{	
+{
 	float3 Pos		: POSITION;
 	float2 Color	: COLOR;
 };
 
 struct VS_INPUT_TEX1
-{	
+{
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
 };
 
 struct VS_INPUT_COLORTEX1
-{	
+{
 	float3 Pos		: POSITION;
 	float2 Color	: COLOR;
 	float2 UV		: TEXCOORD0;
 };
 
 struct VS_INPUT_COLORTEX4
-{	
+{
 	float3 Pos		: POSITION;
 	float2 Color	: COLOR;
 	float2 UV		: TEXCOORD3;
@@ -33,11 +33,19 @@ struct VS_OUTPUT
 };
 
 struct VS_INPUT_TILEMAP
-{	
+{
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
 	uint   TileID	: mTileID;
-	float2 Color	: COLOR;
+	float4 Color	: COLOR;
+};
+
+struct VS_INPUT_DbgFont
+{
+	float3 Pos		: POSITION;
+	float2 UV		: TEXCOORD0;
+	uint   TileID	: mTileID;
+	float4 Color	: COLOR;
 };
 
 
@@ -90,8 +98,15 @@ VS_OUTPUT VertexBufferLayout_MultiSlot_ColorTex1( VS_INPUT_COLORTEX1 input )
 	return result;
 }
 
-
 VS_OUTPUT VertexBufferLayout_TileMap( VS_INPUT_TILEMAP input )
+{
+	VS_OUTPUT result;
+	result.Pos = float4(input.Pos, 0.0f);
+	result.Color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return result;
+}
+
+VS_OUTPUT VertexBufferLayout_DbgFont( VS_INPUT_DbgFont input )
 {
 	VS_OUTPUT result;
 	result.Pos = float4(input.Pos, 0.0f);
