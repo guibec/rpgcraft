@@ -262,3 +262,4 @@ extern void					dx11_Draw						(int indexCount, int startVertLoc);
 
 extern bool					g_gpu_ForceWireframe;
 extern GPU_RenderTarget		g_gpu_BackBuffer;
+extern int2					g_backbuffer_size_pix;
