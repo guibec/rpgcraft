@@ -30,17 +30,20 @@ static const int BackBufferCount = 3;
 extern HINSTANCE		g_hInst;
 extern HWND				g_hWnd;
 
-ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
-ID3D11InputLayout*      g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS] = {};
+int2 g_backbuffer_size_pix = {0, 0};
 
-D3D_DRIVER_TYPE         g_driverType			= D3D_DRIVER_TYPE_NULL;
-D3D_FEATURE_LEVEL       g_featureLevel			= D3D_FEATURE_LEVEL_11_0;
-ID3D11Device*           g_pd3dDevice			= nullptr;
-ID3D11Device1*          g_pd3dDevice1			= nullptr;
-ID3D11DeviceContext*    g_pImmediateContext		= nullptr;
-ID3D11DeviceContext1*   g_pImmediateContext1	= nullptr;
-IDXGISwapChain*         g_pSwapChain			= nullptr;
-IDXGISwapChain1*        g_pSwapChain1			= nullptr;
+
+static ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
+static ID3D11InputLayout*		g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS] = {};
+
+static D3D_DRIVER_TYPE			g_driverType			= D3D_DRIVER_TYPE_NULL;
+static D3D_FEATURE_LEVEL		g_featureLevel			= D3D_FEATURE_LEVEL_11_0;
+static ID3D11Device*			g_pd3dDevice			= nullptr;
+static ID3D11Device1*			g_pd3dDevice1			= nullptr;
+static ID3D11DeviceContext*		g_pImmediateContext		= nullptr;
+static ID3D11DeviceContext1*	g_pImmediateContext1	= nullptr;
+static IDXGISwapChain*			g_pSwapChain			= nullptr;
+static IDXGISwapChain1*			g_pSwapChain1			= nullptr;
 
 
 struct ConstantBuffer
@@ -453,8 +456,10 @@ void dx11_InitDevice()
 
 	RECT rc;
 	GetClientRect(g_hWnd, &rc);
-	UINT width = rc.right - rc.left;
-	UINT height = rc.bottom - rc.top;
+	g_backbuffer_size_pix = {
+		rc.right - rc.left,
+		rc.bottom - rc.top
+	};
 
 	UINT createDeviceFlags = 0;
 #ifdef _DEBUG
@@ -572,8 +577,8 @@ void dx11_InitDevice()
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
-		sd.Width                = width;
-		sd.Height               = height;
+		sd.Width                = g_backbuffer_size_pix.x;
+		sd.Height               = g_backbuffer_size_pix.y;
 		sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count     = 1;
 		sd.SampleDesc.Quality   = 0;
@@ -592,8 +597,8 @@ void dx11_InitDevice()
 		// DirectX 11.0 systems
 		DXGI_SWAP_CHAIN_DESC sd = {};
 		sd.BufferCount          = 1;
-		sd.BufferDesc.Width     = width;
-		sd.BufferDesc.Height    = height;
+		sd.BufferDesc.Width     = g_backbuffer_size_pix.x;
+		sd.BufferDesc.Height    = g_backbuffer_size_pix.y;
 		sd.BufferDesc.Format    = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
@@ -626,8 +631,8 @@ void dx11_InitDevice()
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
-	vp.Width	= (float)width;
-	vp.Height	= (float)height;
+	vp.Width	= (float)g_backbuffer_size_pix.x;
+	vp.Height	= (float)g_backbuffer_size_pix.y;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
@@ -662,7 +667,7 @@ void dx11_InitDevice()
 
 	g_World			= XMMatrixIdentity();
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
-	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f );
+	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y), 0.01f, 100.0f );
 
 	genInputLayouts();
 
