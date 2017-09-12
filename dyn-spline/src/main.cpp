@@ -242,12 +242,6 @@ public:
 	}
 };
 
-struct GPU_ViewCameraConsts
-{
-	XMMATRIX View;
-	XMMATRIX Projection;
-};
-
 struct GPU_TileMapConstants
 {
 	vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
@@ -259,8 +253,6 @@ struct GPU_TileMapConstants
 
 GPU_ConstantBuffer		g_gpu_constbuf;
 GPU_ConstantBuffer		g_cnstbuf_TileMap;
-
-extern XMMATRIX         g_Projection;
 
 class ViewCamera :
 	public virtual BasicEntitySpawnId,
@@ -376,10 +368,17 @@ extern void DbgFont_Render();
 
 void SceneRender()
 {
+
 	if (!s_CanRenderScene) return;
 
+
 	// Clear the back buffer
+	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
+
+//	DbgFont_Render();
+//	dx11_BackbufferSwap();
+//	return;
 
 	//
 	// Update variables
