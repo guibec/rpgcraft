@@ -492,8 +492,6 @@ union int2 {
 
 	// note: intentionally omitted u64 operator assignment.
 
-	__ai operator const u64&		()			{ return _i64val;		}
-
 	__ai bool operator==( const int2& right ) const	{ return _i64val == right._i64val; }
 	__ai bool operator!=( const int2& right ) const	{ return _i64val != right._i64val; }
 };
