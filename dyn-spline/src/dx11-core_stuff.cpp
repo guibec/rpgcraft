@@ -428,6 +428,16 @@ static void genInputLayouts()
 {
 	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
 	//        specifications defined within and supported by our engine.
+	//
+	// Caveat: Auto-generating input layouts forces shaders to use input layouts that match
+	//         specifically the layout defined by the framework.  Normally the DX11 system allows
+	//         input layouts to be defined in any order and with padding or unused fields, which
+	//         allows a single shader to be used with several different input layout inputs.
+	//
+	//  To work around the caveat, the framework should have 1:1 match of layout to shader,
+	//  rather than trying to use just a few generic layouts for all shaders.  Layouts can probably
+	//  be created on first-time use easliy enough (during SceneRender step, when the shader/layout
+	//  combo is bound to the pipeline).  Layouts can be hashed for tracking/cleanup purposes.
 
 	pragma_todo("Remove dependency on VertexInputLayouts.fx and allow for runtime-specified input layouts.");
 
