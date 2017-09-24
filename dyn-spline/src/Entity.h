@@ -205,7 +205,7 @@ struct DrawableEntityContainer {
 	HashedContainerType				m_hashed;
 	OrderedContainerType			m_ordered;
 
-	// Add/Remove note: 
+	// Add/Remove note:
 	//  * modification of drawable entity list during draw is invalid.  It can only be modified from tick context/
 
 	void	_Add		(const DrawableEntityItem& entity);

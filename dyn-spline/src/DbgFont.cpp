@@ -8,8 +8,11 @@
 #include "x-gpu-ifc.h"
 #include "v-float.h"
 
-#include "ajek-script.h"
 #include "UniformMeshes.h"
+#include "DbgFont.h"
+#include "ajek-script.h"
+
+#include <vector>
 
 // Debug font uses a simplified version of tile rendering.
 // A draw command is submitted with a grid of character information.
@@ -42,71 +45,6 @@ static GPU_IndexBuffer			s_idx_UniformQuad;
 
 static GPU_ViewCameraConsts		m_ViewConsts;
 
-struct GPU_DbgFontConstants
-{
-	vFloat2		SrcTexTileSizeUV;
-	vInt2		SrcTexSizeInTiles;
-	vInt2		CharMapSize;
-	vFloat2		ProjectionXY;
-	vFloat2		ProjectionScale;
-};
-
-/*{*/ BEGIN_GPU_DATA_STRUCTS	// ---------------------------------------------------
-
-// Notes:
-//  * In order to use u8 character information, the inputs to the shader must be provided as
-//    textures rather than Vertex Buffers.  This is needed because vertex buffers have buffer
-//    stride and alignment limitations.  I've had issues getting texture.Load() to work correctly,
-//    so for now using space-inefficient 32-bit vertex buffer formats.
-
-typedef u32	DbgChar;
-
-union DbgColor
-{
-	struct {
-		float		a,b,g,r;
-	};
-
-	u128		rgba;
-
-	// rgba - could be changed to a u8 clut into a color table, if performance of dbgfont
-	// is a problem later on.  (seems unlikely)
-} __packed;
-
-/*}*/ END_GPU_DATA_STRUCTS		// ---------------------------------------------------
-
-
-struct DbgFontSheet
-{
-	int2	size;
-
-	DbgChar*	charmap;
-	DbgColor*	colormap;
-
-	struct {
-		GPU_DbgFontConstants	consts;
-		GPU_DynVsBuffer			mesh_charmap;
-		GPU_DynVsBuffer			mesh_rgbamap;
-	} gpu;
-
-	struct {
-		int2	size;
-		const GPU_TextureResource2D*	texture;
-	} font;
-
-	void		AllocSheet		(int2 sizeInPix);
-};
-
-struct DbgFontDrawItem
-{
-	int		ppx;		// pixel position x and y
-	int		ppy;		// pixel position x and y
-	vFloat4	rgba;
-	u8		chr;		// character to display
-};
-
-#include <vector>
-
 typedef std::vector<DbgFontDrawItem> DbgFontDrawItemContainer;
 
 DbgFontDrawItemContainer		g_dbgFontDrawList;
@@ -117,23 +55,37 @@ bool							s_canRender = false;
 
 void DbgFontSheet::AllocSheet(int2 sizeInPix)
 {
-	xFree(charmap);
-	charmap = nullptr;
-
 	size.x		= sizeInPix.x	/ font.size.x;
 	size.y		= sizeInPix.y	/ font.size.y;
-	charmap		= (DbgChar*) xMalloc(size.y * size.x * sizeof(DbgChar));
-	colormap	= (DbgColor*)xMalloc(size.y * size.x * sizeof(DbgColor));
+	charmap		= (DbgChar*) xRealloc(charmap,  size.y * size.x * sizeof(DbgChar));
+	colormap	= (DbgColor*)xRealloc(colormap, size.y * size.x * sizeof(DbgColor));
 
 	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ));
 	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor));
 }
 
-struct DbgFontMeshVertex
+template< typename T >
+void xMemSetObjs(T* dest, const T& data, int sizeInInstances)
 {
-	vFloat2		xy;
-	vFloat2		uv;
-};
+	for (int i=0; i<sizeInInstances; ++i) {
+		dest[i] = data;
+	}
+}
+
+void DbgFontSheet::SceneBegin()
+{
+	xMemSetObjs (charmap,   { 0 },							size.y * size.x);
+	xMemSetObjs	(colormap, {{ 1.0f, 0.5f, 0.5f, 0.5f }},	size.y * size.x);
+}
+
+void DbgFontSheet::Write(int x, int y, const xString& msg)
+{
+	int pos = (y * size.x) + x;
+	for (int i=0; i<msg.GetLength(); ++i) {
+		g_DbgFontOverlay.charmap[pos+i] = msg[i];
+	}
+}
+
 
 template< typename T >
 void table_get_xy(T& dest, LuaTableScope& table)
@@ -196,8 +148,8 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 	const char* dbgConTextureFile	= "..\\8x8font.png";
 	g_ConsoleSheet.font.size		= { 8, 8 };
 	g_DbgFontOverlay.font.size		= { 8, 8 };
-	int2 consoleSizeInPix			= { g_backbuffer_size_pix.x * 0.75, g_backbuffer_size_pix.y * 0.75 };
-	int2 overlaySizeInPix			= { g_backbuffer_size_pix.x / 2, g_backbuffer_size_pix.y / 2 };
+	int2 consoleSizeInPix			= { g_backbuffer_size_pix.x * 0.75f,	g_backbuffer_size_pix.y * 0.75f };
+	int2 overlaySizeInPix			= { g_backbuffer_size_pix.x / 2,		g_backbuffer_size_pix.y / 2 };
 
 	lua_string consoleShaderFile;
 	lua_string consoleShaderEntryVS;
@@ -265,7 +217,13 @@ void DbgFont_LoadInit(AjekScriptEnv& script)
 	s_canRender = 1;
 }
 
-void DbgFont_Render()
+void DbgFont_SceneBegin()
+{
+	g_DbgFontOverlay	.SceneBegin();
+	g_ConsoleSheet		.SceneBegin();
+}
+
+void DbgFont_SceneRender()
 {
 	if (!s_canRender) return;
 
@@ -273,9 +231,10 @@ void DbgFont_Render()
 
 	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
 
-	for(int i=0; i<overlayMeshSize; ++i) {
-		g_DbgFontOverlay.charmap[i] = 'A' + (i % 20);
-	}
+	g_DbgFontOverlay.Write(0,0, "TESTING");
+	//for(int i=0; i<overlayMeshSize; ++i) {
+	//	g_DbgFontOverlay.charmap[i] = 'A' + (i % 20);
+	//}
 
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
@@ -284,8 +243,8 @@ void DbgFont_Render()
 	g_DbgFontOverlay.gpu.consts.SrcTexSizeInTiles	= vInt2(152,1);
 	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
 	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
-	g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.25f, 0.25f);
-	g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(0.5f, 1.0f);
+	g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.0f, 0.0f);
+	g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(1.0f, 1.0f);
 	dx11_UpdateConstantBuffer(s_cnstbuf_Projection,		&m_ViewConsts);
 	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet,	&g_DbgFontOverlay.gpu.consts);
 
