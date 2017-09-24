@@ -12,6 +12,7 @@
 #include "v-float.h"
 
 #include "Entity.h"
+#include "DbgFont.h"
 #include "UniformMeshes.h"
 
 #include <DirectXMath.h>
@@ -190,6 +191,7 @@ bool s_CanRenderScene = false;
 
 void SceneBegin()
 {
+	DbgFont_SceneBegin();
 	TileMapView_PopulateUVs();
 }
 
@@ -364,8 +366,6 @@ public:
 	}
 };
 
-extern void DbgFont_Render();
-
 void SceneRender()
 {
 
@@ -419,7 +419,7 @@ void SceneRender()
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
-	DbgFont_Render();
+	DbgFont_SceneRender();
 
 	dx11_BackbufferSwap();
 }

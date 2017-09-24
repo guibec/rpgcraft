@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Bezier2D.h" />
+    <ClInclude Include="src\DbgFont.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\mswStandard.h" />
     <ClInclude Include="src\Scene.h" />

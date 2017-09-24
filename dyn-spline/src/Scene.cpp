@@ -10,6 +10,7 @@
 #include "x-gpu-ifc.h"
 
 #include "Scene.h"
+#include "DbgFont.h"
 #include "ajek-script.h"
 
 #include <queue>
@@ -113,11 +114,6 @@ void Scene_ForceUpdateScripts()
 __ai bool SceneInitialized() {
 	return s_scene_initialized;
 }
-
-
-extern void			DbgFont_LoadInit		(AjekScriptEnv& script);
-extern void			DbgFont_Render			();
-
 
 __ni void SceneInit()
 {

@@ -36,4 +36,5 @@ class	xScopedMutex;
 //  ajek-script.h
 // --------------------------------------------------------
 
+struct AjekScriptEnv;
 struct lua_string;
