@@ -934,15 +934,15 @@ StInl void			i_clflush	(void const* p)				{ _mm_clflush(p); }
 // Signed input versions have explicit functions (non-overloaded) due to C++ integer promotion ambiguity.
 // (and yes, the 64-bit CRC32 generates an effective 32-bit result)
 
-StInl uint32_t		i_crc32		(uint32_t crc, uint8_t  data)	{ return _mm_crc32_u8 (crc, data); }
-StInl uint32_t		i_crc32		(uint32_t crc, uint16_t data)	{ return _mm_crc32_u16(crc, data); }
-StInl uint32_t		i_crc32		(uint32_t crc, uint32_t data)	{ return _mm_crc32_u32(crc, data); }
-StInl uint32_t		i_crc32		(uint32_t crc, uint64_t data)	{ return _mm_crc32_u64(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const uint8_t & data)	{ return _mm_crc32_u8 (crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const uint16_t& data)	{ return _mm_crc32_u16(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const uint32_t& data)	{ return _mm_crc32_u32(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const uint64_t& data)	{ return _mm_crc32_u64(crc, data); }
 
-StInl uint32_t		i_crc32_s8	(uint32_t crc, int8_t   data)	{ return _mm_crc32_u8 (crc, data); }
-StInl uint32_t		i_crc32_s16	(uint32_t crc, int16_t  data)	{ return _mm_crc32_u16(crc, data); }
-StInl uint32_t		i_crc32_s32	(uint32_t crc, int32_t  data)	{ return _mm_crc32_u32(crc, data); }
-StInl uint32_t		i_crc32_s64	(uint32_t crc, int64_t  data)	{ return _mm_crc32_u64(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const int8_t &  data)	{ return _mm_crc32_u8 (crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const int16_t&  data)	{ return _mm_crc32_u16(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const int32_t&  data)	{ return _mm_crc32_u32(crc, data); }
+StInl uint32_t		i_crc32		(uint32_t crc, const int64_t&  data)	{ return _mm_crc32_u64(crc, data); }
 
 // LDMXCSR / STMXCSR
 StInl void			i_ldmxcsr	(uint32_t i)				{ _mm_setcsr(i); }

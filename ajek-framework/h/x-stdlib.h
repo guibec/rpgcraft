@@ -201,7 +201,8 @@ extern void		xMalloc_ReportDelta	();
 template<typename T>
 void placement_delete(T* ptr)	{ (ptr)->~T(); xFree(ptr); }
 
-extern void		xStrCopy				(char* dest, size_t destLen, const char* src, size_t srcLen);
+extern void		xStrCopy				(char* dest, size_t destLen, const char* src);
+extern void		xStrnCopy				(char* dest, size_t destLen, const char* src, size_t srcLen);
 
 extern void		xMemCopy				(void* dest, const void* src, uint len);
 extern void		xMemCopy32				(void* dest, const void* src, uint len32);
@@ -233,10 +234,17 @@ inline void xMemMove(T* dest, size_t destLen, const T* src, size_t srcLen)
 }
 
 template<size_t destSize>
-void xStrCopyT(char (&dest)[destSize], const char* src, size_t srcLen)
+void xStrnCopyT(char (&dest)[destSize], const char* src, size_t srcLen)
 {
-	xStrCopy(dest, destSize, src, srcLen);
+	xStrnCopy(dest, destSize, src, srcLen);
 }
+
+template< int destSize >
+void xStrCopyT(char (&dest)[destSize], const char* src)
+{
+	xStrCopy(dest, destSize, src);
+}
+
 
 // ======================================================================================
 #ifdef _MSC_VER

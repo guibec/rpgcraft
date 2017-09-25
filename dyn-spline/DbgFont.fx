@@ -42,7 +42,7 @@ struct VS_INPUT_TILEMAP
 {
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
-	uint   TileID	: mTileID;
+	uint   TileID	: TileID;
 	float4 Color	: COLOR;
 };
 
