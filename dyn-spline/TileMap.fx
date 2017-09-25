@@ -32,16 +32,16 @@ cbuffer ConstantBuffer1 : register( b1 )
 
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
-{	
+{
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
 };
 
 struct VS_INPUT_TILEMAP
-{	
+{
 	float3 Pos		: POSITION;
 	float2 UV		: TEXCOORD0;
-	uint   TileID	: mTileID;
+	uint   TileID	: TileID;
 	float2 Color	: COLOR;
 };
 
@@ -59,7 +59,7 @@ struct VS_OUTPUT
 VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint vertexID : SV_VertexID
 {
 	// note: move floor(View) calculation to shader and remove global.
-	//  
+	//
 	//    The XY of View is discarded since the tilemap is already limited to the user's immediate
 	//    viewable area.  TileAlignedDisp is used to shift the static mesh to match the view.
 
@@ -105,7 +105,7 @@ float4 PS( VS_OUTPUT input ) : SV_Target
 	//result *= input.Color;
 	//return result;
 
-	//return float4( input.Pos.xy * 0.001f, 0.0f, 1.0f );   
+	//return float4( input.Pos.xy * 0.001f, 0.0f, 1.0f );
 	return txHeightMap.Sample( samLinear, input.UV );
 
 	//return float4( 1.0f, 1.0f, 0.0f, 1.0f );    // Yellow, with Alpha = 1input.Color;

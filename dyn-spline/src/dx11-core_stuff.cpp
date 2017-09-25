@@ -310,69 +310,127 @@ void dx11_CleanupDevice()
 	if (g_pd3dDevice)			{ g_pd3dDevice			->Release();	g_pd3dDevice			= nullptr;	}
 }
 
-// Our gpu interface provides a set of standard vertex buffer layouts to meet most of our common
-// needs.  Uncommon needs can usually be met by using one of the more versatile vertex buffer
-// layouts -- just treat unused fields as padding data (neither initialized or used by shader)
-// Such layouts can be optimized later if seen fit, eg. there's actually enough geometry and meshes
-// using the vertex type to justify baking a new layout into the GPU interface.
+__ai const	InputLayoutSlot&	GPU_InputDesc::GetSlot	(int idx)	const	{ bug_on(idx >= m_numSlots); return m_slots[idx]; }
+__ai		InputLayoutSlot&	GPU_InputDesc::GetSlot	(int idx)			{ bug_on(idx >= m_numSlots); return m_slots[idx]; }
+
+void GPU_InputDesc::_AddHash(const InputLayoutSlot& src)
+{
+	bug_on (!src.m_numElements, "Unexpected zero-sized src data.");
+
+	u32 hashval = i_crc32(0, src.m_InstanceDataStepRate);
+	for (int i=0; i<src.m_numElements; ++i) {
+		hashval = i_crc32(hashval, src.m_Items[i].Format		);
+		hashval = i_crc32(hashval, src.m_Items[i].ByteOffset	);
+		static_assert(bulkof(src.m_Items[i].SemanticName) == 16, "");
+		hashval = i_crc32(hashval, (u64&)src.m_Items[i].SemanticName[0]);
+		hashval = i_crc32(hashval, (u64&)src.m_Items[i].SemanticName[8]);
+	}
+
+	// neat trick, serves 2 purposes.
+	//  1. ensures full 64 bit hash is never zero if something meaningful has been assigned
+	//     to this InputLayoutDesc.
+	//  2. Allows InstanceDataStepRate to be modified later on, and also allows incrementally
+	//     adding additional elements to this slot.
+
+	m_hashval = hashval | (u64(src.m_InstanceDataStepRate+1) << 32);
+}
+
+InputLayoutSlot& InputLayoutSlot::SetInstanceStepRate(int step)
+{
+	m_InstanceDataStepRate = step;
+	return *this;
+}
+
+InputLayoutSlot& InputLayoutSlot::Append(const InputLayoutItem& item)
+{
+	Append(item.SemanticName, item.Format);
+	return *this;
+}
+
+InputLayoutSlot& InputLayoutSlot::Append(const InputLayoutItemEx& item)
+{
+	Append(item.SemanticName, item.Format, item.offset);
+	return *this;
+}
+
+InputLayoutSlot& InputLayoutSlot::Append(const char* semanticName, GPU_ResourceFmt format, int offset)
+{
+	log_and_abort_on(m_numElements >= MaxElementsPerSlot, "Too many data elements added to InputLayoutSlot.");
+
+	// Check for redundant semantic name ...
+	for (int i=0; i<m_numElements; ++i) {
+		if (strcmp(semanticName, m_Items[i].SemanticName) == 0) {
+			throw_abort("Duplicate semantic name: %s", semanticName);
+		}
+	}
+
+	auto& newItem = m_Items[m_numElements];
+	xStrCopyT(newItem.SemanticName, semanticName);
+	newItem.ByteOffset	= offset;
+	newItem.Format		= format;
+
+	m_numElements += 1;
+	return *this;
+}
+
 
 static const D3D11_INPUT_ELEMENT_DESC layout_color[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 
 static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 28,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, 36,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, 44,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, 52,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_multi_tex1[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		1, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_multi_colortex1[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		2, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_tilemap[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 8,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "mTileID",	0, DXGI_FORMAT_R32_UINT,			1, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "TileID",		0, DXGI_FORMAT_R32_UINT,			1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
 };
 
 static const D3D11_INPUT_ELEMENT_DESC layout_dbgfont[] =
 {
-	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 8,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "mTileID",	0, DXGI_FORMAT_R32_UINT,			1, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, 0,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
+	{ "TileID",		0, DXGI_FORMAT_R32_UINT,			1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
+	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
 };
 
 const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout layoutType)
@@ -444,7 +502,9 @@ static void genInputLayouts()
 	HRESULT hr;
 	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
 		auto vbl = (GPU_VertexBufferLayout)i;
-		auto* IALayoutBlob = LoadShaderBlobVS("..\\ajek-framework\\shaders\\VertexInputLayouts.fx", toString(vbl));
+		auto* IALayoutBlob = LoadShaderBlobVS(
+			"..\\ajek-framework\\shaders\\VertexInputLayouts.fx",
+			toString(vbl));
 
 		// Create the input layout
 		hr = g_pd3dDevice->CreateInputLayout(
@@ -684,27 +744,226 @@ void dx11_InitDevice()
 	log_and_abort_on(FAILED(hr));
 }
 
+#include <unordered_map>
+
+struct dx11_ShaderInfo
+{
+	ID3DBlob*		blob	= nullptr;
+	u32				hash	= 0;
+
+	void Dispose() {
+		blob->Release();
+		blob = nullptr;
+		hash = 0;
+	}
+};
+
+struct InputLayoutCacheItem {
+	ID3D11InputLayout*		dx	= nullptr;			// dx specific driver handle
+	u32			 			inputDescHash;			// hash index into s_dx11_InputDescCache
+
+	// * any number of shaders might reference this InputLayout.
+	// * Destroying InputLayouts doesn't cause failure, just reduces performance.
+	// * Memory usage from InputLayouts is probably small
+	// * Barring open-world things, we have set places where input layouts can be wiped clean
+	// * Could add a feature to mark certain input layouts as "persistent"
+	// * To determine important IAs, add command to wipe all IAs and then log out all IAs generated
+	//   on the next frame(s).
+
+};
+
+using InputLayoutCache_t	= std::unordered_map<u32,					InputLayoutCacheItem,	FunctHashIdentity>;
+using InputDescCache_t		= std::unordered_map<GPU_InputDescHash_t,	GPU_InputDesc,			FunctHashIdentity>;
+
+static u32		s_CurrentInputDescHash = 0;
+static bool		s_NeedsPreDrawPrep = 0;
+static const GPU_InputDesc*		s_CurrentInputDesc	= nullptr;
+static const GPU_ShaderVS*		s_CurrentShaderVS	= nullptr;
+static const GPU_ShaderFS*		s_CurrentShaderFS	= nullptr;
+
+static InputLayoutCache_t		s_dx11_InputLayoutCache;
+//static InputDescCache_t			s_dx11_InputDescCache;
+
+bool s_workaround = 1;
+
 void dx11_SetInputLayout(GPU_VertexBufferLayout layoutType)
 {
 	// Set the input layout
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[layoutType]);
+	s_CurrentInputDesc = nullptr;
+	s_NeedsPreDrawPrep = 1;
+	s_workaround = 1;
+}
+
+void dx11_SetInputLayout(const GPU_InputDesc& layout)
+{
+	// layout will be resolved against bound shaders when the draw command is initiated.
+	// If the layout is fresh (unrecognized hash) then it will be added to the internal layout cache.
+
+	s_workaround = 0;
+	if (!s_CurrentInputDesc || (s_CurrentInputDesc->GetHash() != layout.GetHash())) {
+		s_NeedsPreDrawPrep		= 1;
+		s_CurrentInputDesc		= &layout;
+
+		//if (s_dx11_InputDescCache.find(s_CurrentInputDescHash) == s_dx11_InputDescCache.end()) {
+		//	log_perf( "Adding new InputDescription, hash=0x%08x total=%d", s_CurrentInputDescHash, s_dx11_InputDescCache.size()+1);
+		//	s_dx11_InputDescCache.insert( { s_CurrentInputDescHash, layout } );
+		//}
+	}
+}
+
+ID3D11InputLayout* do_prep_inputLayout()
+{
+	throw_abort_on(!s_CurrentInputDesc,		"No input layout has been bound to the pipeline.");
+	throw_abort_on(!s_CurrentShaderVS,		"No vertex shader has been bound to the pipeline.");
+	pragma_todo("Use ID3D11ShaderReflection::GetInputParameterDesc() to determine shader-to-inputlayout association.");
+
+
+	const auto& shader	= ptr_cast<ID3D11VertexShader* const &>	(s_CurrentShaderVS->m_driverBinary);
+	const auto& info	= ptr_cast<dx11_ShaderInfo* const &>	(s_CurrentShaderVS->m_driverBlob);
+
+	u32 fullhash_vs = i_crc32(s_CurrentInputDescHash, info->hash);
+
+	if (1) {
+		auto& it = s_dx11_InputLayoutCache.find(fullhash_vs);
+		if (it != s_dx11_InputLayoutCache.end()) {
+			return it->second.dx;
+		}
+	}
+
+	// Generate a DX11 input layout from our custom input layout system.
+	// Hard limited to 16 since the dx11 default of 32 may not be widely supported on mobile-ish
+	// platforms, and likely we would never need such extreme shaders for our apps... -- jstine
+
+	D3D11_INPUT_ELEMENT_DESC dx_layout[16] = {};
+
+	//const auto  it			= s_dx11_InputDescCache.find(s_CurrentInputDescHash);
+	//const auto& inputDesc	= it->second;
+
+	const auto& inputDesc	= *s_CurrentInputDesc;
+
+	int dxidx = 0;
+	for (int i=0; i<inputDesc.GetSlotCount(); ++i) {
+		const auto& slot = inputDesc.GetSlot(i);
+
+		for (int t=0; t<slot.m_numElements; ++t) {
+					auto& dxlay	= dx_layout[dxidx];
+			const	auto& item	= slot.m_Items[t];
+
+			dxlay.InstanceDataStepRate	= slot.m_InstanceDataStepRate;
+
+			// Semantic Index should be the last digit of the SemanticName
+			// If no digit, assume it must be ZERO.
+			// (why doesn't DX11 do this for us? I know, probably legacy from DX9)
+
+			int semanticLen = strlen(item.SemanticName);
+			char c = item.SemanticName[semanticLen-1];
+			int semidx = 0;
+
+			if (isdigit(c)) {
+				semidx = c - '0';
+			}
+
+			dxlay.Format			= get_DXGI_Format(item.Format);
+			dxlay.AlignedByteOffset = (item.ByteOffset<0)			? D3D11_APPEND_ALIGNED_ELEMENT	: item.ByteOffset;
+			dxlay.InputSlotClass	= (slot.m_InstanceDataStepRate) ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+			dxlay.SemanticName		= item.SemanticName;
+			dxlay.SemanticIndex		= semidx;
+			dxlay.InputSlot			= i;
+			dxidx += 1;
+		}
+	}
+
+	InputLayoutCacheItem newCacheItem;
+	newCacheItem.inputDescHash = s_CurrentInputDesc->GetHash();
+
+	pragma_todo("Add user-defined long-name description to InputDesc for logging and debugging.");
+	log_perf( "Adding new InputLayout to cache, hash=0x%08x count=%d", fullhash_vs, s_dx11_InputLayoutCache.size() );
+
+	HRESULT hr;
+	hr = g_pd3dDevice->CreateInputLayout(
+		dx_layout, dxidx,
+		info->blob->GetBufferPointer(),
+		info->blob->GetBufferSize(),
+		&newCacheItem.dx
+	);
+
+	s_dx11_InputLayoutCache.insert( { fullhash_vs, newCacheItem } );
+	return newCacheItem.dx;
+}
+
+void dx11_PreDrawPrep()
+{
+	if (!s_NeedsPreDrawPrep) return;
+	throw_abort_on(!s_CurrentShaderVS, "No VS shader is bound to the draw pipeline.")
+	throw_abort_on(!s_CurrentShaderFS, "No FS shader is bound to the draw pipeline.")
+
+	auto&	shaderVS	= ptr_cast<ID3D11VertexShader*	const &>(s_CurrentShaderVS->m_driverBinary);
+	auto&	shaderFS	= ptr_cast<ID3D11PixelShader*	const &>(s_CurrentShaderFS->m_driverBinary);
+	bug_on_qa(!shaderVS, "VS shader resource has been deinitialized since being bound.");
+	bug_on_qa(!shaderFS, "FS shader resource has been deinitialized since being bound.");
+
+	if (!s_workaround) {
+		g_pImmediateContext->IASetInputLayout(do_prep_inputLayout());
+		//dx11_SetInputLayout(VertexBufferLayout_DbgFont);
+	}
+	g_pImmediateContext->VSSetShader(shaderVS, nullptr, 0);
+	g_pImmediateContext->PSSetShader(shaderFS, nullptr, 0);
+	s_NeedsPreDrawPrep = 0;
+}
+
+template< typename T >
+T* xReallocObj(T* &ptr)
+{
+	pragma_todo( "Check that xRealloc is smart and re-uses existing pointer data if sizes match..." );
+	ptr->~T();
+	ptr = new ((T*)xRealloc(ptr, sizeof(*ptr))) T();
+	return ptr;
+}
+
+template< typename T >
+T* xReallocT(T* &ptr)
+{
+	static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xReallocObj<T> instead.")
+	//static_assert(!std::is_trivially_copyable<T>::value, "Non-trivial type has meaningful destructor.  Use xReallocObj<T> instead.")
+	ptr = xRealloc(ptr, sizeof(*ptr));
+	return ptr;
 }
 
 bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	HRESULT hr;
 
-	auto& shader = ptr_cast<ID3D11VertexShader* &>(dest.m_driverData);
-	if (shader) { shader->Release(); shader = nullptr; }
+	auto& shader	= ptr_cast<ID3D11VertexShader* &>	(dest.m_driverBinary);
+	auto& info		= ptr_cast<dx11_ShaderInfo* &>		(dest.m_driverBlob);
+
+	if (shader) { shader->Release(); shader	= nullptr; }
+	if (info)	{ info	->Dispose(); }
+
+	xReallocObj(info);
 
 	bug_on( !entryPointFn || !entryPointFn[0] );
-	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
-	if (!blob) return false;
+	info->blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
+	if (!info->blob) return false;
 
-	hr = g_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
+	const u64* ptr64	= (u64*)info->blob->GetBufferPointer();
+	int size64	= info->blob->GetBufferSize() / 8;
+	int sizeRem	= info->blob->GetBufferSize() & 7;
+
+	u32 hash = 0;
+	for (int i=0; i<size64; ++i, ++ptr64) {
+		hash = i_crc32(hash, ptr64[0]);
+	}
+
+	const u8* ptr8	= (u8*)ptr64;
+	for (int i=0; i<sizeRem; ++i, ++ptr8) {
+		hash = i_crc32(hash, ptr8[0]);
+	}
+	info->hash = hash;
+
+	hr = g_pd3dDevice->CreateVertexShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	log_and_abort_on(FAILED(hr));
 
-	blob->Release();
 	return true;
 }
 
@@ -712,43 +971,54 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 {
 	HRESULT hr;
 
-	auto& shader = ptr_cast<ID3D11PixelShader* &>(dest.m_driverData);
+	auto& shader	= ptr_cast<ID3D11PixelShader* &>	(dest.m_driverBinary);
+	auto& info		= ptr_cast<dx11_ShaderInfo* &>		(dest.m_driverBlob);
+
 	if (shader) { shader->Release(); shader = nullptr; }
+	if (info)	{ info	->Dispose(); }
+
+	xReallocObj(info);
 
 	bug_on( !entryPointFn || !entryPointFn[0] );
-	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "ps_4_0");
-	if (!blob) return false;
+	info->blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "ps_4_0");
+	if (!info->blob) return false;
 
-	hr = g_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
+	hr = g_pd3dDevice->CreatePixelShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	log_and_abort_on(FAILED(hr));
 
+	info->blob->Release();
+	info->blob = nullptr;
 	return true;
 }
 
 void dx11_LoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	auto result = dx11_TryLoadShaderVS(dest, srcfile, entryPointFn);
-	bug_on(!result, "Errors during shader compiler and no error handler is registered.");
+	bug_on_qa(!result, "Errors during shader compiler and no error handler is registered.");
 }
 
 void dx11_LoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	auto result = dx11_TryLoadShaderFS(dest, srcfile, entryPointFn);
-	bug_on(!result, "Errors during shader compiler and no error handler is registered.");
+	bug_on_qa(!result, "Errors during shader compiler and no error handler is registered.");
 }
 
 void dx11_BindShaderVS(const GPU_ShaderVS& vs)
 {
-	auto&	shader	= ptr_cast<ID3D11VertexShader* const&>(vs.m_driverData);
-	bug_on(!shader, "Uninitialized VS shader resource.");
-	g_pImmediateContext->VSSetShader(shader, nullptr, 0);
+	bug_on_qa(!vs.m_driverBinary, "Uninitialized VS shader resource.");
+	if (!s_CurrentShaderVS || (s_CurrentShaderVS != &vs)) {
+		s_CurrentShaderVS = &vs;
+		s_NeedsPreDrawPrep = 1;
+	}
 }
 
 void dx11_BindShaderFS(const GPU_ShaderFS& fs)
 {
-	auto&	shader	= ptr_cast<ID3D11PixelShader* const&>(fs.m_driverData);
-	bug_on(!shader, "Uninitialized FS shader resource.");
-	g_pImmediateContext->PSSetShader(shader, nullptr, 0);
+	bug_on_qa(!fs.m_driverBinary, "Uninitialized FS shader resource.");
+	if (!s_CurrentShaderFS || (s_CurrentShaderFS != &fs)) {
+		s_CurrentShaderFS = &fs;
+		s_NeedsPreDrawPrep = 1;
+	}
 }
 
 void dx11_SetVertexBuffer(const GPU_DynVsBuffer& src, int shaderSlot, int _stride, int _offset)
@@ -789,21 +1059,25 @@ void dx11_SetIndexBuffer(const GPU_IndexBuffer& indexBuffer, int bitsPerIndex, i
 
 void dx11_Draw(int indexCount, int startVertLoc)
 {
+	dx11_PreDrawPrep();
 	g_pImmediateContext->Draw(indexCount, startVertLoc);
 }
 
 void dx11_DrawIndexed(int indexCount, int startIndexLoc, int baseVertLoc)
 {
+	dx11_PreDrawPrep();
 	g_pImmediateContext->DrawIndexed(indexCount, startIndexLoc, baseVertLoc);
 }
 
 void dx11_DrawInstanced(int vertsPerInstance, int instanceCount, int startVertLoc, int startInstanceLoc)
 {
+	dx11_PreDrawPrep();
 	g_pImmediateContext->DrawInstanced(vertsPerInstance, instanceCount, startVertLoc, startInstanceLoc);
 }
 
 void dx11_DrawIndexedInstanced(int indexesPerInstance, int instanceCount, int startIndex, int baseVertex, int startInstance)
 {
+	dx11_PreDrawPrep();
 	g_pImmediateContext->DrawIndexedInstanced(indexesPerInstance, instanceCount, startIndex, baseVertex, startInstance);
 }
 

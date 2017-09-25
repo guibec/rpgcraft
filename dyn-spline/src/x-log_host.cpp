@@ -136,6 +136,8 @@ void xPrintLn(const xString& msg)
 	if (s_myLog)			{ fputs(msg + "\n", s_myLog);		}
 }
 
+pragma_todo("Fix host logging to output to console and remove file support - use pipes to redirect to file where warranted.");
+
 // --------------------------------------------------------------------------------------
 void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 {

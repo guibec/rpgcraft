@@ -675,7 +675,7 @@ FILE* xFopen( const xString& fullpath, const char* mode )
 xString DecodeBitField(u32 bits, const char* pLegend[], u32 numEntries)
 {
 	// Decode a bitfield according to the array of strings passed in.
-	// Legend should be ordered from least-significant bit to most, 
+	// Legend should be ordered from least-significant bit to most,
 	// with non-NULL entry for every potentially non-zero bit
 	// Returns pBuffer for syntactic convenience
 	if (!pLegend || !numEntries) return xString();
@@ -736,11 +736,20 @@ __exi void xMemCopyQwc_WrappedSrc( u128* dest, const u128* srcBase, uint& srcSta
 	}
 }
 
-
-void xStrCopy(char* dest, size_t destLen, const char* src, size_t srcLen)
+void xStrCopy(char* dest, size_t destLen, const char* src)
 {
 #if TARGET_LINUX
-	strncpy( dest, src, destLen );
+	strncpy(dest, src, destLen);
+#else
+	strcpy_s( dest, destLen, src);
+#endif
+}
+
+
+void xStrnCopy(char* dest, size_t destLen, const char* src, size_t srcLen)
+{
+#if TARGET_LINUX
+	strncpy(dest, src, std::min(destLen, srcLen));
 #else
 	strncpy_s( dest, destLen, src, srcLen );
 #endif

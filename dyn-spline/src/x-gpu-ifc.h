@@ -38,7 +38,7 @@ static inline __ai const char* toString(GPU_VertexBufferLayout layout) {
 	return "invalid";
 }
 
-enum GPU_ResourceFmt
+enum GPU_ResourceFmt : u8
 {
 	GPU_ResourceFmt_R32G32B32A32_TYPELESS       = 1,
 	GPU_ResourceFmt_R32G32B32A32_FLOAT          = 2,
@@ -137,28 +137,28 @@ enum GpuRasterScissorMode {
 };
 
 struct GPU_VertexBuffer {
-	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_VertexBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_IndexBuffer {
-	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_IndexBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_ConstantBuffer {
-	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
 	GPU_ConstantBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_ShaderVS {
-	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
-	GPU_ShaderVS(const void* driverData = nullptr);
+	sptr		m_driverBinary	= 0;		// fast-reference to shader binary
+	sptr		m_driverBlob	= 0;		// slow-reference to secondary blob/debug information
 };
 
 struct GPU_ShaderFS {
-	sptr		m_driverData;		// can be either memory pointer or handle index into table (driver-dependent)
-	GPU_ShaderFS(const void* driverData = nullptr);
+	sptr		m_driverBinary	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
+	sptr		m_driverBlob	= 0;		// slow-reference to secondary blob/debug information
 };
 
 // Dynamic vertex buffers are multi-instanced, with one bound to each backbuffer in the swap chain.
@@ -193,14 +193,90 @@ struct GPU_RenderTarget {
 	GPU_RenderTarget(const void* driverData = nullptr);
 };
 
+// TODO : Create assertion macro that either throws exception or log-aborts depending on execution context.
+//   * If running inside LUA scope, throw exception.
+//   * If running outside LUA scope, immediate assert (VC++ debugger).
 
-inline GPU_ShaderVS::GPU_ShaderVS(const void* driverData) {
-	m_driverData = (s64)driverData;
+#define throw_abort(msg, ...)
+#define throw_abort_on(cond, ...)
+
+static const int MaxSemanticNameLen		= 16;		// includes null terminator
+static const int MaxElementsPerSlot		= 8;
+static const int InputLayoutMaxSlots	= 8;
+
+struct InputLayoutItem
+{
+	char 			SemanticName[MaxSemanticNameLen];
+	GPU_ResourceFmt Format;
+};
+
+struct InputLayoutItemEx
+{
+	char 			SemanticName[MaxSemanticNameLen];
+	GPU_ResourceFmt Format;
+	int				offset;
+};
+
+
+struct InputLayoutSlotItem
+{
+	char 			SemanticName[MaxSemanticNameLen];
+	s16				ByteOffset;
+	GPU_ResourceFmt Format;
+};
+
+struct InputLayoutSlot
+{
+	int					m_InstanceDataStepRate;		// non-zero indicates per-instance data
+	int					m_numElements;
+	InputLayoutSlotItem	m_Items	[MaxElementsPerSlot];
+
+	InputLayoutSlot&	SetInstanceStepRate(int step);
+	InputLayoutSlot&	Append(const char* semanticName, GPU_ResourceFmt format, int offset=-1);
+	InputLayoutSlot&	Append(const InputLayoutItem&	item);
+	InputLayoutSlot&	Append(const InputLayoutItemEx& item);
+
+	bool IsInstanceData() const { return m_InstanceDataStepRate != 0; }
+};
+
+using GPU_InputDescHash_t = u64;
+
+class GPU_InputDesc
+{
+protected:
+	InputLayoutSlot		m_slots[InputLayoutMaxSlots];
+	int					m_numSlots		= 0;
+	u64					m_hashval		= 0;
+
+public:
+	__ai u64						GetHash			()			const	{ return m_hashval; }
+	__ai int						GetSlotCount	()			const	{ return m_numSlots; }
+		 const	InputLayoutSlot&	GetSlot			(int idx)	const	;
+		 		InputLayoutSlot&	GetSlot			(int idx)			;
+
+	template< int numItems > void AddVertexSlot		(const InputLayoutItem		(&items)[numItems])								{ _AddHash(_AddGenericSlot(items).SetInstanceStepRate(0)					);	};
+	template< int numItems > void AddVertexSlotEx	(const InputLayoutItemEx	(&items)[numItems])								{ _AddHash(_AddGenericSlot(items).SetInstanceStepRate(0)					);	};
+	template< int numItems > void AddInstanceSlot	(const InputLayoutItem		(&items)[numItems], int instanceDataStepRate=1)	{ _AddHash(_AddGenericSlot(items).SetInstanceStepRate(instanceDataStepRate)	);	};
+	template< int numItems > void AddInstanceSlotEx	(const InputLayoutItemEx	(&items)[numItems], int instanceDataStepRate=1)	{ _AddHash(_AddGenericSlot(items).SetInstanceStepRate(instanceDataStepRate)	);	};
+
+protected:
+	void _AddHash(const InputLayoutSlot& src);
+	template< typename T, int numItems > InputLayoutSlot& _AddGenericSlot(const T (&items)[numItems]);
+};
+
+template< typename T, int numItems > InputLayoutSlot& GPU_InputDesc::_AddGenericSlot(const T (&items)[numItems])
+{
+	throw_abort_on(m_numSlots >= InputLayoutMaxSlots);
+
+	auto& newSlot = m_slots[m_numSlots];
+	for (int i=0; i<numItems; ++i) {
+		newSlot.Append(items[i]);
+	}
+
+	m_numSlots += 1;
+	return newSlot;
 }
 
-inline GPU_ShaderFS::GPU_ShaderFS(const void* driverData) {
-	m_driverData = (s64)driverData;
-}
 
 inline GPU_VertexBuffer::GPU_VertexBuffer(const void* driverData) {
 	m_driverData = (s64)driverData;
@@ -242,6 +318,7 @@ extern bool					dx11_TryLoadShaderFS			(GPU_ShaderFS& dest, const xString& srcfi
 extern void					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
 extern void					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
 extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
+extern void					dx11_SetInputLayout				(const GPU_InputDesc& layout);
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
 
 extern void					dx11_BindConstantBuffer			(const GPU_ConstantBuffer& buffer, int startSlot);

@@ -119,6 +119,24 @@ bool table_get_xy(T& dest, LuaTableScope& table, const char* subtable)
 }
 
 static void blitToTexture(xBitmapData& dest);
+static GPU_InputDesc InputLayout_DbgFont;
+
+void DbgFont_MakeVertexLayout()
+{
+	xMemZero(InputLayout_DbgFont);
+	InputLayout_DbgFont.AddVertexSlot( {
+		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
+		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
+	});
+
+	InputLayout_DbgFont.AddInstanceSlot( {
+		{ "TileID", GPU_ResourceFmt_R32_UINT }
+	});
+
+	InputLayout_DbgFont.AddInstanceSlot( {
+		{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
+	});
+}
 
 void DbgFont_LoadInit(AjekScriptEnv& script)
 {
@@ -250,11 +268,12 @@ void DbgFont_SceneRender()
 
 	// Render!
 
+	DbgFont_MakeVertexLayout();
+	dx11_SetInputLayout(InputLayout_DbgFont);
+
 	dx11_BindShaderVS(s_ShaderVS_DbgFont);
 	dx11_BindShaderFS(s_ShaderFS_DbgFont);
-	dx11_SetInputLayout(VertexBufferLayout_DbgFont);
 
-//	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_8x8, 0);
 
 	dx11_SetVertexBuffer(s_mesh_anychar,					0, sizeof(g_mesh_UniformQuad[0]), 0);
