@@ -197,8 +197,6 @@ struct GPU_RenderTarget {
 //   * If running inside LUA scope, throw exception.
 //   * If running outside LUA scope, immediate assert (VC++ debugger).
 
-#define throw_abort(msg, ...)
-#define throw_abort_on(cond, ...)
 
 static const int MaxSemanticNameLen		= 16;		// includes null terminator
 static const int MaxElementsPerSlot		= 8;
@@ -266,7 +264,7 @@ protected:
 
 template< typename T, int numItems > InputLayoutSlot& GPU_InputDesc::_AddGenericSlot(const T (&items)[numItems])
 {
-	throw_abort_on(m_numSlots >= InputLayoutMaxSlots);
+	//throw_abort_on(m_numSlots >= InputLayoutMaxSlots);
 
 	auto& newSlot = m_slots[m_numSlots];
 	for (int i=0; i<numItems; ++i) {
@@ -300,9 +298,6 @@ inline GPU_RenderTarget::GPU_RenderTarget(const void* driverData) {
 
 extern void					dx11_InitDevice					();
 extern void					dx11_CleanupDevice				();
-extern void					dx11_SetJmpCatch				(jmp_buf& jmpbuf);
-extern void					dx11_SetJmpFinalize				();
-extern void					dx11_PrintLastError				();
 
 extern void					dx11_BackbufferSwap				();
 extern void					dx11_CreateDynamicVertexBuffer	(GPU_DynVsBuffer& dest, int bufferSizeInBytes);

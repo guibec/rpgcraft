@@ -78,6 +78,7 @@
     <ClCompile Include="..\src\x-stdlib.cpp" />
     <ClCompile Include="..\src\x-string.cpp" />
     <ClCompile Include="..\src\x-thread.cpp" />
+    <ClCompile Include="..\src\x-ThrowContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\h\x-string.h" />
     <ClInclude Include="..\h\x-TargetConfig.h" />
     <ClInclude Include="..\h\x-thread.h" />
+    <ClInclude Include="..\h\x-ThrowContext.h" />
     <ClInclude Include="..\h\x-types.h" />
     <ClInclude Include="..\src\common-standard.h" />
     <ClInclude Include="..\h\x-MemCopy.inl" />

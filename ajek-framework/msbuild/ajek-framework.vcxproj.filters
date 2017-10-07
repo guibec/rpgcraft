@@ -16,6 +16,7 @@
     <ClCompile Include="..\src\kpad.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\x-ThrowContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">
@@ -82,6 +83,9 @@
       <Filter>Public Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\h\x-pad.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-ThrowContext.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
   </ItemGroup>

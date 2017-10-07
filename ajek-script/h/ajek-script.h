@@ -2,6 +2,7 @@
 
 #include "x-types.h"
 #include "x-string.h"
+#include "x-ThrowContext.h"
 
 #include "x-MemCopy.inl"
 
@@ -216,20 +217,18 @@ struct AjekScriptEnv
 {
 	lua_State*			m_L;
 	//AjekMspace*		m_mspace;			// Future custom mspace provision
-	jmp_buf*			m_jmpbuf;			// jump buffer target on error
-	bool				m_has_setjmp;
+	xThrowContext*		m_ThrowCtx;
+
+	AjekScriptError		m_lua_error;
 
 volatile
-	AjekScriptError		m_error;			// error result of most recent operations (volatile due to const-castness tricks)
-
 	AjekScriptEnv() {
 		m_L				= nullptr;
-		m_error			= AsError_None;
-		m_has_setjmp	= false;
+		m_ThrowCtx		= nullptr;
 	}
 
 	bool HasError() const {
-		return (m_error != AsError_None);
+		return (m_lua_error != AsError_None);
 	}
 
 	void		Alloc					();
@@ -238,10 +237,6 @@ volatile
 	void		LoadModule				(const xString& path);
 	void		DisposeState			();
 	void		PrintStackTrace			();
-	void		PrintLastError			() const;
-
-	bool		ThrowError				(AjekScriptError errorcode) const;
-	void		RethrowError			();
 
 	lua_State*			getLuaState		();
 	const lua_State*	getLuaState		() const;
@@ -283,8 +278,7 @@ volatile
 	void			_throw_type_mismatch(const char* key, const char* expected_type)	const;
 	void			_throw_type_mismatch(int keyidx, const char* expected_type)			const;
 
-	void			SetJmpCatch		(jmp_buf& buf);
-	void			SetJmpFinalize	();
+	void			BindThrowContext(xThrowContext& ctx);
 };
 
 

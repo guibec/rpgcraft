@@ -254,41 +254,31 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 // --------------------------------------------------------------------------------------
 bool xIsDebuggerAttached()
 {
-	return !! ::IsDebuggerPresent();
+	return ::IsDebuggerPresent();
 }
 
-void xOutputVerboseString(const char* str)
+void xOutputStringError(const char* str)
 {
 #if MSW_ENABLE_DEBUG_OUTPUT
-	if( 1 /*::IsDebuggerPresent()*/ )
+	if (::IsDebuggerPresent())
 		OutputDebugStringA(str);
 	else
+#endif
 	{
-		fputs(str, stdout);
-		return;
+		fputs(str, stderr);
 	}
-#endif
-
-#ifdef _CONSOLE
-	fputs(str, stdout);			// avoids puts() spurious newline.
-#endif
 }
 
-void xOutputDebugString(const char* str)
+void xOutputString(const char* str)
 {
 #if MSW_ENABLE_DEBUG_OUTPUT
-	if( 1 /*::IsDebuggerPresent()*/ )
+	if (::IsDebuggerPresent())
 		OutputDebugStringA(str);
 	else
+#endif
 	{
 		fputs(str, stdout);
-		return;
 	}
-#endif
-
-#ifdef _CONSOLE
-	fputs(str, stdout);			// avoids puts() spurious newline.
-#endif
 }
 
 static __ai assert_t DoAssertionDialog( const xString& title, const xString& content )
