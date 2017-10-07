@@ -12,6 +12,7 @@
 #include "Scene.h"
 #include "DbgFont.h"
 #include "ajek-script.h"
+#include "x-ThrowContext.h"
 
 #include <queue>
 
@@ -123,34 +124,29 @@ __ni void SceneInit()
 
 	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
 	script.NewState();
+	script.BindThrowContext(g_ThrowCtx);
 
-	jmp_buf	s_jmp_buf;
-
-	int result = setjmp(s_jmp_buf);
-	if (result == 0) {
-		script.SetJmpCatch	(s_jmp_buf);
-		dx11_SetJmpCatch	(s_jmp_buf);
+	x_try() {
 		DbgFont_LoadInit	(script);
 		Scene_TryLoadInit	(script);
 		s_scene_initialized = true;
 	}
-	elif (result == 2) {
-		script.RethrowError();
-	}
-	elif (result == 1) {
-		xPrintLn("");
-		if (!xIsDebuggerAttached()) {
-			log_and_abort("Application aborted due to DoGameInit error.");
-		}
-		script.PrintLastError();
-		dx11_PrintLastError();
-		Scene_PostMessage(SceneMsg_StopExec, SceneStopReason_ScriptError);
-		AjekScript_PrintDebugReloadMsg();
-	}
+	x_catch() {
+		case 1:
+			xPrintLn("");
+			g_ThrowCtx.PrintLastError();
 
-	script.SetJmpFinalize	();
-	dx11_SetJmpFinalize		();
+			if (!xIsDebuggerAttached()) {
+				log_and_abort("Application aborted during SceneInit.");
+			}
 
+			Scene_PostMessage(SceneMsg_StopExec, SceneStopReason_ScriptError);
+			AjekScript_PrintDebugReloadMsg();
+		break;
+
+		default:
+		break;
+	}
 }
 
 static bool s_repeating_char[128];

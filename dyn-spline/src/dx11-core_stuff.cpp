@@ -7,7 +7,7 @@
 
 #include "v-float.h"
 #include "x-gpu-ifc.h"
-
+#include "x-ThrowContext.h"
 
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
@@ -19,6 +19,8 @@
 DECLARE_MODULE_NAME("dx11");
 
 #include "x-MemCopy.inl"
+
+DECLARE_MODULE_THROW(xThrowModule_GPU);		// enables use of throw_abort() macro
 
 
 #define ptr_cast		reinterpret_cast
@@ -59,8 +61,6 @@ XMMATRIX                g_Projection;
 
 GPU_RenderTarget		g_gpu_BackBuffer;
 int						g_curBufferIdx = 0;
-
-xString					s_LastErrorMessage;
 
 // * Vertex Buffers are Mostly Dynamic.
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
@@ -221,10 +221,10 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 
 	if (FAILED(hr)) {
 		if (pErrorBlob) {
-			s_LastErrorMessage = reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer());
+			throw_abort("%s", reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
 		}
 		elif (hr == D3D11_ERROR_FILE_NOT_FOUND || hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
-			s_LastErrorMessage.Format("Shader file not found: %S", szFileName);
+			throw_abort("Shader file not found: %S", szFileName);
 		}
 		else {
 			log_and_abort("D3DCompileFromFile(%S) failed with no errorBlob, hr=0x%08x", szFileName, hr);
@@ -232,29 +232,6 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 	}
 
 	return hr;
-}
-
-static	bool		s_has_setjmp;
-static 	jmp_buf*	s_jmp_buffer;
-
-void dx11_SetJmpCatch(jmp_buf& jmpbuf)
-{
-	bug_on_qa(s_has_setjmp);
-	s_jmp_buffer = &jmpbuf;
-	s_has_setjmp = 1;
-	s_LastErrorMessage.Clear();
-}
-
-void dx11_SetJmpFinalize()
-{
-	s_has_setjmp = 0;
-}
-
-void dx11_PrintLastError()
-{
-	if (!s_LastErrorMessage.IsEmpty()) {
-		xPrintLn(s_LastErrorMessage);
-	}
 }
 
 ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel)
@@ -266,14 +243,7 @@ ID3DBlob* CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LP
 	ID3DBlob* ppBlobOut;
 
 	hr = TryCompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &ppBlobOut);
-	if(FAILED(hr)) {
-		if (s_has_setjmp) {
-			longjmp(*s_jmp_buffer, 1);
-		}
-		else {
-			OutputDebugStringA(s_LastErrorMessage);
-		}
-	}
+	throw_abort_on(FAILED(hr));
 	return ppBlobOut;
 }
 
@@ -895,8 +865,8 @@ ID3D11InputLayout* do_prep_inputLayout()
 void dx11_PreDrawPrep()
 {
 	if (!s_NeedsPreDrawPrep) return;
-	throw_abort_on(!s_CurrentShaderVS, "No VS shader is bound to the draw pipeline.")
-	throw_abort_on(!s_CurrentShaderFS, "No FS shader is bound to the draw pipeline.")
+	throw_abort_on(!s_CurrentShaderVS, "No VS shader is bound to the draw pipeline.");
+	throw_abort_on(!s_CurrentShaderFS, "No FS shader is bound to the draw pipeline.");
 
 	auto&	shaderVS	= ptr_cast<ID3D11VertexShader*	const &>(s_CurrentShaderVS->m_driverBinary);
 	auto&	shaderFS	= ptr_cast<ID3D11PixelShader*	const &>(s_CurrentShaderFS->m_driverBinary);

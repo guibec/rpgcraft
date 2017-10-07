@@ -132,11 +132,9 @@ void xPrintLn(const xString& msg)
 {
 	xScopedMutex lock(s_mtx_unilogger);
 
-	if (1)					{ xOutputVerboseString(msg + "\n"); }
-	if (s_myLog)			{ fputs(msg + "\n", s_myLog);		}
+	if (1)					{ xOutputString(msg + "\n");	}
+	if (s_myLog)			{ fputs(msg + "\n", s_myLog);	}
 }
-
-pragma_todo("Fix host logging to output to console and remove file support - use pipes to redirect to file where warranted.");
 
 // --------------------------------------------------------------------------------------
 void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
@@ -147,7 +145,7 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 		// (sometimes used to generate visual separation in the console output)
 
 		xScopedMutex lock(s_mtx_unilogger);
-		xOutputDebugString("\n");
+		xOutputString("\n");
 		if (s_myLog) fputs("\n", s_myLog);
 		return;
 	}
@@ -171,8 +169,8 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 
 	xScopedMutex lock(s_mtx_unilogger);
 
-	if (flags & xLogFlag_Important) { xOutputVerboseString(buffer); }
-	else							{ xOutputDebugString  (buffer); }
+	if (flags & xLogFlag_Important) { xOutputStringError(buffer); }
+	else							{ xOutputString		(buffer); }
 
 	if (s_myLog)
 	{
@@ -192,7 +190,7 @@ void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list li
 		// (sometimes used to generate visual separation in the console output)
 
 		xScopedMutex lock(s_mtx_unilogger);
-		xOutputDebugString("\n");
+		xOutputString("\n");
 		if (s_myLog) fputs("\n", s_myLog);
 		return;
 	}
@@ -213,8 +211,8 @@ void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list li
 
 	xScopedMutex lock(s_mtx_unilogger);
 
-	if (flags & xLogFlag_Important) { xOutputVerboseString(buffer); }
-	else							{ xOutputDebugString  (buffer); }
+	if (flags & xLogFlag_Important) { xOutputStringError(buffer); }
+	else							{ xOutputString		(buffer); }
 
 	if (s_myLog)
 	{

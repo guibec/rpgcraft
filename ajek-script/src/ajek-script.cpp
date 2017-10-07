@@ -14,6 +14,7 @@ extern "C" {
 }
 
 DECLARE_MODULE_NAME("lua-main");
+DECLARE_MODULE_THROW(xThrowModule_Script);
 
 struct AjekScriptSettings {
 	union {
@@ -58,6 +59,22 @@ AjekScriptEnv			g_script_env[NUM_SCRIPT_ENVIRONMENTS];
 
 static bool		s_script_settings_initialized = 0;
 static xString	s_script_dbg_path_prefix;
+
+static AjekScriptError cvtLuaErrorToAjekError(int lua_error)
+{
+	switch (lua_error) {
+		case LUA_YIELD		:	bug("LUA_YIELD.  HOW??");						break;
+		case LUA_ERRRUN		:	return AsError_Runtime;							break;
+		case LUA_ERRSYNTAX	:	return AsError_Syntax;							break;
+		case LUA_ERRMEM		:	bug_qa("Lua Out Of Memory Error!");				break;
+		case LUA_ERRGCMM	:	bug_qa("Lua Garbage Collector Failure!");		break;
+		case LUA_ERRERR		:	return AsError_Assertion;						break;
+		case LUA_ERRFILE	:   return AsError_Syntax;							break;
+		default				:	bug_qa("Lua unknown error code = %d", lua_error);
+	}
+
+	return AsError_Environment;
+}
 
 bool AjekScript_LoadConfiguration(AjekScriptEnv& env)
 {
@@ -276,14 +293,37 @@ void AjekScriptEnv::Alloc()
 	// Future MSPACE registration goes here.
 }
 
+static int lua_panic(lua_State* L)
+{
+
+	lua_getglobal(L, "AjekScriptThisPtr");
+	AjekScriptEnv* env = (AjekScriptEnv*)lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	log_and_abort_on(!env);
+
+	env->m_lua_error = cvtLuaErrorToAjekError(L->status);
+	const char* err_msg = lua_tostring(L, -1);
+	throw_abort_ex(env->m_lua_error, "%s", err_msg);
+	return 0;
+}
+
 void AjekScriptEnv::NewState()
 {
 	DisposeState();
 
-	m_error	= AsError_None;
 	m_L		= luaL_newstate();
+
 	log_and_abort_on( !m_L, "Create new Lua state failed." );
-	log_host( "lua_stack = %s", cPtrStr(m_L) );
+	log_host( "luaState = %s", cPtrStr(m_L) );
+
+	// store this ajekscript handle in the lua heap for error handling (not really meant to be
+	// referenced from Lua) -- might want make a custom registry in the future if more vars are
+	// added.  See LUA_RIDX_LAST.
+
+	lua_pushinteger	(m_L, (sptr)this);
+	lua_setglobal	(m_L, "AjekScriptThisPtr");
+	lua_atpanic		(m_L, &lua_panic);
+
 	luaL_openlibs(m_L);
 }
 
@@ -291,47 +331,21 @@ void AjekScriptEnv::DisposeState()
 {
 	if (!m_L)		return;
 
-
 	// Wipes entire Lua state --- should delete and re-create MSPACE as well.
 	log_host( "Disposing AjekScript Environment...");
 
 	lua_close(m_L);
-	m_error		= AsError_None;		// important to clear this: error info is on the lua stack
 	m_L			= nullptr;
 }
 
 
-void AjekScriptEnv::PrintLastError() const
-{
-	if (HasError()) {		// if not set then the upvalue's not going to be a lua error string ...
-		xPrintLn( xFmtStr("\n%s", lua_tostring(m_L, -1)));
-	}
-}
-
-AjekScriptError cvtLuaErrorToAjekError(int lua_error)
-{
-	switch (lua_error) {
-		case LUA_YIELD		:	bug("LUA_YIELD.  HOW??");						break;
-		case LUA_ERRRUN		:	return AsError_Runtime;							break;
-		case LUA_ERRSYNTAX	:	return AsError_Syntax;							break;
-		case LUA_ERRMEM		:	bug_qa("Lua Out Of Memory Error!");				break;
-		case LUA_ERRGCMM	:	bug_qa("Lua Garbage Collector Failure!");		break;
-		case LUA_ERRERR		:	return AsError_Assertion;						break;
-		case LUA_ERRFILE	:   return AsError_Syntax;							break;
-		default				:	bug_qa("Lua unknown error code = %d", lua_error);
-	}
-
-	return AsError_Environment;
-}
-
 void AjekScriptEnv::LoadModule(const xString& path)
 {
 	bug_on (!m_L,						"Invalid object state: uninitialized script environment.");
-	bug_on (m_error != AsError_None,	"Invalid object state: script error is pending.");
 	bug_on (path.IsEmpty());
 
-	if (m_error != AsError_None)	return;
-	if (path.IsEmpty())				return;
+	if (m_lua_error != AsError_None)	return;
+	if (path.IsEmpty())					return;
 
 	//ScopedFpRoundMode	nearest;
 
@@ -343,9 +357,13 @@ void AjekScriptEnv::LoadModule(const xString& path)
 
 	int ret;
 	ret = luaL_loadfile(m_L, path);
-	bool isAbortErr = ret != LUA_ERRSYNTAX && ret != LUA_ERRFILE;
-	if (ret && isAbortErr) {
-		log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
+
+	if (ret) {
+		bool isAbortErr = ret != LUA_ERRSYNTAX && ret != LUA_ERRFILE;
+		if (isAbortErr) {
+			log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
+		}
+		throw_abort_ex(AsError_Syntax, lua_tostring(m_L, -1));
 	}
 
 	//assume(s_module_id == LuaModule_State_NotLoading);
@@ -361,7 +379,8 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		//	s_fntrace_nesting += '>';
 		//}
 
-		ret = lua_pcall(m_L, 0, 0, 0);
+		//ret = lua_pcall(m_L, 0, 0, 0);
+		lua_call(m_L, 0, 0);
 
 		//if (trace_libajek) {
 		//	s_fntrace_nesting.PopBack();
@@ -382,13 +401,6 @@ void AjekScriptEnv::LoadModule(const xString& path)
 
 	if (!AJEK_SCRIPT_DEBUGGER) {
 		log_and_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
-	}
-
-	if (ret) {
-		// Visual studio looks for src relative to the *.sln directory when resolving error
-		// codes.  The filenames returned by Lua are relative to the CWD of the instance.
-
-		ThrowError(cvtLuaErrorToAjekError(ret));
 	}
 
 	GCUSAGE(m_L);
@@ -451,7 +463,7 @@ lua_s32	AjekScriptEnv::get_s32(int stackidx) const
 {
 	lua_s32 result;
 	result.m_value		= lua_tointeger(m_L, stackidx);
-	result.m_isNil		= lua_isnil(m_L, stackidx);
+	result.m_isNil		= lua_isnil    (m_L, stackidx);
 	return result;
 }
 
@@ -499,43 +511,17 @@ lua_string AjekScriptEnv::glob_get_string(const char* varname) const
 	return result;
 }
 
-void AjekScriptEnv::SetJmpCatch(jmp_buf& buf) {
-	bug_on_qa(m_has_setjmp);
-	m_jmpbuf		= &buf;
-	m_has_setjmp	= 1;
 
-	m_L->jmpbuf_default = m_jmpbuf;
-}
-
-void AjekScriptEnv::SetJmpFinalize() {
-	m_L->jmpbuf_default = nullptr;
-	m_has_setjmp		= 0;
-}
-
-void AjekScriptEnv::RethrowError()
+static void lua_custom_throw(int lua_error)
 {
-	ThrowError(cvtLuaErrorToAjekError(m_L->errorStatus));
+
+	cvtLuaErrorToAjekError(lua_error);
 }
 
-bool AjekScriptEnv::ThrowError(AjekScriptError errorcode) const
+void AjekScriptEnv::BindThrowContext(xThrowContext& ctx)
 {
-	// For general semantics of this class, it's important to have the ThrowError()
-	// callable from otherwise const functions.  m_error has been marked volatile
-	// accordingly.
-
-	const_cast<AjekScriptEnv*>(this)->m_error = errorcode;
-
-	if (m_has_setjmp) {
-		// Do not log last error here --
-		//    assume the error handler may want to do it's own error msg printout
-		longjmp(*m_jmpbuf, 1);
-	}
-	else {
-		PrintLastError();
-	}
-
-	// always return false, this is just a convenience function for friendly semantics caller-side
-	return false;
+	bug_on_qa(m_ThrowCtx);
+	m_ThrowCtx = &ctx;
 }
 
 LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequired)
@@ -545,13 +531,11 @@ LuaTableScope AjekScriptEnv::glob_open_table(const char* tableName, bool isRequi
 	LuaTableScope result = LuaTableScope(*this);
 
 	if (isRequired && result.isNil()) {
-		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
-		ThrowError(AsError_Environment);
+		throw_abort_ex(AsError_Environment, "Required global table '%s' is missing.", tableName);
 	}
 
 	if (!result.isNil() && !lua_istable(m_L, -1)) {
-		lua_pushfstring(m_L, "Required global table '%s' is missing.", tableName);
-		ThrowError(AsError_Environment);
+		throw_abort_ex(AsError_Environment, "Required global table '%s' is missing.", tableName);
 	}
 	return result;
 }
@@ -584,11 +568,9 @@ LuaTableScope::LuaTableScope(AjekScriptEnv& env)
 void AjekScriptEnv::_throw_type_mismatch(const char* key, const char* expected_type) const
 {
 	auto* L = m_L;
-	lua_pushfstring(L, "Table member '%s.%s': Expected %s but got %s.",
+	throw_abort_ex(AsError_Runtime, "Table member '%s.%s': Expected %s but got %s.",
 		"{table}", key, expected_type, lua_typename(L, lua_type(L, -1))
 	);
-
-	ThrowError(AsError_Runtime);
 }
 
 void AjekScriptEnv::_throw_type_mismatch(int keyidx, const char* expected_type) const
@@ -597,11 +579,9 @@ void AjekScriptEnv::_throw_type_mismatch(int keyidx, const char* expected_type) 
 	pragma_todo("Make Ajek-version of lua_tointeger() that does assertion checking on type");
 
 	auto* L = m_L;
-	lua_pushfstring(L, "Table member '%s[%d]': Expected %s but got %s.",
+	throw_abort_ex(AsError_Runtime, "Table member '%s[%d]': Expected %s but got %s.",
 		"{table}", keyidx, expected_type, lua_typename(L, lua_type(L, -1))
 	);
-
-	ThrowError(AsError_Runtime);
 }
 
 void LuaTableScope::_internal_gettable() const {
@@ -809,10 +789,11 @@ void AjekScriptEnv::pop(int num)
 
 bool AjekScriptEnv::call(int nArgs, int nRet)
 {
-	int result = lua_pcall(m_L, nArgs, nRet, 0);
-	if (result) {
-		ThrowError(cvtLuaErrorToAjekError(result));
-	}
+	//int result = lua_pcall(m_L, nArgs, nRet, 0);
+	//if (result) {
+	//	ThrowError(cvtLuaErrorToAjekError(result));
+	//}
+	lua_call(m_L, nArgs, nRet);
 	return true;
 }
 

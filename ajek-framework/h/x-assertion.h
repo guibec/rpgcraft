@@ -245,12 +245,10 @@ extern assert_t	xDebugBreak			( DbgBreakType breakType, const char* filepos, con
 extern assert_t xDebugBreak_v		( DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt, va_list list );
 
 // Writes directly to debug console where supported (visual studio), or stdout otherwise.
-extern void		xOutputDebugString	(const char* str);
+extern void		xOutputString		(const char* str);
 
 // Writes directly to debug console where supported (visual studio), or stderr otherwise.
-// (stderr gets picked up by DART autotester as artifact)
-// (Used when xLogFlag_Important is specified)
-extern void		xOutputVerboseString(const char* msg);
+extern void		xOutputStringError(const char* msg);
 
 extern bool		xIsDebuggerAttached	();
 
@@ -398,6 +396,8 @@ extern bool		xIsDebuggerAttached	();
 //    same assertion may not immediately take effect, since the assertion recursion check
 //    occurs after the Ignore-All check.  Not worth fixing, we assume...
 
+#define EXPAND( x ) x
+
 namespace
 {
 	template< int hash_key > assert_t _Ignorable_DebugBreak(DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt=nullptr, ... ) __verify_fmt(5, 6);
@@ -409,8 +409,8 @@ namespace
 
 		va_list list;
 		va_start(list, fmt);
-
 		assert_t result = xDebugBreak_v( breakType, filepos, funcname, cond, fmt, list);
+		va_end(list);
 
 		#if !TARGET_ORBIS
 		if (result == assert_ignore_all) {
