@@ -3,41 +3,6 @@
 #include "x-types.h"
 #include "x-simd.h"
 
-enum GPU_VertexBufferLayout {
-	VertexBufferLayout_Color,
-	VertexBufferLayout_Tex1,
-	VertexBufferLayout_ColorTex1,
-	VertexBufferLayout_ColorTex4,
-	VertexBufferLayout_TileMap,
-	VertexBufferLayout_DbgFont,
-
-	VertexBufferLayout_MultiSlot_Tex1,
-	VertexBufferLayout_MultiSlot_ColorTex1,
-
-
-	VertexBufferLayout_NUM_LAYOUTS,
-};
-
-static inline __ai const char* toString(GPU_VertexBufferLayout layout) {
-	switch(layout) {
-		CaseReturnString(VertexBufferLayout_Color		);
-		CaseReturnString(VertexBufferLayout_Tex1		);
-		CaseReturnString(VertexBufferLayout_ColorTex1	);
-		CaseReturnString(VertexBufferLayout_ColorTex4	);
-
-		CaseReturnString(VertexBufferLayout_TileMap		);
-		CaseReturnString(VertexBufferLayout_DbgFont		);
-
-		CaseReturnString(VertexBufferLayout_MultiSlot_Tex1		);
-		CaseReturnString(VertexBufferLayout_MultiSlot_ColorTex1 );
-
-
-		CaseReturnString(VertexBufferLayout_NUM_LAYOUTS	);
-		default: __unreachable();
-	}
-	return "invalid";
-}
-
 enum GPU_ResourceFmt : u8
 {
 	GPU_ResourceFmt_R32G32B32A32_TYPELESS       = 1,
@@ -312,7 +277,6 @@ extern bool					dx11_TryLoadShaderVS			(GPU_ShaderVS& dest, const xString& srcfi
 extern bool					dx11_TryLoadShaderFS			(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
 extern void					dx11_LoadShaderVS				(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn);
 extern void					dx11_LoadShaderFS				(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn);
-extern void					dx11_SetInputLayout				(GPU_VertexBufferLayout layoutType);
 extern void					dx11_SetInputLayout				(const GPU_InputDesc& layout);
 extern void					dx11_SetRasterState				(GpuRasterFillMode fill, GpuRasterCullMode cull, GpuRasterScissorMode scissor);
 
@@ -331,6 +295,7 @@ extern void					dx11_DrawInstanced				(int vertsPerInstance, int instanceCount, 
 extern void					dx11_DrawIndexedInstanced		(int indexesPerInstance, int instanceCount, int startIndex, int baseVertex, int startInstance);
 extern void					dx11_Draw						(int indexCount, int startVertLoc);
 
+extern void					dx11_InputLayoutCache_DisposeAll();
 
 extern bool					g_gpu_ForceWireframe;
 extern GPU_RenderTarget		g_gpu_BackBuffer;

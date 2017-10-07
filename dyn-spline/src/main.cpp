@@ -289,7 +289,23 @@ class TileMapLayer :
 	public virtual ITickableEntity
 {
 public:
+	GPU_InputDesc	gpu_layout_tilemap;
+
+public:
 	TileMapLayer() : BasicEntitySpawnId() {
+		xMemZero(gpu_layout_tilemap);
+		gpu_layout_tilemap.AddVertexSlot( {
+			{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
+			{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
+		});
+
+		gpu_layout_tilemap.AddInstanceSlot( {
+			{ "TileID", GPU_ResourceFmt_R32_UINT }
+		});
+
+		gpu_layout_tilemap.AddInstanceSlot( {
+			{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
+		});
 	}
 
 	// Eye and At should move laterally together so that the eye is always looking straight down
@@ -318,7 +334,7 @@ void TileMapLayer::Draw() const
 
 	dx11_BindShaderVS(g_ShaderVS_Tiler);
 	dx11_BindShaderFS(g_ShaderFS_Tiler);
-	dx11_SetInputLayout(VertexBufferLayout_TileMap);
+	dx11_SetInputLayout(gpu_layout_tilemap);
 
 //	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 	dx11_BindShaderResource(tex_floor, 0);
@@ -343,9 +359,15 @@ private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
+	GPU_InputDesc	gpu_layout_sprite;
 
 public:
 	PlayerSprite() : BasicEntitySpawnId() {
+		xMemZero(gpu_layout_sprite);
+		gpu_layout_sprite.AddVertexSlot( {
+			{ "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT	},
+			{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT		}
+		});
 	}
 
 public:
@@ -357,7 +379,7 @@ public:
 	{
 		dx11_BindShaderVS		(g_ShaderVS_Spriter);
 		dx11_BindShaderFS		(g_ShaderFS_Spriter);
-		dx11_SetInputLayout		(VertexBufferLayout_Tex1);
+		dx11_SetInputLayout		(gpu_layout_sprite);
 		dx11_BindShaderResource	(tex_chars, 0);
 		dx11_SetVertexBuffer	(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 		dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
