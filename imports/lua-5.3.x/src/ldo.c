@@ -111,10 +111,6 @@ l_noret luaD_throw (lua_State *L, int errcode) {
     L->errorJmp->status = errcode;  /* set status */
     LUAI_THROW(L, L->errorJmp);  /* jump to it */
   }
-  else if (L->jmpbuf_default) {
-	L->errorStatus = errcode;
-	longjmp(*L->jmpbuf_default, 2);
-  }
   else {  /* thread has no error handler */
     global_State *g = G(L);
     L->status = cast_byte(errcode);  /* mark it as dead */
@@ -134,7 +130,6 @@ l_noret luaD_throw (lua_State *L, int errcode) {
     }
   }
 }
-
 
 int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
   unsigned short oldnCcalls = L->nCcalls;
