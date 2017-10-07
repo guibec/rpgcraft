@@ -36,7 +36,6 @@ int2 g_backbuffer_size_pix = {0, 0};
 
 
 static ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
-static ID3D11InputLayout*		g_pVertexLayouts[VertexBufferLayout_NUM_LAYOUTS] = {};
 
 static D3D_DRIVER_TYPE			g_driverType			= D3D_DRIVER_TYPE_NULL;
 static D3D_FEATURE_LEVEL		g_featureLevel			= D3D_FEATURE_LEVEL_11_0;
@@ -255,12 +254,7 @@ void dx11_CleanupDevice()
 		g_pImmediateContext->ClearState();
 	}
 
-	for(auto& layout : g_pVertexLayouts) {
-		if (layout) {
-			layout->Release();
-			layout = nullptr;
-		}
-	}
+	dx11_InputLayoutCache_DisposeAll();
 
 	for(auto& stateA : g_RasterState) {
 		for(auto& stateB : stateA) {
@@ -341,151 +335,6 @@ InputLayoutSlot& InputLayoutSlot::Append(const char* semanticName, GPU_ResourceF
 
 	m_numElements += 1;
 	return *this;
-}
-
-
-static const D3D11_INPUT_ELEMENT_DESC layout_color[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_tex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-
-static const D3D11_INPUT_ELEMENT_DESC layout_colortex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_colortex4[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_multi_tex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_multi_colortex1[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_tilemap[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TileID",		0, DXGI_FORMAT_R32_UINT,			1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-};
-
-static const D3D11_INPUT_ELEMENT_DESC layout_dbgfont[] =
-{
-	{ "POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0 },
-	{ "TileID",		0, DXGI_FORMAT_R32_UINT,			1, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_INSTANCE_DATA,	1 },
-};
-
-const D3D11_INPUT_ELEMENT_DESC* getVertexBufferLayout(GPU_VertexBufferLayout layoutType)
-{
-	switch (layoutType)
-	{
-		case VertexBufferLayout_Color:					return layout_color;
-		case VertexBufferLayout_Tex1:					return layout_tex1;
-		case VertexBufferLayout_ColorTex1:				return layout_colortex1;
-		case VertexBufferLayout_ColorTex4:				return layout_colortex4;
-		case VertexBufferLayout_TileMap:				return layout_tilemap;
-		case VertexBufferLayout_DbgFont:				return layout_dbgfont;
-
-		case VertexBufferLayout_MultiSlot_Tex1:			return layout_multi_tex1;
-		case VertexBufferLayout_MultiSlot_ColorTex1:	return layout_multi_colortex1;
-
-		default: unreachable();
-	}
-
-	unreachable();
-	return nullptr;
-}
-
-int getVertexBufferLayoutSize(GPU_VertexBufferLayout layoutType)
-{
-	switch (layoutType)
-	{
-		case VertexBufferLayout_Color:					return bulkof(layout_color				);
-		case VertexBufferLayout_Tex1:					return bulkof(layout_tex1				);
-		case VertexBufferLayout_ColorTex1:				return bulkof(layout_colortex1			);
-		case VertexBufferLayout_ColorTex4:				return bulkof(layout_colortex4			);
-		case VertexBufferLayout_TileMap:				return bulkof(layout_tilemap			);
-		case VertexBufferLayout_DbgFont:				return bulkof(layout_dbgfont			);
-
-		case VertexBufferLayout_MultiSlot_Tex1:			return bulkof(layout_multi_tex1			);
-		case VertexBufferLayout_MultiSlot_ColorTex1:	return bulkof(layout_multi_colortex1	);
-
-		default: unreachable();
-	}
-
-	unreachable();
-	return 0;
-}
-
-ID3DBlob* LoadShaderBlobVS(const xString& srcfile, const char* entryPointFn)
-{
-	bug_on( !entryPointFn || !entryPointFn[0] );
-	ID3DBlob* blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
-	return blob;
-}
-
-static void genInputLayouts()
-{
-	// TODO : generate these InputLayout shaders at runtime, according to the InputLayout
-	//        specifications defined within and supported by our engine.
-	//
-	// Caveat: Auto-generating input layouts forces shaders to use input layouts that match
-	//         specifically the layout defined by the framework.  Normally the DX11 system allows
-	//         input layouts to be defined in any order and with padding or unused fields, which
-	//         allows a single shader to be used with several different input layout inputs.
-	//
-	//  To work around the caveat, the framework should have 1:1 match of layout to shader,
-	//  rather than trying to use just a few generic layouts for all shaders.  Layouts can probably
-	//  be created on first-time use easliy enough (during SceneRender step, when the shader/layout
-	//  combo is bound to the pipeline).  Layouts can be hashed for tracking/cleanup purposes.
-
-	pragma_todo("Remove dependency on VertexInputLayouts.fx and allow for runtime-specified input layouts.");
-
-	HRESULT hr;
-	for (int i=0; i<VertexBufferLayout_NUM_LAYOUTS; ++i) {
-		auto vbl = (GPU_VertexBufferLayout)i;
-		auto* IALayoutBlob = LoadShaderBlobVS(
-			"..\\ajek-framework\\shaders\\VertexInputLayouts.fx",
-			toString(vbl));
-
-		// Create the input layout
-		hr = g_pd3dDevice->CreateInputLayout(
-			getVertexBufferLayout		(vbl),
-			getVertexBufferLayoutSize	(vbl),
-			IALayoutBlob->GetBufferPointer(),
-			IALayoutBlob->GetBufferSize(),
-			&g_pVertexLayouts[vbl]
-		);
-		IALayoutBlob->Release();
-	}
 }
 
 void dx11_InitDevice()
@@ -709,8 +558,6 @@ void dx11_InitDevice()
 	g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y), 0.01f, 100.0f );
 
-	genInputLayouts();
-
 	log_and_abort_on(FAILED(hr));
 }
 
@@ -754,15 +601,13 @@ static const GPU_ShaderFS*		s_CurrentShaderFS	= nullptr;
 static InputLayoutCache_t		s_dx11_InputLayoutCache;
 //static InputDescCache_t			s_dx11_InputDescCache;
 
-bool s_workaround = 1;
-
-void dx11_SetInputLayout(GPU_VertexBufferLayout layoutType)
+void dx11_InputLayoutCache_DisposeAll()
 {
-	// Set the input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayouts[layoutType]);
-	s_CurrentInputDesc = nullptr;
-	s_NeedsPreDrawPrep = 1;
-	s_workaround = 1;
+	for (auto& item : s_dx11_InputLayoutCache) {
+		if (item.second.dx) { item.second.dx->Release(); item.second.dx = nullptr; }
+	}
+
+	s_dx11_InputLayoutCache.clear();
 }
 
 void dx11_SetInputLayout(const GPU_InputDesc& layout)
@@ -770,7 +615,6 @@ void dx11_SetInputLayout(const GPU_InputDesc& layout)
 	// layout will be resolved against bound shaders when the draw command is initiated.
 	// If the layout is fresh (unrecognized hash) then it will be added to the internal layout cache.
 
-	s_workaround = 0;
 	if (!s_CurrentInputDesc || (s_CurrentInputDesc->GetHash() != layout.GetHash())) {
 		s_NeedsPreDrawPrep		= 1;
 		s_CurrentInputDesc		= &layout;
@@ -873,10 +717,7 @@ void dx11_PreDrawPrep()
 	bug_on_qa(!shaderVS, "VS shader resource has been deinitialized since being bound.");
 	bug_on_qa(!shaderFS, "FS shader resource has been deinitialized since being bound.");
 
-	if (!s_workaround) {
-		g_pImmediateContext->IASetInputLayout(do_prep_inputLayout());
-		//dx11_SetInputLayout(VertexBufferLayout_DbgFont);
-	}
+	g_pImmediateContext->IASetInputLayout(do_prep_inputLayout());
 	g_pImmediateContext->VSSetShader(shaderVS, nullptr, 0);
 	g_pImmediateContext->PSSetShader(shaderFS, nullptr, 0);
 	s_NeedsPreDrawPrep = 0;

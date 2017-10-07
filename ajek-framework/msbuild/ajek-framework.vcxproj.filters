@@ -97,7 +97,4 @@
       <UniqueIdentifier>{47dca472-e723-437b-8431-c6a51785d0d9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\shaders\VertexInputLayouts.fx" />
-  </ItemGroup>
 </Project>
