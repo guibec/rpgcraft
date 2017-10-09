@@ -201,48 +201,13 @@ void SceneInputLogic()
 	//Host_IsKeyPressed('a');
 }
 
-static u32 s_entity_spawn_id = 1;
-
-#include "x-atomic.h"
-
-u32 getNewEntitySpawnId()
-{
-	int result = AtomicInc((s32&)s_entity_spawn_id);
-	if (result == 0) {
-		// wrapped around the world.  impressive.
-		log_host("super-secret impossible easter egg found!");
-		// but zero is an invalid spawn ID, so discard it:
-		result = AtomicInc((s32&)s_entity_spawn_id);
-	}
-	return result;
-}
-
-template< typename T >
-T* CreateEntity()
-{
-	T* entity = placement_new(T);
-	return entity;
-}
-
-class BasicEntitySpawnId : public virtual ISpawnId
-{
-private:
-	NONCOPYABLE_OBJECT(BasicEntitySpawnId);
-
-public:
-	u32	 m_spawnId = 0;
-
-protected:
-	BasicEntitySpawnId() {
-		auto newSpawnId = getNewEntitySpawnId();
-		m_spawnId		= newSpawnId;
-	}
-
-public:
-	virtual u32 GetSpawnId() const {
-		return m_spawnId;
-	}
-};
+//template< typename T >
+//T* CreateEntity()
+//{
+//	T* entity = placement_new(T);
+//	entity->m_gid = Entity_GlobalSpawn(entity);
+//	return entity;
+//}
 
 struct GPU_TileMapConstants
 {
@@ -256,17 +221,16 @@ struct GPU_TileMapConstants
 GPU_ConstantBuffer		g_gpu_constbuf;
 GPU_ConstantBuffer		g_cnstbuf_TileMap;
 
-class ViewCamera :
-	public virtual BasicEntitySpawnId,
-	public virtual ITickableEntity
+class ViewCamera
 {
 public:
+	EntityGid_t				m_gid;
 	u128					m_Eye;
 	u128					m_At;
 	u128					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
 	GPU_ViewCameraConsts	m_Consts;
 
-	ViewCamera() : BasicEntitySpawnId() {
+	ViewCamera() {
 	}
 
 	// Eye and At should move laterally together so that the eye is always looking straight down
@@ -284,15 +248,14 @@ public:
 	}
 };
 
-class TileMapLayer :
-	public virtual BasicEntitySpawnId,
-	public virtual ITickableEntity
+class TileMapLayer
 {
 public:
-	GPU_InputDesc	gpu_layout_tilemap;
+	EntityGid_t			m_gid;
+	GPU_InputDesc		gpu_layout_tilemap;
 
 public:
-	TileMapLayer() : BasicEntitySpawnId() {
+	TileMapLayer() {
 		xMemZero(gpu_layout_tilemap);
 		gpu_layout_tilemap.AddVertexSlot( {
 			{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
@@ -350,19 +313,17 @@ void TileMapLayer::Draw() const
 
 }
 
-class PlayerSprite :
-	public virtual BasicEntitySpawnId,
-	public virtual IDrawableEntity,
-	public virtual ITickableEntity
+class PlayerSprite
 {
 private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	GPU_InputDesc	gpu_layout_sprite;
+	EntityGid_t			m_gid;
+	GPU_InputDesc		gpu_layout_sprite;
 
 public:
-	PlayerSprite() : BasicEntitySpawnId() {
+	PlayerSprite() {
 		xMemZero(gpu_layout_sprite);
 		gpu_layout_sprite.AddVertexSlot( {
 			{ "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT	},
@@ -419,8 +380,11 @@ void SceneRender()
 
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
-		auto* const& entity = entitem.entity;
-		entity->Tick();
+		// Hmm.. might be better to throw on null entity? or log and ignore?
+		// Probably log and ignore bydefault with option to bug ...
+		auto* entity = Entity_GlobalLookup(entitem.orderId.Gid());
+		bug_on_qa(!entity);
+		entitem.Tick(entity);
 	}
 
 	GPU_ViewCameraConsts	m_ViewConsts;
@@ -435,8 +399,9 @@ void SceneRender()
 
 	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
-		const auto* const& entity = entitem.entity;
-		entity->Draw();
+		auto* entity = Entity_GlobalLookup(entitem.orderId.Gid());
+		bug_on_qa(!entity);
+		entitem.Draw(entity);
 	}
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
@@ -609,12 +574,13 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 	// ---------------------------------------------------------------------------------------------
 
-	g_TileMap = CreateEntity<TileMapLayer>();
+	PlaceEntity(g_ViewCamera);
 
-	auto* player = CreateEntity<PlayerSprite>();
-	g_tickable_entities.Add(&g_ViewCamera, 1);
-	g_tickable_entities.Add(player, 10);
-	g_drawable_entities.Add(player, 10);
+		  g_TileMap = NewEntity(TileMapLayer);
+	auto* player	= NewEntity(PlayerSprite);
+	g_tickable_entities.Add( 1, g_ViewCamera.m_gid, [](      void* entity) { ((ViewCamera*  )entity)->Tick(); } );
+	g_tickable_entities.Add(10, player->m_gid,		[](      void* entity) { ((PlayerSprite*)entity)->Tick(); } );
+	g_drawable_entities.Add(10, player->m_gid,		[](const void* entity) { ((PlayerSprite*)entity)->Draw(); } );
 
 	dx11_CreateConstantBuffer(g_gpu_constbuf,		sizeof(GPU_ViewCameraConsts));
 	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
