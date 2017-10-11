@@ -23,7 +23,7 @@ struct EntityPointerContainerItem
 {
 	EntityGid_t		gid;
 	void*			entityPtr;
-	const char*		classname;		// alloc'd in same heap as entity
+	char*			classname;		// alloc'd in same heap as entity
 };
 
 union EntityGidOrderPair
@@ -197,6 +197,7 @@ struct TickableEntityContainer {
 
 	void		_Add			(const TickableEntityItem& entityInfo);
 	void		Remove			(EntityGid_t entityGid, u32 order = (u32)-1);
+	void		Clear			();
 	void		ExecEventQueue	();
 
 	__ai void Add(int orderId, EntityGid_t entityGid, EntityFn_LogicTick* logic) {
@@ -233,8 +234,9 @@ struct DrawableEntityContainer {
 	// Add/Remove note:
 	//  * modification of drawable entity list during draw is invalid.  It can only be modified from tick context/
 
-	void	_Add		(const DrawableEntityItem& entity);
-	void	Remove		(EntityGid_t entityGid, u32 order  = (u32)-1);
+	void		_Add			(const DrawableEntityItem& entity);
+	void		Remove			(EntityGid_t entityGid, u32 order  = (u32)-1);
+	void		Clear			();
 
 	__ai void Add(int orderId, EntityGid_t entityGid, EntityFn_Draw* draw) {
 		_Add( { MakeGidOrder(entityGid, orderId), draw } );
@@ -360,20 +362,22 @@ inline EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order)
 }
 
 
-extern void*			Entity_GlobalLookup		(EntityGid_t gid);
-extern EntityGid_t		Entity_GlobalSpawn		(void* entity, const char* classname=nullptr);
-extern void*			Entity_Malloc			(int size);
+extern void				EntityManager_Reset	();
+extern void*			Entity_Lookup		(EntityGid_t gid);
+extern void*			Entity_Remove		(EntityGid_t gid);
+extern EntityGid_t		Entity_Spawn		(void* entity, const char* classname=nullptr);
+extern void*			Entity_Malloc		(int size);
 
 template< typename T >
 inline T* Entity_PlacementNew(const char* classname)
 {
 	T* entity = new (Entity_Malloc(sizeof(T))) T;
-	entity->m_gid = Entity_GlobalSpawn(entity, classname);
+	entity->m_gid = Entity_Spawn(entity, classname);
 	return entity;
 }
 
 #define PlaceEntity(instance, ...)	\
-	bug_on(instance.m_gid, "Entity has already been added to global spawn manager.");	\
-	instance.m_gid = Entity_GlobalSpawn(&instance, #instance __VA_ARGS__)
+	Entity_Remove(instance.m_gid); instance.m_gid = 0;			\
+	instance.m_gid = Entity_Spawn(&instance, #instance __VA_ARGS__)
 
 #define NewEntity(type, ...)		Entity_PlacementNew<type>( #type __VA_ARGS__)
