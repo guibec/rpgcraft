@@ -569,7 +569,9 @@ struct dx11_ShaderInfo
 	u32				hash	= 0;
 
 	void Dispose() {
-		blob->Release();
+		if (blob) {
+			blob->Release();
+		}
 		blob = nullptr;
 		hash = 0;
 	}
@@ -592,7 +594,6 @@ struct InputLayoutCacheItem {
 using InputLayoutCache_t	= std::unordered_map<u32,					InputLayoutCacheItem,	FunctHashIdentity>;
 using InputDescCache_t		= std::unordered_map<GPU_InputDescHash_t,	GPU_InputDesc,			FunctHashIdentity>;
 
-static u32		s_CurrentInputDescHash = 0;
 static bool		s_NeedsPreDrawPrep = 0;
 static const GPU_InputDesc*		s_CurrentInputDesc	= nullptr;
 static const GPU_ShaderVS*		s_CurrentShaderVS	= nullptr;
@@ -618,11 +619,6 @@ void dx11_SetInputLayout(const GPU_InputDesc& layout)
 	if (!s_CurrentInputDesc || (s_CurrentInputDesc->GetHash() != layout.GetHash())) {
 		s_NeedsPreDrawPrep		= 1;
 		s_CurrentInputDesc		= &layout;
-
-		//if (s_dx11_InputDescCache.find(s_CurrentInputDescHash) == s_dx11_InputDescCache.end()) {
-		//	log_perf( "Adding new InputDescription, hash=0x%08x total=%d", s_CurrentInputDescHash, s_dx11_InputDescCache.size()+1);
-		//	s_dx11_InputDescCache.insert( { s_CurrentInputDescHash, layout } );
-		//}
 	}
 }
 
@@ -630,13 +626,12 @@ ID3D11InputLayout* do_prep_inputLayout()
 {
 	throw_abort_on(!s_CurrentInputDesc,		"No input layout has been bound to the pipeline.");
 	throw_abort_on(!s_CurrentShaderVS,		"No vertex shader has been bound to the pipeline.");
-	pragma_todo("Use ID3D11ShaderReflection::GetInputParameterDesc() to determine shader-to-inputlayout association.");
 
 
 	const auto& shader	= ptr_cast<ID3D11VertexShader* const &>	(s_CurrentShaderVS->m_driverBinary);
 	const auto& info	= ptr_cast<dx11_ShaderInfo* const &>	(s_CurrentShaderVS->m_driverBlob);
 
-	u32 fullhash_vs = i_crc32(s_CurrentInputDescHash, info->hash);
+	u32 fullhash_vs = i_crc32(s_CurrentInputDesc->GetHash(), info->hash);
 
 	if (1) {
 		auto& it = s_dx11_InputLayoutCache.find(fullhash_vs);
@@ -650,9 +645,6 @@ ID3D11InputLayout* do_prep_inputLayout()
 	// platforms, and likely we would never need such extreme shaders for our apps... -- jstine
 
 	D3D11_INPUT_ELEMENT_DESC dx_layout[16] = {};
-
-	//const auto  it			= s_dx11_InputDescCache.find(s_CurrentInputDescHash);
-	//const auto& inputDesc	= it->second;
 
 	const auto& inputDesc	= *s_CurrentInputDesc;
 
@@ -757,9 +749,13 @@ bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char
 	info->blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
 	if (!info->blob) return false;
 
-	const u64* ptr64	= (u64*)info->blob->GetBufferPointer();
-	int size64	= info->blob->GetBufferSize() / 8;
-	int sizeRem	= info->blob->GetBufferSize() & 7;
+	ID3DBlob* insig = nullptr;
+	D3DGetBlobPart(info->blob->GetBufferPointer(), info->blob->GetBufferSize(),
+		D3D_BLOB_INPUT_SIGNATURE_BLOB, 0, &insig);
+
+	const u64* ptr64	= (u64*)insig->GetBufferPointer();
+	int size64	= insig->GetBufferSize() / 8;
+	int sizeRem	= insig->GetBufferSize() & 7;
 
 	u32 hash = 0;
 	for (int i=0; i<size64; ++i, ++ptr64) {
