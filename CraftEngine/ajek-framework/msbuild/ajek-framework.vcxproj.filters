@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\x-thread.cpp">
+      <Filter>Public Includes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x-png-decode.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x-stdlib.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x-string.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\kpad.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x-ThrowContext.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\h\sse_intrinsics.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-assertion.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-atomic.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-BitmapData.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-ForwardDefs.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-libPngEncoder.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-MemCopy.inl">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-png-decode.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-simd.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-stdlib.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-stl.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-string.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-TargetConfig.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-thread.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-types.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\msw-redtape.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\msw-error.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-ScopedMalloc.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common-standard.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-host-ifc.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-chrono.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-pad.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-ThrowContext.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Public Includes">
+      <UniqueIdentifier>{c02405e6-1aa6-46ff-bd80-36f57ff1a53c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{47dca472-e723-437b-8431-c6a51785d0d9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

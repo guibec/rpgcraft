@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}</ProjectGuid>
+    <Keyword>DynSpline</Keyword>
+    <RootNamespace>DynSpline</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="RepoRootDir.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\imports\msbuild\lua-inc.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="RepoRootDir.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\imports\msbuild\lua-inc.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(RepoRootDir)\ajek-framework\src\common-standard.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">common-standard.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">common-standard.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="src\appConfig.cpp" />
+    <ClCompile Include="src\Bezier2D.cpp" />
+    <ClCompile Include="src\DbgFont.cpp" />
+    <ClCompile Include="src\dx11-core_stuff.cpp" />
+    <ClCompile Include="src\Entity.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\msw-WinMain.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\test-spline.cpp" />
+    <ClCompile Include="src\UniformMeshes.cpp" />
+    <ClCompile Include="src\x-gpu-colors.cpp" />
+    <ClCompile Include="src\x-log_host.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Bezier2D.h" />
+    <ClInclude Include="src\DbgFont.h" />
+    <ClInclude Include="src\Entity.h" />
+    <ClInclude Include="src\mswStandard.h" />
+    <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\UniformMeshes.h" />
+    <ClInclude Include="src\v-float.h" />
+    <ClInclude Include="src\x-gpu-colors.h" />
+    <ClInclude Include="src\x-gpu-ifc.h" />
+    <ClInclude Include="src\x-thread-internal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Bezier2D.inl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRootDir)\ajek-framework\msbuild\ajek-framework.vcxproj">
+      <Project>{5db34fc8-daeb-4038-a731-bb23f4697ead}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRootDir)\ajek-framework\msbuild\msw-framework.vcxproj">
+      <Project>{d45b9090-e34a-4796-908e-24f83cbd0fb3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRootDir)\ajek-script\msbuild\lua-ifc.vcxproj">
+      <Project>{afaedcb1-030a-415b-a853-00e8cb21fd90}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRootDir)\imports\libpng-1.6.29\projects\vstudio\libpng\libpng.vcxproj">
+      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRootDir)\imports\libpng-1.6.29\projects\vstudio\zlib\zlib.vcxproj">
+      <Project>{60f89955-91c6-3a36-8000-13c592fec2df}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRootDir)\imports\lua-5.3.x\lua-5.3.x.vcxproj">
+      <Project>{6388ee6e-722d-4712-93c1-5a7ef1da91e0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DbgFont.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Sprite.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="TileMap.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
