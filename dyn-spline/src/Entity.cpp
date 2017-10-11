@@ -15,6 +15,7 @@ DECLARE_MODULE_NAME("Entity");
 static u32 s_entity_spawn_id = 1;
 
 EntityPointerContainer	g_GlobalEntities;
+EntityPointerContainer	g_GlobalEntityAlloc;
 
 static EntityGid_t getNextSpawnId()
 {
@@ -34,14 +35,41 @@ void* Entity_Malloc(int size)
 	return xMalloc(size);
 }
 
-void* Entity_GlobalLookup(EntityGid_t gid)
+void EntityManager_Reset()
+{
+	// Remove this once global entity MSPACE is provided...
+	for(auto& item : g_GlobalEntityAlloc) {
+		xFree(item.entityPtr);
+	}
+
+	// Remove this once global entity MSPACE is provided...
+	for(auto& item : g_GlobalEntities) {
+		xFree(item.classname);
+	}
+
+	g_GlobalEntities	.clear();
+	g_GlobalEntityAlloc	.clear();
+
+	// Wipe mspace here...
+}
+
+void* Entity_Lookup(EntityGid_t gid)
 {
 	auto it = g_GlobalEntities.find( {gid, nullptr} );
 	if (it == g_GlobalEntities.end()) return nullptr;
 	return it->entityPtr;
 }
 
-EntityGid_t Entity_GlobalSpawn(void* entity, const char* classname)
+void* Entity_Remove(EntityGid_t gid)
+{
+	auto it = g_GlobalEntities.find( {gid, nullptr} );
+	if (it == g_GlobalEntities.end()) return nullptr;
+	void* retval = it->entityPtr;
+	g_GlobalEntities.erase(it);
+	return retval;
+}
+
+EntityGid_t Entity_Spawn(void* entity, const char* classname)
 {
 	char* namedup = nullptr;
 	auto  namelen = strlen(classname);
@@ -50,7 +78,7 @@ EntityGid_t Entity_GlobalSpawn(void* entity, const char* classname)
 		strcpy(namedup, classname);
 	}
 
-	EntityPointerContainerItem item = {0, entity, classname};
+	EntityPointerContainerItem item = {0, entity, namedup};
 	for (;;) {
 		item.gid = getNextSpawnId();
 		if (g_GlobalEntities.find(item) != g_GlobalEntities.end()) {
@@ -65,6 +93,15 @@ void TickableEntityContainer::ExecEventQueue()
 {
 	//todo( "implement me!" );
 	//m_evt_queue
+}
+
+void TickableEntityContainer::Clear()
+{
+	m_hashed	.clear();
+	m_ordered	.clear();
+
+	// also clears memory which I'm not too thrilled aobut, but std::queue has no clear..
+	m_evt_queue	= {};
 }
 
 void TickableEntityContainer::_Add(const TickableEntityItem& entityInfo)
@@ -129,4 +166,10 @@ void DrawableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
 		m_ordered.erase({ it->second, nullptr });
 		m_hashed.erase(it);
 	}
+}
+
+void DrawableEntityContainer::Clear()
+{
+	m_hashed	.clear();
+	m_ordered	.clear();
 }

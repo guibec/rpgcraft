@@ -11,6 +11,7 @@
 #include "x-ThrowContext.h"
 
 #include "Scene.h"
+#include "Entity.h"
 #include "DbgFont.h"
 #include "ajek-script.h"
 
@@ -122,9 +123,12 @@ __ni void SceneInit()
 		return;
 	}
 
+
 	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
 	script.NewState();
 	script.BindThrowContext(g_ThrowCtx);
+
+	EntityManager_Reset();
 
 	x_try() {
 		DbgFont_LoadInit	(script);

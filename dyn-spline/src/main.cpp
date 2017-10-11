@@ -205,7 +205,7 @@ void SceneInputLogic()
 //T* CreateEntity()
 //{
 //	T* entity = placement_new(T);
-//	entity->m_gid = Entity_GlobalSpawn(entity);
+//	entity->m_gid = Entity_Spawn(entity);
 //	return entity;
 //}
 
@@ -233,16 +233,19 @@ public:
 	ViewCamera() {
 	}
 
+	void Reset()
+	{
+		m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
+		m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
+		m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+	}
+
 	// Eye and At should move laterally together so that the eye is always looking straight down
 	// at a specific point on the map (X/Y equal).
 	// Eye.Z controls the zoom of the view.
 	// UP : X is angle.  Y is sign-indicator only (flip axis) --  Z is unused?
 
 	virtual void Tick() {
-		m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
-		m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
-		m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
-
 		m_Consts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
 		m_Consts.Projection = g_Projection;
 	}
@@ -382,7 +385,7 @@ void SceneRender()
 	{
 		// Hmm.. might be better to throw on null entity? or log and ignore?
 		// Probably log and ignore bydefault with option to bug ...
-		auto* entity = Entity_GlobalLookup(entitem.orderId.Gid());
+		auto* entity = Entity_Lookup(entitem.orderId.Gid());
 		bug_on_qa(!entity);
 		entitem.Tick(entity);
 	}
@@ -399,7 +402,7 @@ void SceneRender()
 
 	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
-		auto* entity = Entity_GlobalLookup(entitem.orderId.Gid());
+		auto* entity = Entity_Lookup(entitem.orderId.Gid());
 		bug_on_qa(!entity);
 		entitem.Draw(entity);
 	}
@@ -445,6 +448,12 @@ void SceneRender()
 bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
 	s_CanRenderScene = false;
+
+	// Make sure to clear previous Schene/State information:
+
+	g_tickable_entities.Clear();
+	g_drawable_entities.Clear();
+
 
 	// default test values in case script loading is bypassed.
 	ViewMeshSizeX = 24;
@@ -574,6 +583,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 	// ---------------------------------------------------------------------------------------------
 
+	g_ViewCamera.Reset();
 	PlaceEntity(g_ViewCamera);
 
 		  g_TileMap = NewEntity(TileMapLayer);
