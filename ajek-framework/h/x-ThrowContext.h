@@ -46,7 +46,6 @@ public:
 	void			Finalize		()			{ jmp_buffer = nullptr;			}
 
 			void	Try				(jmp_buf& buf);
-			void	Caught			();
 
 	virtual void	SetErrorInfo	(s64 code)	{ error_info = code;			}
 	virtual void	Throw			(xThrowModuleCode module_code, const xString& msg=xString());		// noreturn type
@@ -67,6 +66,8 @@ public:
 	if (_setjmp_result == 0)
 
 #define x_catch()															\
-	else switch (g_ThrowCtx.Caught(), _setjmp_result)
+	else switch (_setjmp_result)
+
+#define x_finalize() (g_ThrowCtx.Finalize()); if(1)
 
 extern xThrowContext	g_ThrowCtx;

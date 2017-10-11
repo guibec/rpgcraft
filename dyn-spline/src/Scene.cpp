@@ -8,11 +8,11 @@
 #include "x-pad.h"
 #include "x-host-ifc.h"
 #include "x-gpu-ifc.h"
+#include "x-ThrowContext.h"
 
 #include "Scene.h"
 #include "DbgFont.h"
 #include "ajek-script.h"
-#include "x-ThrowContext.h"
 
 #include <queue>
 
@@ -147,6 +147,9 @@ __ni void SceneInit()
 		default:
 		break;
 	}
+	x_finalize() {
+	}
+
 }
 
 static bool s_repeating_char[128];

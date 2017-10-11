@@ -520,7 +520,10 @@ static void lua_custom_throw(int lua_error)
 
 void AjekScriptEnv::BindThrowContext(xThrowContext& ctx)
 {
-	bug_on_qa(m_ThrowCtx);
+	// don't think it makes sense to bug here .. it's not really a vector for hard-to-track
+	// buggy behavior.  --jstine
+
+	//bug_on_qa(m_ThrowCtx);
 	m_ThrowCtx = &ctx;
 }
 
