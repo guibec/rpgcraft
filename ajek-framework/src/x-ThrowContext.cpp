@@ -28,12 +28,3 @@ void xThrowContext::Throw(xThrowModuleCode module_code, const xString& msg)
 	if (!msg.IsEmpty()) { error_msg = msg; }
 	longjmp(*jmp_buffer, module_code);
 }
-
-void xThrowContext::Caught()
-{
-	// provided for future feature extension to support nested try/catch blocks.
-	// for now, NOP out the jmp_buf ptr to indiciate that no catch context is valid...
-	// Over values are not cleared to make for easier debug inspection from IDE.
-
-	jmp_buffer = nullptr;
-}
