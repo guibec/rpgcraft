@@ -38,16 +38,16 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="RepoRootDir.props" />
-    <Import Project="..\ajek-framework\msbuild\BringInTheProps.props" />
-    <Import Project="..\ajek-framework\msbuild\x64-libpng.props" />
-    <Import Project="..\imports\msbuild\lua-inc.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\imports\msbuild\lua-inc.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="RepoRootDir.props" />
-    <Import Project="..\ajek-framework\msbuild\BringInTheProps.props" />
-    <Import Project="..\ajek-framework\msbuild\x64-libpng.props" />
-    <Import Project="..\imports\msbuild\lua-inc.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\imports\msbuild\lua-inc.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -73,7 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ajek-framework\src\common-standard.cpp">
+    <ClCompile Include="$(RepoRootDir)\ajek-framework\src\common-standard.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">common-standard.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -110,22 +110,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ajek-framework\msbuild\ajek-framework.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\ajek-framework\msbuild\ajek-framework.vcxproj">
       <Project>{5db34fc8-daeb-4038-a731-bb23f4697ead}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ajek-framework\msbuild\msw-framework.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\ajek-framework\msbuild\msw-framework.vcxproj">
       <Project>{d45b9090-e34a-4796-908e-24f83cbd0fb3}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ajek-script\msbuild\lua-ifc.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\ajek-script\msbuild\lua-ifc.vcxproj">
       <Project>{afaedcb1-030a-415b-a853-00e8cb21fd90}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\imports\libpng-1.6.29\projects\vstudio\libpng\libpng.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\imports\libpng-1.6.29\projects\vstudio\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\imports\libpng-1.6.29\projects\vstudio\zlib\zlib.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\imports\libpng-1.6.29\projects\vstudio\zlib\zlib.vcxproj">
       <Project>{60f89955-91c6-3a36-8000-13c592fec2df}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\imports\lua-5.3.x\lua-5.3.x.vcxproj">
+    <ProjectReference Include="$(RepoRootDir)\imports\lua-5.3.x\lua-5.3.x.vcxproj">
       <Project>{6388ee6e-722d-4712-93c1-5a7ef1da91e0}</Project>
     </ProjectReference>
   </ItemGroup>

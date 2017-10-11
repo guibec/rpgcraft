@@ -500,7 +500,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	if (1) {
 		xBitmapData  pngtex;
-		png_LoadFromFile(pngtex, "..\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+		png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
 		dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 
 		// Assume pngtex is rpgmaker layout for now.
@@ -511,7 +511,7 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 
 	if (1) {
 		xBitmapData  pngtex;
-		png_LoadFromFile(pngtex, "..\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+		png_LoadFromFile(pngtex, ".\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
 		dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 	}
 
