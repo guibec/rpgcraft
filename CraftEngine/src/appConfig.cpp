@@ -1,4 +1,6 @@
 
+#include "PCH-rpgcraft.h"
+
 #include "x-types.h"
 #include "x-stl.h"
 #include "x-assertion.h"
@@ -33,7 +35,7 @@ void LoadPkgConfig(const xString& luaFile)
 
 	while (!TryLoadPkgConfig(luaFile)) {
 		if (!xIsDebuggerAttached()) {
-			log_and_abort("Application aborted due to scriptConfig error."); 
+			log_and_abort("Application aborted due to scriptConfig error.");
 		}
 		AjekScript_PrintBreakReloadMsg();
 		__debugbreak();		// allows developer to resume after correcting errors.

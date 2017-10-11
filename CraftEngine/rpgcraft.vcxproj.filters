@@ -36,9 +36,6 @@
     <ClCompile Include="src\x-gpu-colors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ajek-framework\src\common-standard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\appConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\UniformMeshes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PCH-rpgcraft.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -91,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="src\DbgFont.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PCH-rpgcraft.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

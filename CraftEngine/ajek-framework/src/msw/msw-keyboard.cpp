@@ -1,4 +1,5 @@
 
+#include "mswStandard.h"
 #include "msw-redtape.h"
 #include "x-host-ifc.h"
 
@@ -23,7 +24,7 @@ VirtKey_t ConvertFromMswVK( UINT key )
 		case VK_OEM_2:		return VirtKey::Slash;				// +shift for Question (US layout)
 		case VK_OEM_3:		return VirtKey::BackQuote;			// +shift for tilde	   (US layout)
 		case VK_SEPARATOR:	return VirtKey::Separator;
-		
+
 		case VK_NEXT:		return VirtKey::PageDown;
 		case VK_PRIOR:		return VirtKey::PageUp;
 		case VK_DELETE:		return VirtKey::Delete;
@@ -104,26 +105,26 @@ UINT ConvertToMswVK( VirtKey_t ours )
 		case VirtKey::KeyPad_9		:	return VK_NUMPAD9;
 		case VirtKey::KeyPad_0		:	return VK_NUMPAD0;
 
-		case VirtKey::F1			:	return VK_F1;		
-		case VirtKey::F2			:	return VK_F2;		
-		case VirtKey::F3			:	return VK_F3;		
-		case VirtKey::F4			:	return VK_F4;		
-		case VirtKey::F5			:	return VK_F5;		
-		case VirtKey::F6			:	return VK_F6;		
-		case VirtKey::F7			:	return VK_F7;		
-		case VirtKey::F8			:	return VK_F8;		
-		case VirtKey::F9			:	return VK_F9;		
-		case VirtKey::F10			:	return VK_F10;	
-		case VirtKey::F11			:	return VK_F11;	
-		case VirtKey::F12			:	return VK_F12;	
+		case VirtKey::F1			:	return VK_F1;
+		case VirtKey::F2			:	return VK_F2;
+		case VirtKey::F3			:	return VK_F3;
+		case VirtKey::F4			:	return VK_F4;
+		case VirtKey::F5			:	return VK_F5;
+		case VirtKey::F6			:	return VK_F6;
+		case VirtKey::F7			:	return VK_F7;
+		case VirtKey::F8			:	return VK_F8;
+		case VirtKey::F9			:	return VK_F9;
+		case VirtKey::F10			:	return VK_F10;
+		case VirtKey::F11			:	return VK_F11;
+		case VirtKey::F12			:	return VK_F12;
 
-		case VirtKey::LShift		:	return VK_LSHIFT		;	
+		case VirtKey::LShift		:	return VK_LSHIFT		;
 		case VirtKey::RShift		:	return VK_RSHIFT		;
 		case VirtKey::LCtrl			:	return VK_LCONTROL		;
 		case VirtKey::RCtrl			:	return VK_RCONTROL		;
-		case VirtKey::LAlt			:	return VK_LMENU			;	
-		case VirtKey::RAlt			:	return VK_RMENU			;	
-		case VirtKey::LWin			:	return VK_LWIN			;	
+		case VirtKey::LAlt			:	return VK_LMENU			;
+		case VirtKey::RAlt			:	return VK_RMENU			;
+		case VirtKey::LWin			:	return VK_LWIN			;
 		case VirtKey::RWin			:	return VK_RWIN			;
 
 		default:

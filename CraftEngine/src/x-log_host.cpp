@@ -1,3 +1,5 @@
+#include "PCH-rpgcraft.h"
+
 #include "x-types.h"
 #include "x-string.h"
 #include "x-thread.h"

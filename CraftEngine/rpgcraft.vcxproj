@@ -52,8 +52,8 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PCH-rpgcraft.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -63,8 +63,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PCH-rpgcraft.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -73,11 +73,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(RepoRootDir)\ajek-framework\src\common-standard.cpp">
+    <ClCompile Include="src\PCH-rpgcraft.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">common-standard.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCH-rpgcraft.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">common-standard.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PCH-rpgcraft.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="src\appConfig.cpp" />
     <ClCompile Include="src\Bezier2D.cpp" />
@@ -97,6 +97,7 @@
     <ClInclude Include="src\DbgFont.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\mswStandard.h" />
+    <ClInclude Include="src\PCH-rpgcraft.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\UniformMeshes.h" />
     <ClInclude Include="src\v-float.h" />

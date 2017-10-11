@@ -1,3 +1,4 @@
+#include "PCH-rpgcraft.h"		// TODO -- move this into MSW platformproject with MSW PCH.
 
 #include "msw-redtape.h"
 

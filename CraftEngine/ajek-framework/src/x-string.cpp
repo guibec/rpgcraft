@@ -1,7 +1,10 @@
 
-#include "common-standard.h"
+#include "PCH-framework.h"
 
-#include <algorithm>
+#include "x-types.h"
+#include "x-stl.h"
+#include "x-string.h"
+
 
 DECLARE_MODULE_NAME( "x-string" );
 

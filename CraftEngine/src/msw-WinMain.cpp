@@ -1,3 +1,5 @@
+#include "PCH-rpgcraft.h"
+
 #include "msw-redtape.h"
 
 #include "x-string.h"
