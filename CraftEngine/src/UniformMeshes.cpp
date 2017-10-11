@@ -1,4 +1,6 @@
 
+#include "PCH-rpgcraft.h"
+
 #include "UniformMeshes.h"
 
 UniformMeshVertex g_mesh_UniformQuad[4] =

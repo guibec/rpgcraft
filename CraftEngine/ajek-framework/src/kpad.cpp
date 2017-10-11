@@ -1,4 +1,6 @@
 
+#include "PCH-framework.h"
+
 #include "x-types.h"
 #include "x-stl.h"
 #include "x-assertion.h"
@@ -44,14 +46,14 @@ const VirtKeyBindingPair g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS] =
 	{ VirtKey::Tab,			VirtKey::Unmapped	},	// PadBtn_ViewMap
 
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_TriangleY
-	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_CircleB	
-	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_CrossA		
+	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_CircleB
+	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_CrossA
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_SquareX
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_L1
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_R1
 	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_LStick
-	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_RStick		
-	
+	{ VirtKey::Unmapped,	VirtKey::Unmapped	},	// PadBtn_RStick
+
 };
 
 
@@ -102,7 +104,7 @@ static float update_stick_axis(const HostClockTick& cur_tick, const KPadAxisMapP
 		if (prev_state.neg) {	// new release event
 			trace_kpad("Axis Event    %-10s = RELEASED", diagName);
 		}
-	}				
+	}
 
 	if (press_pos) {
 		if (!prev_state.pos) {	// new press event

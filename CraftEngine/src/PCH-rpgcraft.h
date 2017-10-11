@@ -4,18 +4,23 @@
 #endif
 
 #if USE_PRECOMPILED_HEADER
-#include "msw-redtape.h"
+#include "x-types.h"
+#include "x-simd.h"
 
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstdarg>
 
 #include "x-stl.h"
 
+#include <unordered_set>
+#include <unordered_map>
+
+#include "x-assertion.h"
 #include "x-string.h"
 #include "x-stdlib.h"
-#include "x-thread.h"
 
+#include "x-gpu-ifc.h"
+#include "x-gpu-colors.h"
 
-#include "x-MemCopy.inl"
 #endif

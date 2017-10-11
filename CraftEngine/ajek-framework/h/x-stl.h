@@ -35,13 +35,17 @@
 #	pragma warning(disable: 4275)
 #endif
 
+// Bare minimum of necessary STLs are included here, due to long compilation times.  STLs should be
+// included explicitly on an as-needed basis.  Note that many STLs are included into the PCHs, but
+// since PCH is not a garaunteed compiler feature on all platforms, it can't be relied upon as the
+// defacto tool in minimizing rebuild times.  --jstine
+
 #include <string>
-#include <list>
 #include <algorithm>
 #include <memory>
 #include <functional>
 
-template< typename T > 
+template< typename T >
 inline __ai T xBoundsCheck(const T& src, const T& lower, const T& upper) {
 	return std::min( std::max(src, lower), upper);
 }
@@ -49,7 +53,7 @@ inline __ai T xBoundsCheck(const T& src, const T& lower, const T& upper) {
 // -----------------------------------------------------------------------------------------------
 // Defer (macro) / Defer_t (struct)
 //
-// Inspired by Golang's 'defer' keyword.  Allows binding a lambda to be executed when the current 
+// Inspired by Golang's 'defer' keyword.  Allows binding a lambda to be executed when the current
 // scope of the deferral's creation is left.  This still differs from Golang `defer`:
 //
 //    - Golang defer executes at the end of function scope.

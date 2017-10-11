@@ -1,4 +1,6 @@
 
+#include "PCH-rpgcraft.h"
+
 #include "x-types.h"
 #include "Bezier2D.h"
 
