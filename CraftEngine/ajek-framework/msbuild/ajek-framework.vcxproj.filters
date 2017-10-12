@@ -22,6 +22,7 @@
     <ClCompile Include="..\src\PCH-framework.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gpu-ifc\src\x-gpu-colors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">
@@ -93,6 +94,8 @@
     <ClInclude Include="..\src\PCH-framework.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-colors.h" />
+    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-ifc.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">

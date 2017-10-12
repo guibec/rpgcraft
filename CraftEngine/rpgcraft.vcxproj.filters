@@ -24,16 +24,10 @@
     <ClCompile Include="src\Bezier2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\dx11-core_stuff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\msw-WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\x-log_host.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\x-gpu-colors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\appConfig.cpp">
@@ -72,12 +66,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\v-float.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\x-gpu-ifc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\x-gpu-colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene.h">

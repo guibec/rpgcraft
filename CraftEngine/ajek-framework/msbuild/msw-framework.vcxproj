@@ -56,7 +56,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PrecompiledHeaderFile>mswStandard.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>PCH-msw.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -66,30 +66,31 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeaderFile>mswStandard.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>PCH-msw.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\gpu-ifc\src\msw\dx11-core_stuff.cpp" />
     <ClCompile Include="..\src\msw\msw-chrono.cpp" />
     <ClCompile Include="..\src\msw\msw-dualshock4.cpp" />
     <ClCompile Include="..\src\msw\msw-GetLastError.cpp" />
     <ClCompile Include="..\src\msw\msw-keyboard.cpp" />
     <ClCompile Include="..\src\msw\msw-thread.cpp" />
     <ClCompile Include="..\src\msw\msw-xinput.cpp" />
-    <ClCompile Include="..\src\msw\mswStandard.cpp">
+    <ClCompile Include="..\src\msw\PCH-msw.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mswStandard.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mswStandard.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCH-msw.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PCH-msw.h</PrecompiledHeaderFile>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
     <ClInclude Include="..\h\msw-redtape.h" />
-    <ClInclude Include="..\src\msw\mswStandard.h" />
+    <ClInclude Include="..\h\PCH-msw.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

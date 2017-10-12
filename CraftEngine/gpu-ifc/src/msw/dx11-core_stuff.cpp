@@ -1,4 +1,4 @@
-#include "PCH-rpgcraft.h"		// TODO -- move this into MSW platformproject with MSW PCH.
+#include "PCH-msw.h"		// TODO -- move this into MSW platformproject with MSW PCH.
 
 #include "msw-redtape.h"
 
@@ -16,6 +16,7 @@
 #include <DirectXColors.h>
 
 #include <wincodec.h>
+#include <unordered_map>
 
 DECLARE_MODULE_NAME("dx11");
 
@@ -534,7 +535,7 @@ void dx11_InitDevice()
 	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
 	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
 
-	pragma_todo("Implement Sampler Binding API.")
+	pragma_todo("Implement Sampler Binding API - GPU_SamplerState and dx11_SetSampler.")
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 
@@ -561,8 +562,6 @@ void dx11_InitDevice()
 
 	log_and_abort_on(FAILED(hr));
 }
-
-#include <unordered_map>
 
 struct dx11_ShaderInfo
 {
