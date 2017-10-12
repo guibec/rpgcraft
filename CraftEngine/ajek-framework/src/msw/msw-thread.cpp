@@ -1,5 +1,5 @@
 
-#include "mswStandard.h"
+#include "PCH-msw.h"
 
 #include <process.h>
 #include <signal.h>		// for xStopProcess()
@@ -185,7 +185,7 @@ static void _thread_create( thread_t& dest, ThreadProc_t* threadproc, const char
 	{
 		hThread = (HANDLE)_beginthreadex( nullptr, 0, ThreadProcDefer, (LPVOID) threadproc, 0, &thread_id );
 	}
-	
+
 	bug_on_qa( !hThread, "Thread creation failed!" );
 	dest.msw_thread_id	= thread_id;
 	dest.pseudo_handle	= (sptr)hThread;

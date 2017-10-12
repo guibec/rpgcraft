@@ -12,10 +12,11 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <Keyword>ajek-framework</Keyword>
-    <RootNamespace>ajek_framework</RootNamespace>
+    <Keyword>gpu-ifc</Keyword>
+    <RootNamespace>gpu-ifc</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-    <ProjectGuid>{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}</ProjectGuid>
+    <ProjectGuid>{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}</ProjectGuid>
+    <ProjectName>gpu-ifc-msw</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -36,14 +37,14 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="RepoRootDir.props" />
-    <Import Project="BringInTheProps.props" />
-    <Import Project="x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="RepoRootDir.props" />
-    <Import Project="BringInTheProps.props" />
-    <Import Project="x64-libpng.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -56,61 +57,27 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PrecompiledHeaderFile>PCH-framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>PCH-msw.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(OutDir)\PCH\$(Configuration)\%(PrecompiledHeaderFile).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeaderFile>PCH-framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>PCH-msw.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(OutDir)\PCH\$(Configuration)\%(PrecompiledHeaderFile).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\gpu-ifc\src\x-gpu-colors.cpp" />
-    <ClCompile Include="..\src\kpad.cpp" />
-    <ClCompile Include="..\src\PCH-framework.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\src\x-png-decode.cpp" />
-    <ClCompile Include="..\src\x-stdlib.cpp" />
-    <ClCompile Include="..\src\x-string.cpp" />
-    <ClCompile Include="..\src\x-thread.cpp" />
-    <ClCompile Include="..\src\x-ThrowContext.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-colors.h" />
-    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-ifc.h" />
-    <ClInclude Include="..\h\msw-error.h" />
-    <ClInclude Include="..\h\msw-redtape.h" />
-    <ClInclude Include="..\h\sse_intrinsics.h" />
-    <ClInclude Include="..\h\x-assertion.h" />
-    <ClInclude Include="..\h\x-atomic.h" />
-    <ClInclude Include="..\h\x-BitmapData.h" />
-    <ClInclude Include="..\h\x-chrono.h" />
-    <ClInclude Include="..\h\x-ForwardDefs.h" />
-    <ClInclude Include="..\h\x-host-ifc.h" />
-    <ClInclude Include="..\h\x-libPngEncoder.h" />
-    <ClInclude Include="..\h\x-pad.h" />
-    <ClInclude Include="..\h\x-png-decode.h" />
-    <ClInclude Include="..\h\x-ScopedMalloc.h" />
-    <ClInclude Include="..\h\x-simd.h" />
-    <ClInclude Include="..\h\x-stdlib.h" />
-    <ClInclude Include="..\h\x-stl.h" />
-    <ClInclude Include="..\h\x-string.h" />
-    <ClInclude Include="..\h\x-TargetConfig.h" />
-    <ClInclude Include="..\h\x-thread.h" />
-    <ClInclude Include="..\h\x-ThrowContext.h" />
-    <ClInclude Include="..\h\x-types.h" />
-    <ClInclude Include="..\src\PCH-framework.h" />
-    <ClInclude Include="..\h\x-MemCopy.inl" />
+    <ClCompile Include="..\src\msw\*.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

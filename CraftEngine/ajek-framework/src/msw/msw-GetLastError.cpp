@@ -1,5 +1,5 @@
 
-#include "mswStandard.h"
+#include "PCH-msw.h"
 #include <share.h>
 #include <cstdarg>
 #include <io.h>
@@ -124,7 +124,7 @@ bool msw_AssertLastError( const char* filepos, const char* funcname, int lastErr
 #include <Shobjidl.h>
 #include <direct.h>
 
-void xFileDelete( const xString& file ) 
+void xFileDelete( const xString& file )
 {
 	DeleteFileW( toUTF16(file).wc_str() );
 }
