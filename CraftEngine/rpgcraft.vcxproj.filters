@@ -51,6 +51,12 @@
     <ClCompile Include="src\PCH-rpgcraft.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PlayerSprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TileMapLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
@@ -82,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="src\PCH-rpgcraft.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sprites.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

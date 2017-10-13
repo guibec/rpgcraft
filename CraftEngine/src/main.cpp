@@ -12,7 +12,9 @@
 #include "x-png-decode.h"
 #include "v-float.h"
 
+#include "ajek-script.h"
 #include "Entity.h"
+#include "Sprites.h"
 #include "DbgFont.h"
 #include "UniformMeshes.h"
 
@@ -22,7 +24,6 @@ using namespace DirectX;
 
 DECLARE_MODULE_NAME("main");
 
-GPU_VertexBuffer		g_mesh_box2D;
 GPU_VertexBuffer		g_mesh_tile;
 GPU_VertexBuffer		g_mesh_worldViewTileID;
 
@@ -51,39 +52,8 @@ static int ViewMeshSizeY			= 24;
 static int worldViewInstanceCount	= 0;
 static int worldViewVerticiesCount	= 0;
 
-// ------------------------------------------------------------------------------------------------
-// struct TileMapVertex
-// ------------------------------------------------------------------------------------------------
-//  * Used to define the static (generally unchanging) visible tile map.
-//  * The UVs are hard-coded to always go from 0.0f to 1.0f across each quad.
-//
-// Actual UVs are calculated by the pixel shader -- it reads from tex_tile_ids to determine
-// the base offset of the tile, and then adds the VS-interpolated value range 0.0f - 1.0f to that
-// to smaple the texture.
-//
-// Note: Requires multi-resource support by the GPU.  No big deal for deaktops and consoles.  May
-//       not be widely available on mobile devices; or maybe it will be by the time we're interested
-//       in considering shipping the title for mobile.  So just going to assume multi-texture support
-//       for now... --jstine
-
-struct TileMapVertex {
-	vFloat3		xyz;
-	vFloat2		uv;
-};
-
 static const int WorldSizeX		= 1024;
 static const int WorldSizeY		= 1024;
-
-
-// xyz should probably fixed.  Only the camera and the UVs need to change.
-// UV, Lighting should be independenty stored in the future, to allow them to be updated at different update intervals.
-//    * 30fps for UV, 10fps for lighting, etc.
-
-struct TileMapVertexLit {
-	vFloat3		xyz;
-	vFloat2		uv;
-	//vFloat4     rgba;		// current light intensity
-};
 
 // Probably need some sort of classification system here.
 // Some terrains may change over time, such as grow moss after being crafted.
@@ -236,9 +206,9 @@ public:
 
 	void Reset()
 	{
-		m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
-		m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
-		m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+		m_Eye	= float4 { 0.0f, 0.5f, -6.0f, 0.0f }.q;
+		m_At	= float4 { 0.0f, 0.5f,  0.0f, 0.0f }.q;
+		m_Up	= float4 { 0.0f, 1.0f,  0.0f, 0.0f }.q;
 	}
 
 	// Eye and At should move laterally together so that the eye is always looking straight down
@@ -317,42 +287,6 @@ void TileMapLayer::Draw() const
 
 }
 
-class PlayerSprite
-{
-private:
-	NONCOPYABLE_OBJECT(PlayerSprite);
-
-public:
-	EntityGid_t			m_gid;
-	GPU_InputDesc		gpu_layout_sprite;
-
-public:
-	PlayerSprite() {
-		xMemZero(gpu_layout_sprite);
-		gpu_layout_sprite.AddVertexSlot( {
-			{ "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT	},
-			{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT		}
-		});
-	}
-
-public:
-	virtual void Tick()
-	{
-	}
-
-	virtual void Draw() const
-	{
-		dx11_BindShaderVS		(g_ShaderVS_Spriter);
-		dx11_BindShaderFS		(g_ShaderFS_Spriter);
-		dx11_SetInputLayout		(gpu_layout_sprite);
-		dx11_BindShaderResource	(tex_chars, 0);
-		dx11_SetVertexBuffer	(g_mesh_box2D, 0, sizeof(TileMapVertex), 0);
-		dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
-
-		dx11_DrawIndexed(6, 0,  0);
-	}
-};
-
 void SceneRender()
 {
 
@@ -362,10 +296,6 @@ void SceneRender()
 	// Clear the back buffer
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
-
-//	DbgFont_Render();
-//	dx11_BackbufferSwap();
-//	return;
 
 	//
 	// Update variables
@@ -411,7 +341,6 @@ void SceneRender()
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
 	DbgFont_SceneRender();
-
 	dx11_BackbufferSwap();
 }
 
@@ -443,8 +372,6 @@ void SceneRender()
 //        tiles but offset on the Y-axis by a few titles.
 //   * Terraria updates lighting at ~10fps, movement of lights is noticably behind player.
 //
-
-#include "ajek-script.h"
 
 bool Scene_TryLoadInit(AjekScriptEnv& script)
 {
@@ -560,35 +487,12 @@ bool Scene_TryLoadInit(AjekScriptEnv& script)
 	dx11_LoadShaderVS(g_ShaderVS_Spriter, "Sprite.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
-	// ---------------------------------------------------------------------------------------------
-
-	// TODO - Base the sprite mesh size on the tile size of the world map .. ?
-	// Such that all sprites are described in tile units (floats/fractional ok).
-	// and tile units have a defined pixel size, so we can convert from pixels->tiles for
-	// precision tile/sprite placement.
-	// woo!!!
-
-
-	TileMapVertex vertices[] =
-	{
-		// UV is in pixels (as it should be).
-		// XYZ is in tiles .. where Z is expected to be 1.0f
-
-		{ vFloat3( -0.5f,  0.5f, 0.0f ), vFloat2( 0.0f, 32.0f) },
-		{ vFloat3( -0.5f, -0.5f, 0.0f ), vFloat2( 0.0f, 64.0f) },
-		{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
-		{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
-	};
-
-	dx11_CreateStaticMesh(g_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
-	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
-	// ---------------------------------------------------------------------------------------------
-
 	g_ViewCamera.Reset();
 	PlaceEntity(g_ViewCamera);
 
 		  g_TileMap = NewEntity(TileMapLayer);
 	auto* player	= NewEntity(PlayerSprite);
+
 	g_tickable_entities.Add( 1, g_ViewCamera.m_gid, [](      void* entity) { ((ViewCamera*  )entity)->Tick(); } );
 	g_tickable_entities.Add(10, player->m_gid,		[](      void* entity) { ((PlayerSprite*)entity)->Tick(); } );
 	g_drawable_entities.Add(10, player->m_gid,		[](const void* entity) { ((PlayerSprite*)entity)->Draw(); } );
