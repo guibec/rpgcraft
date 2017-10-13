@@ -103,17 +103,14 @@ enum GpuRasterScissorMode {
 
 struct GPU_VertexBuffer {
 	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
-	GPU_VertexBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_IndexBuffer {
 	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
-	GPU_IndexBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_ConstantBuffer {
 	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
-	GPU_ConstantBuffer(const void* driverData = nullptr);
 };
 
 struct GPU_ShaderVS {
@@ -241,20 +238,8 @@ template< typename T, int numItems > InputLayoutSlot& GPU_InputDesc::_AddGeneric
 }
 
 
-inline GPU_VertexBuffer::GPU_VertexBuffer(const void* driverData) {
-	m_driverData = (s64)driverData;
-}
-
 inline GPU_DynVsBuffer::GPU_DynVsBuffer(int idx) {
 	m_buffer_idx = idx;
-}
-
-inline GPU_IndexBuffer::GPU_IndexBuffer(const void* driverData) {
-	m_driverData = (s64)driverData;
-}
-
-inline GPU_ConstantBuffer::GPU_ConstantBuffer(const void* driverData) {
-	m_driverData = (s64)driverData;
 }
 
 inline GPU_RenderTarget::GPU_RenderTarget(const void* driverData) {

@@ -85,8 +85,10 @@
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
+    <ClCompile Include="src\PlayerSprite.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\test-spline.cpp" />
+    <ClCompile Include="src\TileMapLayer.cpp" />
     <ClCompile Include="src\UniformMeshes.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
@@ -97,6 +99,7 @@
     <ClInclude Include="src\mswStandard.h" />
     <ClInclude Include="src\PCH-rpgcraft.h" />
     <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\Sprites.h" />
     <ClInclude Include="src\UniformMeshes.h" />
     <ClInclude Include="src\v-float.h" />
     <ClInclude Include="src\x-thread-internal.h" />
