@@ -75,7 +75,7 @@ void xMemSetObjs(T* dest, const T& data, int sizeInInstances)
 	}
 }
 
-void DbgFontSheet::SceneBegin()
+void DbgFontSheet::SceneLogic()
 {
 	xMemSetObjs (charmap,   { 0 },							size.y * size.x);
 	xMemSetObjs	(colormap, {{ 1.0f, 0.5f, 0.5f, 0.5f }},	size.y * size.x);
@@ -242,8 +242,8 @@ void DbgFont_LoadInit()
 
 void DbgFont_SceneBegin()
 {
-	g_DbgFontOverlay	.SceneBegin();
-	g_ConsoleSheet		.SceneBegin();
+	g_DbgFontOverlay	.SceneLogic();
+	g_ConsoleSheet		.SceneLogic();
 }
 
 void DbgFont_SceneRender()

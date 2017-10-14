@@ -56,7 +56,7 @@ extern void			Scene_ShutdownThreads		();
 extern bool			SceneInitialized			();
 extern void			SceneInit					();
 extern void			SceneRender					();
-extern void			SceneBegin					();
+extern void			SceneLogic					();
 
 extern void			Scene_InitMessages			();
 extern bool			Scene_HasPendingMessages	();

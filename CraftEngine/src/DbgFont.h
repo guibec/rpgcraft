@@ -58,7 +58,7 @@ struct DbgFontSheet
 	} font;
 
 	void		AllocSheet		(int2 sizeInPix);
-	void		SceneBegin		();
+	void		SceneLogic		();
 	void		Write			(int x, int y, const xString& msg);
 };
 
