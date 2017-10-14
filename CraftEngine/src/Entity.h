@@ -10,7 +10,6 @@
 
 struct	EntityContainerEvent;
 
-
 enum EntityContainerEvent_t
 {
 	ECEvt_EntityAdd,
@@ -19,10 +18,14 @@ enum EntityContainerEvent_t
 
 using EntityGid_t = u32;
 
+enum EntitySystemGID_t : EntityGid_t {
+	ESGID_Empty		= 0,
+};
+
 struct EntityPointerContainerItem
 {
 	EntityGid_t		gid;
-	void*			entityPtr;
+	void*			objectptr;
 	char*			classname;		// alloc'd in same heap as entity
 };
 
@@ -362,11 +365,14 @@ inline EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order)
 }
 
 
-extern void				EntityManager_Reset	();
-extern void*			Entity_Lookup		(EntityGid_t gid);
-extern void*			Entity_Remove		(EntityGid_t gid);
-extern EntityGid_t		Entity_Spawn		(void* entity, const char* classname=nullptr);
-extern void*			Entity_Malloc		(int size);
+extern const EntityPointerContainerItem*	Entity_TryLookup		(EntityGid_t gid);
+extern const EntityPointerContainerItem&	Entity_Lookup			(EntityGid_t gid);
+extern const char*							Entity_LookupName		(EntityGid_t gid);
+extern void*								Entity_Remove			(EntityGid_t gid);
+extern EntityGid_t							Entity_Spawn			(void* entity, const char* classname=nullptr);
+extern void*								Entity_Malloc			(int size);
+
+extern void									EntityManager_Reset		();
 
 template< typename T >
 inline T* Entity_PlacementNew(const char* classname)
@@ -376,8 +382,14 @@ inline T* Entity_PlacementNew(const char* classname)
 	return entity;
 }
 
+template<typename T>
+T* Entity_LookupAs(EntityGid_t gid) {
+	return (T*)Entity_Lookup(gid).objectptr;
+}
+
 #define PlaceEntity(instance, ...)	\
 	Entity_Remove(instance.m_gid); instance.m_gid = 0;			\
 	instance.m_gid = Entity_Spawn(&instance, #instance __VA_ARGS__)
 
-#define NewEntity(type, ...)		Entity_PlacementNew<type>( #type __VA_ARGS__)
+#define NewEntity(type, ...)		Entity_PlacementNew<type>( #type, ## __VA_ARGS__)
+

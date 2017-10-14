@@ -1,6 +1,7 @@
 #pragma once
 
 #include "v-float.h"
+#include "x-gpu-ifc.h"
 
 struct UniformMeshVertex
 {
@@ -11,6 +12,10 @@ struct UniformMeshVertex
 extern UniformMeshVertex	g_mesh_UniformQuad		[4];
 extern UniformMeshVertex	g_mesh_UniformQuadHalf	[4];
 extern s16					g_ind_UniformQuad		[6];
+
+extern GPU_IndexBuffer		g_idx_box2D;
+
+extern void UniformMeshes_InitGlobalResources();
 
 #include <DirectXMath.h>
 

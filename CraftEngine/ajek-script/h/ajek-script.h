@@ -10,15 +10,41 @@ extern "C" {
 #	include "lua.h"
 }
 
-#if !defined(AJEK_SCRIPT_DEBUGGER)
-#	define AJEK_SCRIPT_DEBUGGER			1
-#endif
+struct AjekScriptSettings {
+	union {
+		struct {
+			u32		lua_print_enabled		: 1;		// 0 to mute all lualib print() statements
+		};
 
-enum ScriptEnvironId {
-	ScriptEnv_AppConfig,
-	ScriptEnv_Game,
-	_ScriptEnv_Padding,
-	NUM_SCRIPT_ENVIRONMENTS
+		u64	flags64;
+	};
+
+	xString		path_to_modules;
+
+	void SetDefaultState() {
+		flags64					= 0;
+		lua_print_enabled		= 1;
+	}
+};
+
+struct AjekScriptTraceSettings {
+	struct {
+		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope
+		u32		warn_enclosed_globals   : 1;		// warn when new globals are created outside module scope, eg. within any function
+		u32		error_enclosed_globals  : 1;		// error when new globals are created outside module scope, eg. within any function  (takes precedence over warn when enabled)
+		u32		trace_gcmem				: 1;		// enables gcmem usage checks at every entry and exit point for ajek framework libs
+	};
+
+	u64		flags64;
+
+	void SetDefaultState() {
+		flags64					= 0;
+
+		warn_module_globals		= 0;
+		warn_enclosed_globals   = 1;
+		error_enclosed_globals  = 1;
+		trace_gcmem				= 0;
+	}
 };
 
 struct lua_s64 {
@@ -282,16 +308,17 @@ volatile
 };
 
 
-extern void				AjekScript_InitSettings				();
-extern void				AjekScript_InitModuleList			();
-extern lua_State*		AjekScript_GetLuaState				(ScriptEnvironId moduleId);
+extern void				AjekScript_InitAlloc				();
+extern void				AjekScript_InitGlobalEnviron		();
 extern void				AjekScript_SetDebugAbsolutePaths	(const xString& cwd, const xString& target);
 extern void				AjekScript_SetDebugRelativePath		(const xString& relpath);
 extern bool				AjekScript_LoadConfiguration		(AjekScriptEnv& env);
 extern void				AjekScript_PrintDebugReloadMsg		();
 extern void				AjekScript_PrintBreakReloadMsg		();
 
-extern AjekScriptEnv&	AjekScriptEnv_Get					(ScriptEnvironId moduleId);
+extern AjekScriptSettings		g_ScriptConfig;
+extern AjekScriptTraceSettings	g_ScriptTrace;
+extern AjekScriptEnv			g_scriptEnv;
 
 // Registers an error handler setjmp point.
 // Returns 1 if OK to run the function in question.

@@ -40,7 +40,7 @@ void EntityManager_Reset()
 {
 	// Remove this once global entity MSPACE is provided...
 	for(auto& item : g_GlobalEntityAlloc) {
-		xFree(item.entityPtr);
+		xFree(item.objectptr);
 	}
 
 	// Remove this once global entity MSPACE is provided...
@@ -54,18 +54,37 @@ void EntityManager_Reset()
 	// Wipe mspace here...
 }
 
-void* Entity_Lookup(EntityGid_t gid)
+const EntityPointerContainerItem s_missing =
+{
+	ESGID_Empty,
+	nullptr,
+	"Missing"
+};
+
+const EntityPointerContainerItem* Entity_TryLookup(EntityGid_t gid)
 {
 	auto it = g_GlobalEntities.find( {gid, nullptr} );
 	if (it == g_GlobalEntities.end()) return nullptr;
-	return it->entityPtr;
+	return &(*it);
+}
+
+const EntityPointerContainerItem& Entity_Lookup(EntityGid_t gid)
+{
+	auto it = g_GlobalEntities.find( {gid, nullptr} );
+	if (it == g_GlobalEntities.end()) return s_missing;
+	return *it;
+}
+
+const char* Entity_LookupName(EntityGid_t gid)
+{
+	return Entity_Lookup(gid).classname;
 }
 
 void* Entity_Remove(EntityGid_t gid)
 {
 	auto it = g_GlobalEntities.find( {gid, nullptr} );
 	if (it == g_GlobalEntities.end()) return nullptr;
-	void* retval = it->entityPtr;
+	void* retval = it->objectptr;
 	g_GlobalEntities.erase(it);
 	return retval;
 }

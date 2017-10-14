@@ -9,6 +9,7 @@
 #include "x-chrono.h"
 #include "x-pad.h"
 
+#include "appConfig.h"
 #include "ajek-script.h"
 #include "Scene.h"
 
@@ -19,8 +20,6 @@ DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
 extern void			MSW_InitChrono();
-
-extern void			LoadPkgConfig(const xString& luaFile);
 
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
@@ -213,7 +212,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		}
 	}
 
-	LoadPkgConfig("config-package-msw.lua");
+	AjekScript_InitAlloc();
+	g_pkg_config_filename = "config-package-msw.lua";
+	LoadPkgConfigFromMain(g_scriptEnv);
 
 	// -----------------------------------------------------------
 	// Init message recievers asap
