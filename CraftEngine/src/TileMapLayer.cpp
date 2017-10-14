@@ -44,22 +44,6 @@ struct GPU_TileMapConstants
 };
 
 TileMapLayer::TileMapLayer() {
-	xMemZero(gpu_layout_tilemap);
-	gpu_layout_tilemap.AddVertexSlot( {
-		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
-		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
-	});
-
-	gpu_layout_tilemap.AddInstanceSlot( {
-		{ "TileID", GPU_ResourceFmt_R32_UINT }
-	});
-
-	gpu_layout_tilemap.AddInstanceSlot( {
-		{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
-	});
-
-	// TODO: only want to initialize this once for all tilemap instances.
-	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
 }
 
 void TileMapLayer::SceneInit(const char* script_objname)
@@ -102,7 +86,7 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	if (1) {
 		xBitmapData  pngtex;
 		png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
-		dx11_CreateTexture2D(tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+		dx11_CreateTexture2D(gpu.tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
 
 		// Assume pngtex is rpgmaker layout for now.
 
@@ -110,11 +94,28 @@ void TileMapLayer::SceneInit(const char* script_objname)
 		g_setCountY = pngtex.height	/ (64 + 32);
 	}
 
+	xMemZero(gpu.layout_tilemap);
+	gpu.layout_tilemap.AddVertexSlot( {
+		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
+		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
+	});
+
+	gpu.layout_tilemap.AddInstanceSlot( {
+		{ "TileID", GPU_ResourceFmt_R32_UINT }
+	});
+
+	gpu.layout_tilemap.AddInstanceSlot( {
+		{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
+	});
+
+	// TODO: only want to initialize this once for all tilemap instances.
+	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
+
 	WorldMap_Procgen();
 	PopulateUVs();
 
-	dx11_CreateStaticMesh(mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
-	dx11_CreateStaticMesh(mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);
+	dx11_CreateStaticMesh(gpu.mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
+	dx11_CreateStaticMesh(gpu.mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
@@ -249,13 +250,13 @@ void TileMapLayer::Draw() const
 
 	dx11_BindShaderVS(g_ShaderVS_Tiler);
 	dx11_BindShaderFS(g_ShaderFS_Tiler);
-	dx11_SetInputLayout(gpu_layout_tilemap);
+	dx11_SetInputLayout(gpu.layout_tilemap);
 
 //	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
-	dx11_BindShaderResource(tex_floor, 0);
+	dx11_BindShaderResource(gpu.tex_floor, 0);
 
-	dx11_SetVertexBuffer(mesh_tile,				0, sizeof(g_mesh_UniformQuad[0]), 0);
-	dx11_SetVertexBuffer(mesh_worldViewTileID,	1, sizeof(g_ViewTileID[0]), 0);
+	dx11_SetVertexBuffer(gpu.mesh_tile,				0, sizeof(g_mesh_UniformQuad[0]), 0);
+	dx11_SetVertexBuffer(gpu.mesh_worldViewTileID,	1, sizeof(g_ViewTileID[0]), 0);
 	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
 
 	dx11_UpdateConstantBuffer(g_cnstbuf_TileMap, &m_TileMapConsts);
