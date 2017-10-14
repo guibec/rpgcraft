@@ -42,7 +42,7 @@ static DrawableEntityContainer		g_drawable_entities;
 
 
 ViewCamera		g_ViewCamera;
-TileMapLayer*	g_TileMap;
+TileMapLayer	g_TileMap;
 
 bool s_CanRenderScene = false;
 
@@ -50,7 +50,7 @@ void SceneLogic()
 {
 	DbgFont_SceneBegin();
 
-	g_TileMap->Tick();
+	g_TileMap.Tick();
 
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
@@ -61,6 +61,8 @@ void SceneLogic()
 		entitem.Tick(entity);
 	}
 
+	// Process messages and modifications which have been submitted to view camera here?
+	g_ViewCamera.Tick();
 }
 
 void SceneInputPoll()
@@ -135,7 +137,7 @@ void SceneRender()
 	dx11_BindConstantBuffer(g_gpu_constbuf, 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 
-	g_TileMap->Draw();
+	g_TileMap.Draw();
 
 	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
@@ -208,15 +210,14 @@ bool Scene_TryLoadInit()
 	dx11_LoadShaderVS(g_ShaderVS_Spriter, "Sprite.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
-	g_ViewCamera.Reset();
 	PlaceEntity(g_ViewCamera);
+	PlaceEntity(g_TileMap);
 
-		  g_TileMap = NewEntity(TileMapLayer);
 	auto* player	= NewEntity(PlayerSprite);
 
-	g_TileMap->SceneInit("WorldView");
+	g_ViewCamera.Reset();
+	g_TileMap.SceneInit("WorldView");
 
-	g_tickable_entities.Add( 1, g_ViewCamera.m_gid, [](      void* entity) { ((ViewCamera*  )entity)->Tick(); } );
 	g_tickable_entities.Add(10, player->m_gid,		[](      void* entity) { ((PlayerSprite*)entity)->Tick(); } );
 	g_drawable_entities.Add(10, player->m_gid,		[](const void* entity) { ((PlayerSprite*)entity)->Draw(); } );
 

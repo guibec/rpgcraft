@@ -23,14 +23,18 @@ public:
 class TileMapLayer
 {
 public:
-	// todo - GPU references which are shared between all instances of TileMapLayer.
-	GPU_InputDesc			gpu_layout_tilemap;
-	GPU_VertexBuffer		mesh_tile;
-
-public:
 	EntityGid_t				m_gid;
-	GPU_TextureResource2D	tex_floor;
-	GPU_VertexBuffer		mesh_worldViewTileID;
+
+	// No effort is made here to break out shared resources, such as tile or layout.
+	// A meaningful advantage would only become worthwhile if 20 or more tilemap layers
+	// are being used during a scene.  Seems highly unlikely --jstine
+
+	struct {
+		GPU_InputDesc			layout_tilemap;
+		GPU_TextureResource2D	tex_floor;
+		GPU_VertexBuffer		mesh_tile;
+		GPU_VertexBuffer		mesh_worldViewTileID;
+	} gpu;
 
 	int ViewMeshSizeX			= 24;
 	int ViewMeshSizeY			= 24;
@@ -48,7 +52,7 @@ public:
 
 
 extern ViewCamera		g_ViewCamera;
-extern TileMapLayer*	g_TileMap;
+extern TileMapLayer		g_TileMap;
 
 extern GPU_ShaderVS			g_ShaderVS_Tiler;
 extern GPU_ShaderFS			g_ShaderFS_Tiler;
@@ -58,9 +62,6 @@ static const int TileSizeX = 8;
 static const int TileSizeY = 8;
 
 // TODO: Make this dynamic ...
-
-//static const int ViewMeshSizeX		= 128;
-//static const int ViewMeshSizeY		= 96;
 
 static const int WorldSizeX		= 1024;
 static const int WorldSizeY		= 1024;

@@ -31,12 +31,6 @@ cbuffer ConstantBuffer1 : register( b1 )
 }
 
 //--------------------------------------------------------------------------------------
-struct VS_INPUT
-{
-	float3 Pos		: POSITION;
-	float2 UV		: TEXCOORD0;
-};
-
 struct VS_INPUT_TILEMAP
 {
 	float3 Pos		: POSITION;
@@ -56,6 +50,13 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
+// Calculates the tile position using the following inputs:
+//  * a single normalized tile mesh (0.0f->1.0f)
+//  * uniform texture atlus, described by CB1
+//  * per-instance data for TileID and lighting.
+//  * Instance ID from which tile onscreen position can be calculated.
+//
+
 VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint vertexID : SV_VertexID
 {
 	// note: move floor(View) calculation to shader and remove global.
