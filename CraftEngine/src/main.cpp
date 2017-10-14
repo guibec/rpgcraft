@@ -46,7 +46,7 @@ TileMapLayer*	g_TileMap;
 
 bool s_CanRenderScene = false;
 
-void SceneBegin()
+void SceneLogic()
 {
 	DbgFont_SceneBegin();
 
@@ -63,7 +63,7 @@ void SceneBegin()
 
 }
 
-void SceneInputLogic()
+void SceneInputPoll()
 {
 	// TODO : Add some keyboard handler magic here ... !!
 	//Host_IsKeyPressed('a');

@@ -23,7 +23,7 @@ public:
 class TileMapLayer
 {
 public:
-	// todo - GPU references which are shared btween all instances of TileMapLayer.
+	// todo - GPU references which are shared between all instances of TileMapLayer.
 	GPU_InputDesc			gpu_layout_tilemap;
 	GPU_VertexBuffer		mesh_tile;
 

@@ -213,7 +213,7 @@ static void* SceneProducerThreadProc(void*)
 		}
 
 		if (SceneInitialized()) {
-			SceneBegin();
+			SceneLogic();
 			SceneRender();
 		}
 

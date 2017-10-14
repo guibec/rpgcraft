@@ -124,7 +124,7 @@ struct GPU_ShaderFS {
 };
 
 // Dynamic vertex buffers are multi-instanced, with one bound to each backbuffer in the swap chain.
-// This allows the SceneBegin() system to update vertex buffers without blocking against draw operations
+// This allows the SceneLogic() system to update vertex buffers without blocking against draw operations
 // being performed on the previous scene.
 struct GPU_DynVsBuffer {
 	int		m_buffer_idx;
