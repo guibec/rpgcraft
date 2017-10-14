@@ -55,6 +55,5 @@ public:
 
 extern GPU_ShaderVS				g_ShaderVS_Spriter;
 extern GPU_ShaderFS				g_ShaderFS_Spriter;
-extern GPU_IndexBuffer			g_idx_box2D;
 extern GPU_TextureResource2D	tex_chars;
 

@@ -5,39 +5,34 @@
 #include "x-stl.h"
 #include "x-assertion.h"
 
+#include "appConfig.h"
 #include "ajek-script.h"
+
 
 DECLARE_MODULE_NAME("config");
 
-static bool TryLoadPkgConfig(const xString& luaFile)
+xString g_pkg_config_filename;
+
+void LoadPkgConfigFromMain(AjekScriptEnv& env)
 {
-	auto& env = AjekScriptEnv_Get(ScriptEnv_AppConfig);
+resumeLoop:
+	g_scriptEnv.NewState();
+	g_scriptEnv.BindThrowContext(g_ThrowCtx);
 
-	env.NewState();
-	auto* L	= env.getLuaState();
-
-	bug_on(luaFile.IsEmpty());
-	env.LoadModule(luaFile);
-
-	if (env.HasError()) {
-		return false;
+	x_try() {
+		AjekScript_InitGlobalEnviron();
+		g_scriptEnv.LoadModule(g_pkg_config_filename);
+		AjekScript_LoadConfiguration(g_scriptEnv);
 	}
-
-	if (!AjekScript_LoadConfiguration(env)) { return false; }
-
-	return true;
-}
-
-void LoadPkgConfig(const xString& luaFile)
-{
-	AjekScript_InitSettings();
-	AjekScript_InitModuleList();
-
-	while (!TryLoadPkgConfig(luaFile)) {
+	x_catch() {
+		g_ThrowCtx.PrintLastError();
 		if (!xIsDebuggerAttached()) {
 			log_and_abort("Application aborted due to scriptConfig error.");
 		}
 		AjekScript_PrintBreakReloadMsg();
 		__debugbreak();		// allows developer to resume after correcting errors.
+		goto resumeLoop;
+	}
+	x_finalize() {
 	}
 }

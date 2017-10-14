@@ -56,9 +56,11 @@ public:
 	static xThrowContext&	s_ThrowCtxModuleAlias	= g_ThrowCtx;		\
 	static xThrowModuleCode	s_ThrowCtxModuleCode	= module_code
 
-#define throw_abort_ex(info, ...)				((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info),s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(__VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
-#define throw_abort(...)						((s_ThrowCtxModuleAlias.CanThrow() && (											s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(__VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
-#define throw_abort_on(cond, ...)	( (cond) && ((s_ThrowCtxModuleAlias.CanThrow() && (											s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(# cond " " __VA_ARGS__))	, true)) || _inline_abort_( "(throw)" # cond, __VA_ARGS__)) )
+#define x_throw_ex(info, ...)					((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)))
+#define x_throw(info, ...)						((s_ThrowCtxModuleAlias.CanThrow() &&											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)))
+#define throw_abort_ex(info, ...)				((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
+#define throw_abort(...)						((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
+#define throw_abort_on(cond, ...)	( (cond) && ((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(# cond " " __VA_ARGS__))	, true)) || _inline_abort_( "(throw)" # cond, __VA_ARGS__)) )
 
 #define x_try()																\
 	jmp_buf _jmp_buf;														\

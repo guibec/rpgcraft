@@ -11,10 +11,12 @@
 #include "x-gpu-ifc.h"
 #include "x-ThrowContext.h"
 
+#include "appConfig.h"
+#include "ajek-script.h"
+
 #include "Scene.h"
 #include "Entity.h"
 #include "DbgFont.h"
-#include "ajek-script.h"
 
 #include <queue>
 
@@ -22,7 +24,6 @@
 DECLARE_MODULE_NAME("scene");
 
 typedef std::queue<SceneMessage> SceneMessageList;
-
 
 static thread_t				s_thr_scene_producer;
 static xMutex				s_mtx_MsgQueue;
@@ -99,7 +100,6 @@ void Scene_DrainMsgQueue()
 			} break;
 
 			case SceneMsg_Reload: {
-				auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
 				s_scene_initialized = false;
 			} break;
 
@@ -124,16 +124,17 @@ __ni void SceneInit()
 		return;
 	}
 
-
-	auto& script = AjekScriptEnv_Get(ScriptEnv_Game);
-	script.NewState();
-	script.BindThrowContext(g_ThrowCtx);
+	g_scriptEnv.NewState();
+	g_scriptEnv.BindThrowContext(g_ThrowCtx);
 
 	EntityManager_Reset();
 
 	x_try() {
-		DbgFont_LoadInit	(script);
-		Scene_TryLoadInit	(script);
+		g_scriptEnv.LoadModule(g_pkg_config_filename);
+		AjekScript_LoadConfiguration(g_scriptEnv);
+
+		DbgFont_LoadInit	();
+		Scene_TryLoadInit	();
 		s_scene_initialized = true;
 	}
 	x_catch() {

@@ -16,48 +16,10 @@ extern "C" {
 DECLARE_MODULE_NAME("lua-main");
 DECLARE_MODULE_THROW(xThrowModule_Script);
 
-struct AjekScriptSettings {
-	union {
-		struct {
-			u32		lua_print_enabled		: 1;		// 0 to mute all lualib print() statements
-		};
-
-		u64	flags64;
-	};
-
-	xString		path_to_modules;
-
-	void SetDefaultState() {
-		flags64					= 0;
-		lua_print_enabled		= 1;
-	}
-};
-
-struct AjekScriptTraceSettings {
-	struct {
-		u32		warn_module_globals		: 1;		// warn when new globals are created at module scope
-		u32		warn_enclosed_globals   : 1;		// warn when new globals are created outside module scope, eg. within any function
-		u32		error_enclosed_globals  : 1;		// error when new globals are created outside module scope, eg. within any function  (takes precedence over warn when enabled)
-		u32		trace_gcmem				: 1;		// enables gcmem usage checks at every entry and exit point for ajek framework libs
-	};
-
-	u64		flags64;
-
-	void SetDefaultState() {
-		flags64					= 0;
-
-		warn_module_globals		= 0;
-		warn_enclosed_globals   = 1;
-		error_enclosed_globals  = 1;
-		trace_gcmem				= 0;
-	}
-};
-
 AjekScriptSettings		g_ScriptConfig;
 AjekScriptTraceSettings	g_ScriptTrace;
-AjekScriptEnv			g_script_env[NUM_SCRIPT_ENVIRONMENTS];
+AjekScriptEnv			g_scriptEnv;
 
-static bool		s_script_settings_initialized = 0;
 static xString	s_script_dbg_path_prefix;
 
 static AjekScriptError cvtLuaErrorToAjekError(int lua_error)
@@ -79,12 +41,15 @@ static AjekScriptError cvtLuaErrorToAjekError(int lua_error)
 bool AjekScript_LoadConfiguration(AjekScriptEnv& env)
 {
 	if (auto& scriptConfig = env.glob_open_table("ScriptConfig")) {
-		g_ScriptConfig.path_to_modules   = scriptConfig.get_string("ModulePath");
-		g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool("LuaPrintEnable");
+		auto old_script_config = g_ScriptConfig;
+		g_ScriptConfig.path_to_modules   = scriptConfig.get_string	("ModulePath");
+		g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool	("LuaPrintEnable");
 
-		log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
-		if (!g_ScriptConfig.lua_print_enabled) {
-			log_host_loud("   > Lua Print has been turned OFF!");
+		if (g_ScriptConfig.path_to_modules != old_script_config.path_to_modules) {
+			log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
+		}
+		if (!g_ScriptConfig.lua_print_enabled || (g_ScriptConfig.lua_print_enabled != old_script_config.lua_print_enabled)) {
+			log_host_loud("   > Lua Print has been turned %s!", g_ScriptConfig.lua_print_enabled ? "ON" : "OFF");
 		}
 	}
 
@@ -268,24 +233,16 @@ void AjekScript_PrintDebugReloadMsg()
 	xPrintLn("Execution paused due to error - Correct the problem and hit 'R' to reload and re-execute.");
 }
 
-void AjekScript_Alloc()
+void AjekScript_InitAlloc()
 {
 	// generate mspaces here, in the future.
 }
 
-void AjekScript_InitSettings()
+void AjekScript_InitGlobalEnviron()
 {
-	s_script_settings_initialized = 1;
 	g_ScriptConfig.SetDefaultState	();
 	g_ScriptTrace.SetDefaultState	();
-}
-
-void AjekScript_InitModuleList()
-{
-	bug_on(!s_script_settings_initialized);
-
-	g_script_env[ScriptEnv_AppConfig]	.Alloc();
-	g_script_env[ScriptEnv_Game]		.Alloc();
+	g_scriptEnv.Alloc();
 }
 
 void AjekScriptEnv::Alloc()
@@ -356,14 +313,15 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	// END
 
 	int ret;
-	ret = luaL_loadfile(m_L, path);
+	ret		= luaL_loadfile(m_L, path);
 
 	if (ret) {
 		bool isAbortErr = ret != LUA_ERRSYNTAX && ret != LUA_ERRFILE;
 		if (isAbortErr) {
 			log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
 		}
-		throw_abort_ex(AsError_Syntax, lua_tostring(m_L, -1));
+		m_lua_error = cvtLuaErrorToAjekError(ret);
+		x_throw_ex(AsError_Syntax, lua_tostring(m_L, -1));
 	}
 
 	//assume(s_module_id == LuaModule_State_NotLoading);
@@ -379,8 +337,17 @@ void AjekScriptEnv::LoadModule(const xString& path)
 		//	s_fntrace_nesting += '>';
 		//}
 
-		//ret = lua_pcall(m_L, 0, 0, 0);
-		lua_call(m_L, 0, 0);
+		if (m_ThrowCtx && m_ThrowCtx->CanThrow()) {
+			// errors arrive in owner's exception handler
+			lua_call(m_L, 0, 0);
+		}
+		else {
+			// errors recorded into
+			ret = lua_pcall(m_L, 0, 0, 0);
+			if (ret) {
+				m_lua_error = cvtLuaErrorToAjekError(ret);
+			}
+		}
 
 		//if (trace_libajek) {
 		//	s_fntrace_nesting.PopBack();
@@ -391,20 +358,9 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	//  # Free memory
 	//  # remove init-only APIs.
 
-	//s_module_id	= LuaModule_State_NotLoading;
-
-	// Error Handling!
-	//  # ScriptDebug fall into a recoverable SyntaxError state, from which the user can
-	//    modify scripts and then resume execution.
-	//  # All other build targets abort on error here.
-	//
-
-	if (!AJEK_SCRIPT_DEBUGGER) {
-		log_and_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
-	}
-
+	// just for low-level debugging...
+	//log_and_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
 	GCUSAGE(m_L);
-	// grammar checks
 }
 
 template<typename T>
@@ -435,19 +391,6 @@ const lua_State* AjekScriptEnv::getLuaState() const
 {
 	bug_on(!m_L);
 	return m_L;
-}
-
-AjekScriptEnv& AjekScriptEnv_Get(ScriptEnvironId moduleId)
-{
-	bug_on(moduleId >= bulkof(g_script_env));
-	return g_script_env[moduleId];
-}
-
-
-lua_State* AjekScript_GetLuaState(ScriptEnvironId moduleId)
-{
-	bug_on(moduleId >= bulkof(g_script_env));
-	return g_script_env[moduleId].getLuaState();
 }
 
 bool AjekScriptEnv::glob_IsNil(const char* varname) const

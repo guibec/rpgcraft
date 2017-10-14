@@ -60,7 +60,7 @@ extern void			SceneBegin					();
 
 extern void			Scene_InitMessages			();
 extern bool			Scene_HasPendingMessages	();
-extern bool			Scene_TryLoadInit			(AjekScriptEnv& script);
+extern bool			Scene_TryLoadInit			();
 
 extern void			Scene_PostMessage			(SceneMessageId msgId, sptr payload);
 extern void			Scene_DrainMsgQueue			();

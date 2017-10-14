@@ -70,6 +70,6 @@ struct DbgFontDrawItem
 	u8		chr;		// character to display
 };
 
-extern void DbgFont_LoadInit		(AjekScriptEnv& script);
+extern void DbgFont_LoadInit		();
 extern void DbgFont_SceneBegin		();
 extern void DbgFont_SceneRender		();

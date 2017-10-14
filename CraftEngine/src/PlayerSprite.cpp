@@ -22,7 +22,6 @@ PlayerSprite::PlayerSprite() {
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
-	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 	// ---------------------------------------------------------------------------------------------
 }
 
@@ -40,4 +39,8 @@ void PlayerSprite::Draw() const
 	dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
 
 	dx11_DrawIndexed(6, 0,  0);
+}
+
+void UniformMeshes_InitGlobalResources() {
+	dx11_CreateIndexBuffer(g_idx_box2D, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
 }

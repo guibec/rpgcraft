@@ -11,6 +11,8 @@
 
 #include "UniformMeshes.h"
 #include "DbgFont.h"
+#include "Scene.h"
+
 #include "ajek-script.h"
 
 #include <vector>
@@ -139,8 +141,10 @@ void DbgFont_MakeVertexLayout()
 	});
 }
 
-void DbgFont_LoadInit(AjekScriptEnv& script)
+void DbgFont_LoadInit()
 {
+	auto& script = g_scriptEnv;
+
 	s_canRender = 0;
 
 	// TODO:
