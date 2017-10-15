@@ -56,9 +56,9 @@ void SceneLogic()
 	{
 		// Hmm.. might be better to throw on null entity? or log and ignore?
 		// Probably log and ignore bydefault with option to bug ...
-		auto* entity = Entity_Lookup(entitem.orderId.Gid()).objectptr;
+		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
 		bug_on_qa(!entity);
-		entitem.Tick(entity);
+		entitem.Tick(entity, entitem.orderGidPair.Order());
 	}
 
 	// Process messages and modifications which have been submitted to view camera here?
@@ -141,9 +141,9 @@ void SceneRender()
 
 	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
 	{
-		auto* entity = Entity_Lookup(entitem.orderId.Gid()).objectptr;
+		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
 		bug_on_qa(!entity);
-		entitem.Draw(entity);
+		entitem.Draw(entity, entitem.orderGidPair.Order());
 	}
 
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
@@ -192,14 +192,12 @@ bool Scene_TryLoadInit()
 
 	UniformMeshes_InitGlobalResources();
 
-#if 1
 	// Fetch Scene configuration from Lua.
 	g_scriptEnv.LoadModule("scripts/GameInit.lua");
 
 	if (g_scriptEnv.HasError()) {
 		return false;
 	}
-#endif
 
 	if (1) {
 		xBitmapData  pngtex;
@@ -213,13 +211,13 @@ bool Scene_TryLoadInit()
 	PlaceEntity(g_ViewCamera);
 	PlaceEntity(g_TileMap);
 
-	auto* player	= NewEntity(PlayerSprite);
-
 	g_ViewCamera.Reset();
 	g_TileMap.SceneInit("WorldView");
 
-	g_tickable_entities.Add(10, player->m_gid,		[](      void* entity) { ((PlayerSprite*)entity)->Tick(); } );
-	g_drawable_entities.Add(10, player->m_gid,		[](const void* entity) { ((PlayerSprite*)entity)->Draw(); } );
+	auto* player	= NewEntity(PlayerSprite);
+
+	g_tickable_entities.Add(player, 10);
+	g_drawable_entities.Add(player, 10);
 
 	dx11_CreateConstantBuffer(g_gpu_constbuf,		sizeof(GPU_ViewCameraConsts));
 

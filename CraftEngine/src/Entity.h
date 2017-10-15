@@ -81,8 +81,8 @@ union EntityGidOrderPair
 
 extern EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order);
 
-typedef void (EntityFn_LogicTick)	(		void* objdata);
-typedef void (EntityFn_Draw)		(const	void* objdata);
+typedef void (EntityFn_LogicTick)	(		void* objdata, int orderGidPair);
+typedef void (EntityFn_Draw)		(const	void* objdata, int orderGidPair);
 
 struct TickableEntity
 {
@@ -98,13 +98,13 @@ struct DrawableEntity
 
 struct TickableEntityItem
 {
-	EntityGidOrderPair		orderId;
+	EntityGidOrderPair		orderGidPair;
 	EntityFn_LogicTick*		Tick;
 };
 
 struct DrawableEntityItem
 {
-	EntityGidOrderPair		orderId;
+	EntityGidOrderPair		orderGidPair;
 	EntityFn_Draw*			Draw;
 };
 
@@ -124,25 +124,25 @@ struct CompareEntityGid {
 
 struct CompareTickableEntity_Greater {
 	bool operator()(const TickableEntityItem& _Left, const TickableEntityItem& _Right) const {
-		return (_Left.orderId > _Right.orderId);
+		return (_Left.orderGidPair > _Right.orderGidPair);
 	}
 };
 
 struct CompareTickableEntity_Less {
 	bool operator()(const TickableEntityItem& _Left, const TickableEntityItem& _Right) const {
-		return (_Left.orderId < _Right.orderId);
+		return (_Left.orderGidPair < _Right.orderGidPair);
 	}
 };
 
 struct CompareDrawableEntity_Greater {
 	bool operator()(const DrawableEntityItem& _Left, const DrawableEntityItem& _Right) const {
-		return (_Left.orderId > _Right.orderId);
+		return (_Left.orderGidPair > _Right.orderGidPair);
 	}
 };
 
 struct CompareDrawableEntity_Less {
 	bool operator()(const DrawableEntityItem& _Left, const DrawableEntityItem& _Right) const {
-		return (_Left.orderId < _Right.orderId);
+		return (_Left.orderGidPair < _Right.orderGidPair);
 	}
 };
 
@@ -157,13 +157,13 @@ public:
 	}
 
 	__xi size_t operator()(const TickableEntityItem& input) const {
-		return input.orderId.Order();
-		//bug_on(uptr(input.orderId.Order()) & 15, "Unaligned entity pointer detected.");
-		//return uptr(input.orderId.Order()) >> 4;
+		return input.orderGidPair.Order();
+		//bug_on(uptr(input.orderGidPair.Order()) & 15, "Unaligned entity pointer detected.");
+		//return uptr(input.orderGidPair.Order()) >> 4;
 	}
 
 	__xi size_t operator()(const DrawableEntityItem& input) const {
-		return input.orderId.Order();
+		return input.orderGidPair.Order();
 	}
 
 	__xi size_t operator()(const EntityGidOrderPair& input) const {
@@ -203,8 +203,13 @@ struct TickableEntityContainer {
 	void		Clear			();
 	void		ExecEventQueue	();
 
-	__ai void Add(int orderId, EntityGid_t entityGid, EntityFn_LogicTick* logic) {
-		_Add( { MakeGidOrder(entityGid, orderId), logic } );
+	__ai void Add(int orderGidPair, EntityGid_t entityGid, EntityFn_LogicTick* logic) {
+		_Add( { MakeGidOrder(entityGid, orderGidPair), logic } );
+	}
+
+	template< typename T >
+	__ai void Add(T* entity, int order) {
+		Add(order, entity->m_gid, [](void* entity, int order) { ((T*)entity)->Tick(order); } );
 	}
 
 	auto	ForEachForward		();
@@ -241,9 +246,15 @@ struct DrawableEntityContainer {
 	void		Remove			(EntityGid_t entityGid, u32 order  = (u32)-1);
 	void		Clear			();
 
-	__ai void Add(int orderId, EntityGid_t entityGid, EntityFn_Draw* draw) {
-		_Add( { MakeGidOrder(entityGid, orderId), draw } );
+	__ai void Add(int orderGidPair, EntityGid_t entityGid, EntityFn_Draw* draw) {
+		_Add( { MakeGidOrder(entityGid, orderGidPair), draw } );
 	}
+
+	template< typename T >
+	__ai void Add(const T* entity, int order) {
+		Add(order, entity->m_gid, [](const void* entity, int order) { ((T*)entity)->Draw(order); } );
+	}
+
 
 	auto ForEachOpaque	() const;
 	auto ForEachAlpha	() const;

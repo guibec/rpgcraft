@@ -94,6 +94,11 @@ void TileMapLayer::SceneInit(const char* script_objname)
 		g_setCountY = pngtex.height	/ (64 + 32);
 	}
 
+	WorldMap_Procgen();
+	PopulateUVs();
+
+	// GPU Resource Initialization.
+
 	xMemZero(gpu.layout_tilemap);
 	gpu.layout_tilemap.AddVertexSlot( {
 		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
@@ -110,9 +115,6 @@ void TileMapLayer::SceneInit(const char* script_objname)
 
 	// TODO: only want to initialize this once for all tilemap instances.
 	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
-
-	WorldMap_Procgen();
-	PopulateUVs();
 
 	dx11_CreateStaticMesh(gpu.mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 	dx11_CreateStaticMesh(gpu.mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);

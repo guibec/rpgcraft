@@ -127,7 +127,7 @@ void TickableEntityContainer::Clear()
 void TickableEntityContainer::_Add(const TickableEntityItem& entityInfo)
 {
 	if (!m_iterator_mode) {
-		m_hashed	.insert( { entityInfo.orderId.Gid(), entityInfo.orderId } );
+		m_hashed	.insert( { entityInfo.orderGidPair.Gid(), entityInfo.orderGidPair } );
 		m_ordered	.insert(entityInfo);
 	}
 	else {
@@ -163,7 +163,7 @@ void TickableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
 
 void DrawableEntityContainer::_Add(const DrawableEntityItem& entityInfo)
 {
-	m_hashed	.insert( { entityInfo.orderId.Gid(), entityInfo.orderId } );
+	m_hashed	.insert( { entityInfo.orderGidPair.Gid(), entityInfo.orderGidPair } );
 	m_ordered	.insert(entityInfo);
 }
 

@@ -49,8 +49,8 @@ public:
 	PlayerSprite();
 
 public:
-	virtual void Tick();
-	virtual void Draw() const;
+	virtual void Tick(int orderGidPair);
+	virtual void Draw(int orderGidPair) const;
 };
 
 extern GPU_ShaderVS				g_ShaderVS_Spriter;
