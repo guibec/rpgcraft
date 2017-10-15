@@ -26,6 +26,16 @@ public:
 class TileMapLayer
 {
 public:
+	struct GPU_TileMapConstants
+	{
+		vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
+		vInt2	SrcTexSizeInTiles;
+		vFloat2	SrcTexTileSizeUV;
+		u32		TileMapSizeX;
+		u32		TileMapSizeY;
+	};
+
+public:
 	EntityGid_t				m_gid;
 
 	// No effort is made here to break out shared resources, such as tile or layout.
@@ -36,7 +46,8 @@ public:
 		GPU_InputDesc			layout_tilemap;
 		GPU_TextureResource2D	tex_floor;
 		GPU_VertexBuffer		mesh_tile;
-		GPU_VertexBuffer		mesh_worldViewTileID;
+		GPU_DynVsBuffer			mesh_worldViewTileID;
+		GPU_TileMapConstants	consts;
 	} gpu;
 
 	int ViewMeshSizeX			= 24;
@@ -46,7 +57,7 @@ public:
 
 public:
 	TileMapLayer();
-	void PopulateUVs();
+	void PopulateUVs(const int2& viewport_offset);
 	void SceneInit(const char* script_objname);
 
 	virtual void Tick();
