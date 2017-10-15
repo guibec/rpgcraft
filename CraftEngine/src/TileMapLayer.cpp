@@ -9,6 +9,8 @@
 
 #include "TileMapLayer.h"
 
+DECLARE_MODULE_NAME("TileMap");
+
 // Probably need some sort of classification system here.
 // Some terrains may change over time, such as grow moss after being crafted.
 //  - Maybe better handled as a generic "age" engine feature?
@@ -33,15 +35,6 @@ int g_setCountX = 0;
 int g_setCountY = 0;
 
 GPU_ConstantBuffer		g_cnstbuf_TileMap;
-
-struct GPU_TileMapConstants
-{
-	vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
-	vInt2	SrcTexSizeInTiles;
-	vFloat2	SrcTexTileSizeUV;
-	u32		TileMapSizeX;
-	u32		TileMapSizeY;
-};
 
 TileMapLayer::TileMapLayer() {
 }
@@ -95,7 +88,7 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	}
 
 	WorldMap_Procgen();
-	PopulateUVs();
+	PopulateUVs({0,0});
 
 	// GPU Resource Initialization.
 
@@ -117,7 +110,8 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
 
 	dx11_CreateStaticMesh(gpu.mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
-	dx11_CreateStaticMesh(gpu.mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);
+	//dx11_CreateStaticMesh(gpu.mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_worldViewTileID, sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
@@ -155,7 +149,7 @@ void WorldMap_Procgen()
 	}
 }
 
-void TileMapLayer::PopulateUVs()
+void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 {
 	g_ViewTileID = (u32*)xRealloc(g_ViewTileID, ViewInstanceCount * sizeof(u32));
 
@@ -164,8 +158,10 @@ void TileMapLayer::PopulateUVs()
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
 	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
-	for (int y=0; y<ViewMeshSizeY; ++y) {
-		for (int x=0; x<ViewMeshSizeX; ++x) {
+	for (int yl=0; yl<ViewMeshSizeY; ++yl) {
+		for (int xl=0; xl<ViewMeshSizeX; ++xl) {
+			int y = yl + viewport_offset.y;
+			int x = xl + viewport_offset.x;
 			int instanceId	= ((y*ViewMeshSizeX) + x);
 			int vertexId	= instanceId * 6;
 
@@ -234,22 +230,21 @@ void TileMapLayer::PopulateUVs()
 }
 
 void TileMapLayer::Tick() {
-	PopulateUVs();
+	// determine tile map draw position according to camera position.
+
+	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(g_ViewCamera.m_Eye.y));
+	gpu.consts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
+	gpu.consts.SrcTexTileSizeUV		= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
+	gpu.consts.TileMapSizeX			= ViewMeshSizeX;
+	gpu.consts.TileMapSizeY			= ViewMeshSizeY;
+
+	PopulateUVs({ (int)gpu.consts.TileAlignedDisp.x, (int)gpu.consts.TileAlignedDisp.y  });
+	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
 
 
 void TileMapLayer::Draw() const
 {
-	GPU_TileMapConstants	m_TileMapConsts;
-
-	// determine tile map draw position according to camera position.
-
-	m_TileMapConsts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(g_ViewCamera.m_Eye.y));
-	m_TileMapConsts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
-	m_TileMapConsts.SrcTexTileSizeUV	= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
-	m_TileMapConsts.TileMapSizeX		= ViewMeshSizeX;
-	m_TileMapConsts.TileMapSizeY		= ViewMeshSizeY;
-
 	dx11_BindShaderVS(g_ShaderVS_Tiler);
 	dx11_BindShaderFS(g_ShaderFS_Tiler);
 	dx11_SetInputLayout(gpu.layout_tilemap);
@@ -261,7 +256,7 @@ void TileMapLayer::Draw() const
 	dx11_SetVertexBuffer(gpu.mesh_worldViewTileID,	1, sizeof(g_ViewTileID[0]), 0);
 	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
 
-	dx11_UpdateConstantBuffer(g_cnstbuf_TileMap, &m_TileMapConsts);
+	dx11_UpdateConstantBuffer(g_cnstbuf_TileMap, &gpu.consts);
 	dx11_BindConstantBuffer(g_cnstbuf_TileMap, 1);
 	dx11_SetIndexBuffer(g_idx_box2D, 16, 0);
 	dx11_DrawIndexedInstanced(6, ViewInstanceCount, 0, 0, 0);
