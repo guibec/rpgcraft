@@ -8,16 +8,19 @@ class ViewCamera
 {
 public:
 	EntityGid_t				m_gid;
-	u128					m_Eye;
-	u128					m_At;
-	u128					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
+	float4					m_Eye;
+	float4					m_At;
+	float4					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
 	GPU_ViewCameraConsts	m_Consts;
 
 	ViewCamera() {
 	}
 
-	void Reset();
+	void			Reset		();
+	void			SetEyeAt	(const float2& xy);
+
 	virtual void Tick();
+
 };
 
 class TileMapLayer

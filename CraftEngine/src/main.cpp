@@ -88,9 +88,9 @@ void ViewCamera::Reset()
 	// Eye and At should move laterally together so that the eye is always looking straight down
 	// at a specific point on the map.
 
-	m_Eye	= float4 { 0.0f, 0.5f, -6.0f, 0.0f }.q;
-	m_At	= float4 { 0.0f, 0.5f,  0.0f, 0.0f }.q;
-	m_Up	= float4 { 0.0f, 1.0f,  0.0f, 0.0f }.q;
+	m_Eye	= { 0.0f, 0.5f, -6.0f, 0.0f };
+	m_At	= { 0.0f, 0.5f,  0.0f, 0.0f };
+	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 }
 
 // Eye and At should move laterally together so that the eye is always looking straight down
@@ -103,6 +103,11 @@ void ViewCamera::Tick() {
 	m_Consts.Projection = g_Projection;
 }
 
+void ViewCamera::SetEyeAt(const float2& xy)
+{
+	m_Eye.xy	= xy;
+	m_At.xy		= xy;
+}
 
 void SceneRender()
 {

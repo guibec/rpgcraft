@@ -244,7 +244,7 @@ void TileMapLayer::Draw() const
 
 	// determine tile map draw position according to camera position.
 
-	m_TileMapConsts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.xf), floorf(g_ViewCamera.m_Eye.yf));
+	m_TileMapConsts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(g_ViewCamera.m_Eye.y));
 	m_TileMapConsts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
 	m_TileMapConsts.SrcTexTileSizeUV	= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
 	m_TileMapConsts.TileMapSizeX		= ViewMeshSizeX;
