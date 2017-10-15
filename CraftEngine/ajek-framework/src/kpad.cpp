@@ -59,10 +59,10 @@ const VirtKeyBindingPair g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS] =
 
 const KPad_AxisMapping g_kpad_axs_map_default = []() {
 	KPad_AxisMapping init;
-	init.LStick_X.neg	= { 'W',					VirtKey::Unmapped	};
+	init.LStick_X.neg	= { 'A',					VirtKey::Unmapped	};
 	init.LStick_X.pos	= { 'D',					VirtKey::Unmapped	};
-	init.LStick_Y.neg	= { 'S',					VirtKey::Unmapped	};
-	init.LStick_Y.pos	= { 'A',					VirtKey::Unmapped	};
+	init.LStick_Y.neg	= { 'W',					VirtKey::Unmapped	};
+	init.LStick_Y.pos	= { 'S',					VirtKey::Unmapped	};
 
 	init.RStick_X.neg	= { 'G',					VirtKey::Unmapped	};
 	init.RStick_X.pos	= { 'J',					VirtKey::Unmapped	};

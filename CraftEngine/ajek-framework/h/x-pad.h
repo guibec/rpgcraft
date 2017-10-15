@@ -1,6 +1,7 @@
 #pragma once
 
 #include "x-types.h"
+#include "x-chrono.h"
 #include "x-host-ifc.h"
 
 // --------------------------------------------------------------------------------------
@@ -16,10 +17,10 @@ enum PadButtonId
 	PadBtnId_DPad_Down,
 	PadBtnId_DPad_Left,
 
-	PadBtnId_TriangleY,			// Triangle (Y) 
-	PadBtnId_CircleB,			// Circle   (B) 
-	PadBtnId_CrossA,			// Cross    (A) 
-	PadBtnId_SquareX,			// Square   (X) 
+	PadBtnId_TriangleY,			// Triangle (Y)
+	PadBtnId_CircleB,			// Circle   (B)
+	PadBtnId_CrossA,			// Cross    (A)
+	PadBtnId_SquareX,			// Square   (X)
 
 	PadBtnId_Options,			// start on PS3, Menu on XB1
 	PadBtnId_ViewMap,			// PAD on PS4, select on PS3, View on XB1
@@ -54,8 +55,8 @@ static inline const char* enumToString(const PadButtonId& id)
 		CaseReturnString2(o, PadBtnId_R1			);
 		CaseReturnString2(o, PadBtnId_LStick		);
 		CaseReturnString2(o, PadBtnId_RStick		);
-		
-		default: 
+
+		default:
 			unreachable_qa("invalid pad button id");
 	}
 	return "unknown";
@@ -64,9 +65,9 @@ static inline const char* enumToString(const PadButtonId& id)
 
 static const u32		PadBtnMsk_DPad_Up		= (1UL << PadBtnId_DPad_Up		);
 static const u32		PadBtnMsk_DPad_Right	= (1UL << PadBtnId_DPad_Right	);
-static const u32		PadBtnMsk_DPad_Down		= (1UL << PadBtnId_DPad_Down	);	
-static const u32		PadBtnMsk_DPad_Left		= (1UL << PadBtnId_DPad_Left	);	
-static const u32		PadBtnMsk_TriangleY		= (1UL << PadBtnId_TriangleY	);	
+static const u32		PadBtnMsk_DPad_Down		= (1UL << PadBtnId_DPad_Down	);
+static const u32		PadBtnMsk_DPad_Left		= (1UL << PadBtnId_DPad_Left	);
+static const u32		PadBtnMsk_TriangleY		= (1UL << PadBtnId_TriangleY	);
 static const u32		PadBtnMsk_CircleB		= (1UL << PadBtnId_CircleB		);
 static const u32		PadBtnMsk_CrossA		= (1UL << PadBtnId_CrossA		);
 static const u32		PadBtnMsk_SquareX		= (1UL << PadBtnId_SquareX		);
@@ -78,7 +79,7 @@ static const u32		PadBtnMsk_LStick		= (1UL << PadBtnId_LStick		);
 static const u32		PadBtnMsk_RStick		= (1UL << PadBtnId_RStick		);
 
 
-union PadButtonState 
+union PadButtonState
 {
 	u32			w;
 
@@ -88,10 +89,10 @@ union PadButtonState
 		u32		DPad_Down		: 1;
 		u32		DPad_Left		: 1;
 
-		u32		TriangleY		: 1;		// Triangle (Y) 
-		u32		CircleB			: 1;		// Circle   (B) 
-		u32		CrossA			: 1;		// Cross    (A) 
-		u32		SquareX			: 1;		// Square   (X) 
+		u32		TriangleY		: 1;		// Triangle (Y)
+		u32		CircleB			: 1;		// Circle   (B)
+		u32		CrossA			: 1;		// Cross    (A)
+		u32		SquareX			: 1;		// Square   (X)
 
 		u32		Options			: 1;		// start on PS3, Menu on XB1
 		u32		ViewMap			: 1;		// PAD on PS4, select on PS3, View on XB1
@@ -148,20 +149,20 @@ struct KPad_AxisEventInfo
 	KPadAxisTickPair	RStick_X;
 	KPadAxisTickPair	RStick_Y;
 
-	HostClockTick		L2;		
-	HostClockTick		R2;		
+	HostClockTick		L2;
+	HostClockTick		R2;
 };
 
 struct KPad_AxisPressState
 {
-	KPadAxisPressPair	LStick_X;		
-	KPadAxisPressPair	LStick_Y;		
+	KPadAxisPressPair	LStick_X;
+	KPadAxisPressPair	LStick_Y;
 
-	KPadAxisPressPair	RStick_X;		
-	KPadAxisPressPair	RStick_Y;		
+	KPadAxisPressPair	RStick_X;
+	KPadAxisPressPair	RStick_Y;
 
-	bool				L2;				
-	bool				R2;				
+	bool				L2;
+	bool				R2;
 };
 
 struct KPad_AxisMapping

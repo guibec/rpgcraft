@@ -2,6 +2,8 @@
 #include "PCH-rpgcraft.h"
 #include "Sprites.h"
 
+DECLARE_MODULE_NAME("player");
+
 PlayerSprite::PlayerSprite() {
 	xMemZero(gpu_layout_sprite);
 	gpu_layout_sprite.AddVertexSlot( {
@@ -25,8 +27,20 @@ PlayerSprite::PlayerSprite() {
 	// ---------------------------------------------------------------------------------------------
 }
 
+#include "x-pad.h"
+#include "TileMapLayer.h"
+
 void PlayerSprite::Tick(int order)
 {
+	PadState state;
+	KPad_GetState(state);
+
+	g_ViewCamera.SetEyeAt( {
+		g_ViewCamera.m_Eye.x + (state.axis.LStick_X * 0.1f),
+		g_ViewCamera.m_Eye.y + (state.axis.LStick_Y * 0.1f),
+	} );
+
+	//log_host("StateInfo: %3.3f %3.3f", state.axis.LStick_X, state.axis.LStick_Y);
 }
 
 void PlayerSprite::Draw(int order) const
