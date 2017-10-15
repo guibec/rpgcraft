@@ -25,11 +25,11 @@ PlayerSprite::PlayerSprite() {
 	// ---------------------------------------------------------------------------------------------
 }
 
-void PlayerSprite::Tick()
+void PlayerSprite::Tick(int order)
 {
 }
 
-void PlayerSprite::Draw() const
+void PlayerSprite::Draw(int order) const
 {
 	dx11_BindShaderVS		(g_ShaderVS_Spriter);
 	dx11_BindShaderFS		(g_ShaderFS_Spriter);
