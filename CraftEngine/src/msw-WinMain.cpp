@@ -50,7 +50,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			WPARAM param = wParam;
 			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
 
-			if (c == 'W' || c == 'w') {
+			auto mod = Host_GetKeyModifierInMsg();
+
+			if ((c == 'W' || c == 'w') && mod.Alt()) {
 				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
 			}
 

@@ -189,3 +189,22 @@ VirtKeyModifier Host_GetKeyModifier()
 	return result;
 }
 
+VirtKeyModifier Host_GetKeyModifierInMsg()
+{
+	VirtKeyModifier result;
+
+	//log_host( "JOY TO THE WORLD: %04x", GetAsyncKeyState(VK_CONTROL) & 0x8000);
+
+	result.ctrl		=	!!(::GetKeyState(VK_CONTROL		) & 0x8000);
+	result.shift	=	!!(::GetKeyState(VK_SHIFT		) & 0x8000);
+	result.alt		=	!!(::GetKeyState(VK_MENU		) & 0x8000);
+	result.windows	=	!!(::GetKeyState(VK_LWIN		) & 0x8000);
+					  //||(::GetKeyState(VK_RWIN		) & 0x8000);
+
+	// Hmm... the RWIN check is untested:
+	//    most keyboards don't have an LWIN and microsoft doesn't provide a unified WIN key reader.
+	//    Microsoft provides RWIN on it's Naturla keyboard (maybe?).  That's what the MSDN says, but
+	//    can't really trust it.  LWIN might just be legacy at this point.
+
+	return result;
+}
