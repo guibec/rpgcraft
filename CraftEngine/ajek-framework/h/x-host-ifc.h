@@ -119,14 +119,15 @@ struct VirtKeyModifier
 };
 
 // --------------------------------------------------------------------------------------
-// These functions return the current state of the keyboard, which is ideal for most 
+// These functions return the current state of the keyboard, which is ideal for most
 // gameplay purposes.  These are not appropriate for use from Keyboard Event message
 // queues.
 
 extern bool				Host_IsKeyPressedGlobally	(VirtKey_t key);
 extern bool				Host_IsKeyPressedGlobally	(const VirtKeyBindingPair& pair);
 
-extern VirtKeyModifier	Host_GetKeyModifier	();
+extern VirtKeyModifier	Host_GetKeyModifier			();
+extern VirtKeyModifier	Host_GetKeyModifierInMsg	();
 extern bool				HostDiag_IsKeyPressed		(VirtKey_t key);
 // --------------------------------------------------------------------------------------
 
