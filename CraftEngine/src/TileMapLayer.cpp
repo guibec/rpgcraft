@@ -162,8 +162,11 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 		for (int xl=0; xl<ViewMeshSizeX; ++xl) {
 			int y = yl + viewport_offset.y;
 			int x = xl + viewport_offset.x;
-			int instanceId	= ((y*ViewMeshSizeX) + x);
+			int instanceId	= ((yl*ViewMeshSizeX) + xl);
 			int vertexId	= instanceId * 6;
+
+			if (y<0 || x<0) continue;
+			if (y>=WorldSizeY || x>=WorldSizeX) continue;
 
 			int setId		= g_WorldMap[(y * WorldSizeX) + x].tilesetId;
 			int setX		= setId % g_setCountX;
@@ -171,7 +174,7 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 
 			// Look at surrounding tiles to decide how to match this tile...
 			// TODO: Try moving this into Lua?  As a proof-of-concept for rapid iteration?
-			//    Or is this not appropriate scope for scripting yet?  Hmm!
+			//    Or is this not appropriate scope for; scripting yet?  Hmm!
 
 			bool match_above1 = false;
 			bool match_below1 = false;
