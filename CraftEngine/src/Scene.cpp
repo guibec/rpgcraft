@@ -138,7 +138,9 @@ __ni void SceneInit()
 		s_scene_initialized = true;
 	}
 	x_catch() {
-		case 1:
+		case xThrowModule_GPU:
+		case xThrowModule_Script:
+		case xThrowModule_Bridge:
 			xPrintLn("");
 			g_ThrowCtx.PrintLastError();
 
@@ -151,6 +153,7 @@ __ni void SceneInit()
 		break;
 
 		default:
+			bug_qa("Unhandled exception code = %d", x_exccode());
 		break;
 	}
 	x_finalize() {
