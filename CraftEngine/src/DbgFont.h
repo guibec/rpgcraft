@@ -73,3 +73,5 @@ struct DbgFontDrawItem
 extern void DbgFont_LoadInit		();
 extern void DbgFont_SceneBegin		();
 extern void DbgFont_SceneRender		();
+
+extern DbgFontSheet g_DbgFontOverlay;

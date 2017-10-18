@@ -76,9 +76,9 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 
 	// Position Calculation
 	outp.Pos	 = float4(input.Pos, 1.0f);
-	outp.Pos	+= float4(disp_xy, 0.0f, 0.0f);
-	outp.Pos.y	*= -1.0f;		// +Y is UP!
+	outp.Pos.xy	+= disp_xy;
 	outp.Pos.xy += TileAlignedDisp;
+	outp.Pos.y	*= -1.0f;		// +Y is UP!
 	outp.Pos	 = mul( outp.Pos, View );
 	outp.Pos	 = mul( outp.Pos, Projection );
 
