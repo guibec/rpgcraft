@@ -8,6 +8,7 @@
 #include "Scene.h"
 
 #include "TileMapLayer.h"
+#include "DbgFont.h"
 
 DECLARE_MODULE_NAME("TileMap");
 
@@ -135,17 +136,17 @@ void WorldMap_Procgen()
 	// Write a border around the entire map for now.
 
 	for (int x=0; x<WorldSizeX; ++x) {
-		g_WorldMap[((     0	     ) * WorldSizeX) + x].tilesetId = 20;
-		g_WorldMap[((     1	     ) * WorldSizeX) + x].tilesetId = 20;
-		g_WorldMap[((WorldSizeY-2) * WorldSizeX) + x].tilesetId = 20;
-		g_WorldMap[((WorldSizeY-1) * WorldSizeX) + x].tilesetId = 20;
+		g_WorldMap[((     0	     ) * WorldSizeX) + x].tilesetId = 21;
+		g_WorldMap[((     1	     ) * WorldSizeX) + x].tilesetId = 22;
+		g_WorldMap[((WorldSizeY-1) * WorldSizeX) + x].tilesetId = 22;
+		g_WorldMap[((WorldSizeY-2) * WorldSizeX) + x].tilesetId = 21;
 	}
 
 	for (int y=0; y<WorldSizeY; ++y) {
-		g_WorldMap[(y * WorldSizeX) + 0				].tilesetId = 20;
-		g_WorldMap[(y * WorldSizeX) + 1				].tilesetId = 20;
-		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-2)].tilesetId = 20;
-		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-1)].tilesetId = 20;
+		g_WorldMap[(y * WorldSizeX) + 0				].tilesetId = 21;
+		g_WorldMap[(y * WorldSizeX) + 1				].tilesetId = 21;
+		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-2)].tilesetId = 21;
+		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-1)].tilesetId = 21;
 	}
 }
 
@@ -222,10 +223,6 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 
 			g_ViewTileID[instanceId]  = (setY * g_setCountX) + setX;
 			g_ViewTileID[instanceId] += (subTileY * 4) + subTileX;
-
-			vFloat2 uv;
-			uv  = vFloat2(setX, setY)  * incr_set_uv;
-			uv += vFloat2(subTileX, subTileY) * t16uv;
 		}
 	}
 
@@ -235,11 +232,13 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 void TileMapLayer::Tick() {
 	// determine tile map draw position according to camera position.
 
-	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(g_ViewCamera.m_Eye.y));
+	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(-g_ViewCamera.m_Eye.y));
 	gpu.consts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
 	gpu.consts.SrcTexTileSizeUV		= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
 	gpu.consts.TileMapSizeX			= ViewMeshSizeX;
 	gpu.consts.TileMapSizeY			= ViewMeshSizeY;
+
+	g_DbgFontOverlay.Write(0,3, xFmtStr("TileAlignedDisp: %5.2f %5.2f", gpu.consts.TileAlignedDisp.x, gpu.consts.TileAlignedDisp.y));
 
 	PopulateUVs({ (int)gpu.consts.TileAlignedDisp.x, (int)gpu.consts.TileAlignedDisp.y  });
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
