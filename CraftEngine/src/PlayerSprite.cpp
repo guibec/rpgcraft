@@ -36,8 +36,8 @@ void PlayerSprite::Tick(int order)
 	KPad_GetState(state);
 
 	g_ViewCamera.SetEyeAt( {
-		g_ViewCamera.m_Eye.x + (state.axis.LStick_X * 0.1f),
-		g_ViewCamera.m_Eye.y + (state.axis.LStick_Y * 0.1f),
+		g_ViewCamera.m_Eye.x + (state.axis.LStick_X * 0.05f),
+		g_ViewCamera.m_Eye.y + (state.axis.LStick_Y * 0.05f),
 	} );
 
 	//log_host("StateInfo: %3.3f %3.3f", state.axis.LStick_X, state.axis.LStick_Y);
