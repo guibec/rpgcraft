@@ -72,4 +72,6 @@ public:
 
 #define x_finalize() (g_ThrowCtx.Finalize()); if(1)
 
+#define x_exccode()  (_setjmp_result)
+
 extern xThrowContext	g_ThrowCtx;
