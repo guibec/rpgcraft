@@ -49,15 +49,6 @@ static IDXGISwapChain*			g_pSwapChain			= nullptr;
 static IDXGISwapChain1*			g_pSwapChain1			= nullptr;
 
 
-struct ConstantBuffer
-{
-	XMMATRIX			World;
-	XMMATRIX			View;
-	XMMATRIX			Projection;
-};
-
-XMMATRIX                g_World;
-XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 
 GPU_RenderTarget		g_gpu_BackBuffer;
@@ -556,8 +547,8 @@ void dx11_InitDevice()
 	XMVECTOR At		= XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
 	XMVECTOR Up		= XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
 
-	g_World			= XMMatrixIdentity();
-	g_View			= XMMatrixLookAtLH( Eye, At, Up );
+	//g_World			= XMMatrixIdentity();
+	//g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y), 0.01f, 100.0f );
 
 	log_and_abort_on(FAILED(hr));

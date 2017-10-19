@@ -24,10 +24,6 @@ struct TerrainMapItem {
 TerrainMapItem*		g_WorldMap		= nullptr;
 u32*				g_ViewTileID	= nullptr;	// temporarily global - will localize later.
 
-// Probably in tile coordinates with fractional being partial-tile position
-float g_playerX;
-float g_playerY;
-
 
 static const int TerrainTileW = 256;
 static const int TerrainTileH = 256;
@@ -121,9 +117,6 @@ void TileMapLayer::SceneInit(const char* script_objname)
 void WorldMap_Procgen()
 {
 	g_WorldMap	= (TerrainMapItem*)	xRealloc(g_WorldMap, WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-
-	g_playerX = 0;
-	g_playerY = 0;
 
 	// Fill map with boring grass.
 

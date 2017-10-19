@@ -8,6 +8,8 @@
 
 DECLARE_MODULE_NAME("player");
 
+GPU_ConstantBuffer gpu_constbuf;
+
 PlayerSprite::PlayerSprite() {
 	xMemZero(gpu_layout_sprite);
 	gpu_layout_sprite.AddVertexSlot( {
@@ -21,14 +23,23 @@ PlayerSprite::PlayerSprite() {
 		// UV is in pixels (as it should be).
 		// XYZ is in tiles .. where Z is expected to be 1.0f
 
-		{ vFloat3( -0.5f,  0.5f, 0.0f ), vFloat2( 0.0f, 32.0f) },
-		{ vFloat3( -0.5f, -0.5f, 0.0f ), vFloat2( 0.0f, 64.0f) },
-		{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
-		{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
+		//{ vFloat3( -0.5f, -0.5f, 0.0f ), vFloat2( 0.0f, 32.0f) },
+		//{ vFloat3( -0.5f,  0.5f, 0.0f ), vFloat2( 0.0f, 64.0f) },
+		//{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
+		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
+
+		{ vFloat3(  0.0f,  0.0f, 0.0f ), vFloat2( 0.0f, 32.0f) },
+		{ vFloat3(  0.0f,  1.0f, 0.0f ), vFloat2( 0.0f, 64.0f) },
+		{ vFloat3(  1.0f,  1.0f, 0.0f ), vFloat2(24.0f, 64.0f) },
+		{ vFloat3(  1.0f,  0.0f, 0.0f ), vFloat2(24.0f, 32.0f) }
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
 	// ---------------------------------------------------------------------------------------------
+
+	dx11_CreateConstantBuffer(gpu_constbuf, sizeof(float2) + sizeof(int2));
+
+	position = { 10, 10 };
 }
 
 void PlayerSprite::Tick(int order)
@@ -37,14 +48,18 @@ void PlayerSprite::Tick(int order)
 	KPad_GetState(state);
 
 	g_ViewCamera.SetEyeAt( {
-		g_ViewCamera.m_Eye.x + (state.axis.LStick_X * 0.05f),
-		g_ViewCamera.m_Eye.y + (state.axis.LStick_Y * 0.05f),
+		g_ViewCamera.m_Eye.x + (state.axis.RStick_X * 0.05f),
+		g_ViewCamera.m_Eye.y + (state.axis.RStick_Y * 0.05f),
 	} );
+
+	position += { state.axis.LStick_X * 0.05f,
+				  state.axis.LStick_Y * 0.05f };
 
 	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
 
 	//log_host("StateInfo: %3.3f %3.3f", state.axis.LStick_X, state.axis.LStick_Y);
 }
+
 
 void PlayerSprite::Draw(int order) const
 {
@@ -54,6 +69,17 @@ void PlayerSprite::Draw(int order) const
 	dx11_BindShaderResource	(tex_chars, 0);
 	dx11_SetVertexBuffer	(gpu_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 	dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
+
+	struct {
+		float2	relpos;
+		int2	TileMapSizeXY;
+	} consts;
+
+	consts.relpos			= position;
+	consts.TileMapSizeXY	= { g_TileMap.ViewMeshSizeX, g_TileMap.ViewMeshSizeY };
+
+	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
+	dx11_BindConstantBuffer		(gpu_constbuf, 1);
 
 	dx11_DrawIndexed(6, 0,  0);
 }
