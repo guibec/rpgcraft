@@ -425,6 +425,14 @@ union u128x8 {
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
 
+static __ai inline bool rawflt4_cmp_eq(const __m128& left, const __m128& right)
+{
+	__m128 result;
+	i_cmpeqps	(result, left, right);
+	i_pxor		(result, result, u128().SetFFs());
+	return i_ptestz(result);
+}
+
 union float2 {
 	struct {
 		float	x, y;
@@ -440,12 +448,11 @@ union float2 {
 
 	u64			_i64val;
 
-	// note: intentionally omitted u64 operator assignment.
-
-	__ai operator const u64&		()			{ return _i64val;		}
-
 	__ai bool operator==( const float2& right ) const	{ return _i64val == right._i64val; }
 	__ai bool operator!=( const float2& right ) const	{ return _i64val != right._i64val; }
+
+	__ai float2& operator+=( const float2& src )		{ x += src.x; y += src.y; return *this; };
+	__ai float2& operator-=( const float2& src )		{ x -= src.x; y -= src.y; return *this; };
 };
 
 union float4 {
@@ -463,16 +470,18 @@ union float4 {
 	struct {
 		float	f[4];
 	};
-	u128	q;
+	__m128	q;
 
-	__ai operator __m128&			()			{ return q.qf;	}
-	__ai operator u128&				()			{ return q;		}
+	__ai operator __m128&			()			{ return q;			}
 
-	__ai operator const __m128&		() const	{ return q.qf;	}
-	__ai operator const u128&		() const	{ return q;		}
+	__ai operator u128				() const	{ return {{ q }};	}
+	__ai operator const __m128&		() const	{ return q;			}
 
-	__ai bool operator==( const u128& right ) const	{ return q == right; }
-	__ai bool operator!=( const u128& right ) const	{ return q != right; }
+	__ai bool operator==( const float4& right ) const	{ return  rawflt4_cmp_eq(q, right.q); }
+	__ai bool operator!=( const float4& right ) const	{ return !rawflt4_cmp_eq(q, right.q); }
+
+	__ai float4& operator+=( const float4& src )		{ i_addps(q, q, src.q); return *this; };
+	__ai float4& operator-=( const float4& src )		{ i_subps(q, q, src.q); return *this; };
 };
 
 union int2 {
