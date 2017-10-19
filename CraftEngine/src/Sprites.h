@@ -45,6 +45,8 @@ public:
 	GPU_InputDesc		gpu_layout_sprite;
 	GPU_VertexBuffer	gpu_mesh_box2D;
 
+	float2				position;
+
 public:
 	PlayerSprite();
 

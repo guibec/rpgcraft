@@ -6,11 +6,17 @@ SamplerState	samLinear	: register( s0 );
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
-cbuffer ConstantBuffer : register( b0 )
+cbuffer ConstantBuffer0 : register( b0 )
 {
-//	matrix World;
 	matrix View;
 	matrix Projection;
+}
+
+cbuffer ConstantBuffer1 : register( b1 )
+{
+	//matrix World;
+	float2   worldpos;
+	uint2    TileMapSizeXY;		// TODO - move this to cb0
 }
 
 //--------------------------------------------------------------------------------------
@@ -43,9 +49,14 @@ VS_OUTPUT VS( VS_INPUT input )
 {
 	VS_OUTPUT outp;
 
-	outp.Pos = float4(input.Pos, 1.0f);
-	outp.Pos = mul( outp.Pos, View );
-	outp.Pos = mul( outp.Pos, Projection );
+	float2 incr_xy = float2(1.0f, 1.0f);
+	float2 disp_xy = (TileMapSizeXY * -0.5f) + (worldpos * incr_xy) - 0.5f;
+
+	outp.Pos	 = float4(input.Pos, 1.0f);
+	outp.Pos.xy += disp_xy;
+	outp.Pos.y	*= -1.0f;		// +Y is UP!
+	outp.Pos	 = mul( outp.Pos, View );
+	outp.Pos	 = mul( outp.Pos, Projection );
 
 	outp.Color	= float4(input.UV, 0.0f, 1.0f);
 	outp.UV		= input.UV;

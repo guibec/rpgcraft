@@ -139,7 +139,7 @@ void SceneRender()
 	m_ViewConsts.Projection = XMMatrixTranspose(g_ViewCamera.m_Consts.Projection);
 
 	dx11_UpdateConstantBuffer(g_gpu_constbuf, &m_ViewConsts);
-	dx11_BindConstantBuffer(g_gpu_constbuf, 0);
+	dx11_BindConstantBuffer	 (g_gpu_constbuf, 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 
 	g_TileMap.Draw();
