@@ -1,6 +1,10 @@
 
 #include "PCH-rpgcraft.h"
 #include "Sprites.h"
+#include "DbgFont.h"
+
+#include "x-pad.h"
+#include "TileMapLayer.h"
 
 DECLARE_MODULE_NAME("player");
 
@@ -27,9 +31,6 @@ PlayerSprite::PlayerSprite() {
 	// ---------------------------------------------------------------------------------------------
 }
 
-#include "x-pad.h"
-#include "TileMapLayer.h"
-
 void PlayerSprite::Tick(int order)
 {
 	PadState state;
@@ -39,6 +40,8 @@ void PlayerSprite::Tick(int order)
 		g_ViewCamera.m_Eye.x + (state.axis.LStick_X * 0.05f),
 		g_ViewCamera.m_Eye.y + (state.axis.LStick_Y * 0.05f),
 	} );
+
+	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
 
 	//log_host("StateInfo: %3.3f %3.3f", state.axis.LStick_X, state.axis.LStick_Y);
 }
