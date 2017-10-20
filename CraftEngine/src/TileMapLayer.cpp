@@ -166,8 +166,8 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 			int instanceId	= ((yl*ViewMeshSizeX) + xl);
 			int vertexId	= instanceId * 6;
 
-			if (y<0 || x<0) continue;
-			if (y>=WorldSizeY || x>=WorldSizeX) continue;
+			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 12; continue; }
+			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 12; continue; }
 
 			int setId		= g_WorldMap[(y * WorldSizeX) + x].tilesetId;
 			int setX		= setId % g_setCountX;
@@ -238,9 +238,11 @@ void TileMapLayer::Tick() {
 	gpu.consts.TileMapSizeX			= ViewMeshSizeX;
 	gpu.consts.TileMapSizeY			= ViewMeshSizeY;
 
-	g_DbgFontOverlay.Write(0,3, xFmtStr("TileAlignedDisp: %5.2f %5.2f", gpu.consts.TileAlignedDisp.x, gpu.consts.TileAlignedDisp.y));
+	auto disp = int2 { (int)gpu.consts.TileAlignedDisp.x, (int)gpu.consts.TileAlignedDisp.y  };
+	disp.x -= ViewMeshSizeX / 2;
+	disp.y -= ViewMeshSizeY / 2;
 
-	PopulateUVs({ (int)gpu.consts.TileAlignedDisp.x, (int)gpu.consts.TileAlignedDisp.y  });
+	PopulateUVs(disp);
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
 
