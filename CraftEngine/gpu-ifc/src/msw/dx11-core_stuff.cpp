@@ -54,6 +54,8 @@ XMMATRIX                g_Projection;
 GPU_RenderTarget		g_gpu_BackBuffer;
 int						g_curBufferIdx = 0;
 
+extern void dx11_CreateDepthStencil();
+
 // * Vertex Buffers are Mostly Dynamic.
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
 // * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
@@ -510,6 +512,7 @@ void dx11_InitDevice()
 	log_and_abort_on(FAILED(hr));
 
 	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
+	rtView->Release();
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -550,6 +553,8 @@ void dx11_InitDevice()
 	//g_World			= XMMatrixIdentity();
 	//g_View			= XMMatrixLookAtLH( Eye, At, Up );
 	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y), 0.01f, 100.0f );
+
+	//dx11_CreateDepthStencil();
 
 	log_and_abort_on(FAILED(hr));
 }
@@ -1163,4 +1168,144 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 void dx11_ClearRenderTarget(const GPU_RenderTarget& target, const float4& color)
 {
 	g_pImmediateContext->ClearRenderTargetView((ID3D11RenderTargetView*)target.m_driverData, color.f);
+    //g_pImmediateContext->ClearDepthStencilView( g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 }
+
+#if 0
+// WIP - Stencil Target and Output Merger.
+// Will be useful for:
+//  - generating masks for mouse clicks (dev-style mouse->object inspection)
+//  - anything else?  Until more gets added here, it's low prio.
+//
+
+ID3D11Texture2D*        g_pDepthStencil			= nullptr;
+ID3D11DepthStencilView* g_pDepthStencilView		= nullptr;
+
+DXGI_FORMAT GetDepthResourceFormat(DXGI_FORMAT depthformat)
+{
+    DXGI_FORMAT resformat;
+    switch (depthformat)
+    {
+    case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
+            resformat = DXGI_FORMAT::DXGI_FORMAT_R16_TYPELESS;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
+            resformat = DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
+            resformat = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+            resformat = DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS;
+            break;
+    }
+
+    return resformat;
+}
+
+DXGI_FORMAT GetDepthSRVFormat(DXGI_FORMAT depthformat)
+{
+    DXGI_FORMAT srvformat;
+    switch (depthformat)
+    {
+    case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
+            srvformat = DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
+            srvformat = DXGI_FORMAT::DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
+            srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
+            break;
+    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+            srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
+            break;
+    }
+    return srvformat;
+}
+
+void dx11_CreateDepthStencil()
+{
+	HRESULT hr;
+
+	auto baseFmt = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	DXGI_FORMAT resformat = GetDepthResourceFormat	(baseFmt);
+	DXGI_FORMAT srvformat = GetDepthSRVFormat		(baseFmt);
+
+	bool create_srv = g_gpu_settings.debugviewer;
+
+    D3D11_TEXTURE2D_DESC descDepth = {};
+    descDepth.Width					= g_backbuffer_size_pix.x;
+    descDepth.Height				= g_backbuffer_size_pix.y;
+    descDepth.MipLevels				= 1;
+    descDepth.ArraySize				= 1;
+    descDepth.Format				= create_srv ? resformat : baseFmt;
+    descDepth.SampleDesc.Count		= 1;
+    descDepth.SampleDesc.Quality	= 0;
+    descDepth.Usage					= D3D11_USAGE_DEFAULT;
+    descDepth.BindFlags				= D3D11_BIND_DEPTH_STENCIL;
+    descDepth.CPUAccessFlags		= 0;
+    descDepth.MiscFlags				= 0;
+
+    hr = g_pd3dDevice->CreateTexture2D( &descDepth, nullptr, &g_pDepthStencil );
+	log_and_abort_on(FAILED(hr));
+
+	ID3D11ShaderResourceView* srv = nullptr;
+	if (create_srv) {
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
+		srvd.Format = srvformat;
+		srvd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvd.Texture2D.MipLevels = 1;
+
+		hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil,&srvd,&srv);
+		log_and_abort_on(FAILED(hr));
+	}
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+    descDSV.Format				= descDepth.Format;
+    descDSV.ViewDimension		= D3D11_DSV_DIMENSION_TEXTURE2D;
+    descDSV.Texture2D.MipSlice	= 0;
+    hr = g_pd3dDevice->CreateDepthStencilView( g_pDepthStencil, &descDSV, &g_pDepthStencilView );
+	log_and_abort_on(FAILED(hr));
+
+	// Set the Depth Stencil as the Output Merger Target
+	// (this should be broken itno separate step ...)
+
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	log_and_abort_on(FAILED(hr));
+
+	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
+	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
+	pBackBuffer->Release();
+
+    g_pImmediateContext->OMSetRenderTargets( 1, &rtView, g_pDepthStencilView );
+	rtView->Release();
+
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+
+	// Depth test parameters
+	dsDesc.DepthEnable					= true;
+	dsDesc.DepthWriteMask				= D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc					= D3D11_COMPARISON_ALWAYS;
+
+	// Stencil test parameters
+	dsDesc.StencilEnable				= true;
+	dsDesc.StencilReadMask				= 0xFF;
+	dsDesc.StencilWriteMask				= 0xFF;
+
+	// Stencil operations if pixel is front-facing
+	dsDesc.FrontFace.StencilFailOp		= D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDesc.FrontFace.StencilPassOp		= D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilFunc		= D3D11_COMPARISON_ALWAYS;
+
+	dsDesc.BackFace = dsDesc.FrontFace;
+
+	// Create depth stencil state
+	ID3D11DepthStencilState * pDSState = nullptr;
+	g_pd3dDevice->CreateDepthStencilState(&dsDesc, &pDSState);
+	g_pImmediateContext->OMSetDepthStencilState(pDSState, 1);
+}
+#endif
