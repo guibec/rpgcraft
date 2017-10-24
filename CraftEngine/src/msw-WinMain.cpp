@@ -45,16 +45,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 		break;
 
-		case WM_KEYDOWN: {
-
+		case WM_SYSKEYDOWN: {
 			WPARAM param = wParam;
 			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
-
 			auto mod = Host_GetKeyModifierInMsg();
 
 			if ((c == 'W' || c == 'w') && mod.Alt()) {
 				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
 			}
+		} break;
+
+		case WM_KEYDOWN: {
+
+			WPARAM param = wParam;
+			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
 
 			if (c == 'R' || c == 'r') {
 				Scene_PostMessage(SceneMsg_Reload, 0);

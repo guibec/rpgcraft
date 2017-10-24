@@ -1,7 +1,7 @@
 #pragma once
 
 #include "x-types.h"
-
+#include "x-simd.h"
 
 // --------------------------------------------------------------------------------------
 // Cross-platform Virtual key map.
@@ -13,8 +13,13 @@
 namespace VirtKey
 {
 	enum _enum_t {
-		Unmapped = 0,
-		Escape   = 0x1000,
+		Unmapped		= 0,
+
+		MouseLeft		= 0x10,
+		MouseRight,
+		MouseMiddle,
+
+		Escape			= 0x1000,
 		Enter,
 		Tab,
 		Slash,
@@ -65,6 +70,8 @@ namespace VirtKey
 		RCtrl,
 		RAlt,
 		RWin,
+
+
 	};
 };
 
@@ -127,7 +134,12 @@ extern bool				Host_IsKeyPressedGlobally	(VirtKey_t key);
 extern bool				Host_IsKeyPressedGlobally	(const VirtKeyBindingPair& pair);
 
 extern VirtKeyModifier	Host_GetKeyModifier			();
-extern VirtKeyModifier	Host_GetKeyModifierInMsg	();
+extern VirtKeyModifier	Host_GetKeyModifierInMsg	();		// this one OK from windows msg queue
 extern bool				HostDiag_IsKeyPressed		(VirtKey_t key);
 // --------------------------------------------------------------------------------------
 
+extern void				Host_PollMousePosition		();
+extern void				Host_CaptureMouse			();
+extern void				Host_ReleaseMouse			();
+extern bool				Mouse_HasValidPos			();
+extern int2				Mouse_GetClientPos			();
