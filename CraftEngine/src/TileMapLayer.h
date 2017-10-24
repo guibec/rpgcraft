@@ -18,6 +18,7 @@ public:
 
 	void			Reset		();
 	void			SetEyeAt	(const float2& xy);
+	float4			ClientToWorld(const int2& clientPosInPix);
 
 	virtual void Tick();
 

@@ -65,3 +65,6 @@ extern bool			Scene_TryLoadInit			();
 extern void			Scene_PostMessage			(SceneMessageId msgId, sptr payload);
 extern void			Scene_DrainMsgQueue			();
 extern bool			Scene_HasStopReason			(u32 stopReason = ~0);
+
+extern float2		Scene_GetMouseRelativeToCenter();
+extern bool			Scene_MouseInClient();

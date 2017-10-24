@@ -46,9 +46,88 @@ TileMapLayer	g_TileMap;
 
 bool s_CanRenderScene = false;
 
+float2 get2dPoint(const float4& point3D, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix)
+{
+    auto viewProjectionMatrix = projectionMatrix * viewMatrix;
+
+    //transform world to clipping coordinates
+    auto _xform = XMVector3Transform(point3D, viewProjectionMatrix);
+	float4& xform = (float4&)_xform;
+
+	float4 xf2 = xform / xform.w;
+
+	// This assumes viewOffset is center of the screen, directx style.
+    float winX = int (roundf((( xform.x + 1 ) / 2.0) * viewSize.x ));
+    float winY = int (roundf((( 1 - xform.y ) / 2.0) * viewSize.y ));
+
+	// More generic OGL friendly version but I need to determine exactly what viewOffset should be, and I'm lazy --jstine
+	//float winX = ((xf2.x + 1.0) / 2.0) * viewSize.x; // + viewOffset
+	//float winY = ((xf2.y + 1.0) / 2.0) * viewSize.y; // + viewOffset
+
+	return { winX, winY };
+}
+
+float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix)
+{
+	// Currently a bit of a useless function.  It merely returns a ray with no specific Z value.
+	// Ray casting needs to be performed from the camera through the world to determine what objects
+	// of relevance are intersected.  I would prefer using depth stencil instead and letting the GPU
+	// tell us exactly what's under the mouse.  This is left in for reference --jstine
+
+	auto x =   2.0f * viewPos.x / viewSize.x - 1.f;
+	auto y = - 2.0f * viewPos.y / viewSize.y + 1.f;
+
+	// should this be inverse of both or just inverse of projection matrix?
+	XMMATRIX viewProjectionInverse = XMMatrixInverse(nullptr, projectionMatrix * viewMatrix);
+	float4 point3D = { x, y, 1.f };
+	auto result = XMVector3Transform(point3D, viewProjectionInverse);
+
+	// TODO: subtract camera position?
+
+	return (float4&)result;
+}
+
+bool	s_mouse_is_in_client = false;
+float2	s_mouse_pos_relative_to_center = {};
+
+float2 Scene_GetMouseRelativeToCenter()
+{
+	return s_mouse_pos_relative_to_center;
+}
+
+bool Scene_MouseInClient()
+{
+	return s_mouse_is_in_client;
+}
+
+
+float2 fabsf(const float2& src)
+{
+	return { fabsf(src.x), fabsf(src.y) };
+}
+
 void SceneLogic()
 {
 	DbgFont_SceneBegin();
+
+	Host_PollMousePosition();
+	if (Mouse_HasValidPos()) {
+		int2 relpos = Mouse_GetClientPos() - (g_backbuffer_size_pix/2);
+
+		auto ratio		= float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
+		auto normalized = ((float2)relpos / (float2)(g_backbuffer_size_pix)) * 2.0f;
+
+		s_mouse_is_in_client = fabsf(normalized) <= 1.0f;
+
+		normalized.x   *= ratio;
+		g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, s_mouse_is_in_client ? "yes" : "no" ));
+		g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
+		s_mouse_pos_relative_to_center = normalized;
+	}
+	else {
+		s_mouse_is_in_client = false;
+		s_mouse_pos_relative_to_center = {};
+	}
 
 	g_TileMap.Tick();
 

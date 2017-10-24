@@ -5,6 +5,7 @@
 
 #include "x-pad.h"
 #include "TileMapLayer.h"
+#include "Scene.h"
 
 DECLARE_MODULE_NAME("player");
 
@@ -55,9 +56,17 @@ void PlayerSprite::Tick(int order)
 	position += { state.axis.LStick_X * 0.05f,
 				  state.axis.LStick_Y * 0.05f };
 
-	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
+	if (Host_IsKeyPressedGlobally(VirtKey::MouseLeft)) {
+		if (Scene_MouseInClient()) {
+			auto mouse = Scene_GetMouseRelativeToCenter();
+			mouse.x = xBoundsCheck(mouse.x, -0.5f, 0.5f);
+			mouse.y = xBoundsCheck(mouse.y, -0.5f, 0.5f);
 
-	//log_host("StateInfo: %3.3f %3.3f", state.axis.LStick_X, state.axis.LStick_Y);
+			position += { mouse * 0.05f };
+		}
+	}
+
+	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
 }
 
 
