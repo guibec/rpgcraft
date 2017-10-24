@@ -77,6 +77,10 @@ UINT ConvertToMswVK( VirtKey_t ours )
 {
 	switch (ours)
 	{
+		case VirtKey::MouseLeft		:	return VK_LBUTTON		;
+		case VirtKey::MouseRight	:	return VK_RBUTTON		;
+		case VirtKey::MouseMiddle	:	return VK_MBUTTON		;
+
 		case VirtKey::Escape		:	return VK_ESCAPE		;
 		case VirtKey::Enter			:	return VK_RETURN		;
 		case VirtKey::Tab			:	return VK_TAB			;
@@ -207,4 +211,49 @@ VirtKeyModifier Host_GetKeyModifierInMsg()
 	//    can't really trust it.  LWIN might just be legacy at this point.
 
 	return result;
+}
+
+int2 s_CurrentKnownMousePos		= {};
+bool s_HasValidMouseInfo		= false;
+
+void Host_PollMousePosition()
+{
+	s_HasValidMouseInfo = false;
+
+	POINT meh;
+	BOOL result;
+
+	if (!::GetCursorPos(&meh))				return;
+	if (!::ScreenToClient(g_hWnd, &meh))	return;
+
+	s_CurrentKnownMousePos = { meh.x, meh.y };
+
+	s_HasValidMouseInfo = true;
+}
+
+
+void Host_CaptureMouse()
+{
+	// Capturing Mouse at OS level should not be necessary, if we just rely on polling instead of
+	// windows messages bullshit.
+	//::SetCapture(g_hWnd);
+}
+
+void Host_ReleaseMouse()
+{
+	//::ReleaseCapture();
+}
+
+// returns FALSE if the mouse info is stale for some reason (determined by host OS).
+// Staleness occurs when the host mouse polling logic returns an error, which may indicate
+// that no mouse is available, or that its messages have been commandeered by some means.
+
+bool Mouse_HasValidPos()
+{
+	return s_HasValidMouseInfo;
+}
+
+int2 Mouse_GetClientPos()
+{
+	return s_CurrentKnownMousePos;
 }
