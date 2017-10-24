@@ -2,6 +2,10 @@
 
 #include "x-types.h"
 
+union float2;
+union float4;
+union int2;
+union int4;
 
 // non MSVC and an old MSVC don't have _mm_undefined_*.
 // (gsgdb needs to be built with vs2010, because gtkmm libraries were with them...)
@@ -443,11 +447,29 @@ union float2 {
 
 	u64			_i64val;
 
-	__ai bool operator==( const float2& right ) const	{ return _i64val == right._i64val; }
-	__ai bool operator!=( const float2& right ) const	{ return _i64val != right._i64val; }
+	__ai bool		operator==(const float2& right)		const		{ return _i64val == right._i64val; }
+	__ai bool		operator!=(const float2& right)		const		{ return _i64val != right._i64val; }
+	__ai bool		operator<=(const float2& right)		const		{ return  x <= right.x && y <= right.y; }
+	__ai bool		operator>=(const float2& right)		const		{ return  x >= right.x && y >= right.y; }
 
-	__ai float2& operator+=( const float2& src )		{ x += src.x; y += src.y; return *this; };
-	__ai float2& operator-=( const float2& src )		{ x -= src.x; y -= src.y; return *this; };
+	__ai bool		operator==(float right)				const		{ return  x == right && y == right; }
+	__ai bool		operator!=(float right)				const		{ return  x != right || y != right; }
+	__ai bool		operator<=(float right)				const		{ return  x <= right && y <= right; }
+	__ai bool		operator>=(float right)				const		{ return  x >= right && y >= right; }
+
+	__ai float2		operator+(float src)				const		{ return { x + src, y + src }; }
+	__ai float2		operator-(float src)				const		{ return { x - src, y - src }; }
+	__ai float2		operator/(float src)				const		{ return { x / src, y / src }; }
+	__ai float2		operator*(float src)				const		{ return { x * src, y * src }; }
+
+	__ai float2		operator+(const float2& src)		const		{ return { x + src.x, y + src.y }; }
+	__ai float2		operator-(const float2& src)		const		{ return { x - src.x, y - src.y }; }
+	__ai float2		operator/(const float2& src)		const		{ return { x / src.x, y / src.y }; }
+	__ai float2		operator*(const float2& src)		const		{ return { x * src.x, y * src.y }; }
+
+	__ai float2&	operator+=(const float2& src )		{ x += src.x; y += src.y; return *this; }
+	__ai float2&	operator-=(const float2& src )		{ x -= src.x; y -= src.y; return *this; }
+
 };
 
 union float4 {
@@ -465,6 +487,7 @@ union float4 {
 	struct {
 		float	f[4];
 	};
+
 	__m128	q;
 
 	__ai operator __m128&			()			{ return q;			}
@@ -472,11 +495,29 @@ union float4 {
 	__ai operator u128				() const	{ return {{ q }};	}
 	__ai operator const __m128&		() const	{ return q;			}
 
-	__ai bool operator==( const float4& right ) const	{ return  rawflt4_cmp_eq(q, right.q); }
-	__ai bool operator!=( const float4& right ) const	{ return !rawflt4_cmp_eq(q, right.q); }
+	__ai bool		operator==(const float4& right)	const		{ return  rawflt4_cmp_eq(q, right.q); }
+	__ai bool		operator!=(const float4& right)	const		{ return !rawflt4_cmp_eq(q, right.q); }
 
-	__ai float4& operator+=( const float4& src )		{ i_addps(q, q, src.q); return *this; };
-	__ai float4& operator-=( const float4& src )		{ i_subps(q, q, src.q); return *this; };
+	__ai float4		operator+(const float4& src)	const		{ return (float4&)_mm_add_ps(q, src.q); }
+	__ai float4		operator-(const float4& src)	const		{ return (float4&)_mm_sub_ps(q, src.q); }
+	__ai float4		operator/(const float4& src)	const		{ return (float4&)_mm_div_ps(q, src.q); }
+	__ai float4		operator*(const float4& src)	const		{ return (float4&)_mm_mul_ps(q, src.q); }
+
+	__ai float4		operator+(const float& src)		const		{ return (float4&)_mm_add_ps(q, _mm_set1_ps(src)); }
+	__ai float4		operator-(const float& src)		const		{ return (float4&)_mm_sub_ps(q, _mm_set1_ps(src)); }
+	__ai float4		operator/(const float& src)		const		{ return (float4&)_mm_div_ps(q, _mm_set1_ps(src)); }
+	__ai float4		operator*(const float& src)		const		{ return (float4&)_mm_mul_ps(q, _mm_set1_ps(src)); }
+
+	__ai float4&	operator+=(const float4& src)				{ i_addps(q, q, src.q); return *this; }
+	__ai float4&	operator-=(const float4& src)				{ i_subps(q, q, src.q); return *this; }
+	__ai float4&	operator/=(const float4& src)				{ i_divps(q, q, src.q); return *this; }
+	__ai float4&	operator*=(const float4& src)				{ i_mulps(q, q, src.q); return *this; }
+
+	__ai float4&	operator+=(const float& src)				{ i_addps(q, q, _mm_set1_ps(src)); return *this; }
+	__ai float4&	operator-=(const float& src)				{ i_subps(q, q, _mm_set1_ps(src)); return *this; }
+	__ai float4&	operator/=(const float& src)				{ i_divps(q, q, _mm_set1_ps(src)); return *this; }
+	__ai float4&	operator*=(const float& src)				{ i_mulps(q, q, _mm_set1_ps(src)); return *this; }
+
 };
 
 union int2 {
@@ -494,10 +535,27 @@ union int2 {
 
 	u64			_i64val;
 
+
+	explicit operator float2() const;
+
 	// note: intentionally omitted u64 operator assignment.
 
-	__ai bool operator==( const int2& right ) const	{ return _i64val == right._i64val; }
-	__ai bool operator!=( const int2& right ) const	{ return _i64val != right._i64val; }
+	__ai bool operator==(const int2& right)		const		{ return _i64val == right._i64val; }
+	__ai bool operator!=(const int2& right)		const		{ return _i64val != right._i64val; }
+
+	__ai int2& operator+=(const int2& src)					{ x += src.x; y += src.y; return *this; }
+	__ai int2& operator-=(const int2& src)					{ x -= src.x; y -= src.y; return *this; }
+
+	__ai int2 operator+(const int2& src)		const		{ return { x + src.x, y + src.y }; }
+	__ai int2 operator-(const int2& src)		const		{ return { x - src.x, y - src.y }; }
+	__ai int2 operator/(const int2& src)		const		{ return { x / src.x, y / src.y }; }
+	__ai int2 operator*(const int2& src)		const		{ return { x * src.x, y * src.y }; }
+
+	__ai int2 operator+(int src)				const		{ return { x + src, y + src }; }
+	__ai int2 operator-(int src)				const		{ return { x - src, y - src }; }
+	__ai int2 operator/(int src)				const		{ return { x / src, y / src }; }
+	__ai int2 operator*(int src)				const		{ return { x * src, y * src }; }
+
 };
 
 union int4 {
@@ -524,6 +582,11 @@ union int4 {
 	__ai bool operator==( const u128& right ) const	{ return q == right; }
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
+
+inline int2::operator float2() const { return float2 { (float)x, (float)y }; }
+
+//explicit float2 (const int2& src) { x  = (float) src.x;  y  = (float) src.y; }
+//explicit float4 (const int4& src) {  }
 
 
 static_assert( sizeof(u128) == 16, "A u128 is is not 128 bits long is scarcely a u128 at all!" );
