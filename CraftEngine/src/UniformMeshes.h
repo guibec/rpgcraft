@@ -22,12 +22,11 @@ extern void UniformMeshes_InitGlobalResources();
 using DirectX::XMMATRIX;
 using DirectX::XMVectorSet;
 using DirectX::XMMatrixLookAtLH;
+using DirectX::XMMatrixOrthographicLH;
 
 struct GPU_ViewCameraConsts
 {
 	XMMATRIX View;
 	XMMATRIX Projection;
 };
-
-extern XMMATRIX         g_Projection;
 
