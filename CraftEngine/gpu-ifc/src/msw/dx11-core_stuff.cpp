@@ -34,7 +34,8 @@ static const int BackBufferCount = 3;
 extern HINSTANCE		g_hInst;
 extern HWND				g_hWnd;
 
-int2 g_backbuffer_size_pix = {0, 0};
+int2	g_backbuffer_size_pix = {0, 0};
+float	g_backbuffer_aspect_ratio = 1.0f;
 
 
 static ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
@@ -345,6 +346,8 @@ void dx11_InitDevice()
 		rc.bottom - rc.top
 	};
 
+	g_backbuffer_aspect_ratio = float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
+
 	UINT createDeviceFlags = 0;
 #ifdef _DEBUG
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -400,7 +403,7 @@ void dx11_InitDevice()
 		0,					//INT DepthBias;
 		0.0f,				//FLOAT DepthBiasClamp;
 		0.0f,				//FLOAT SlopeScaledDepthBias;
-		TRUE,				//BOOL DepthClipEnable;
+		FALSE,				//BOOL DepthClipEnable;
 		FALSE,				//BOOL ScissorEnable;
 		TRUE,				//BOOL MultisampleEnable;
 		FALSE				//BOOL AntialiasedLineEnable;
@@ -545,14 +548,6 @@ void dx11_InitDevice()
 	// Create the sampler
 	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
 	bug_on(FAILED(hr));
-
-	XMVECTOR Eye	= XMVectorSet( 0.0f, 1.0f, -5.0f, 0.0f );
-	XMVECTOR At		= XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
-	XMVECTOR Up		= XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
-
-	//g_World			= XMMatrixIdentity();
-	//g_View			= XMMatrixLookAtLH( Eye, At, Up );
-	g_Projection	= XMMatrixPerspectiveFovLH( XM_PIDIV2, float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y), 0.01f, 100.0f );
 
 	//dx11_CreateDepthStencil();
 

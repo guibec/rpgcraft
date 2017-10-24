@@ -167,9 +167,12 @@ void ViewCamera::Reset()
 	// Eye and At should move laterally together so that the eye is always looking straight down
 	// at a specific point on the map.
 
-	m_Eye	= { 0.0f, 0.5f, -6.0f, 0.0f };
-	m_At	= { 0.0f, 0.5f,  0.0f, 0.0f };
+	m_Eye	= { 0.0f, 0.5f, -1.0f, 0.0f };
+	m_At	= { 0.0f, 0.5f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
+
+	m_aspect				= g_backbuffer_aspect_ratio;
+	m_frustrum_in_tiles		= {14 * m_aspect, 14};
 }
 
 // Eye and At should move laterally together so that the eye is always looking straight down
@@ -178,8 +181,24 @@ void ViewCamera::Reset()
 // UP : X is angle.  Y is sign-indicator only (flip axis) --  Z is unused?
 
 void ViewCamera::Tick() {
+	bool usePerspective = 0;
+
+	m_Eye.z				= usePerspective ? -4.0f : -4.0f;
 	m_Consts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
-	m_Consts.Projection = g_Projection;
+	//m_Consts.Projection = XMMatrixPerspectiveFovLH( XM_PIDIV2, m_aspect, 0.01f, 1000.0f );
+
+	if (usePerspective) {
+		// the frustrum is relative to the minimum Z.
+		//  * Min Z influences both perspective and clipping
+		//  * Max Z influences clipping behavior only, has no effect on perspective
+		//  * Frustrum scaled according to MinZ
+		float minZ = 0.010f;
+		float frustrumscale = fabsf(m_At.z - m_Eye.z);
+		m_Consts.Projection = XMMatrixPerspectiveLH (m_frustrum_in_tiles.x*minZ/frustrumscale, m_frustrum_in_tiles.y*minZ/frustrumscale, minZ, 1000.0f);
+	}
+	else {
+		m_Consts.Projection = XMMatrixOrthographicLH(m_frustrum_in_tiles.x, m_frustrum_in_tiles.y, 0.01f, 1000.0f);
+	}
 }
 
 void ViewCamera::SetEyeAt(const float2& xy)

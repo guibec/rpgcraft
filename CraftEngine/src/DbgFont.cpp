@@ -17,6 +17,9 @@
 
 #include <vector>
 
+#include <DirectXMath.h>
+
+
 // Debug font uses a simplified version of tile rendering.
 // A draw command is submitted with a grid of character information.
 // The character IDs are used to look up the font information from a texture.
@@ -226,16 +229,16 @@ void DbgFont_LoadInit()
 
 	dx11_CreateStaticMesh(s_mesh_anychar,	g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 
-	u128	m_Eye;
-	u128	m_At;
-	u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
-
-	m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
-	m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
-	m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
-
-	m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
-	m_ViewConsts.Projection = g_Projection;
+	//u128	m_Eye;
+	//u128	m_At;
+	//u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
+	//
+	//m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
+	//m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
+	//m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+	//
+	//m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
+	//m_ViewConsts.Projection = XMMatrixOrthographicLH(2.0f*g_backbuffer_aspect_ratio, 2.0f, 0.0001f, 1000.0f);
 
 	s_canRender = 1;
 }

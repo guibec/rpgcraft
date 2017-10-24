@@ -48,10 +48,12 @@ void PlayerSprite::Tick(int order)
 	PadState state;
 	KPad_GetState(state);
 
-	g_ViewCamera.SetEyeAt( {
-		g_ViewCamera.m_Eye.x + (state.axis.RStick_X * 0.05f),
-		g_ViewCamera.m_Eye.y + (state.axis.RStick_Y * 0.05f),
-	} );
+	//g_ViewCamera.SetEyeAt( {
+	//	g_ViewCamera.m_Eye.x + (state.axis.RStick_X * 0.05f),
+	//	g_ViewCamera.m_Eye.y + (state.axis.RStick_Y * 0.05f),
+	//} );
+
+	g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f };
 
 	position += { state.axis.LStick_X * 0.05f,
 				  state.axis.LStick_Y * 0.05f };

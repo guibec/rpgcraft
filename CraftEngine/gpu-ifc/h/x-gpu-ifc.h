@@ -285,3 +285,4 @@ extern void					dx11_InputLayoutCache_DisposeAll();
 extern bool					g_gpu_ForceWireframe;
 extern GPU_RenderTarget		g_gpu_BackBuffer;
 extern int2					g_backbuffer_size_pix;
+extern float				g_backbuffer_aspect_ratio;

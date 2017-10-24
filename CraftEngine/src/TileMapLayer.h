@@ -11,6 +11,8 @@ public:
 	float4					m_Eye;
 	float4					m_At;
 	float4					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
+	float2					m_frustrum;
+	float					m_aspect;
 	GPU_ViewCameraConsts	m_Consts;
 
 	ViewCamera() {
