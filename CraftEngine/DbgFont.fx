@@ -74,10 +74,10 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 	// black box data to me.  --jstine
 
 	outp.Pos	 = float4(input.Pos, 1.0f);
-	outp.Pos.xy += -1.0f;					// setup to render from -1.0 to 1.0
+	outp.Pos.xy += -0.5f;					// setup for scaling with 0,0 as origin.
 	outp.Pos.xy *= incr_xy;					// scale to correct size
 
-	outp.Pos.xy += incr_xy;					// orientate according to upper-left corner of tile
+	outp.Pos.xy += (incr_xy/2);				// re-orientate according to upper-left corner of tile
 	outp.Pos.xy += ProjectionXY;			// translate into sheet display position
 	outp.Pos.xy += disp_xy;					// translate into tile-on-sheet display position
 	outp.Pos.y	*= -1.0f;					// +Y is UP!
@@ -87,7 +87,7 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 	float2  incr_set_uv = 1.0f / SrcTexSizeInTiles;
 	uint2   tiletex_uv  = uint2( input.TileID % SrcTexSizeInTiles.x, 0);
 	outp.UV		 = input.UV * SrcTexTileSizeUV;
-	outp.UV	    += float2(tiletex_uv * incr_set_uv);
+	outp.UV	    += float2(tiletex_uv) * incr_set_uv;
 
 	// Color & Lighting Calculation  (not implemented)
 	outp.Color	= float4(1.0f, 0.0f, 0.0f, 1.0f);
