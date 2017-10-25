@@ -19,7 +19,6 @@
 
 #include <DirectXMath.h>
 
-
 // Debug font uses a simplified version of tile rendering.
 // A draw command is submitted with a grid of character information.
 // The character IDs are used to look up the font information from a texture.
@@ -40,263 +39,6 @@
 //   * DbgFont is not read-only during game Render stage - Information can be written
 //     to a given font sheet at any time during both Logic and Render pipelines.
 
-static GPU_TextureResource2D	tex_8x8;
-static GPU_ShaderVS				s_ShaderVS_DbgFont;
-static GPU_ShaderFS				s_ShaderFS_DbgFont;
-static GPU_VertexBuffer			s_mesh_anychar;
-static GPU_VertexBuffer			s_mesh_worldViewTileID;
-static GPU_ConstantBuffer		s_cnstbuf_Projection;
-static GPU_ConstantBuffer		s_cnstbuf_DbgFontSheet;
-static GPU_IndexBuffer			s_idx_UniformQuad;
-
-static GPU_ViewCameraConsts		m_ViewConsts;
-
-typedef std::vector<DbgFontDrawItem> DbgFontDrawItemContainer;
-
-DbgFontDrawItemContainer		g_dbgFontDrawList;
-
-DbgFontSheet					g_ConsoleSheet;
-DbgFontSheet					g_DbgFontOverlay;
-bool							s_canRender = false;
-
-void DbgFontSheet::AllocSheet(int2 sizeInPix)
-{
-	size.x		= sizeInPix.x	/ font.size.x;
-	size.y		= sizeInPix.y	/ font.size.y;
-	charmap		= (DbgChar*) xRealloc(charmap,  size.y * size.x * sizeof(DbgChar));
-	colormap	= (DbgColor*)xRealloc(colormap, size.y * size.x * sizeof(DbgColor));
-
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ));
-	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor));
-}
-
-template< typename T >
-void xMemSetObjs(T* dest, const T& data, int sizeInInstances)
-{
-	for (int i=0; i<sizeInInstances; ++i) {
-		dest[i] = data;
-	}
-}
-
-void DbgFontSheet::SceneLogic()
-{
-	xMemSetObjs (charmap,   { 0 },							size.y * size.x);
-	xMemSetObjs	(colormap, {{ 1.0f, 0.5f, 0.5f, 0.5f }},	size.y * size.x);
-}
-
-void DbgFontSheet::Write(int x, int y, const xString& msg)
-{
-	int pos = (y * size.x) + x;
-	for (int i=0; i<msg.GetLength(); ++i) {
-		g_DbgFontOverlay.charmap[pos+i] = (u8)msg[i];
-	}
-}
-
-
-template< typename T >
-void table_get_xy(T& dest, LuaTableScope& table)
-{
-	auto xs = table.get_s32("x");
-	auto ys = table.get_s32("y");
-
-	if (xs.isnil()) { xs = table.get_s32(1); }
-	if (ys.isnil()) { ys = table.get_s32(2); }
-
-	if (xs.isnil() || ys.isnil()) {
-		bug_qa("Invalid table layout for expected Int2 parameter.");
-		// Todo: expose a ThrowError that pushes message onto Lua stack and invokes longjmp.
-		// Pre-req: must have a single global lua state for all scene magic.
-		//ThrowError
-	}
-
-	dest.x = xs;
-	dest.y = ys;
-}
-
-template< typename T >
-bool table_get_xy(T& dest, LuaTableScope& table, const char* subtable)
-{
-	bug_on(!subtable);
-	if (auto& subtab = table.get_table(subtable)) {
-		table_get_xy(dest, subtab);
-		return true;
-	}
-	return false;
-}
-
-static void blitToTexture(xBitmapData& dest);
-static GPU_InputDesc InputLayout_DbgFont;
-
-void DbgFont_MakeVertexLayout()
-{
-	xMemZero(InputLayout_DbgFont);
-	InputLayout_DbgFont.AddVertexSlot( {
-		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
-		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
-	});
-
-	InputLayout_DbgFont.AddInstanceSlot( {
-		{ "TileID", GPU_ResourceFmt_R32_UINT }
-	});
-
-	InputLayout_DbgFont.AddInstanceSlot( {
-		{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
-	});
-}
-
-void DbgFont_LoadInit()
-{
-	auto& script = g_scriptEnv;
-
-	s_canRender = 0;
-
-	// TODO:
-	//  What might be nice here is to build all the known tables and populate them with defaults during
-	//  a lua-environment-init step.  Members can be given metadata comments, if desired.  Once populated,
-	//  the tables can be displayed using Lua Inspect module (should be included in the repo), eg:
-    //
-	//     $ print(inspect(DbgConsole))
-	//
-	//  ... which neatly displays all members supported by the game engine, including metadata comments,
-	//  if provided.
-	//
-	//  Likewise, the console itself can support TAB autocompletion based on table inspection.  Would be
-	//  super-cool, right?
-	//
-	// Drawbacks:
-	//   * inspect(table) is not available from external editors.
-	//       Workaround: full inspection dump can be written as plaintext or JSON when process starts, and
-	//       can be used at a minimum provide a copy/paste template for setting up assignment lists for data-
-	//       driven structures.  Advanced integration could include autocomplete -- minimal usefulness for
-	//       data-driven things, but higher usefulness for function-driven things.
-	//
-
-	const char* dbgConTextureFile	= "..\\8x8font.png";
-	g_ConsoleSheet.font.size		= { 6, 8 };
-	g_DbgFontOverlay.font.size		= { 6, 8 };
-	int2 consoleSizeInPix			= { g_backbuffer_size_pix.x * 0.75f,	g_backbuffer_size_pix.y * 0.75f };
-	int2 overlaySizeInPix			= { g_backbuffer_size_pix.x / 2,		g_backbuffer_size_pix.y / 2 };
-
-	lua_string consoleShaderFile;
-	lua_string consoleShaderEntryVS;
-	lua_string consoleShaderEntryFS;
-
-	script.LoadModule("scripts/DbgConsole.lua");
-
-	if (script.HasError()) {
-		bug("Unhandled error in DbgFont?");
-	}
-
-	if (auto& dbgtable = script.glob_open_table("DbgConsole"))
-	{
-		dbgConTextureFile = dbgtable.get_string("Texture");
-		table_get_xy(g_ConsoleSheet.font.size,	dbgtable, "CharSize");
-		table_get_xy(consoleSizeInPix,			dbgtable, "SheetSize");
-
-		if (auto& shadertab = dbgtable.get_table("Shader")) {
-			consoleShaderFile		= shadertab.get_string("Filename");
-			consoleShaderEntryVS	= shadertab.get_string("VS");
-			consoleShaderEntryFS	= shadertab.get_string("FS");
-
-			if (consoleShaderFile.isnil()) {
-				if (1)								{ consoleShaderFile		= shadertab.get_string(1); }
-				if (consoleShaderEntryVS.isnil())	{ consoleShaderEntryVS	= shadertab.get_string(2); }
-				if (consoleShaderEntryFS.isnil())	{ consoleShaderEntryFS	= shadertab.get_string(3); }
-			}
-		}
-	}
-
-
-	if (1) {
-		xBitmapData  pngtex;
-		//png_LoadFromFile(pngtex, dbgConTextureFile);
-		blitToTexture(pngtex);
-		dx11_CreateTexture2D(tex_8x8, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
-	}
-
-	g_ConsoleSheet.font.texture		= &tex_8x8;
-	g_ConsoleSheet.AllocSheet(consoleSizeInPix);
-
-	g_DbgFontOverlay.font.texture	= &tex_8x8;
-	g_DbgFontOverlay.AllocSheet(overlaySizeInPix);
-
-	dx11_LoadShaderVS(s_ShaderVS_DbgFont, consoleShaderFile, consoleShaderEntryVS);
-	dx11_LoadShaderFS(s_ShaderFS_DbgFont, consoleShaderFile, consoleShaderEntryFS);
-
-	dx11_CreateConstantBuffer(s_cnstbuf_Projection,		sizeof(m_ViewConsts));
-	dx11_CreateConstantBuffer(s_cnstbuf_DbgFontSheet,	sizeof(g_DbgFontOverlay.gpu.consts));
-	dx11_CreateIndexBuffer(s_idx_UniformQuad, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
-
-	dx11_CreateStaticMesh(s_mesh_anychar,	g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
-
-	//u128	m_Eye;
-	//u128	m_At;
-	//u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
-	//
-	//m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
-	//m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
-	//m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
-	//
-	//m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
-	//m_ViewConsts.Projection = XMMatrixOrthographicLH(2.0f*g_backbuffer_aspect_ratio, 2.0f, 0.0001f, 1000.0f);
-
-	s_canRender = 1;
-}
-
-void DbgFont_SceneBegin()
-{
-	g_DbgFontOverlay	.SceneLogic();
-	g_ConsoleSheet		.SceneLogic();
-}
-
-void DbgFont_SceneRender()
-{
-	if (!s_canRender) return;
-
-	// Update dynamic vertex buffers.
-
-	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
-
-	g_DbgFontOverlay.Write(0,0, "TESTING");
-	//for(int i=0; i<overlayMeshSize; ++i) {
-	//	g_DbgFontOverlay.charmap[i] = 'A' + (i % 20);
-	//}
-
-	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
-	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
-
-	g_DbgFontOverlay.gpu.consts.SrcTexTileSizeUV	= vFloat2(1.0f / 129, 1.0f);
-	g_DbgFontOverlay.gpu.consts.SrcTexSizeInTiles	= vInt2(129,1);
-	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
-	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
-	g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.0f, 0.0f);
-	g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(1.0f, 1.0f);
-	dx11_UpdateConstantBuffer(s_cnstbuf_Projection,		&m_ViewConsts);
-	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet,	&g_DbgFontOverlay.gpu.consts);
-
-	// Render!
-
-	DbgFont_MakeVertexLayout();
-	dx11_SetInputLayout(InputLayout_DbgFont);
-
-	dx11_BindShaderVS(s_ShaderVS_DbgFont);
-	dx11_BindShaderFS(s_ShaderFS_DbgFont);
-
-	dx11_BindShaderResource(tex_8x8, 0);
-
-	dx11_SetVertexBuffer(s_mesh_anychar,					0, sizeof(g_mesh_UniformQuad[0]), 0);
-	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_charmap,	1, sizeof(DbgChar),  0);
-	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_rgbamap,	2, sizeof(DbgColor), 0);
-
-	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
-
-	dx11_BindConstantBuffer(s_cnstbuf_Projection,	0);
-	dx11_BindConstantBuffer(s_cnstbuf_DbgFontSheet, 1);
-	dx11_SetIndexBuffer(s_idx_UniformQuad, 16, 0);
-	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
-	dx11_DrawIndexedInstanced(6, overlayMeshSize, 0, 0, 0);
-
-}
 
 // ======================================================================================================
 // Font Details:
@@ -1322,4 +1064,258 @@ static void blitToTexture(xBitmapData& dest)
 			}
 		}
 	}
+}
+
+static GPU_TextureResource2D	tex_6x8;
+static GPU_ShaderVS				s_ShaderVS_DbgFont;
+static GPU_ShaderFS				s_ShaderFS_DbgFont;
+static GPU_VertexBuffer			s_mesh_anychar;
+static GPU_VertexBuffer			s_mesh_worldViewTileID;
+static GPU_ConstantBuffer		s_cnstbuf_Projection;
+static GPU_ConstantBuffer		s_cnstbuf_DbgFontSheet;
+static GPU_IndexBuffer			s_idx_UniformQuad;
+
+static GPU_ViewCameraConsts		m_ViewConsts;
+
+typedef std::vector<DbgFontDrawItem> DbgFontDrawItemContainer;
+
+DbgFontDrawItemContainer		g_dbgFontDrawList;
+
+DbgFontSheet					g_ConsoleSheet;
+DbgFontSheet					g_DbgFontOverlay;
+bool							s_canRender = false;
+
+void DbgFontSheet::AllocSheet(int2 sizeInPix)
+{
+	size.x		= sizeInPix.x	/ font.size.x;
+	size.y		= sizeInPix.y	/ font.size.y;
+	charmap		= (DbgChar*) xRealloc(charmap,  size.y * size.x * sizeof(DbgChar));
+	colormap	= (DbgColor*)xRealloc(colormap, size.y * size.x * sizeof(DbgColor));
+
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ));
+	dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor));
+}
+
+template< typename T >
+void xMemSetObjs(T* dest, const T& data, int sizeInInstances)
+{
+	for (int i=0; i<sizeInInstances; ++i) {
+		dest[i] = data;
+	}
+}
+
+void DbgFontSheet::SceneLogic()
+{
+	xMemSetObjs (charmap,   { 0 },							size.y * size.x);
+	xMemSetObjs	(colormap, {{ 1.0f, 0.5f, 0.5f, 0.5f }},	size.y * size.x);
+}
+
+void DbgFontSheet::Write(int x, int y, const xString& msg)
+{
+	int pos = (y * size.x) + x;
+	for (int i=0; i<msg.GetLength(); ++i) {
+		g_DbgFontOverlay.charmap[pos+i] = (u8)msg[i];
+	}
+}
+
+
+template< typename T >
+void table_get_xy(T& dest, LuaTableScope& table)
+{
+	auto xs = table.get_s32("x");
+	auto ys = table.get_s32("y");
+
+	if (xs.isnil()) { xs = table.get_s32(1); }
+	if (ys.isnil()) { ys = table.get_s32(2); }
+
+	if (xs.isnil() || ys.isnil()) {
+		bug_qa("Invalid table layout for expected Int2 parameter.");
+		// Todo: expose a ThrowError that pushes message onto Lua stack and invokes longjmp.
+		// Pre-req: must have a single global lua state for all scene magic.
+		//ThrowError
+	}
+
+	dest.x = xs;
+	dest.y = ys;
+}
+
+template< typename T >
+bool table_get_xy(T& dest, LuaTableScope& table, const char* subtable)
+{
+	bug_on(!subtable);
+	if (auto& subtab = table.get_table(subtable)) {
+		table_get_xy(dest, subtab);
+		return true;
+	}
+	return false;
+}
+
+static GPU_InputDesc InputLayout_DbgFont;
+
+void DbgFont_MakeVertexLayout()
+{
+	xMemZero(InputLayout_DbgFont);
+	InputLayout_DbgFont.AddVertexSlot( {
+		{ "POSITION", GPU_ResourceFmt_R32G32_FLOAT	},
+		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT	}
+	});
+
+	InputLayout_DbgFont.AddInstanceSlot( {
+		{ "TileID", GPU_ResourceFmt_R32_UINT }
+	});
+
+	InputLayout_DbgFont.AddInstanceSlot( {
+		{ "COLOR",  GPU_ResourceFmt_R32G32B32A32_FLOAT }
+	});
+}
+
+void DbgFont_LoadInit()
+{
+	auto& script = g_scriptEnv;
+
+	s_canRender = 0;
+
+	// TODO:
+	//  What might be nice here is to build all the known tables and populate them with defaults during
+	//  a lua-environment-init step.  Members can be given metadata comments, if desired.  Once populated,
+	//  the tables can be displayed using Lua Inspect module (should be included in the repo), eg:
+    //
+	//     $ print(inspect(DbgConsole))
+	//
+	//  ... which neatly displays all members supported by the game engine, including metadata comments,
+	//  if provided.
+	//
+	//  Likewise, the console itself can support TAB autocompletion based on table inspection.  Would be
+	//  super-cool, right?
+	//
+	// Drawbacks:
+	//   * inspect(table) is not available from external editors.
+	//       Workaround: full inspection dump can be written as plaintext or JSON when process starts, and
+	//       can be used at a minimum provide a copy/paste template for setting up assignment lists for data-
+	//       driven structures.  Advanced integration could include autocomplete -- minimal usefulness for
+	//       data-driven things, but higher usefulness for function-driven things.
+	//
+
+	g_ConsoleSheet.font.size		= { 6, 8 };
+	g_DbgFontOverlay.font.size		= { 6, 8 };
+	int2 consoleSizeInPix			= { g_backbuffer_size_pix.x * 0.75f,	g_backbuffer_size_pix.y * 0.75f };
+	int2 overlaySizeInPix			= { g_backbuffer_size_pix.x / 2,		g_backbuffer_size_pix.y / 2 };
+
+	lua_string consoleShaderFile;
+	lua_string consoleShaderEntryVS;
+	lua_string consoleShaderEntryFS;
+
+	script.LoadModule("scripts/DbgConsole.lua");
+
+	if (script.HasError()) {
+		bug("Unhandled error in DbgFont?");
+	}
+
+	if (auto& dbgtable = script.glob_open_table("DbgConsole"))
+	{
+		table_get_xy(g_ConsoleSheet.font.size,	dbgtable, "CharSize");
+		table_get_xy(consoleSizeInPix,			dbgtable, "SheetSize");
+
+		if (auto& shadertab = dbgtable.get_table("Shader")) {
+			consoleShaderFile		= shadertab.get_string("Filename");
+			consoleShaderEntryVS	= shadertab.get_string("VS");
+			consoleShaderEntryFS	= shadertab.get_string("FS");
+
+			if (consoleShaderFile.isnil()) {
+				if (1)								{ consoleShaderFile		= shadertab.get_string(1); }
+				if (consoleShaderEntryVS.isnil())	{ consoleShaderEntryVS	= shadertab.get_string(2); }
+				if (consoleShaderEntryFS.isnil())	{ consoleShaderEntryFS	= shadertab.get_string(3); }
+			}
+		}
+	}
+
+
+	if (1) {
+		xBitmapData  pngtex;
+		blitToTexture(pngtex);
+		dx11_CreateTexture2D(tex_6x8, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+	}
+
+	g_ConsoleSheet.font.texture		= &tex_6x8;
+	g_ConsoleSheet.AllocSheet(consoleSizeInPix);
+
+	g_DbgFontOverlay.font.texture	= &tex_6x8;
+	g_DbgFontOverlay.AllocSheet(overlaySizeInPix);
+
+	dx11_LoadShaderVS(s_ShaderVS_DbgFont, consoleShaderFile, consoleShaderEntryVS);
+	dx11_LoadShaderFS(s_ShaderFS_DbgFont, consoleShaderFile, consoleShaderEntryFS);
+
+	dx11_CreateConstantBuffer(s_cnstbuf_Projection,		sizeof(m_ViewConsts));
+	dx11_CreateConstantBuffer(s_cnstbuf_DbgFontSheet,	sizeof(g_DbgFontOverlay.gpu.consts));
+	dx11_CreateIndexBuffer(s_idx_UniformQuad, g_ind_UniformQuad, sizeof(g_ind_UniformQuad));
+
+	dx11_CreateStaticMesh(s_mesh_anychar,	g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
+
+	//u128	m_Eye;
+	//u128	m_At;
+	//u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
+	//
+	//m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
+	//m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
+	//m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+	//
+	//m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
+	//m_ViewConsts.Projection = XMMatrixOrthographicLH(2.0f*g_backbuffer_aspect_ratio, 2.0f, 0.0001f, 1000.0f);
+
+	s_canRender = 1;
+}
+
+void DbgFont_SceneBegin()
+{
+	g_DbgFontOverlay	.SceneLogic();
+	g_ConsoleSheet		.SceneLogic();
+}
+
+void DbgFont_SceneRender()
+{
+	if (!s_canRender) return;
+
+	// Update dynamic vertex buffers.
+
+	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
+
+	g_DbgFontOverlay.Write(0,0, "TESTING");
+	//for(int i=0; i<overlayMeshSize; ++i) {
+	//	g_DbgFontOverlay.charmap[i] = 'A' + (i % 20);
+	//}
+
+	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
+	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
+
+	g_DbgFontOverlay.gpu.consts.SrcTexTileSizeUV	= vFloat2(1.0f / CharacterCodeCount, 1.0f);
+	g_DbgFontOverlay.gpu.consts.SrcTexSizeInTiles	= vInt2(CharacterCodeCount,1);
+	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
+	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
+	g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.0f, 0.0f);
+	g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(1.0f, 1.0f);
+	dx11_UpdateConstantBuffer(s_cnstbuf_Projection,		&m_ViewConsts);
+	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet,	&g_DbgFontOverlay.gpu.consts);
+
+	// Render!
+
+	DbgFont_MakeVertexLayout();
+	dx11_SetInputLayout(InputLayout_DbgFont);
+
+	dx11_BindShaderVS(s_ShaderVS_DbgFont);
+	dx11_BindShaderFS(s_ShaderFS_DbgFont);
+
+	dx11_BindShaderResource(tex_6x8, 0);
+
+	dx11_SetVertexBuffer(s_mesh_anychar,					0, sizeof(g_mesh_UniformQuad[0]), 0);
+	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_charmap,	1, sizeof(DbgChar),  0);
+	dx11_SetVertexBuffer(g_DbgFontOverlay.gpu.mesh_rgbamap,	2, sizeof(DbgColor), 0);
+
+	//dx11_SetVertexBuffer(g_mesh_worldViewColor, 2, sizeof(g_ViewUV[0]), 0);
+
+	dx11_BindConstantBuffer(s_cnstbuf_Projection,	0);
+	dx11_BindConstantBuffer(s_cnstbuf_DbgFontSheet, 1);
+	dx11_SetIndexBuffer(s_idx_UniformQuad, 16, 0);
+	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
+	dx11_DrawIndexedInstanced(6, overlayMeshSize, 0, 0, 0);
+
 }
