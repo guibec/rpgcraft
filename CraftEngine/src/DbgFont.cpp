@@ -88,7 +88,7 @@ void DbgFontSheet::Write(int x, int y, const xString& msg)
 {
 	int pos = (y * size.x) + x;
 	for (int i=0; i<msg.GetLength(); ++i) {
-		g_DbgFontOverlay.charmap[pos+i] = msg[i];
+		g_DbgFontOverlay.charmap[pos+i] = (u8)msg[i];
 	}
 }
 
@@ -1448,7 +1448,7 @@ static const uint8_t font[][BytesPerGlyph] =
 		0x18, // ...**...
 		0x18, // ...**...
 	},
-	{ // 144
+	{ // 144  /x90
 		0x07, // .....***
 		0x3c, // ..****..
 		0x60, // .**.....
@@ -1488,7 +1488,7 @@ static const uint8_t font[][BytesPerGlyph] =
 		0x60, // .**.....
 		0xff, // ********
 	},
-	{ // 148
+	{ // 148  /x94
 		0xc0, // **......
 		0x78, // .****...
 		0x0c, // ....**..
@@ -1547,7 +1547,7 @@ static void blitToTexture(xBitmapData& dest)
 	for (int ch=0; ch<HighCharacterCode; ++ch) {
 		for (int y=0; y<8; ++y) {
 			for (int bit=0; bit<8; ++bit) {
-				u32 isCovered = ((font[ch][y] >> (8-bit)) & 1) ? 0xff : 0;
+				u32 isCovered = ((font[ch][y] >> (7-bit)) & 1) ? 0xff : 0;
 				destPtr[(ch*8) + (y * texdim.x) + bit] = (isCovered <<  0) | (isCovered <<  8) | (isCovered << 16) | (isCovered << 24);
 			}
 		}
