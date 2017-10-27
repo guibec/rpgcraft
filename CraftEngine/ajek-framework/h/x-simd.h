@@ -447,6 +447,8 @@ union float2 {
 
 	u64			_i64val;
 
+	explicit operator int2() const;
+
 	__ai bool		operator==(const float2& right)		const		{ return _i64val == right._i64val; }
 	__ai bool		operator!=(const float2& right)		const		{ return _i64val != right._i64val; }
 	__ai bool		operator<=(const float2& right)		const		{ return  x <= right.x && y <= right.y; }
@@ -467,8 +469,15 @@ union float2 {
 	__ai float2		operator/(const float2& src)		const		{ return { x / src.x, y / src.y }; }
 	__ai float2		operator*(const float2& src)		const		{ return { x * src.x, y * src.y }; }
 
-	__ai float2&	operator+=(const float2& src )		{ x += src.x; y += src.y; return *this; }
-	__ai float2&	operator-=(const float2& src )		{ x -= src.x; y -= src.y; return *this; }
+	__ai float2&	operator+=(float src)							{ x += src; y += src; return *this; }
+	__ai float2&	operator-=(float src)							{ x -= src; y -= src; return *this; }
+	__ai float2&	operator/=(float src)							{ x /= src; y /= src; return *this; }
+	__ai float2&	operator*=(float src)							{ x *= src; y *= src; return *this; }
+
+	__ai float2&	operator+=(const float2& src )					{ x += src.x; y += src.y; return *this; }
+	__ai float2&	operator-=(const float2& src )					{ x -= src.x; y -= src.y; return *this; }
+	__ai float2&	operator/=(const float2& src )					{ x /= src.x; y /= src.y; return *this; }
+	__ai float2&	operator*=(const float2& src )					{ x *= src.x; y *= src.y; return *this; }
 
 };
 
@@ -540,23 +549,33 @@ union int2 {
 
 	// note: intentionally omitted u64 operator assignment.
 
-	__ai bool operator==(const int2& right)		const		{ return _i64val == right._i64val; }
-	__ai bool operator!=(const int2& right)		const		{ return _i64val != right._i64val; }
+	__ai bool	operator==(const int2& right)		const		{ return _i64val == right._i64val; }
+	__ai bool	operator!=(const int2& right)		const		{ return _i64val != right._i64val; }
 
-	__ai int2& operator+=(const int2& src)					{ x += src.x; y += src.y; return *this; }
-	__ai int2& operator-=(const int2& src)					{ x -= src.x; y -= src.y; return *this; }
+	__ai int2&	operator+=(const int2& src)					{ x += src.x; y += src.y; return *this; }
+	__ai int2&	operator-=(const int2& src)					{ x -= src.x; y -= src.y; return *this; }
 
-	__ai int2 operator+(const int2& src)		const		{ return { x + src.x, y + src.y }; }
-	__ai int2 operator-(const int2& src)		const		{ return { x - src.x, y - src.y }; }
-	__ai int2 operator/(const int2& src)		const		{ return { x / src.x, y / src.y }; }
-	__ai int2 operator*(const int2& src)		const		{ return { x * src.x, y * src.y }; }
+	__ai int2	operator+(const int2& src)		const		{ return { x + src.x, y + src.y }; }
+	__ai int2	operator-(const int2& src)		const		{ return { x - src.x, y - src.y }; }
+	__ai int2	operator/(const int2& src)		const		{ return { x / src.x, y / src.y }; }
+	__ai int2	operator*(const int2& src)		const		{ return { x * src.x, y * src.y }; }
 
-	__ai int2 operator+(int src)				const		{ return { x + src, y + src }; }
-	__ai int2 operator-(int src)				const		{ return { x - src, y - src }; }
-	__ai int2 operator/(int src)				const		{ return { x / src, y / src }; }
-	__ai int2 operator*(int src)				const		{ return { x * src, y * src }; }
+	__ai float2	operator+(const float2& src)	const;
+	__ai float2	operator-(const float2& src)	const;
+	__ai float2	operator/(const float2& src)	const;
+	__ai float2	operator*(const float2& src)	const;
 
+	__ai int2	operator+(int src)				const		{ return { x + src, y + src }; }
+	__ai int2	operator-(int src)				const		{ return { x - src, y - src }; }
+	__ai int2	operator/(int src)				const		{ return { x / src, y / src }; }
+	__ai int2	operator*(int src)				const		{ return { x * src, y * src }; }
+
+	__ai float2 operator+(float src)			const;
+	__ai float2 operator-(float src)			const;
+	__ai float2 operator/(float src)			const;
+	__ai float2 operator*(float src)			const;
 };
+
 
 union int4 {
 	struct {
@@ -583,10 +602,24 @@ union int4 {
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
 
+inline __ai float2	int2::operator+(float src)			const		{ return { x + src, y + src }; }
+inline __ai float2	int2::operator-(float src)			const		{ return { x - src, y - src }; }
+inline __ai float2	int2::operator/(float src)			const		{ return { x / src, y / src }; }
+inline __ai float2	int2::operator*(float src)			const		{ return { x * src, y * src }; }
+
+inline __ai float2	int2::operator+(const float2& src)	const		{ return { x + src.x, y + src.y }; }
+inline __ai float2	int2::operator-(const float2& src)	const		{ return { x - src.x, y - src.y }; }
+inline __ai float2	int2::operator/(const float2& src)	const		{ return { x / src.x, y / src.y }; }
+inline __ai float2	int2::operator*(const float2& src)	const		{ return { x * src.x, y * src.y }; }
+
+inline float2::operator int2() const { return int2   { (int)  x, (int)  y }; }
 inline int2::operator float2() const { return float2 { (float)x, (float)y }; }
 
-//explicit float2 (const int2& src) { x  = (float) src.x;  y  = (float) src.y; }
-//explicit float4 (const int4& src) {  }
+
+// Non-member operators...
+
+inline float2 operator/(float i, const float2& rhs)					{ return { i / rhs.x, i / rhs.y }; }
+inline float2 operator/(float i, const int2&   rhs)					{ return { i / rhs.x, i / rhs.y }; }
 
 
 static_assert( sizeof(u128) == 16, "A u128 is is not 128 bits long is scarcely a u128 at all!" );
@@ -700,3 +733,25 @@ protected:
 	u64_iter(const u64& bits)				{ _current = bits; get_next(); }
 	u64_iter(const u64& bits, int val)		{ _current = bits; ntz = val; }
 };
+
+// ------------------------------------------------------------------------------------
+// Might want to break the math funcs into their own header in the future?
+
+#include <math.h>
+
+inline __ai float2 fabsf(const float2& src)
+{
+	return { fabsf(src.x), fabsf(src.y) };
+}
+
+inline __ai float2 floorf(const float2& src)
+{
+	return { floorf(src.x), floorf(src.y) };
+}
+
+// floorf(int2) -- convenience function which just returns input unmodified.
+// Useful for templates or uniform coding layouts.
+inline __ai int2 floorf(const int2& src)
+{
+	return src;
+}
