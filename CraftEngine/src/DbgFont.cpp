@@ -1196,10 +1196,23 @@ void DbgFont_LoadInit()
 	//       data-driven things, but higher usefulness for function-driven things.
 	//
 
+	float2 edgeOffset		 = float2 { 4, 4 };
+	float2 backbuffer_size	 = (g_backbuffer_size_pix - edgeOffset);
+
+	// Provide a fixed-size font grid that scales "roughly" to match the backbuffer resolution.
+	// use floorf to ensure the scalar is even-numbered, to avoid uglified font syndrome.
+	// (note: in theory above 3x scale it's probably ok to be fractional, as it won't really look bad anyway...)
+
+	auto scalarxy = floorf(g_backbuffer_size_pix / float2 { 640, 360 });
+	auto scalar = std::max(scalarxy.x, scalarxy.y);
+
+	edgeOffset		 /= scalar;
+	backbuffer_size  /= scalar;
+
 	g_ConsoleSheet.font.size		= { 6, 8 };
 	g_DbgFontOverlay.font.size		= { 6, 8 };
-	int2 consoleSizeInPix			= { g_backbuffer_size_pix.x * 0.75f,	g_backbuffer_size_pix.y * 0.75f };
-	int2 overlaySizeInPix			= { g_backbuffer_size_pix.x / 2,		g_backbuffer_size_pix.y / 2 };
+	auto consoleSizeInPix			= (int2)floorf(g_backbuffer_size_pix / 2	);
+	auto overlaySizeInPix			= (int2)floorf(backbuffer_size);
 
 	lua_string consoleShaderFile;
 	lua_string consoleShaderEntryVS;
@@ -1251,16 +1264,20 @@ void DbgFont_LoadInit()
 
 	dx11_CreateStaticMesh(s_mesh_anychar,	g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 
-	//u128	m_Eye;
-	//u128	m_At;
-	//u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
-	//
-	//m_Eye	= XMVectorSet( 0.0f, 0.5f, -6.0f, 0.0f );
-	//m_At	= XMVectorSet( 0.0f, 0.5f,  0.0f, 0.0f );
-	//m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
-	//
-	//m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
-	//m_ViewConsts.Projection = XMMatrixOrthographicLH(2.0f*g_backbuffer_aspect_ratio, 2.0f, 0.0001f, 1000.0f);
+	u128	m_Eye;
+	u128	m_At;
+	u128	m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
+
+	//m_Eye	= XMVectorSet( overlaySizeInPix.x/2, overlaySizeInPix.y/2, -6.0f, 0.0f );
+	//m_At	= XMVectorSet( overlaySizeInPix.x/2, overlaySizeInPix.y/2,  0.0f, 0.0f );
+
+	m_Eye	= XMVectorSet( 0.0f, 0.0f, -6.0f, 0.0f );
+	m_At	= XMVectorSet( 0.0f, 0.0f,  0.0f, 0.0f );
+	m_Up	= XMVectorSet( 0.0f, 1.0f,  0.0f, 0.0f );
+
+	m_ViewConsts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
+	m_ViewConsts.Projection = XMMatrixOrthographicLH(overlaySizeInPix.x, overlaySizeInPix.y, 0.0001f, 1000.0f);
+	m_ViewConsts.Projection = XMMatrixOrthographicOffCenterLH(-edgeOffset.x, backbuffer_size.x, backbuffer_size.y, -edgeOffset.y, 0.0001f, 1000.0f);
 
 	s_canRender = 1;
 }
@@ -1280,9 +1297,6 @@ void DbgFont_SceneRender()
 	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
 
 	g_DbgFontOverlay.Write(0,0, "TESTING");
-	//for(int i=0; i<overlayMeshSize; ++i) {
-	//	g_DbgFontOverlay.charmap[i] = 'A' + (i % 20);
-	//}
 
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
@@ -1291,9 +1305,15 @@ void DbgFont_SceneRender()
 	g_DbgFontOverlay.gpu.consts.SrcTexSizeInTiles	= vInt2(CharacterCodeCount,1);
 	g_DbgFontOverlay.gpu.consts.CharMapSize.x		= g_DbgFontOverlay.size.x;
 	g_DbgFontOverlay.gpu.consts.CharMapSize.y		= g_DbgFontOverlay.size.y;
-	g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.0f, 0.0f);
-	g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(1.0f, 1.0f);
-	dx11_UpdateConstantBuffer(s_cnstbuf_Projection,		&m_ViewConsts);
+	g_DbgFontOverlay.gpu.consts.TileSize			= g_DbgFontOverlay.font.size;
+	//g_DbgFontOverlay.gpu.consts.ProjectionXY		= vFloat2(0.0f, 0.0f);
+	//g_DbgFontOverlay.gpu.consts.ProjectionScale		= vFloat2(1.0f, 1.0f);
+
+	GPU_ViewCameraConsts	viewConsts;
+	viewConsts.View			= XMMatrixTranspose(m_ViewConsts.View);
+	viewConsts.Projection	= XMMatrixTranspose(m_ViewConsts.Projection);
+
+	dx11_UpdateConstantBuffer(s_cnstbuf_Projection,		&viewConsts);
 	dx11_UpdateConstantBuffer(s_cnstbuf_DbgFontSheet,	&g_DbgFontOverlay.gpu.consts);
 
 	// Render!

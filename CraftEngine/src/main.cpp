@@ -101,11 +101,6 @@ bool Scene_MouseInClient()
 }
 
 
-float2 fabsf(const float2& src)
-{
-	return { fabsf(src.x), fabsf(src.y) };
-}
-
 void SceneLogic()
 {
 	DbgFont_SceneBegin();
