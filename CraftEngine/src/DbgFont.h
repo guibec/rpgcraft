@@ -13,8 +13,7 @@ struct GPU_DbgFontConstants
 	vFloat2		SrcTexTileSizeUV;
 	vInt2		SrcTexSizeInTiles;
 	vInt2		CharMapSize;
-	vFloat2		ProjectionXY;
-	vFloat2		ProjectionScale;
+	vFloat2		TileSize;
 };
 
 // Notes:

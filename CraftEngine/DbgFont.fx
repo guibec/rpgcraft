@@ -27,8 +27,7 @@ cbuffer ConstantBuffer : register( b1 )
 	float2		SrcTexTileSizeUV;
 	uint2 		SrcTexSizeInTiles;
 	uint2		TileMapSizeXY;
-	float2		ProjectionXY;
-	float2		ProjectionScale;
+	float2		TileSize;
 }
 
 //--------------------------------------------------------------------------------------
@@ -66,21 +65,24 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 	VS_OUTPUT outp;
 
 	uint2  tile_xy = uint2( instID % TileMapSizeXY.x, instID / TileMapSizeXY.x);
-	float2 incr_xy = (2.0f / TileMapSizeXY) * ProjectionScale;		// 2.0f to map tiles to -1.0 to 1.0 coordinates
-	float2 disp_xy = (tile_xy * incr_xy) + float2(-1.0f, -1.0f);
+	float2 incr_xy = TileSize; //(2.0f / TileMapSizeXY) * ProjectionScale;		// 2.0f to map tiles to -1.0 to 1.0 coordinates
+	float2 disp_xy = (tile_xy * incr_xy); // + float2(-1.0f, -1.0f);
 
 	// Position Calculation
 	// I guess this could be done as a single translation matrix, but matricies are still annoying chunks of
 	// black box data to me.  --jstine
 
 	outp.Pos	 = float4(input.Pos, 1.0f);
-	outp.Pos.xy += -0.5f;					// setup for scaling with 0,0 as origin.
+	//outp.Pos.xy += -0.5f;					// setup for scaling with 0,0 as origin.
 	outp.Pos.xy *= incr_xy;					// scale to correct size
-
-	outp.Pos.xy += (incr_xy/2);				// re-orientate according to upper-left corner of tile
-	outp.Pos.xy += ProjectionXY;			// translate into sheet display position
+	//outp.Pos.xy += (incr_xy/2);				// re-orientate according to upper-left corner of tile
+	//outp.Pos.xy += ProjectionXY;			// translate into sheet display position
 	outp.Pos.xy += disp_xy;					// translate into tile-on-sheet display position
-	outp.Pos.y	*= -1.0f;					// +Y is UP!
+
+	//outp.Pos.y	*= -1.0f;					// +Y is UP!
+	//outp.Pos	 = mul( outp.Pos, View );
+
+	outp.Pos	 = mul( outp.Pos, Projection );
 
 
 	// Texture UV Calculation

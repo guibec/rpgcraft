@@ -23,6 +23,7 @@ using DirectX::XMMATRIX;
 using DirectX::XMVectorSet;
 using DirectX::XMMatrixLookAtLH;
 using DirectX::XMMatrixOrthographicLH;
+using DirectX::XMMatrixOrthographicOffCenterLH;
 
 struct GPU_ViewCameraConsts
 {
