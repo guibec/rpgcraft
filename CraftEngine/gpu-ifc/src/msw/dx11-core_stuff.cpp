@@ -10,6 +10,8 @@
 #include "x-gpu-ifc.h"
 #include "x-ThrowContext.h"
 
+#include "imgui_impl_dx11.h"
+
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
@@ -547,11 +549,11 @@ void dx11_InitDevice()
 
 	// Create the sampler
 	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
-	bug_on(FAILED(hr));
+	log_and_abort_on(FAILED(hr));
 
 	//dx11_CreateDepthStencil();
 
-	log_and_abort_on(FAILED(hr));
+	ImGui_ImplDX11_Init(g_hWnd, g_pd3dDevice, g_pImmediateContext);
 }
 
 struct dx11_ShaderInfo
@@ -1012,6 +1014,7 @@ void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* dat
 
 void dx11_BackbufferSwap()
 {
+	ImGui::Render();
 	g_pSwapChain->Present(0, 0);
 	g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
 }

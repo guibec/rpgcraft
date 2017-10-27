@@ -130,6 +130,9 @@
     <ProjectReference Include="$(RepoRootDir)\imports\lua-5.3.x\lua-5.3.x.vcxproj">
       <Project>{6388ee6e-722d-4712-93c1-5a7ef1da91e0}</Project>
     </ProjectReference>
+    <ProjectReference Include="imports\imgui\imgui.vcxproj">
+      <Project>{47396539-d8b1-4b13-93e7-40800ce6152e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DbgFont.fx">
