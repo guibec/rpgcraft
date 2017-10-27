@@ -54,6 +54,8 @@ struct vFloat2
 
 	vFloat2() {}
 	vFloat2(float _x, float _y);
+	vFloat2(const float2& src);
+	vFloat2(const int2& src);
 
 	vFloat2& operator+=(const vFloat2& right) {
 		x += right.x;
@@ -151,6 +153,16 @@ inline vFloat3::vFloat3(vFloat2 _xy, float _z) {
 inline vFloat2::vFloat2(float _x, float _y) {
 	x = _x;
 	y = _y;
+}
+
+inline vFloat2::vFloat2(const float2& src) {
+	x = src.x;
+	y = src.y;
+}
+
+inline vFloat2::vFloat2(const int2& src) {
+	x = src.x;
+	y = src.y;
 }
 
 inline vInt2::vInt2(int _x, int _y) {
