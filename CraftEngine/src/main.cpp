@@ -21,6 +21,7 @@
 #include "UniformMeshes.h"
 
 #include <DirectXMath.h>
+#include "imgui_impl_dx11.h"
 
 using namespace DirectX;
 
@@ -100,9 +101,13 @@ bool Scene_MouseInClient()
 	return s_mouse_is_in_client;
 }
 
+    bool show_test_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 void SceneLogic()
 {
+	ImGui_ImplDX11_NewFrame();
 	DbgFont_SceneBegin();
 
 	Host_PollMousePosition();
@@ -123,6 +128,16 @@ void SceneLogic()
 		s_mouse_is_in_client = false;
 		s_mouse_pos_relative_to_center = {};
 	}
+
+    {
+        static float f = 0.0f;
+        ImGui::Text("Hello, world!");
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        ImGui::ColorEdit3("clear color", (float*)&clear_color);
+        if (ImGui::Button("Test Window")) show_test_window ^= 1;
+        if (ImGui::Button("Another Window")) show_another_window ^= 1;
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    }
 
 	g_TileMap.Tick();
 
@@ -247,6 +262,8 @@ void SceneRender()
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
 	DbgFont_SceneRender();
+
+
 	dx11_BackbufferSwap();
 }
 
