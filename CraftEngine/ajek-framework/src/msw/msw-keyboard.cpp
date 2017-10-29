@@ -213,8 +213,8 @@ VirtKeyModifier Host_GetKeyModifierInMsg()
 	return result;
 }
 
-int2 s_CurrentKnownMousePos		= {};
-bool s_HasValidMouseInfo		= false;
+static int2 s_CurrentKnownMousePos		= {};
+static bool s_HasValidMouseInfo			= false;
 
 void HostMouseImm_UpdatePoll()
 {

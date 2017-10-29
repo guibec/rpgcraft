@@ -133,13 +133,14 @@ struct VirtKeyModifier
 extern bool				Host_IsKeyPressedGlobally	(VirtKey_t key);
 extern bool				Host_IsKeyPressedGlobally	(const VirtKeyBindingPair& pair);
 
+extern bool				Host_HasWindowFocus			();
 extern VirtKeyModifier	Host_GetKeyModifier			();
 extern VirtKeyModifier	Host_GetKeyModifierInMsg	();		// this one OK from windows msg queue
 extern bool				HostDiag_IsKeyPressed		(VirtKey_t key);
 // --------------------------------------------------------------------------------------
 
+extern void				Host_CaptureMouse			();			// capture included for possible debug usage, but not meant to be used outside of our default wndproc behavior
+extern void				Host_ReleaseMouse			();			// capture included for possible debug usage, but not meant to be used outside of our default wndproc behavior
 extern void				HostMouseImm_UpdatePoll		();
-extern void				Host_CaptureMouse			();
-extern void				Host_ReleaseMouse			();
 extern bool				HostMouseImm_HasValidPos	();
 extern int2				HostMouseImm_GetClientPos	();

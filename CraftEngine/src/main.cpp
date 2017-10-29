@@ -90,10 +90,11 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
+bool	s_scene_has_focus = false;
 bool	s_mouse_in_scene = false;
 float2	s_mouse_pos_relative_to_center = {};
 
-float2 Scene_GetMouseRelativeToCenter()
+float2 SceneMouse_GetPosRelativeToCenter()
 {
 	return s_mouse_pos_relative_to_center;
 }
@@ -102,6 +103,13 @@ bool SceneMouse_HasValidPos()
 {
 	return s_mouse_in_scene;
 }
+
+bool Scene_IsKeyPressed(VirtKey_t vk_code)
+{
+	if (!s_scene_has_focus)		{ return false; }
+	return Host_IsKeyPressedGlobally(vk_code);
+}
+
 
 bool show_test_window = true;
 bool show_another_window = false;
@@ -113,6 +121,8 @@ void SceneLogic()
 	DbgFont_SceneBegin();
 
 	s_mouse_in_scene = false;
+	s_scene_has_focus = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
+
 	if (!ImGui::GetIO().WantCaptureMouse) {
 		HostMouseImm_UpdatePoll();
 		if (HostMouseImm_HasValidPos()) {
@@ -269,8 +279,6 @@ void SceneRender()
 	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
 
 	DbgFont_SceneRender();
-
-
 	dx11_BackbufferSwap();
 }
 
