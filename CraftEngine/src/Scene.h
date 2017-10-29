@@ -58,6 +58,7 @@ extern bool			SceneInitialized			();
 extern void			SceneInit					();
 extern void			SceneRender					();
 extern void			SceneLogic					();
+extern int			Scene_GetFrameCount			();
 
 extern void			Scene_InitMessages			();
 extern bool			Scene_HasPendingMessages	();
@@ -68,7 +69,8 @@ extern void			Scene_DrainMsgQueue			();
 extern bool			Scene_HasStopReason			(u32 stopReason = ~0);
 
 extern float2		Scene_GetMouseRelativeToCenter();
-extern bool			Scene_MouseInClient();
+extern bool			SceneMouse_HasValidPos();
+
 namespace
 {
 	template< int hash_key > bool _impl_OnceUponAFrame() {

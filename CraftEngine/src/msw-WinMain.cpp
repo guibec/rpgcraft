@@ -13,6 +13,7 @@
 #include "ajek-script.h"
 #include "Scene.h"
 
+#include "imgui.h"
 
 #include <direct.h>		// for _getcwd()
 
@@ -27,12 +28,14 @@ HWND                    g_hWnd					= nullptr;
 //--------------------------------------------------------------------------------------
 // WINDOWS BOILERPLATE
 //--------------------------------------------------------------------------------------
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-	switch (message)
+    ImGuiIO& io = ImGui::GetIO();
+
+	switch (msg)
 	{
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
@@ -53,6 +56,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if ((c == 'W' || c == 'w') && mod.Alt()) {
 				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
 			}
+
+			if (wParam < 256)
+				io.KeysDown[wParam] = 1;
 		} break;
 
 		case WM_KEYDOWN: {
@@ -65,10 +71,61 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				Scene_PostMessage(SceneMsg_StartExec, SceneStopReason_ScriptError);
 			}
 
+			if (wParam < 256)
+				io.KeysDown[wParam] = 1;
+		} break;
+
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			if (wParam < 256)
+				io.KeysDown[wParam] = 0;
+        break;
+
+		// --------------------------------------------------------------------------------
+		// UI-style User-input (mouse/keyboard), which use buffered input from Windows
+		// instead of per-frame polling used by the gameplay input system.
+
+		case WM_MOUSEWHEEL: {
+			io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
+		} break;
+
+		case WM_MOUSEMOVE: {
+			io.MousePos.x = (signed short)(lParam);
+			io.MousePos.y = (signed short)(lParam >> 16);
+		} break;
+
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		{
+			int button = 0;
+			if (msg == WM_LBUTTONDOWN) button = 0;
+			if (msg == WM_RBUTTONDOWN) button = 1;
+			if (msg == WM_MBUTTONDOWN) button = 2;
+			SetCapture(hWnd);
+			io.MouseDown[button] = true;
+		} break;
+
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONUP:
+		{
+			int button = 0;
+			if (msg == WM_LBUTTONUP) button = 0;
+			if (msg == WM_RBUTTONUP) button = 1;
+			if (msg == WM_MBUTTONUP) button = 2;
+			io.MouseDown[button] = false;
+			ReleaseCapture();
+		} break;
+
+		case WM_CHAR: {
+			// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
+			if (wParam > 0 && wParam < 0x10000)
+				io.AddInputCharacter((unsigned short)wParam);
 		} break;
 
 		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 
 	return 0;

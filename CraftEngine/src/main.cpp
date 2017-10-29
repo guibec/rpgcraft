@@ -88,7 +88,7 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
-bool	s_mouse_is_in_client = false;
+bool	s_mouse_in_scene = false;
 float2	s_mouse_pos_relative_to_center = {};
 
 float2 Scene_GetMouseRelativeToCenter()
@@ -96,37 +96,40 @@ float2 Scene_GetMouseRelativeToCenter()
 	return s_mouse_pos_relative_to_center;
 }
 
-bool Scene_MouseInClient()
+bool SceneMouse_HasValidPos()
 {
-	return s_mouse_is_in_client;
+	return s_mouse_in_scene;
 }
 
-    bool show_test_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+bool show_test_window = true;
+bool show_another_window = false;
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 void SceneLogic()
 {
 	ImGui_ImplDX11_NewFrame();
 	DbgFont_SceneBegin();
 
-	Host_PollMousePosition();
-	if (Mouse_HasValidPos()) {
-		int2 relpos = Mouse_GetClientPos() - (g_backbuffer_size_pix/2);
+	s_mouse_in_scene = false;
+	if (!ImGui::GetIO().WantCaptureMouse) {
+		HostMouseImm_UpdatePoll();
+		if (HostMouseImm_HasValidPos()) {
+			int2 relpos = HostMouseImm_GetClientPos() - (g_backbuffer_size_pix/2);
 
-		auto ratio		= float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
-		auto normalized = ((float2)relpos / (float2)(g_backbuffer_size_pix)) * 2.0f;
+			auto ratio		= float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
+			auto normalized = ((float2)relpos / (float2)(g_backbuffer_size_pix)) * 2.0f;
 
-		s_mouse_is_in_client = fabsf(normalized) <= 1.0f;
+			s_mouse_in_scene = (fabsf(normalized) <= 1.0f);
 
-		normalized.x   *= ratio;
-		g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, s_mouse_is_in_client ? "yes" : "no" ));
-		g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
-		s_mouse_pos_relative_to_center = normalized;
-	}
-	else {
-		s_mouse_is_in_client = false;
-		s_mouse_pos_relative_to_center = {};
+			normalized.x   *= ratio;
+			g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, s_mouse_in_scene ? "yes" : "no" ));
+			g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
+			s_mouse_pos_relative_to_center = normalized;
+		}
+		else {
+			s_mouse_in_scene = false;
+			s_mouse_pos_relative_to_center = {};
+		}
 	}
 
     {
@@ -138,6 +141,7 @@ void SceneLogic()
         if (ImGui::Button("Another Window")) show_another_window ^= 1;
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
+
 
 	g_TileMap.Tick();
 

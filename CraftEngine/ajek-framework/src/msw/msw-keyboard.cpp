@@ -216,7 +216,7 @@ VirtKeyModifier Host_GetKeyModifierInMsg()
 int2 s_CurrentKnownMousePos		= {};
 bool s_HasValidMouseInfo		= false;
 
-void Host_PollMousePosition()
+void HostMouseImm_UpdatePoll()
 {
 	s_HasValidMouseInfo = false;
 
@@ -248,12 +248,12 @@ void Host_ReleaseMouse()
 // Staleness occurs when the host mouse polling logic returns an error, which may indicate
 // that no mouse is available, or that its messages have been commandeered by some means.
 
-bool Mouse_HasValidPos()
+bool HostMouseImm_HasValidPos()
 {
 	return s_HasValidMouseInfo;
 }
 
-int2 Mouse_GetClientPos()
+int2 HostMouseImm_GetClientPos()
 {
 	return s_CurrentKnownMousePos;
 }
