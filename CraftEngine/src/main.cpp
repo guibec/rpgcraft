@@ -21,7 +21,9 @@
 #include "UniformMeshes.h"
 
 #include <DirectXMath.h>
+
 #include "imgui_impl_dx11.h"
+#include "imgui-console.h"
 
 using namespace DirectX;
 
@@ -142,6 +144,7 @@ void SceneLogic()
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
 
+	g_console.DrawFrame();
 
 	g_TileMap.Tick();
 
