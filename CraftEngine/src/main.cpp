@@ -92,6 +92,8 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
+Mouse s_mouse;
+
 float2 SceneMouse_GetPosRelativeToCenter()
 {
 	return s_mouse.getRelativeToCenter();
@@ -104,12 +106,10 @@ bool SceneMouse_HasValidPos()
 
 bool Scene_IsKeyPressed(VirtKey_t vk_code)
 {
-	if (!s_mouse.hasFocus.hasFocus())		{ return false; }
+	if (!s_mouse.hasFocus())		{ return false; }
 	return Host_IsKeyPressedGlobally(vk_code);
 }
 
-
-Mouse s_mouse;
 
 bool show_test_window = true;
 bool show_another_window = false;
@@ -120,7 +120,7 @@ void SceneLogic()
 	ImGui_ImplDX11_NewFrame();
 	DbgFont_SceneBegin();
 
-	Mouse::update();
+	s_mouse.update();
 
     {
         static float f = 0.0f;
