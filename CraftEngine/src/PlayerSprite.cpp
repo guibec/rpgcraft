@@ -59,7 +59,7 @@ void PlayerSprite::Tick(int order)
 				  state.axis.LStick_Y * 0.05f };
 
 	if (Host_IsKeyPressedGlobally(VirtKey::MouseLeft)) {
-		if (Scene_MouseInClient()) {
+		if (SceneMouse_HasValidPos()) {
 			auto mouse = Scene_GetMouseRelativeToCenter();
 			mouse.x = xBoundsCheck(mouse.x, -0.5f, 0.5f);
 			mouse.y = xBoundsCheck(mouse.y, -0.5f, 0.5f);

@@ -138,8 +138,8 @@ extern VirtKeyModifier	Host_GetKeyModifierInMsg	();		// this one OK from windows
 extern bool				HostDiag_IsKeyPressed		(VirtKey_t key);
 // --------------------------------------------------------------------------------------
 
-extern void				Host_PollMousePosition		();
+extern void				HostMouseImm_UpdatePoll		();
 extern void				Host_CaptureMouse			();
 extern void				Host_ReleaseMouse			();
-extern bool				Mouse_HasValidPos			();
-extern int2				Mouse_GetClientPos			();
+extern bool				HostMouseImm_HasValidPos	();
+extern int2				HostMouseImm_GetClientPos	();
