@@ -1,30 +1,10 @@
 #include "PCH-rpgcraft.h"
 #include "Mouse.h"
 
-#include "x-types.h"
-#include "x-stl.h"
-#include "x-assertion.h"
-#include "x-string.h"
-#include "x-thread.h"
-
-#include "x-host-ifc.h"
-#include "x-gpu-ifc.h"
-#include "x-gpu-colors.h"
-#include "x-png-decode.h"
-#include "v-float.h"
-
-#include "ajek-script.h"
-#include "Entity.h"
-#include "Sprites.h"
-#include "TileMapLayer.h"
 #include "DbgFont.h"
 #include "Scene.h"
-#include "UniformMeshes.h"
-
-#include <DirectXMath.h>
 
 #include "imgui_impl_dx11.h"
-#include "imgui-console.h"
 
 void Mouse::update()
 {   
