@@ -57,6 +57,9 @@
     <ClCompile Include="src\TileMapLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\imgui-console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
@@ -97,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="src\appConfig.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui-console.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

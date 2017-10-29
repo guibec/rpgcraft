@@ -520,4 +520,3 @@ inline __ai void xStopProcess(const char* filepos, const char* func)
 
 	abort();
 }
-
