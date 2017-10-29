@@ -56,7 +56,8 @@ const VirtKeyBindingPair g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS] =
 
 };
 
-
+// Current keyboard bindings are hacky, and should be disavowed.  Analog XL/R of a gamepad should have no keyboard bindings.
+// Eg, Movement should be unbounded from keyboard and done only via mouse and actual gamepad.
 const KPad_AxisMapping g_kpad_axs_map_default = []() {
 	KPad_AxisMapping init;
 	init.LStick_X.neg	= { 'A',					VirtKey::Unmapped	};
@@ -80,7 +81,7 @@ static KPad_AxisMapping		s_kpad_axs_map;
 static PadState				s_async_pad_state;
 static xMutex				s_mtx_padstate;
 static thread_t				s_thr_gamepad_input;
-
+static bool					s_keyboard_has_focus;
 
 struct AxisPressStatePair {
 	bool			neg;
@@ -157,6 +158,26 @@ static void* PadInputThreadProc(void*)
 
 
 	while(1) {
+		if (1) {
+			// copy local instance pad data into the shared async buffer.
+			// This is done independently of pad polling in order to minimize the amount of time
+			// spent in the mutex lock.  Calls to Host_IsKeyPressedGlobally() could be time-
+			// consuming depending on underlying architecture.
+
+			xScopedMutex lock(s_mtx_padstate);
+			xObjCopy(s_async_pad_state.buttonTimestamp, local_state.buttonTimestamp);
+			s_async_pad_state.buttons	= local_state.buttons;
+			s_async_pad_state.axis		= local_state.axis;
+		}
+
+		xThreadSleep(8);
+
+		if (!s_keyboard_has_focus || !Host_HasWindowFocus()) {
+			// lost keyboard focus; nullify all input from keyboard for this frame.
+			xMemZero(local_state);
+			continue;
+		}
+
 		auto cur_tick = Host_GetProcessTicks();
 
 		int btn_idx = -1;
@@ -231,32 +252,6 @@ static void* PadInputThreadProc(void*)
 		}
 
 		pragma_todo("Implement keyboard bindings for L2/R2 analog paddle axis");
-
-		if (1) {
-			// copy local instance pad data into the shared async buffer.
-			// This is done independently of pad polling in order to minimize the amount of time
-			// spent in the mutex lock.  Calls to Host_IsKeyPressedGlobally() could be time-
-			// consuming depending on underlying architecture.
-
-			// Lockless Keyboard Theory:
-			//    * All members of PadState are atomics types.
-			//    * Undesirable behavior could occur if the async state of the Button Press boolean
-			//      doesn't match the async state of the ButtonPressTick value -- eg, the Press boolean
-			//      would be read as '1' but the Tick would be stale data making it seem like it had been
-			//      pressed a really-long time.
-			//    * Solution: Copy tick data first, mfence(), and then copy the rest, mfence() again.
-			//         First mfence ensures CPU won't serialize the button state ahead of the tick array.
-			//
-
-			//xScopedMutex lock(s_mtx_padstate);
-			xObjCopy(s_async_pad_state.buttonTimestamp, local_state.buttonTimestamp);
-			i_mfence();
-			s_async_pad_state.buttons	= local_state.buttons;
-			s_async_pad_state.axis		= local_state.axis;
-			i_mfence();
-		}
-
-		xThreadSleep(8);
 	}
 }
 
@@ -269,7 +264,7 @@ static void* PadInputThreadProc(void*)
 void KPad_GetState(PadState& dest)
 {
 	// See notes in thread keyboard polling thread for why mutex lock has been removed.
-	//xScopedMutex lock(s_mtx_padstate);
+	xScopedMutex lock(s_mtx_padstate);
 	xObjCopy(dest, s_async_pad_state);
 }
 
@@ -298,4 +293,9 @@ void KPad_CreateThread()
 {
 	s_mtx_padstate.Create("PadInputThread");
 	thread_create(s_thr_gamepad_input, PadInputThreadProc, "PadInputPoll");
+}
+
+void KPad_SetKeyboardFocus(bool focus)
+{
+	s_keyboard_has_focus = focus;
 }

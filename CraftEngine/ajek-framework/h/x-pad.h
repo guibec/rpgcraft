@@ -185,6 +185,8 @@ extern void		KPad_GetMapping			(KPad_AxisMapping& dest);
 
 extern void		KPad_GetState			(PadState& dest);
 extern void		KPad_CreateThread		();
+extern void		KPad_SetKeyboardFocus	(bool focus);
+
 
 
 extern const VirtKeyBindingPair		g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS];

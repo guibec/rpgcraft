@@ -8,6 +8,7 @@
 
 #include "v-float.h"
 #include "x-gpu-ifc.h"
+#include "x-pad.h"			// for KPad_SetKeyboardFocus
 #include "x-ThrowContext.h"
 
 #include "imgui_impl_dx11.h"
@@ -1015,6 +1016,11 @@ void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* dat
 void dx11_BackbufferSwap()
 {
 	ImGui::Render();
+
+	// Keyboard poll runs async currently along with pads, so there's a slim chance
+	// the ImGui focus state would be out of sync for a single frame.  Probably OK.
+	KPad_SetKeyboardFocus(!ImGui::GetIO().WantCaptureKeyboard);
+
 	g_pSwapChain->Present(0, 0);
 	g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
 }

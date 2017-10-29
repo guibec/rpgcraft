@@ -60,7 +60,7 @@ void PlayerSprite::Tick(int order)
 
 	if (Host_IsKeyPressedGlobally(VirtKey::MouseLeft)) {
 		if (SceneMouse_HasValidPos()) {
-			auto mouse = Scene_GetMouseRelativeToCenter();
+			auto mouse = SceneMouse_GetPosRelativeToCenter();
 			mouse.x = xBoundsCheck(mouse.x, -0.5f, 0.5f);
 			mouse.y = xBoundsCheck(mouse.y, -0.5f, 0.5f);
 

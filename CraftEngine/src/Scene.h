@@ -3,6 +3,7 @@
 #include "x-types.h"
 #include "x-stl.h"
 #include "x-assertion.h"
+#include "x-host-ifc.h"
 
 #include "ajek-script.h"
 #include "imgui.h"
@@ -51,25 +52,26 @@ struct SceneMessage
 	}
 };
 
-extern void			Scene_CreateThreads			();
-extern void			Scene_ShutdownThreads		();
+extern void			Scene_CreateThreads					();
+extern void			Scene_ShutdownThreads				();
 
-extern bool			SceneInitialized			();
-extern void			SceneInit					();
-extern void			SceneRender					();
-extern void			SceneLogic					();
-extern int			Scene_GetFrameCount			();
+extern bool			SceneInitialized					();
+extern void			SceneInit							();
+extern void			SceneRender							();
+extern void			SceneLogic							();
+extern int			Scene_GetFrameCount					();
 
-extern void			Scene_InitMessages			();
-extern bool			Scene_HasPendingMessages	();
-extern bool			Scene_TryLoadInit			();
+extern void			Scene_InitMessages					();
+extern bool			Scene_HasPendingMessages			();
+extern bool			Scene_TryLoadInit					();
 
-extern void			Scene_PostMessage			(SceneMessageId msgId, sptr payload);
-extern void			Scene_DrainMsgQueue			();
-extern bool			Scene_HasStopReason			(u32 stopReason = ~0);
+extern void			Scene_PostMessage					(SceneMessageId msgId, sptr payload);
+extern void			Scene_DrainMsgQueue					();
+extern bool			Scene_HasStopReason					(u32 stopReason = ~0);
 
-extern float2		Scene_GetMouseRelativeToCenter();
-extern bool			SceneMouse_HasValidPos();
+extern float2		SceneMouse_GetPosRelativeToCenter();
+extern bool			SceneMouse_HasValidPos				();
+extern bool			Scene_IsKeyPressed					(VirtKey_t vk_code);
 
 namespace
 {
