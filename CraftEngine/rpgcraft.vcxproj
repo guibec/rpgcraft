@@ -72,6 +72,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui-console.cpp" />
+    <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\PCH-rpgcraft.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCH-rpgcraft.h</PrecompiledHeaderFile>
@@ -97,6 +98,7 @@
     <ClInclude Include="src\DbgFont.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\imgui-console.h" />
+    <ClInclude Include="src\Mouse.h" />
     <ClInclude Include="src\mswStandard.h" />
     <ClInclude Include="src\PCH-rpgcraft.h" />
     <ClInclude Include="src\Scene.h" />
