@@ -232,6 +232,11 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
     ctx->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();
 }
 
+
+// !RPGCRAFT - re-implemented into unified wndproc handler in msw-WinMain
+
+#if 0
+
 static bool IsAnyMouseButtonDown()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -298,6 +303,7 @@ IMGUI_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wPa
     }
     return 0;
 }
+#endif
 
 static void ImGui_ImplDX11_CreateFontsTexture()
 {
