@@ -34,6 +34,14 @@ static u32					s_scene_isPaused;
 static bool					s_scene_initialized			= false;
 static bool					s_scene_thread_running		= false;
 
+static int					s_scene_frame_count			= 0;
+
+
+int Scene_GetFrameCount()
+{
+	return s_scene_frame_count;
+}
+
 void Scene_InitMessages()
 {
 	s_mtx_MsgQueue.Create("SceneMsgQueue");
@@ -202,11 +210,14 @@ static void* SceneProducerThreadProc(void*)
 			log_host("SceneThread has been shutdown.");
 			break;
 		}
-		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
 
+		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Developer)) {
+			pragma_todo("ImGui and debug console should still render during ScriptError/Developer states.");
+			xThreadSleep(32);
+			continue;
 		}
 
-		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Background)) {
+		if (Scene_HasStopReason(SceneStopReason_Background | SceneStopReason_HostDialog)) {
 			xThreadSleep(32);
 			continue;
 		}
@@ -216,6 +227,7 @@ static void* SceneProducerThreadProc(void*)
 		}
 
 		if (SceneInitialized()) {
+			s_scene_frame_count += 1;
 			SceneLogic();
 			SceneRender();
 		}
