@@ -40,7 +40,7 @@ PlayerSprite::PlayerSprite() {
 
 	dx11_CreateConstantBuffer(gpu_constbuf, sizeof(float2) + sizeof(int2));
 
-	position = { 10, 10 };
+	m_position = { 10, 10 };
 }
 
 void PlayerSprite::Tick(int order)
@@ -55,7 +55,7 @@ void PlayerSprite::Tick(int order)
 
 	g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f };
 
-	position += { state.axis.LStick_X * 0.05f,
+	m_position += { state.axis.LStick_X * 0.05f,
 				  state.axis.LStick_Y * 0.05f };
 
 	if (Host_IsKeyPressedGlobally(VirtKey::MouseLeft)) {
@@ -64,7 +64,7 @@ void PlayerSprite::Tick(int order)
 			mouse.x = xBoundsCheck(mouse.x, -0.5f, 0.5f);
 			mouse.y = xBoundsCheck(mouse.y, -0.5f, 0.5f);
 
-			position += { mouse * 0.05f };
+			m_position += { mouse * 0.05f };
 		}
 	}
 
@@ -86,7 +86,7 @@ void PlayerSprite::Draw(int order) const
 		int2	TileMapSizeXY;
 	} consts;
 
-	consts.relpos			= position;
+	consts.relpos			= m_position;
 	consts.TileMapSizeXY	= { g_TileMap.ViewMeshSizeX, g_TileMap.ViewMeshSizeY };
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);

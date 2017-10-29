@@ -25,6 +25,8 @@
 #include "imgui_impl_dx11.h"
 #include "imgui-console.h"
 
+#include "Mouse.h"
+
 using namespace DirectX;
 
 DECLARE_MODULE_NAME("main");
@@ -90,23 +92,21 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
-bool	s_scene_has_focus = false;
-bool	s_mouse_in_scene = false;
-float2	s_mouse_pos_relative_to_center = {};
+Mouse s_mouse;
 
 float2 SceneMouse_GetPosRelativeToCenter()
 {
-	return s_mouse_pos_relative_to_center;
+	return s_mouse.getRelativeToCenter();
 }
 
 bool SceneMouse_HasValidPos()
 {
-	return s_mouse_in_scene;
+	return s_mouse.isInScene();
 }
 
 bool Scene_IsKeyPressed(VirtKey_t vk_code)
 {
-	if (!s_scene_has_focus)		{ return false; }
+	if (!s_mouse.hasFocus())		{ return false; }
 	return Host_IsKeyPressedGlobally(vk_code);
 }
 
@@ -120,29 +120,7 @@ void SceneLogic()
 	ImGui_ImplDX11_NewFrame();
 	DbgFont_SceneBegin();
 
-	s_mouse_in_scene = false;
-	s_scene_has_focus = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
-
-	if (!ImGui::GetIO().WantCaptureMouse) {
-		HostMouseImm_UpdatePoll();
-		if (HostMouseImm_HasValidPos()) {
-			int2 relpos = HostMouseImm_GetClientPos() - (g_backbuffer_size_pix/2);
-
-			auto ratio		= float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
-			auto normalized = ((float2)relpos / (float2)(g_backbuffer_size_pix)) * 2.0f;
-
-			s_mouse_in_scene = (fabsf(normalized) <= 1.0f);
-
-			normalized.x   *= ratio;
-			g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, s_mouse_in_scene ? "yes" : "no" ));
-			g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
-			s_mouse_pos_relative_to_center = normalized;
-		}
-		else {
-			s_mouse_in_scene = false;
-			s_mouse_pos_relative_to_center = {};
-		}
-	}
+	s_mouse.update();
 
     {
         static float f = 0.0f;
