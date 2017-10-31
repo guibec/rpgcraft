@@ -25,6 +25,9 @@ extern void			MSW_InitChrono();
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
 
+static INT64			g_Time = 0;
+static INT64			g_TicksPerSecond = 0;
+
 //--------------------------------------------------------------------------------------
 // WINDOWS BOILERPLATE
 //--------------------------------------------------------------------------------------
@@ -293,6 +296,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	KPad_SetMapping(g_kpad_btn_map_default);
 	KPad_SetMapping(g_kpad_axs_map_default);
 
+	// tODO: pulled from imgui - repeal and replace with existing msw-chrono stuff.
+    if (!QueryPerformanceFrequency((LARGE_INTEGER *)&g_TicksPerSecond))
+        return false;
+    if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
+        return false;
+
 	// Drain the message queue first before starting game threads.
 	// No especially good reason for this -- there's just a bunch of poo in the windows
 	// message queue after window creation and stuff, and I like to drain it all in as
@@ -381,4 +390,45 @@ __eai assert_t Host_AssertionDialog( const xString& title, const xString& messag
 	if (IsDebuggerPresent())	return assert_break;
 
 	return DoAssertionDialog( title, message + "\n\nAssertionContext:\n" + context );
+}
+
+void Host_ImGui_NewFrame()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Setup display size (every frame to accommodate for window resizing)
+    RECT rect;
+    GetClientRect(g_hWnd, &rect);
+    io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+
+    // Setup time step
+    INT64 current_time;
+    QueryPerformanceCounter((LARGE_INTEGER *)&current_time);
+    io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
+    g_Time = current_time;
+
+    // Read keyboard modifiers inputs
+    io.KeyCtrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+    io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+    io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
+    io.KeySuper = false;
+    // io.KeysDown : filled by WM_KEYDOWN/WM_KEYUP events
+    // io.MousePos : filled by WM_MOUSEMOVE events
+    // io.MouseDown : filled by WM_*BUTTON* events
+    // io.MouseWheel : filled by WM_MOUSEWHEEL events
+
+    // Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
+    if (io.WantMoveMouse)
+    {
+        POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
+        ClientToScreen(g_hWnd, &pos);
+        SetCursorPos(pos.x, pos.y);
+    }
+
+    // Hide OS mouse cursor if ImGui is drawing it
+    if (io.MouseDrawCursor)
+        SetCursor(NULL);
+
+    // Start the frame
+    ImGui::NewFrame();
 }

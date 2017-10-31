@@ -117,9 +117,6 @@ ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 void SceneLogic()
 {
-	ImGui_ImplDX11_NewFrame();
-	DbgFont_SceneBegin();
-
 	s_mouse.update();
 
     {
@@ -253,11 +250,6 @@ void SceneRender()
 		bug_on_qa(!entity);
 		entitem.Draw(entity, entitem.orderGidPair.Order());
 	}
-
-	//g_pSwapChain->Present(1, DXGI_SWAP_EFFECT_SEQUENTIAL);
-
-	DbgFont_SceneRender();
-	dx11_BackbufferSwap();
 }
 
 // Size notes:

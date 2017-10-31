@@ -511,8 +511,6 @@ void dx11_InitDevice()
 	log_and_abort_on(FAILED(hr));
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
-
-	g_gpu_BackBuffer.m_driverData;
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
 	pBackBuffer->Release();
 	log_and_abort_on(FAILED(hr));
@@ -520,41 +518,10 @@ void dx11_InitDevice()
 	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
 	rtView->Release();
 
-	// Setup the viewport
-	D3D11_VIEWPORT vp;
-	vp.Width	= (float)g_backbuffer_size_pix.x;
-	vp.Height	= (float)g_backbuffer_size_pix.y;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-	g_pImmediateContext->RSSetViewports(1, &vp);
-
-	// TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
-	//        and texture WRAP vs. CLAMP.  Point sampling and wrapping might be useful for some
-	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
-	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
-
-	pragma_todo("Implement Sampler Binding API - GPU_SamplerState and dx11_SetSampler.")
-
-	D3D11_SAMPLER_DESC samplerDesc = {};
-
-//	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD			= 0;
-	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
-
-	// Create the sampler
-	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
-	log_and_abort_on(FAILED(hr));
-
 	//dx11_CreateDepthStencil();
 
 	ImGui_ImplDX11_Init(g_hWnd, g_pd3dDevice, g_pImmediateContext);
+	ImGui_ImplDX11_CreateDeviceObjects();
 }
 
 struct dx11_ShaderInfo
@@ -690,6 +657,44 @@ ID3D11InputLayout* do_prep_inputLayout()
 
 	s_dx11_InputLayoutCache.insert( { fullhash_vs, newCacheItem } );
 	return newCacheItem.dx;
+}
+
+// to be called after logic step and before issuing any draw commands through the pipeline.
+void dx11_BeginFrameDrawing()
+{
+	HRESULT hr;
+
+	// Setup the viewport
+	D3D11_VIEWPORT vp = {};
+	vp.Width	= (float)g_backbuffer_size_pix.x;
+	vp.Height	= (float)g_backbuffer_size_pix.y;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	g_pImmediateContext->RSSetViewports(1, &vp);
+
+	// TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
+	//        and texture WRAP vs. CLAMP.  Point sampling and wrapping might be useful for some
+	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
+	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
+
+	pragma_todo("Implement Sampler Binding API - GPU_SamplerState and dx11_SetSampler.")
+
+	D3D11_SAMPLER_DESC samplerDesc = {};
+
+//	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD			= 0;
+	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
+
+	// Create the sampler
+	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
+	log_and_abort_on(FAILED(hr));
 }
 
 void dx11_PreDrawPrep()
@@ -1013,10 +1018,8 @@ void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* dat
 	// of the input data.
 }
 
-void dx11_BackbufferSwap()
+void dx11_SubmitFrameAndSwap()
 {
-	ImGui::Render();
-
 	// Keyboard poll runs async currently along with pads, so there's a slim chance
 	// the ImGui focus state would be out of sync for a single frame.  Probably OK.
 	KPad_SetKeyboardFocus(!ImGui::GetIO().WantCaptureKeyboard);

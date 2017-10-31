@@ -1282,7 +1282,7 @@ void DbgFont_LoadInit()
 	s_canRender = 1;
 }
 
-void DbgFont_SceneBegin()
+void DbgFont_NewFrame()
 {
 	g_DbgFontOverlay	.SceneLogic();
 	g_ConsoleSheet		.SceneLogic();

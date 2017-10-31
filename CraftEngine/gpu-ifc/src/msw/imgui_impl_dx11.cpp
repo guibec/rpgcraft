@@ -25,9 +25,6 @@
 #endif
 
 // Data
-static INT64                    g_Time = 0;
-static INT64                    g_TicksPerSecond = 0;
-
 static HWND                     g_hWnd = 0;
 static ID3D11Device*            g_pd3dDevice = NULL;
 static ID3D11DeviceContext*     g_pd3dDeviceContext = NULL;
@@ -469,11 +466,6 @@ bool    ImGui_ImplDX11_Init(void* hwnd, ID3D11Device* device, ID3D11DeviceContex
     g_pd3dDevice = device;
     g_pd3dDeviceContext = device_context;
 
-    if (!QueryPerformanceFrequency((LARGE_INTEGER *)&g_TicksPerSecond))
-        return false;
-    if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
-        return false;
-
     ImGuiIO& io = ImGui::GetIO();
     io.KeyMap[ImGuiKey_Tab] = VK_TAB;                       // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
     io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
@@ -508,48 +500,4 @@ void ImGui_ImplDX11_Shutdown()
     g_pd3dDevice = NULL;
     g_pd3dDeviceContext = NULL;
     g_hWnd = (HWND)0;
-}
-
-void ImGui_ImplDX11_NewFrame()
-{
-    if (!g_pFontSampler)
-        ImGui_ImplDX11_CreateDeviceObjects();
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Setup display size (every frame to accommodate for window resizing)
-    RECT rect;
-    GetClientRect(g_hWnd, &rect);
-    io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
-
-    // Setup time step
-    INT64 current_time;
-    QueryPerformanceCounter((LARGE_INTEGER *)&current_time);
-    io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
-    g_Time = current_time;
-
-    // Read keyboard modifiers inputs
-    io.KeyCtrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-    io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
-    io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
-    io.KeySuper = false;
-    // io.KeysDown : filled by WM_KEYDOWN/WM_KEYUP events
-    // io.MousePos : filled by WM_MOUSEMOVE events
-    // io.MouseDown : filled by WM_*BUTTON* events
-    // io.MouseWheel : filled by WM_MOUSEWHEEL events
-
-    // Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
-    if (io.WantMoveMouse)
-    {
-        POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
-        ClientToScreen(g_hWnd, &pos);
-        SetCursorPos(pos.x, pos.y);
-    }
-
-    // Hide OS mouse cursor if ImGui is drawing it
-    if (io.MouseDrawCursor)
-        SetCursor(NULL);
-
-    // Start the frame
-    ImGui::NewFrame();
 }
