@@ -204,6 +204,8 @@ static void* SceneProducerThreadProc(void*)
 
 	while(1)
 	{
+		Host_ImGui_NewFrame();
+		DbgFont_NewFrame();
 		Scene_DrainMsgQueue();
 
 		if (Scene_HasStopReason(_SceneStopReason_Shutdown)) {
@@ -212,7 +214,10 @@ static void* SceneProducerThreadProc(void*)
 		}
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Developer)) {
-			pragma_todo("ImGui and debug console should still render during ScriptError/Developer states.");
+			dx11_BeginFrameDrawing();
+			DbgFont_SceneRender();
+			ImGui::Render();
+			dx11_SubmitFrameAndSwap();
 			xThreadSleep(32);
 			continue;
 		}
@@ -229,7 +234,12 @@ static void* SceneProducerThreadProc(void*)
 		if (SceneInitialized()) {
 			s_scene_frame_count += 1;
 			SceneLogic();
+
+			dx11_BeginFrameDrawing();
 			SceneRender();
+			DbgFont_SceneRender();
+			ImGui::Render();
+			dx11_SubmitFrameAndSwap();
 		}
 
 		// TODO : framerate pacing (vsync disabled)

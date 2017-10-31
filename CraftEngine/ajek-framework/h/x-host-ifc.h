@@ -125,6 +125,8 @@ struct VirtKeyModifier
 	bool ShiftAlt		()			const	{ return Is(MSK_SHIFT	| MSK_ALT	);	}
 };
 
+extern void				Host_ImGui_NewFrame			();
+
 // --------------------------------------------------------------------------------------
 // These functions return the current state of the keyboard, which is ideal for most
 // gameplay purposes.  These are not appropriate for use from Keyboard Event message
