@@ -15,8 +15,14 @@
 // DirectX
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
+
+// rpgcraft gpu pipeline does not require state backup or restore.
+// the pipeline is built on the rule/assumption that states are not persistent across frames, and imgui is always
+// rendered as the final step in the gpu-rendering process, just prior to Present().
+
+#if !defined(IMGUI_DX11_BACKUP_STATE)
+#	define IMGUI_DX11_BACKUP_STATE		0
+#endif
 
 // Data
 static INT64                    g_Time = 0;
@@ -52,13 +58,18 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
 {
     ID3D11DeviceContext* ctx = g_pd3dDeviceContext;
 
+	// using gpu-ifc's dynamic vertex buffers will improve performance, since our dx11 ifc provides a unique
+	// dynamic vertex buffer per backbuffer, which avoids blocks/stalls rendering current frame while GPU
+	// backend is raserizing prev frame.
+
+	pragma_todo("Update imgui_impl_dx11 to use gpu-ifc's dx11 dynamic vertex buffer API.");
+
     // Create and grow vertex/index buffers if needed
     if (!g_pVB || g_VertexBufferSize < draw_data->TotalVtxCount)
     {
         if (g_pVB) { g_pVB->Release(); g_pVB = NULL; }
         g_VertexBufferSize = draw_data->TotalVtxCount + 5000;
-        D3D11_BUFFER_DESC desc;
-        memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
+        D3D11_BUFFER_DESC desc = {};
         desc.Usage = D3D11_USAGE_DYNAMIC;
         desc.ByteWidth = g_VertexBufferSize * sizeof(ImDrawVert);
         desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -71,8 +82,7 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
     {
         if (g_pIB) { g_pIB->Release(); g_pIB = NULL; }
         g_IndexBufferSize = draw_data->TotalIdxCount + 10000;
-        D3D11_BUFFER_DESC desc;
-        memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
+        D3D11_BUFFER_DESC desc = {};
         desc.Usage = D3D11_USAGE_DYNAMIC;
         desc.ByteWidth = g_IndexBufferSize * sizeof(ImDrawIdx);
         desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -121,6 +131,7 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
         ctx->Unmap(g_pVertexConstantBuffer, 0);
     }
 
+#if IMGUI_DX11_BACKUP_STATE
     // Backup DX state that will be modified to restore it afterwards (unfortunately this is very ugly looking and verbose. Close your eyes!)
     struct BACKUP_DX11_STATE
     {
@@ -162,10 +173,10 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
     ctx->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
     ctx->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
     ctx->IAGetInputLayout(&old.InputLayout);
+#endif
 
     // Setup viewport
-    D3D11_VIEWPORT vp;
-    memset(&vp, 0, sizeof(D3D11_VIEWPORT));
+    D3D11_VIEWPORT vp = {};
     vp.Width = ImGui::GetIO().DisplaySize.x;
     vp.Height = ImGui::GetIO().DisplaySize.y;
     vp.MinDepth = 0.0f;
@@ -216,7 +227,8 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
         vtx_offset += cmd_list->VtxBuffer.Size;
     }
 
-    // Restore modified DX state
+#if IMGUI_DX11_BACKUP_STATE
+	// Restore modified DX state
     ctx->RSSetScissorRects(old.ScissorRectsCount, old.ScissorRects);
     ctx->RSSetViewports(old.ViewportsCount, old.Viewports);
     ctx->RSSetState(old.RS); if (old.RS) old.RS->Release();
@@ -233,80 +245,8 @@ void ImGui_ImplDX11_RenderDrawLists(ImDrawData* draw_data)
     ctx->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset); if (old.IndexBuffer) old.IndexBuffer->Release();
     ctx->IASetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset); if (old.VertexBuffer) old.VertexBuffer->Release();
     ctx->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();
-}
-
-
-// !RPGCRAFT - re-implemented into unified wndproc handler in msw-WinMain
-
-#if 0
-
-static bool IsAnyMouseButtonDown()
-{
-    ImGuiIO& io = ImGui::GetIO();
-    for (int n = 0; n < ARRAYSIZE(io.MouseDown); n++)
-        if (io.MouseDown[n])
-            return true;
-    return false;
-}
-
-// We use the Win32 capture API (GetCapture/SetCapture/ReleaseCapture) to be able to read mouse coordinations when dragging mouse outside of our window bounds.
-IMGUI_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    ImGuiIO& io = ImGui::GetIO();
-    switch (msg)
-    {
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_MBUTTONDOWN:
-    {
-        int button = 0;
-        if (msg == WM_LBUTTONDOWN) button = 0;
-        if (msg == WM_RBUTTONDOWN) button = 1;
-        if (msg == WM_MBUTTONDOWN) button = 2;
-        if (!IsAnyMouseButtonDown() && GetCapture() == NULL)
-            SetCapture(hwnd);
-        io.MouseDown[button] = true;
-        return 0;
-    }
-    case WM_LBUTTONUP:
-    case WM_RBUTTONUP:
-    case WM_MBUTTONUP:
-    {
-        int button = 0;
-        if (msg == WM_LBUTTONUP) button = 0;
-        if (msg == WM_RBUTTONUP) button = 1;
-        if (msg == WM_MBUTTONUP) button = 2;
-        io.MouseDown[button] = false;
-        if (!IsAnyMouseButtonDown() && GetCapture() == hwnd)
-            ReleaseCapture();
-        return 0;
-    }
-    case WM_MOUSEWHEEL:
-        io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-        return 0;
-    case WM_MOUSEMOVE:
-        io.MousePos.x = (signed short)(lParam);
-        io.MousePos.y = (signed short)(lParam >> 16);
-        return 0;
-    case WM_KEYDOWN:
-    case WM_SYSKEYDOWN:
-        if (wParam < 256)
-            io.KeysDown[wParam] = 1;
-        return 0;
-    case WM_KEYUP:
-    case WM_SYSKEYUP:
-        if (wParam < 256)
-            io.KeysDown[wParam] = 0;
-        return 0;
-    case WM_CHAR:
-        // You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-        if (wParam > 0 && wParam < 0x10000)
-            io.AddInputCharacter((unsigned short)wParam);
-        return 0;
-    }
-    return 0;
-}
 #endif
+}
 
 static void ImGui_ImplDX11_CreateFontsTexture()
 {
@@ -318,8 +258,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
 
     // Upload texture to graphics system
     {
-        D3D11_TEXTURE2D_DESC desc;
-        ZeroMemory(&desc, sizeof(desc));
+        D3D11_TEXTURE2D_DESC desc = {};
         desc.Width = width;
         desc.Height = height;
         desc.MipLevels = 1;
@@ -338,8 +277,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
         g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
 
         // Create texture view
-        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-        ZeroMemory(&srvDesc, sizeof(srvDesc));
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = desc.MipLevels;
@@ -353,8 +291,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
 
     // Create texture sampler
     {
-        D3D11_SAMPLER_DESC desc;
-        ZeroMemory(&desc, sizeof(desc));
+        D3D11_SAMPLER_DESC desc = {};
         desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
         desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
         desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -464,8 +401,7 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
 
     // Create the blending setup
     {
-        D3D11_BLEND_DESC desc;
-        ZeroMemory(&desc, sizeof(desc));
+        D3D11_BLEND_DESC desc = {};
         desc.AlphaToCoverageEnable = false;
         desc.RenderTarget[0].BlendEnable = true;
         desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -480,8 +416,7 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
 
     // Create the rasterizer state
     {
-        D3D11_RASTERIZER_DESC desc;
-        ZeroMemory(&desc, sizeof(desc));
+        D3D11_RASTERIZER_DESC desc = {};
         desc.FillMode = D3D11_FILL_SOLID;
         desc.CullMode = D3D11_CULL_NONE;
         desc.ScissorEnable = true;
@@ -491,8 +426,7 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
 
     // Create depth-stencil State
     {
-        D3D11_DEPTH_STENCIL_DESC desc;
-        ZeroMemory(&desc, sizeof(desc));
+        D3D11_DEPTH_STENCIL_DESC desc = {};
         desc.DepthEnable = false;
         desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
         desc.DepthFunc = D3D11_COMPARISON_ALWAYS;
