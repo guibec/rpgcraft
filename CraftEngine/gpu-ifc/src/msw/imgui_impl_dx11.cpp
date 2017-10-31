@@ -254,7 +254,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;
     int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
     // Upload texture to graphics system
     {
@@ -263,7 +263,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
         desc.Height = height;
         desc.MipLevels = 1;
         desc.ArraySize = 1;
-        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.Format = DXGI_FORMAT_A8_UNORM;
         desc.SampleDesc.Count = 1;
         desc.Usage = D3D11_USAGE_DEFAULT;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -272,13 +272,13 @@ static void ImGui_ImplDX11_CreateFontsTexture()
         ID3D11Texture2D *pTexture = NULL;
         D3D11_SUBRESOURCE_DATA subResource;
         subResource.pSysMem = pixels;
-        subResource.SysMemPitch = desc.Width * 4;
+        subResource.SysMemPitch = desc.Width;
         subResource.SysMemSlicePitch = 0;
         g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
 
         // Create texture view
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        srvDesc.Format = DXGI_FORMAT_A8_UNORM;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = desc.MipLevels;
         srvDesc.Texture2D.MostDetailedMip = 0;
@@ -388,7 +388,7 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
             \
             float4 main(PS_INPUT input) : SV_Target\
             {\
-            float4 out_col = input.col * texture0.Sample(sampler0, input.uv); \
+            float4 out_col = input.col * float4(1.0, 1.0, 1.0, texture0.Sample(sampler0, input.uv).a); \
             return out_col; \
             }";
 
