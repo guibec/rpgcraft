@@ -72,6 +72,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gpu-ifc\src\msw\dx11-core_stuff.cpp" />
+    <ClCompile Include="..\..\gpu-ifc\src\msw\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\src\msw\msw-chrono.cpp" />
     <ClCompile Include="..\src\msw\msw-dualshock4.cpp" />
     <ClCompile Include="..\src\msw\msw-GetLastError.cpp" />
@@ -86,6 +87,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\gpu-ifc\h\imgui_impl_dx11.h" />
     <ClInclude Include="..\h\msw-error.h" />
     <ClInclude Include="..\h\msw-redtape.h" />
     <ClInclude Include="..\h\PCH-msw.h" />

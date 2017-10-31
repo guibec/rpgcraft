@@ -62,10 +62,8 @@
   <ItemGroup>
     <ClCompile Include=".\imgui.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
-    <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClInclude Include=".\imgui-internal.h" />
     <ClInclude Include=".\imgui.h" />
-    <ClInclude Include="imgui_impl_dx11.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
