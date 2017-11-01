@@ -15,12 +15,9 @@ namespace VirtKey
 	enum _enum_t {
 		Unmapped		= 0,
 
-		MouseLeft		= 0x10,
-		MouseRight,
-		MouseMiddle,
-
-		Escape			= 0x1000,
+		Escape			= 0x1,
 		Enter,
+		Backspace,
 		Tab,
 		Slash,
 		BackQuote,
@@ -71,7 +68,9 @@ namespace VirtKey
 		RAlt,
 		RWin,
 
-
+		MouseLeft		= 0x100,
+		MouseRight,
+		MouseMiddle,
 	};
 };
 
@@ -137,7 +136,9 @@ struct HostMouseState
 	} pressed;
 };
 
+extern void				Host_ImGui_Init				();
 extern void				Host_ImGui_NewFrame			();
+extern void				_hostImpl_ImGui_NewFrame	();
 
 // --------------------------------------------------------------------------------------
 // These functions return the current state of the keyboard, which is ideal for most

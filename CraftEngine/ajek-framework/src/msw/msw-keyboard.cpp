@@ -20,6 +20,7 @@ VirtKey_t ConvertFromMswVK( UINT key )
 	{
 		case VK_ESCAPE:		return VirtKey::Escape;
 		case VK_RETURN:		return VirtKey::Enter;
+		case VK_BACK:		return VirtKey::Backspace;
 		case VK_TAB:		return VirtKey::Tab;
 		case VK_OEM_2:		return VirtKey::Slash;				// +shift for Question (US layout)
 		case VK_OEM_3:		return VirtKey::BackQuote;			// +shift for tilde	   (US layout)
@@ -83,6 +84,7 @@ UINT ConvertToMswVK( VirtKey_t ours )
 
 		case VirtKey::Escape		:	return VK_ESCAPE		;
 		case VirtKey::Enter			:	return VK_RETURN		;
+		case VirtKey::Backspace		:	return VK_BACK			;
 		case VirtKey::Tab			:	return VK_TAB			;
 		case VirtKey::Separator		:	return VK_SEPARATOR		;
 		case VirtKey::Slash			:	return VK_OEM_2			;	// +shift for Question (US layout)
