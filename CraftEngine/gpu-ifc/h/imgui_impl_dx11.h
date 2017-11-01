@@ -11,7 +11,7 @@ struct ID3D11DeviceContext;
 
 #include "imgui.h"
 
-IMGUI_API bool        ImGui_ImplDX11_Init(void* hwnd, ID3D11Device* device, ID3D11DeviceContext* device_context);
+IMGUI_API bool        ImGui_ImplDX11_Init(ID3D11Device* device, ID3D11DeviceContext* device_context);
 IMGUI_API void        ImGui_ImplDX11_Shutdown();
 
 // Use if you want to reset your rendering device without losing ImGui state.
