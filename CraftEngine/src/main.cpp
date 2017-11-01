@@ -53,17 +53,17 @@ bool s_CanRenderScene = false;
 
 float2 get2dPoint(const float4& point3D, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix)
 {
-    auto viewProjectionMatrix = projectionMatrix * viewMatrix;
+	auto viewProjectionMatrix = projectionMatrix * viewMatrix;
 
-    //transform world to clipping coordinates
-    auto _xform = XMVector3Transform(point3D, viewProjectionMatrix);
+	//transform world to clipping coordinates
+	auto _xform = XMVector3Transform(point3D, viewProjectionMatrix);
 	float4& xform = (float4&)_xform;
 
 	float4 xf2 = xform / xform.w;
 
 	// This assumes viewOffset is center of the screen, directx style.
-    float winX = int (roundf((( xform.x + 1 ) / 2.0) * viewSize.x ));
-    float winY = int (roundf((( 1 - xform.y ) / 2.0) * viewSize.y ));
+	float winX = int (roundf((( xform.x + 1 ) / 2.0) * viewSize.x ));
+	float winY = int (roundf((( 1 - xform.y ) / 2.0) * viewSize.y ));
 
 	// More generic OGL friendly version but I need to determine exactly what viewOffset should be, and I'm lazy --jstine
 	//float winX = ((xf2.x + 1.0) / 2.0) * viewSize.x; // + viewOffset
@@ -119,15 +119,15 @@ void SceneLogic()
 {
 	s_mouse.update();
 
-    {
-        static float f = 0.0f;
-        ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
-        if (ImGui::Button("Test Window")) show_test_window ^= 1;
-        if (ImGui::Button("Another Window")) show_another_window ^= 1;
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    }
+	{
+		static float f = 0.0f;
+		ImGui::Text("Hello, world!");
+		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+		ImGui::ColorEdit3("clear color", (float*)&clear_color);
+		if (ImGui::Button("Test Window")) show_test_window ^= 1;
+		if (ImGui::Button("Another Window")) show_another_window ^= 1;
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	}
 
 	g_console.DrawFrame();
 
@@ -328,26 +328,26 @@ bool Scene_TryLoadInit()
 
 void Host_ImGui_Init()
 {
-    ImGuiIO& io = ImGui::GetIO();
-    io.KeyMap[ImGuiKey_Tab]			= VirtKey::Tab;                       // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
-    io.KeyMap[ImGuiKey_LeftArrow]	= VirtKey::ArrowLeft;
-    io.KeyMap[ImGuiKey_RightArrow]	= VirtKey::ArrowRight;
-    io.KeyMap[ImGuiKey_UpArrow]		= VirtKey::ArrowUp;
-    io.KeyMap[ImGuiKey_DownArrow]	= VirtKey::ArrowDown;
-    io.KeyMap[ImGuiKey_PageUp]		= VirtKey::PageUp;
-    io.KeyMap[ImGuiKey_PageDown]	= VirtKey::PageDown;
-    io.KeyMap[ImGuiKey_Home]		= VirtKey::Home;
-    io.KeyMap[ImGuiKey_End]			= VirtKey::End;
-    io.KeyMap[ImGuiKey_Delete]		= VirtKey::Delete;
-    io.KeyMap[ImGuiKey_Backspace]	= VirtKey::Backspace;
-    io.KeyMap[ImGuiKey_Enter]		= VirtKey::Enter;
-    io.KeyMap[ImGuiKey_Escape]		= VirtKey::Escape;
-    io.KeyMap[ImGuiKey_A]			= 'A';
-    io.KeyMap[ImGuiKey_C]			= 'C';
-    io.KeyMap[ImGuiKey_V]			= 'V';
-    io.KeyMap[ImGuiKey_X]			= 'X';
-    io.KeyMap[ImGuiKey_Y]			= 'Y';
-    io.KeyMap[ImGuiKey_Z]			= 'Z';
+	ImGuiIO& io = ImGui::GetIO();
+	io.KeyMap[ImGuiKey_Tab]			= VirtKey::Tab;                       // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
+	io.KeyMap[ImGuiKey_LeftArrow]	= VirtKey::ArrowLeft;
+	io.KeyMap[ImGuiKey_RightArrow]	= VirtKey::ArrowRight;
+	io.KeyMap[ImGuiKey_UpArrow]		= VirtKey::ArrowUp;
+	io.KeyMap[ImGuiKey_DownArrow]	= VirtKey::ArrowDown;
+	io.KeyMap[ImGuiKey_PageUp]		= VirtKey::PageUp;
+	io.KeyMap[ImGuiKey_PageDown]	= VirtKey::PageDown;
+	io.KeyMap[ImGuiKey_Home]		= VirtKey::Home;
+	io.KeyMap[ImGuiKey_End]			= VirtKey::End;
+	io.KeyMap[ImGuiKey_Delete]		= VirtKey::Delete;
+	io.KeyMap[ImGuiKey_Backspace]	= VirtKey::Backspace;
+	io.KeyMap[ImGuiKey_Enter]		= VirtKey::Enter;
+	io.KeyMap[ImGuiKey_Escape]		= VirtKey::Escape;
+	io.KeyMap[ImGuiKey_A]			= 'A';
+	io.KeyMap[ImGuiKey_C]			= 'C';
+	io.KeyMap[ImGuiKey_V]			= 'V';
+	io.KeyMap[ImGuiKey_X]			= 'X';
+	io.KeyMap[ImGuiKey_Y]			= 'Y';
+	io.KeyMap[ImGuiKey_Z]			= 'Z';
 }
 
 void Host_ImGui_NewFrame()

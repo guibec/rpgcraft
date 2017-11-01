@@ -37,7 +37,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-    ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 
 	switch (msg)
 	{
@@ -76,7 +76,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
 			Scene_PostMessage(SceneMsg_KeyUp, ConvertFromMswVK(wParam));
-        break;
+		break;
 
 		case WM_CHAR: {
 			// UI-style User-input (mouse/keyboard), which use buffered input from Windows
@@ -282,10 +282,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	KPad_SetMapping(g_kpad_axs_map_default);
 
 	// tODO: pulled from imgui - repeal and replace with existing msw-chrono stuff.
-    if (!QueryPerformanceFrequency((LARGE_INTEGER *)&g_TicksPerSecond))
-        return false;
-    if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
-        return false;
+	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&g_TicksPerSecond))
+		return false;
+	if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
+		return false;
 
 	// Drain the message queue first before starting game threads.
 	// No especially good reason for this -- there's just a bunch of poo in the windows
@@ -379,27 +379,27 @@ __eai assert_t Host_AssertionDialog( const xString& title, const xString& messag
 
 void _hostImpl_ImGui_NewFrame()
 {
-    ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 
-    // Setup display size (every frame to accommodate for window resizing)
-    RECT rect;
-    GetClientRect(g_hWnd, &rect);
-    io.ImeWindowHandle	= g_hWnd;
-    io.DisplaySize		= ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+	// Setup display size (every frame to accommodate for window resizing)
+	RECT rect;
+	GetClientRect(g_hWnd, &rect);
+	io.ImeWindowHandle	= g_hWnd;
+	io.DisplaySize		= ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
 
-    // Setup time step
-    INT64 current_time;
-    QueryPerformanceCounter((LARGE_INTEGER *)&current_time);
-    io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
-    g_Time = current_time;
+	// Setup time step
+	INT64 current_time;
+	QueryPerformanceCounter((LARGE_INTEGER *)&current_time);
+	io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
+	g_Time = current_time;
 
-    // io.MouseWheel : filled by WM_MOUSEWHEEL events
+	// io.MouseWheel : filled by WM_MOUSEWHEEL events
 
-    // Read keyboard modifiers inputs
-    io.KeyCtrl	= (::GetAsyncKeyState(VK_CONTROL)	& 0x8000) != 0;
-    io.KeyShift = (::GetAsyncKeyState(VK_SHIFT	)	& 0x8000) != 0;
-    io.KeyAlt	= (::GetAsyncKeyState(VK_MENU	)	& 0x8000) != 0;
-    io.KeySuper = (::GetAsyncKeyState(VK_LWIN	)	& 0x8000) != 0;
+	// Read keyboard modifiers inputs
+	io.KeyCtrl	= (::GetAsyncKeyState(VK_CONTROL)	& 0x8000) != 0;
+	io.KeyShift = (::GetAsyncKeyState(VK_SHIFT	)	& 0x8000) != 0;
+	io.KeyAlt	= (::GetAsyncKeyState(VK_MENU	)	& 0x8000) != 0;
+	io.KeySuper = (::GetAsyncKeyState(VK_LWIN	)	& 0x8000) != 0;
 
 	// Read Mouse position.
 	// Use polling instead of WM_MOUSEMOVE since the windows msg pump isn't on this thread.
@@ -428,6 +428,6 @@ void _hostImpl_ImGui_NewFrame()
 		}
 	}
 
-    // Start the frame
-    ImGui::NewFrame();
+	// Start the frame
+	ImGui::NewFrame();
 }

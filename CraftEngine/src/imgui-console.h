@@ -6,7 +6,7 @@
 struct ImGuiConsole
 {
 	ImGuiTextBuffer			Buf;
-    ImVector<int>			LineOffsets;        // Index to lines offset
+	ImVector<int>			LineOffsets;        // Index to lines offset
 	ImVector<const char*>	Commands;
 	ImVector<char*>			History;
 	int						HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.

@@ -983,13 +983,13 @@ void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
 	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData);
 	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
 
-    D3D11_BUFFER_DESC bd = {};
+	D3D11_BUFFER_DESC bd = {};
 	bd.Usage			= D3D11_USAGE_DEFAULT;
 	bd.ByteWidth		= (bufferSize + 15) & ~15;
 	bd.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags	= 0;
-    auto hr = g_pd3dDevice->CreateBuffer( &bd, nullptr, &buffer );
-    bug_on (FAILED(hr));
+	auto hr = g_pd3dDevice->CreateBuffer( &bd, nullptr, &buffer );
+	bug_on (FAILED(hr));
 }
 
 void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* data)
@@ -1175,7 +1175,7 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 void dx11_ClearRenderTarget(const GPU_RenderTarget& target, const float4& color)
 {
 	g_pImmediateContext->ClearRenderTargetView((ID3D11RenderTargetView*)target.m_driverData, color.f);
-    //g_pImmediateContext->ClearDepthStencilView( g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	//g_pImmediateContext->ClearDepthStencilView( g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 }
 
 #if 0
@@ -1190,45 +1190,45 @@ ID3D11DepthStencilView* g_pDepthStencilView		= nullptr;
 
 DXGI_FORMAT GetDepthResourceFormat(DXGI_FORMAT depthformat)
 {
-    DXGI_FORMAT resformat;
-    switch (depthformat)
-    {
-    case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
-            resformat = DXGI_FORMAT::DXGI_FORMAT_R16_TYPELESS;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
-            resformat = DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
-            resformat = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
-            resformat = DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS;
-            break;
-    }
+	DXGI_FORMAT resformat;
+	switch (depthformat)
+	{
+	case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
+			resformat = DXGI_FORMAT::DXGI_FORMAT_R16_TYPELESS;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
+			resformat = DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
+			resformat = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+			resformat = DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS;
+			break;
+	}
 
-    return resformat;
+	return resformat;
 }
 
 DXGI_FORMAT GetDepthSRVFormat(DXGI_FORMAT depthformat)
 {
-    DXGI_FORMAT srvformat;
-    switch (depthformat)
-    {
-    case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
-            srvformat = DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
-            srvformat = DXGI_FORMAT::DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
-            srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
-            break;
-    case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
-            srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
-            break;
-    }
-    return srvformat;
+	DXGI_FORMAT srvformat;
+	switch (depthformat)
+	{
+	case DXGI_FORMAT::DXGI_FORMAT_D16_UNORM:
+			srvformat = DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT:
+			srvformat = DXGI_FORMAT::DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT:
+			srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
+			break;
+	case DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+			srvformat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
+			break;
+	}
+	return srvformat;
 }
 
 void dx11_CreateDepthStencil()
@@ -1242,20 +1242,20 @@ void dx11_CreateDepthStencil()
 
 	bool create_srv = g_gpu_settings.debugviewer;
 
-    D3D11_TEXTURE2D_DESC descDepth = {};
-    descDepth.Width					= g_backbuffer_size_pix.x;
-    descDepth.Height				= g_backbuffer_size_pix.y;
-    descDepth.MipLevels				= 1;
-    descDepth.ArraySize				= 1;
-    descDepth.Format				= create_srv ? resformat : baseFmt;
-    descDepth.SampleDesc.Count		= 1;
-    descDepth.SampleDesc.Quality	= 0;
-    descDepth.Usage					= D3D11_USAGE_DEFAULT;
-    descDepth.BindFlags				= D3D11_BIND_DEPTH_STENCIL;
-    descDepth.CPUAccessFlags		= 0;
-    descDepth.MiscFlags				= 0;
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width					= g_backbuffer_size_pix.x;
+	descDepth.Height				= g_backbuffer_size_pix.y;
+	descDepth.MipLevels				= 1;
+	descDepth.ArraySize				= 1;
+	descDepth.Format				= create_srv ? resformat : baseFmt;
+	descDepth.SampleDesc.Count		= 1;
+	descDepth.SampleDesc.Quality	= 0;
+	descDepth.Usage					= D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags				= D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags		= 0;
+	descDepth.MiscFlags				= 0;
 
-    hr = g_pd3dDevice->CreateTexture2D( &descDepth, nullptr, &g_pDepthStencil );
+	hr = g_pd3dDevice->CreateTexture2D( &descDepth, nullptr, &g_pDepthStencil );
 	log_and_abort_on(FAILED(hr));
 
 	ID3D11ShaderResourceView* srv = nullptr;
@@ -1269,11 +1269,11 @@ void dx11_CreateDepthStencil()
 		log_and_abort_on(FAILED(hr));
 	}
 
-    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-    descDSV.Format				= descDepth.Format;
-    descDSV.ViewDimension		= D3D11_DSV_DIMENSION_TEXTURE2D;
-    descDSV.Texture2D.MipSlice	= 0;
-    hr = g_pd3dDevice->CreateDepthStencilView( g_pDepthStencil, &descDSV, &g_pDepthStencilView );
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format				= descDepth.Format;
+	descDSV.ViewDimension		= D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice	= 0;
+	hr = g_pd3dDevice->CreateDepthStencilView( g_pDepthStencil, &descDSV, &g_pDepthStencilView );
 	log_and_abort_on(FAILED(hr));
 
 	// Set the Depth Stencil as the Output Merger Target
@@ -1287,7 +1287,7 @@ void dx11_CreateDepthStencil()
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
 	pBackBuffer->Release();
 
-    g_pImmediateContext->OMSetRenderTargets( 1, &rtView, g_pDepthStencilView );
+	g_pImmediateContext->OMSetRenderTargets( 1, &rtView, g_pDepthStencilView );
 	rtView->Release();
 
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
