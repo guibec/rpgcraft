@@ -92,32 +92,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
 		} break;
 
-		case WM_MOUSEMOVE: {
-			io.MousePos.x = (signed short)(lParam);
-			io.MousePos.y = (signed short)(lParam >> 16);
-		} break;
 
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		case WM_MBUTTONDOWN:
 		{
-			int button = 0;
-			if (msg == WM_LBUTTONDOWN) button = 0;
-			if (msg == WM_RBUTTONDOWN) button = 1;
-			if (msg == WM_MBUTTONDOWN) button = 2;
+			// Mouse capture is done via the message pump since it runs on its own "safe" thread
+			// which is at low risk for deadlock and should be quick to respond to the user even
+			// if the game loop is hung up for some reason.  Important since capturing the mouse
+			// is sort of one of those "denial of UI service" things if it's not released. --jstine
 			SetCapture(hWnd);
-			io.MouseDown[button] = true;
 		} break;
 
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
 		case WM_MBUTTONUP:
 		{
-			int button = 0;
-			if (msg == WM_LBUTTONUP) button = 0;
-			if (msg == WM_RBUTTONUP) button = 1;
-			if (msg == WM_MBUTTONUP) button = 2;
-			io.MouseDown[button] = false;
+			// no value to track capture state here -- errant release messages are rare so just
+			// call ReleaseCapture() unconditionally. --jstine
 			ReleaseCapture();
 		} break;
 
@@ -407,27 +399,40 @@ void Host_ImGui_NewFrame()
     io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
     g_Time = current_time;
 
-    // Read keyboard modifiers inputs
-    io.KeyCtrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-    io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
-    io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
-    io.KeySuper = false;
-    // io.KeysDown : filled by WM_KEYDOWN/WM_KEYUP events
-    // io.MousePos : filled by WM_MOUSEMOVE events
-    // io.MouseDown : filled by WM_*BUTTON* events
     // io.MouseWheel : filled by WM_MOUSEWHEEL events
 
-    // Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
-    if (io.WantMoveMouse)
-    {
-        POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
-        ClientToScreen(g_hWnd, &pos);
-        SetCursorPos(pos.x, pos.y);
-    }
+    // Read keyboard modifiers inputs
+    io.KeyCtrl	= (::GetAsyncKeyState(VK_CONTROL)	& 0x8000) != 0;
+    io.KeyShift = (::GetAsyncKeyState(VK_SHIFT	)	& 0x8000) != 0;
+    io.KeyAlt	= (::GetAsyncKeyState(VK_MENU	)	& 0x8000) != 0;
+    io.KeySuper = (::GetAsyncKeyState(VK_LWIN	)	& 0x8000) != 0;
 
-    // Hide OS mouse cursor if ImGui is drawing it
-    if (io.MouseDrawCursor)
-        SetCursor(NULL);
+	// Read Mouse position.
+	// Use polling instead of WM_MOUSEMOVE since the windows msg pump isn't on this thread.
+
+	auto mouseState = HostMouseImm_GetState();
+	io.MousePos = ImVec2(-FLT_MAX,-FLT_MAX);
+
+	if (mouseState.isValid) {
+		io.MousePos = float2(mouseState.clientPos);
+
+		io.MouseDown[0] = mouseState.pressed.LBUTTON;
+		io.MouseDown[1] = mouseState.pressed.RBUTTON;
+		io.MouseDown[2] = mouseState.pressed.MBUTTON;
+
+		// Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
+		if (io.WantMoveMouse)
+		{
+			POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
+			::ClientToScreen(g_hWnd, &pos);
+			::SetCursorPos(pos.x, pos.y);
+		}
+
+		// Hide OS mouse cursor if ImGui is drawing it
+		if (io.MouseDrawCursor) {
+			::SetCursor(NULL);
+		}
+	}
 
     // Start the frame
     ImGui::NewFrame();
