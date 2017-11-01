@@ -125,6 +125,18 @@ struct VirtKeyModifier
 	bool ShiftAlt		()			const	{ return Is(MSK_SHIFT	| MSK_ALT	);	}
 };
 
+struct HostMouseState
+{
+	int2	clientPos;		// position within client relative to upper-left corner
+	bool	isValid;		// set FALSE if the mouse info is stale for some reason (determined by host OS).
+
+	struct {
+		u8	LBUTTON		: 1;
+		u8	RBUTTON		: 1;
+		u8	MBUTTON		: 1;
+	} pressed;
+};
+
 extern void				Host_ImGui_NewFrame			();
 
 // --------------------------------------------------------------------------------------
@@ -143,6 +155,4 @@ extern bool				HostDiag_IsKeyPressed		(VirtKey_t key);
 
 extern void				Host_CaptureMouse			();			// capture included for possible debug usage, but not meant to be used outside of our default wndproc behavior
 extern void				Host_ReleaseMouse			();			// capture included for possible debug usage, but not meant to be used outside of our default wndproc behavior
-extern void				HostMouseImm_UpdatePoll		();
-extern bool				HostMouseImm_HasValidPos	();
-extern int2				HostMouseImm_GetClientPos	();
+extern HostMouseState	HostMouseImm_GetState		();

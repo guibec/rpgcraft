@@ -213,25 +213,6 @@ VirtKeyModifier Host_GetKeyModifierInMsg()
 	return result;
 }
 
-static int2 s_CurrentKnownMousePos		= {};
-static bool s_HasValidMouseInfo			= false;
-
-void HostMouseImm_UpdatePoll()
-{
-	s_HasValidMouseInfo = false;
-
-	POINT meh;
-	BOOL result;
-
-	if (!::GetCursorPos(&meh))				return;
-	if (!::ScreenToClient(g_hWnd, &meh))	return;
-
-	s_CurrentKnownMousePos = { meh.x, meh.y };
-
-	s_HasValidMouseInfo = true;
-}
-
-
 void Host_CaptureMouse()
 {
 	// Capturing Mouse at OS level should not be necessary, if we just rely on polling instead of
@@ -244,16 +225,25 @@ void Host_ReleaseMouse()
 	//::ReleaseCapture();
 }
 
-// returns FALSE if the mouse info is stale for some reason (determined by host OS).
+// set FALSE if the mouse info is stale for some reason (determined by host OS).
 // Staleness occurs when the host mouse polling logic returns an error, which may indicate
 // that no mouse is available, or that its messages have been commandeered by some means.
 
-bool HostMouseImm_HasValidPos()
+HostMouseState HostMouseImm_GetState()
 {
-	return s_HasValidMouseInfo;
-}
+	HostMouseState result = {};
 
-int2 HostMouseImm_GetClientPos()
-{
-	return s_CurrentKnownMousePos;
+	POINT meh;
+
+	result.isValid =					::GetCursorPos(&meh);
+	result.isValid = result.isValid	&&	::ScreenToClient(g_hWnd, &meh);
+
+	if (result.isValid) {
+		result.clientPos = { meh.x, meh.y };
+		result.pressed.LBUTTON = Host_IsKeyPressedGlobally(VirtKey::MouseLeft);
+		result.pressed.RBUTTON = Host_IsKeyPressedGlobally(VirtKey::MouseRight);
+		result.pressed.MBUTTON = Host_IsKeyPressedGlobally(VirtKey::MouseMiddle);
+	}
+
+	return result;
 }
