@@ -520,7 +520,7 @@ void dx11_InitDevice()
 
 	//dx11_CreateDepthStencil();
 
-	ImGui_ImplDX11_Init(g_hWnd, g_pd3dDevice, g_pImmediateContext);
+	ImGui_ImplDX11_Init(g_pd3dDevice, g_pImmediateContext);
 	ImGui_ImplDX11_CreateDeviceObjects();
 }
 

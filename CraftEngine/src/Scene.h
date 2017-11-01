@@ -18,6 +18,11 @@ enum SceneMessageId {
 
 	SceneMsg_Shutdown				= 200,
 
+	SceneMsg_MouseWheelDelta			= 300,		// ferries mousewheel events from windproc to scene thread (for imgui)
+	SceneMsg_KeyDown,
+	SceneMsg_KeyUp,
+	SceneMsg_KeyChar,
+
 	SceneMsg_StopExec				= 530,
 	SceneMsg_StartExec				= 531,
 	SceneMsg_ToggleExec				= 532,

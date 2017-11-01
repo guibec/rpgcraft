@@ -324,3 +324,33 @@ bool Scene_TryLoadInit()
 	s_CanRenderScene = 1;
 	return true;
 }
+
+
+void Host_ImGui_Init()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.KeyMap[ImGuiKey_Tab]			= VirtKey::Tab;                       // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
+    io.KeyMap[ImGuiKey_LeftArrow]	= VirtKey::ArrowLeft;
+    io.KeyMap[ImGuiKey_RightArrow]	= VirtKey::ArrowRight;
+    io.KeyMap[ImGuiKey_UpArrow]		= VirtKey::ArrowUp;
+    io.KeyMap[ImGuiKey_DownArrow]	= VirtKey::ArrowDown;
+    io.KeyMap[ImGuiKey_PageUp]		= VirtKey::PageUp;
+    io.KeyMap[ImGuiKey_PageDown]	= VirtKey::PageDown;
+    io.KeyMap[ImGuiKey_Home]		= VirtKey::Home;
+    io.KeyMap[ImGuiKey_End]			= VirtKey::End;
+    io.KeyMap[ImGuiKey_Delete]		= VirtKey::Delete;
+    io.KeyMap[ImGuiKey_Backspace]	= VirtKey::Backspace;
+    io.KeyMap[ImGuiKey_Enter]		= VirtKey::Enter;
+    io.KeyMap[ImGuiKey_Escape]		= VirtKey::Escape;
+    io.KeyMap[ImGuiKey_A]			= 'A';
+    io.KeyMap[ImGuiKey_C]			= 'C';
+    io.KeyMap[ImGuiKey_V]			= 'V';
+    io.KeyMap[ImGuiKey_X]			= 'X';
+    io.KeyMap[ImGuiKey_Y]			= 'Y';
+    io.KeyMap[ImGuiKey_Z]			= 'Z';
+}
+
+void Host_ImGui_NewFrame()
+{
+	_hostImpl_ImGui_NewFrame();
+}

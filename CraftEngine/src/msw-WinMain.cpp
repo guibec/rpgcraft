@@ -21,6 +21,7 @@ DECLARE_MODULE_NAME("winmain");
 
 extern void			LogHostInit();
 extern void			MSW_InitChrono();
+extern VirtKey_t	ConvertFromMswVK( UINT key );
 
 HINSTANCE               g_hInst					= nullptr;
 HWND                    g_hWnd					= nullptr;
@@ -52,44 +53,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case WM_SYSKEYDOWN: {
-			WPARAM param = wParam;
-			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
+			Scene_PostMessage(SceneMsg_KeyDown, ConvertFromMswVK(wParam));
+			char c = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
 			auto mod = Host_GetKeyModifierInMsg();
 
 			if ((c == 'W' || c == 'w') && mod.Alt()) {
 				g_gpu_ForceWireframe = !g_gpu_ForceWireframe;
 			}
-
-			if (wParam < 256)
-				io.KeysDown[wParam] = 1;
 		} break;
 
 		case WM_KEYDOWN: {
+			Scene_PostMessage(SceneMsg_KeyDown, ConvertFromMswVK(wParam));
 
-			WPARAM param = wParam;
-			char c = MapVirtualKey (param, MAPVK_VK_TO_CHAR);
+			char c = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
 
 			if (c == 'R' || c == 'r') {
 				Scene_PostMessage(SceneMsg_Reload, 0);
 				Scene_PostMessage(SceneMsg_StartExec, SceneStopReason_ScriptError);
 			}
-
-			if (wParam < 256)
-				io.KeysDown[wParam] = 1;
 		} break;
 
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
-			if (wParam < 256)
-				io.KeysDown[wParam] = 0;
+			Scene_PostMessage(SceneMsg_KeyUp, ConvertFromMswVK(wParam));
         break;
 
-		// --------------------------------------------------------------------------------
-		// UI-style User-input (mouse/keyboard), which use buffered input from Windows
-		// instead of per-frame polling used by the gameplay input system.
+		case WM_CHAR: {
+			// UI-style User-input (mouse/keyboard), which use buffered input from Windows
+			// instead of per-frame polling used by the gameplay input system.
+			// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
+			if (wParam > 0 && wParam < 0x10000)
+				Scene_PostMessage(SceneMsg_KeyChar, (unsigned short)wParam);
+		} break;
 
 		case WM_MOUSEWHEEL: {
-			io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
+			double delta = GET_WHEEL_DELTA_WPARAM(wParam) / 120.f;
+			Scene_PostMessage(SceneMsg_MouseWheelDelta, (sptr&)delta);
 		} break;
 
 
@@ -111,12 +110,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			// no value to track capture state here -- errant release messages are rare so just
 			// call ReleaseCapture() unconditionally. --jstine
 			ReleaseCapture();
-		} break;
-
-		case WM_CHAR: {
-			// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-			if (wParam > 0 && wParam < 0x10000)
-				io.AddInputCharacter((unsigned short)wParam);
 		} break;
 
 		default:
@@ -384,14 +377,15 @@ __eai assert_t Host_AssertionDialog( const xString& title, const xString& messag
 	return DoAssertionDialog( title, message + "\n\nAssertionContext:\n" + context );
 }
 
-void Host_ImGui_NewFrame()
+void _hostImpl_ImGui_NewFrame()
 {
     ImGuiIO& io = ImGui::GetIO();
 
     // Setup display size (every frame to accommodate for window resizing)
     RECT rect;
     GetClientRect(g_hWnd, &rect);
-    io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+    io.ImeWindowHandle	= g_hWnd;
+    io.DisplaySize		= ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
 
     // Setup time step
     INT64 current_time;

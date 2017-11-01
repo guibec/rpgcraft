@@ -88,6 +88,7 @@ void Scene_DrainMsgQueue()
 		lock.Unlock();
 		processed = true;
 
+	    ImGuiIO& io = ImGui::GetIO();
 		switch(msg.msgid)
 		{
 			case SceneMsg_StopExec: {
@@ -113,6 +114,27 @@ void Scene_DrainMsgQueue()
 
 			case SceneMsg_Shutdown: {
 				s_scene_isPaused |= _SceneStopReason_Shutdown;
+			} break;
+
+			case SceneMsg_KeyDown: {
+				if (msg.payload < bulkof(io.KeysDown)) {
+					io.KeysDown[msg.payload] = 1;
+				}
+			} break;
+
+			case SceneMsg_KeyUp: {
+				if (msg.payload < bulkof(io.KeysDown)) {
+					io.KeysDown[msg.payload] = 0;
+				}
+			} break;
+
+			case SceneMsg_KeyChar: {
+				io.AddInputCharacter(msg.payload);
+			} break;
+
+			case SceneMsg_MouseWheelDelta: {
+				float delta = float((double&)msg.payload);
+				io.MouseWheel += msg.payload;
 			} break;
 		}
 	}
@@ -201,6 +223,7 @@ static void* GlobalKeyboardThreadProc(void*)
 
 static void* SceneProducerThreadProc(void*)
 {
+	Host_ImGui_Init();
 
 	while(1)
 	{
