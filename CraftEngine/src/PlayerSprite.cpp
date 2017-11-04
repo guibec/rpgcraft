@@ -69,6 +69,14 @@ void PlayerSprite::Tick(int order)
 		}
 	}
 
+	auto relpos = g_mouse.getRelativeToCenter() * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
+	relpos += g_ViewCamera.m_frustrum_in_tiles / 2.f;
+	relpos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
+	ImGui::Text("RelPos   = %5.2f %5.2f", relpos.x, relpos.y);
+	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
+
+	m_position = relpos;
+
 	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
 	g_drawlist_main.Add(this, 1);
 }
@@ -93,7 +101,7 @@ void PlayerSprite::Draw(int order) const
 	} consts;
 
 	consts.relpos			= m_position;
-	consts.TileMapSizeXY	= { g_TileMap.ViewMeshSizeX, g_TileMap.ViewMeshSizeY };
+	consts.TileMapSizeXY	= g_TileMap.ViewMeshSize;
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
 	dx11_BindConstantBuffer		(gpu_constbuf, 1);

@@ -105,6 +105,18 @@ bool Scene_IsKeyPressed(VirtKey_t vk_code)
 	return Host_IsKeyPressedGlobally(vk_code);
 }
 
+struct IndicatorSprite {
+	EntityGid_t					m_gid;
+	float2						m_position;		// specified in tile coords
+
+	struct {
+		GPU_TextureResource2D	tex;
+		GPU_VertexBuffer		mesh;
+	} gpu;
+};
+
+IndicatorSprite			s_indicator;
+
 void SceneLogic()
 {
 	g_drawlist_main.Clear();
@@ -149,15 +161,15 @@ void SceneInputPoll()
 
 GPU_ConstantBuffer		g_gpu_constbuf;
 
-void ViewCamera::Reset()
+void ViewCamera::SceneInit()
 {
 	// Note: current default values are just for testing ... no other significant meaning
 
 	// Eye and At should move laterally together so that the eye is always looking straight down
 	// at a specific point on the map.
 
-	m_Eye	= { 0.0f, 0.5f, -1.0f, 0.0f };
-	m_At	= { 0.0f, 0.5f,  1.0f, 0.0f };
+	m_Eye	= { 0.0f, 0.0f, -1.0f, 0.0f };
+	m_At	= { 0.0f, 0.0f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 
 	m_aspect				= g_backbuffer_aspect_ratio;
@@ -298,7 +310,7 @@ bool Scene_TryLoadInit()
 	PlaceEntity(g_ViewCamera);
 	PlaceEntity(g_TileMap);
 
-	g_ViewCamera.Reset();
+	g_ViewCamera.SceneInit();
 	g_TileMap.SceneInit("WorldView");
 
 	auto* player	= NewEntity(PlayerSprite);

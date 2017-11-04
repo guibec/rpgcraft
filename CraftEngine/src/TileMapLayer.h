@@ -18,7 +18,7 @@ public:
 	ViewCamera() {
 	}
 
-	void			Reset		();
+	void			SceneInit		();
 	void			SetEyeAt	(const float2& xy);
 	float4			ClientToWorld(const int2& clientPosInPix);
 
@@ -34,8 +34,7 @@ public:
 		vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
 		vInt2	SrcTexSizeInTiles;
 		vFloat2	SrcTexTileSizeUV;
-		u32		TileMapSizeX;
-		u32		TileMapSizeY;
+		int2	TileMapSize;
 	};
 
 public:
@@ -53,10 +52,9 @@ public:
 		GPU_TileMapConstants	consts;
 	} gpu;
 
-	int ViewMeshSizeX			= 24;
-	int ViewMeshSizeY			= 24;
-	int ViewInstanceCount		= 0;
-	int ViewVerticiesCount		= 0;
+	int2 ViewMeshSize;
+	int ViewInstanceCount;
+	int ViewVerticiesCount;
 
 public:
 	TileMapLayer();
@@ -67,9 +65,8 @@ public:
 	virtual void Draw() const;
 };
 
-
-extern ViewCamera		g_ViewCamera;
-extern TileMapLayer		g_TileMap;
+extern ViewCamera			g_ViewCamera;
+extern TileMapLayer			g_TileMap;
 
 extern GPU_ShaderVS			g_ShaderVS_Tiler;
 extern GPU_ShaderFS			g_ShaderFS_Tiler;
