@@ -161,6 +161,14 @@ void TickableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
 	}
 }
 
+// todo: m_hashed is only needed for persistent-style entity lists, where quick removal is important.
+// Draw lists will instead be non-persistent, wiped before each Logic() update.  Therefore this container
+// doesn't need fast removal capability.  Using a hashed set should still be fine for performance.
+// On theory a linked list might be slightly faster for sorted insertion... but they have a lot of other
+// drawbacks so let's stick to the set unless it becomes a problem.  --jstine
+
+pragma_todo("Simplify DrawableEntityContainer based on the idea that it is emptied and re-populated on every frame.");
+
 void DrawableEntityContainer::_Add(const DrawableEntityItem& entityInfo)
 {
 	m_hashed	.insert( { entityInfo.orderGidPair.Gid(), entityInfo.orderGidPair } );

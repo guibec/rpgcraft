@@ -42,8 +42,14 @@ bool					g_gpu_ForceWireframe	= false;
 
 GPU_TextureResource2D	tex_chars;
 
-static TickableEntityContainer		g_tickable_entities;
-static DrawableEntityContainer		g_drawable_entities;
+TickableEntityContainer		g_tickable_entities;
+
+// Primary global draw lists:
+//   g_drawlist_main - defaults to worldmap coordinate space, drawn after TileMapLayer
+//   g_drawlist_ui   - defaults to ratio coordinate space, drawn after g_drawlist_main
+
+DrawableEntityContainer		g_drawlist_main;
+DrawableEntityContainer		g_drawlist_ui;
 
 
 ViewCamera		g_ViewCamera;
@@ -101,6 +107,7 @@ bool Scene_IsKeyPressed(VirtKey_t vk_code)
 
 void SceneLogic()
 {
+	g_drawlist_main.Clear();
 	g_mouse.update();
 
 	{
@@ -224,7 +231,7 @@ void SceneRender()
 
 	g_TileMap.Draw();
 
-	for(const auto& entitem : g_drawable_entities.ForEachAlpha())
+	for(const auto& entitem : g_drawlist_main.ForEachAlpha())
 	{
 		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
 		bug_on_qa(!entity);
@@ -268,7 +275,7 @@ bool Scene_TryLoadInit()
 	// Make sure to clear previous Schene/State information:
 
 	g_tickable_entities.Clear();
-	g_drawable_entities.Clear();
+	g_drawlist_main.Clear();
 
 	UniformMeshes_InitGlobalResources();
 
@@ -297,7 +304,6 @@ bool Scene_TryLoadInit()
 	auto* player	= NewEntity(PlayerSprite);
 
 	g_tickable_entities.Add(player, 10);
-	g_drawable_entities.Add(player, 10);
 
 	dx11_CreateConstantBuffer(g_gpu_constbuf,		sizeof(GPU_ViewCameraConsts));
 

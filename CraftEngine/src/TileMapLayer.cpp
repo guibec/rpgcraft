@@ -246,7 +246,8 @@ void TileMapLayer::Tick() {
 	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
 
 	// todo - decide on a function name, and refine the sprite draw listing mechanic.
-	//SceneSpriteList_Add(relpos, );
+//	g_drawlist_main.Add();
+
 
 	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(-g_ViewCamera.m_Eye.y));
 	gpu.consts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
