@@ -232,6 +232,7 @@ struct TickableEntityContainer {
 // --------------------------------------------------------------------------------------
 //  DrawableEntityContainer
 // --------------------------------------------------------------------------------------
+
 struct DrawableEntityContainer {
 	typedef std::unordered_multimap<EntityGid_t, EntityGidOrderPair, FunctHashEntityItem>			HashedContainerType;
 	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>								OrderedContainerType;

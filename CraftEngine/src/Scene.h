@@ -7,6 +7,8 @@
 
 #include "ajek-script.h"
 #include "imgui.h"
+#include "Entity.h"
+
 
 // Scene Messaging Remarks:
 //   Scene Messages are processed at a rate matching the FPS of the title.  This is between 8ms and 48ms.
@@ -75,6 +77,9 @@ extern void			Scene_DrainMsgQueue					();
 extern bool			Scene_HasStopReason					(u32 stopReason = ~0);
 
 extern bool			Scene_IsKeyPressed					(VirtKey_t vk_code);
+
+extern DrawableEntityContainer		g_drawlist_main;
+extern DrawableEntityContainer		g_drawlist_ui;
 
 namespace
 {

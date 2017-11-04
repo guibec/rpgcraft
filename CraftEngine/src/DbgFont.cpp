@@ -1179,7 +1179,7 @@ void DbgFont_LoadInit()
 	//  What might be nice here is to build all the known tables and populate them with defaults during
 	//  a lua-environment-init step.  Members can be given metadata comments, if desired.  Once populated,
 	//  the tables can be displayed using Lua Inspect module (should be included in the repo), eg:
-    //
+	//
 	//     $ print(inspect(DbgConsole))
 	//
 	//  ... which neatly displays all members supported by the game engine, including metadata comments,

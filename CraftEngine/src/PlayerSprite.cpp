@@ -70,6 +70,7 @@ void PlayerSprite::Tick(int order)
 	}
 
 	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
+	g_drawlist_main.Add(this, 1);
 }
 
 
