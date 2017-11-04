@@ -6,9 +6,14 @@
 
 #include "imgui_impl_dx11.h"
 
+bool Mouse::isPressed(VirtKey_t button) const
+{
+	return isInScene() && Host_IsKeyPressedGlobally(button);
+}
+
 void Mouse::update()
 {
-    m_mouse_in_scene = false;
+	m_mouse_in_scene = false;
 	m_scene_has_focus = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
 
 	if (!ImGui::GetIO().WantCaptureMouse) {

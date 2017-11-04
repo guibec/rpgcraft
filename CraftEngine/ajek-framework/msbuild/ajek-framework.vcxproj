@@ -111,6 +111,7 @@
     <ClInclude Include="..\h\x-thread.h" />
     <ClInclude Include="..\h\x-ThrowContext.h" />
     <ClInclude Include="..\h\x-types.h" />
+    <ClInclude Include="..\h\x-virtkey.h" />
     <ClInclude Include="..\src\PCH-framework.h" />
     <ClInclude Include="..\h\x-MemCopy.inl" />
   </ItemGroup>
