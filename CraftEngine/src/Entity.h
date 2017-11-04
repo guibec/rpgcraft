@@ -108,7 +108,7 @@ struct DrawableEntityItem
 	EntityFn_Draw*			Draw;
 };
 
-// Needed only for TickableEntityContainer, due to DrawableEntityContainer being const iterator at all times.
+// Needed only for TickableEntityContainer, due to OrderedDrawList being const iterator at all times.
 // (modification of drawable entity list during draw is invalid.  It can only be modified from tick context).
 struct EntityContainerEvent
 {
@@ -227,18 +227,88 @@ struct TickableEntityContainer {
 			ExecEventQueue();
 		}
 	}
+
+	struct ForeachIfcForward
+	{
+		TickableEntityContainer*	m_entityList;
+
+		ForeachIfcForward(TickableEntityContainer& src) {
+			m_entityList = &src;
+			m_entityList->EnterIteratorMode();
+		}
+
+		~ForeachIfcForward() throw()
+		{
+			if (m_entityList) {
+				m_entityList->LeaveIteratorMode();
+				m_entityList = nullptr;
+			}
+		}
+
+		__ai auto begin		()	const { return m_entityList->m_ordered.begin();		}
+		__ai auto end		()	const { return m_entityList->m_ordered.end();		}
+		__ai auto cbegin	()	const { return m_entityList->m_ordered.begin();		}
+		__ai auto cend		()	const { return m_entityList->m_ordered.end();		}
+
+	};
+
+	struct ForeachIfcReverse
+	{
+		TickableEntityContainer*	m_entityList;
+
+		ForeachIfcReverse(TickableEntityContainer& src) {
+			m_entityList = &src;
+			m_entityList->EnterIteratorMode();
+		}
+
+		ForeachIfcReverse(ForeachIfcReverse&& rvalue)
+		{
+			m_entityList		= rvalue.m_entityList;
+			rvalue.m_entityList = nullptr;
+		}
+
+		ForeachIfcReverse& operator=(ForeachIfcReverse&& rvalue)
+		{
+			std::swap(m_entityList, rvalue.m_entityList);
+			return *this;
+		}
+
+		~ForeachIfcReverse() throw()
+		{
+			if (m_entityList) {
+				m_entityList->LeaveIteratorMode();
+				m_entityList = nullptr;
+			}
+		}
+
+		__ai auto begin		()	const { return m_entityList->m_ordered.rbegin();	}
+		__ai auto end		()	const { return m_entityList->m_ordered.rend();		}
+		__ai auto cbegin	()	const { return m_entityList->m_ordered.rbegin();	}
+		__ai auto cend		()	const { return m_entityList->m_ordered.rend();		}
+
+	};
+
 };
 
 // --------------------------------------------------------------------------------------
-//  DrawableEntityContainer
+//  OrderedDrawList
 // --------------------------------------------------------------------------------------
-
-struct DrawableEntityContainer {
-	typedef std::unordered_multimap<EntityGid_t, EntityGidOrderPair, FunctHashEntityItem>			HashedContainerType;
+// Draw are designed to be non-persistent: wiped before each Logic() update and then re-populated
+// with new scene entities.  Lists are built for fast insert and fast ordered traversal.  Item
+// removal is extremely slow.  Use drawing masking variables embedded into specific item data if
+// you encounter situations where it's useful to remove objects in a draw list.
+//
+struct OrderedDrawList {
 	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>								OrderedContainerType;
 
-	HashedContainerType				m_hashed;
+	// Intentionally lacks a hashed container.  Element removal is extremely slow for this reason.
+	// If logic demands that an item in the draw list be removed after it has been added for some
+	// reason, then the best strategy is to add a "drawing mask" value to the object that allows
+	// it to skip drawing -- and then modify that.
+
 	OrderedContainerType			m_ordered;
+
+	float4							m_visibleArea;			// visible area/frustrum - in tile coords
 
 	// Add/Remove note:
 	//  * modification of drawable entity list during draw is invalid.  It can only be modified from tick context/
@@ -256,119 +326,58 @@ struct DrawableEntityContainer {
 		Add(order, entity->m_gid, [](const void* entity, int order) { ((T*)entity)->Draw(order); } );
 	}
 
-
 	auto ForEachOpaque	() const;
 	auto ForEachAlpha	() const;
-};
 
-struct TickableEntityForeachIfc_Forward
-{
-	TickableEntityContainer*	m_entityList;
-
-	TickableEntityForeachIfc_Forward(TickableEntityContainer& src) {
-		m_entityList = &src;
-		m_entityList->EnterIteratorMode();
-	}
-
-	~TickableEntityForeachIfc_Forward() throw()
+	struct ForeachIfcOpaque
 	{
-		if (m_entityList) {
-			m_entityList->LeaveIteratorMode();
-			m_entityList = nullptr;
+		const OrderedDrawList*	m_drawList;
+
+		ForeachIfcOpaque(const OrderedDrawList& src) {
+			m_drawList = &src;
 		}
-	}
 
-	__ai auto begin		()	const { return m_entityList->m_ordered.begin();		}
-	__ai auto end		()	const { return m_entityList->m_ordered.end();		}
-	__ai auto cbegin	()	const { return m_entityList->m_ordered.begin();		}
-	__ai auto cend		()	const { return m_entityList->m_ordered.end();		}
+		__ai auto begin		()	const { return m_drawList->m_ordered.cbegin();	}
+		__ai auto end		()	const { return m_drawList->m_ordered.cend();	}
+		__ai auto cbegin	()	const { return m_drawList->m_ordered.cbegin();	}
+		__ai auto cend		()	const { return m_drawList->m_ordered.cend();	}
 
-};
+	};
 
-struct TickableEntityForeachIfc_Reverse
-{
-	TickableEntityContainer*	m_entityList;
-
-	TickableEntityForeachIfc_Reverse(TickableEntityContainer& src) {
-		m_entityList = &src;
-		m_entityList->EnterIteratorMode();
-	}
-
-	TickableEntityForeachIfc_Reverse(TickableEntityForeachIfc_Reverse&& rvalue)
+	struct ForeachIfcAlpha
 	{
-		m_entityList		= rvalue.m_entityList;
-		rvalue.m_entityList = nullptr;
-	}
+		const OrderedDrawList*	m_drawList;
 
-	TickableEntityForeachIfc_Reverse& operator=(TickableEntityForeachIfc_Reverse&& rvalue)
-	{
-		std::swap(m_entityList, rvalue.m_entityList);
-		return *this;
-	}
-
-	~TickableEntityForeachIfc_Reverse() throw()
-	{
-		if (m_entityList) {
-			m_entityList->LeaveIteratorMode();
-			m_entityList = nullptr;
+		ForeachIfcAlpha(const OrderedDrawList& src) {
+			m_drawList = &src;
 		}
-	}
 
-	__ai auto begin		()	const { return m_entityList->m_ordered.rbegin();	}
-	__ai auto end		()	const { return m_entityList->m_ordered.rend();		}
-	__ai auto cbegin	()	const { return m_entityList->m_ordered.rbegin();	}
-	__ai auto cend		()	const { return m_entityList->m_ordered.rend();		}
+		__ai auto begin		()	const { return m_drawList->m_ordered.crbegin();	}
+		__ai auto end		()	const { return m_drawList->m_ordered.crend();	}
+		__ai auto cbegin	()	const { return m_drawList->m_ordered.crbegin();	}
+		__ai auto cend		()	const { return m_drawList->m_ordered.crend();	}
 
-};
-
-struct DrawableEntityForeachIfc_OpaqueOrder
-{
-	const DrawableEntityContainer*	m_entityList;
-
-	DrawableEntityForeachIfc_OpaqueOrder(const DrawableEntityContainer& src) {
-		m_entityList = &src;
-	}
-
-	__ai auto begin		()	const { return m_entityList->m_ordered.cbegin();	}
-	__ai auto end		()	const { return m_entityList->m_ordered.cend();		}
-	__ai auto cbegin	()	const { return m_entityList->m_ordered.cbegin();	}
-	__ai auto cend		()	const { return m_entityList->m_ordered.cend();		}
-
-};
-
-struct DrawableEntityForeachIfc_AlphaOrder
-{
-	const DrawableEntityContainer*	m_entityList;
-
-	DrawableEntityForeachIfc_AlphaOrder(const DrawableEntityContainer& src) {
-		m_entityList = &src;
-	}
-
-	__ai auto begin		()	const { return m_entityList->m_ordered.crbegin();	}
-	__ai auto end		()	const { return m_entityList->m_ordered.crend();		}
-	__ai auto cbegin	()	const { return m_entityList->m_ordered.crbegin();	}
-	__ai auto cend		()	const { return m_entityList->m_ordered.crend();		}
-
+	};
 };
 
 // ------------------------------------------------------------------------------------------------
 
 inline auto TickableEntityContainer::ForEachForward()
 {
-	return TickableEntityForeachIfc_Forward(*this);
+	return ForeachIfcForward(*this);
 }
 
 inline auto TickableEntityContainer::ForEachReverse()
 {
-	return TickableEntityForeachIfc_Reverse(*this);
+	return ForeachIfcReverse(*this);
 }
 
-inline auto DrawableEntityContainer::ForEachOpaque() const {
-	return DrawableEntityForeachIfc_OpaqueOrder(*this);
+inline auto OrderedDrawList::ForEachOpaque() const {
+	return ForeachIfcOpaque(*this);
 }
 
-inline auto DrawableEntityContainer::ForEachAlpha() const {
-	return DrawableEntityForeachIfc_AlphaOrder(*this);
+inline auto OrderedDrawList::ForEachAlpha() const {
+	return ForeachIfcAlpha(*this);
 }
 
 inline EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order)
