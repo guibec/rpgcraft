@@ -57,6 +57,9 @@ struct vFloat2
 	vFloat2(const float2& src);
 	vFloat2(const int2& src);
 
+	explicit operator int2() const;
+	explicit operator float2() const;
+
 	vFloat2& operator+=(const vFloat2& right) {
 		x += right.x;
 		y += right.y;
@@ -75,6 +78,9 @@ struct vFloat2
 		return vFloat2(x * right.x, y * right.y);
 	}
 };
+
+inline vFloat2::operator int2()   const { return int2   { (int)  x, (int)  y }; }
+inline vFloat2::operator float2() const { return float2 {		 x,		   y }; }
 
 struct vInt2
 {

@@ -7,6 +7,9 @@ union float4;
 union int2;
 union int4;
 
+struct vFloat2;
+struct vFloat4;
+
 // non MSVC and an old MSVC don't have _mm_undefined_*.
 // (gsgdb needs to be built with vs2010, because gtkmm libraries were with them...)
 
@@ -544,8 +547,8 @@ union int2 {
 
 	u64			_i64val;
 
-
-	explicit operator float2() const;
+	explicit operator float2 () const;
+	explicit operator vFloat2() const;
 
 	// note: intentionally omitted u64 operator assignment.
 
@@ -747,6 +750,11 @@ inline __ai float2 fabsf(const float2& src)
 inline __ai float2 floorf(const float2& src)
 {
 	return { floorf(src.x), floorf(src.y) };
+}
+
+inline __ai float2 ceilf(const float2& src)
+{
+	return { ceilf(src.x), ceilf(src.y) };
 }
 
 // floorf(int2) -- convenience function which just returns input unmodified.
