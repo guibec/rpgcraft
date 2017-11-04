@@ -167,37 +167,27 @@ void TickableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
 // On theory a linked list might be slightly faster for sorted insertion... but they have a lot of other
 // drawbacks so let's stick to the set unless it becomes a problem.  --jstine
 
-pragma_todo("Simplify DrawableEntityContainer based on the idea that it is emptied and re-populated on every frame.");
-
-void DrawableEntityContainer::_Add(const DrawableEntityItem& entityInfo)
+void OrderedDrawList::_Add(const DrawableEntityItem& entityInfo)
 {
-	m_hashed	.insert( { entityInfo.orderGidPair.Gid(), entityInfo.orderGidPair } );
 	m_ordered	.insert(entityInfo);
 }
 
-void DrawableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
+// SLOW!  Do not use, except for rapid iteration or debugging purpose.
+void OrderedDrawList::Remove(EntityGid_t entityGid, u32 order)
 {
-	auto hashit = m_hashed.equal_range( entityGid );
+	// Impl dependent erase, should be logarithmic (bisect search).
+	// Pretty sure set::erase(object{}) does a full comparision match after finding an item,
+	// which means matching the drawfunc in addition to GID and order.  So use find() and
+	// erase(it) instead so that drawFunc can be nullptr.
 
-	if (hashit.first == m_hashed.end()) {
-		// item not found... ?
-		return;
-	}
-
-	for (auto it=hashit.first; it!=hashit.second; ++it) {
-		if (order != (u32)-1) {
-			if (it->second.Order() != order) {
-				continue;
-			}
-		}
-		// don't care about function ptr, it's not checked as part of set comparison operation.
-		m_ordered.erase({ it->second, nullptr });
-		m_hashed.erase(it);
+	//m_ordered.erase( { MakeGidOrder(entityGid, order), nullptr } );		// simple one, see above.
+	auto it = m_ordered.find ( { MakeGidOrder(entityGid, order), nullptr } );
+	if (it != m_ordered.end()) {
+		m_ordered.erase( it );
 	}
 }
 
-void DrawableEntityContainer::Clear()
+void OrderedDrawList::Clear()
 {
-	m_hashed	.clear();
 	m_ordered	.clear();
 }

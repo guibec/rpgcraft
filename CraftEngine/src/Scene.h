@@ -78,8 +78,8 @@ extern bool			Scene_HasStopReason					(u32 stopReason = ~0);
 
 extern bool			Scene_IsKeyPressed					(VirtKey_t vk_code);
 
-extern DrawableEntityContainer		g_drawlist_main;
-extern DrawableEntityContainer		g_drawlist_ui;
+extern OrderedDrawList		g_drawlist_main;
+extern OrderedDrawList		g_drawlist_ui;
 
 namespace
 {

@@ -48,8 +48,8 @@ TickableEntityContainer		g_tickable_entities;
 //   g_drawlist_main - defaults to worldmap coordinate space, drawn after TileMapLayer
 //   g_drawlist_ui   - defaults to ratio coordinate space, drawn after g_drawlist_main
 
-DrawableEntityContainer		g_drawlist_main;
-DrawableEntityContainer		g_drawlist_ui;
+OrderedDrawList		g_drawlist_main;
+OrderedDrawList		g_drawlist_ui;
 
 
 ViewCamera		g_ViewCamera;
