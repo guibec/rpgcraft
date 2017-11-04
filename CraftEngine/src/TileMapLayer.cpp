@@ -44,9 +44,10 @@ void TileMapLayer::SceneInit(const char* script_objname)
 
 	auto& script = g_scriptEnv;
 
+	// Add +1 to cover overlap area when tile is not "centered" on the screen
 	// TODO: determine actual overage to render based on viewcamera angle.
-	ViewMeshSize = int2(g_ViewCamera.m_frustrum_in_tiles * 1.50f);
-	ViewMeshSize = int2(g_ViewCamera.m_frustrum_in_tiles * 1.00f);
+	//ViewMeshSize = int2(ceilf((g_ViewCamera.m_frustrum_in_tiles + 1) * 1.50f));
+	ViewMeshSize = int2(ceilf((g_ViewCamera.m_frustrum_in_tiles + 1) * 1.00f));		// for now this is OK
 
 	//if (auto& worldViewTab = script.glob_open_table(script_objname))
 	//{
