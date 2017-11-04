@@ -96,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="..\..\gpu-ifc\h\x-gpu-colors.h" />
     <ClInclude Include="..\..\gpu-ifc\h\x-gpu-ifc.h" />
+    <ClInclude Include="..\h\x-virtkey.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">

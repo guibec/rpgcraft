@@ -48,6 +48,7 @@ static DrawableEntityContainer		g_drawable_entities;
 
 ViewCamera		g_ViewCamera;
 TileMapLayer	g_TileMap;
+Mouse			g_mouse;
 
 bool s_CanRenderScene = false;
 
@@ -92,45 +93,24 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
-Mouse s_mouse;
-
-float2 SceneMouse_GetPosRelativeToCenter()
-{
-	return s_mouse.getRelativeToCenter();
-}
-
-bool SceneMouse_HasValidPos()
-{
-	return s_mouse.isInScene();
-}
-
 bool Scene_IsKeyPressed(VirtKey_t vk_code)
 {
-	if (!s_mouse.hasFocus())		{ return false; }
+	if (!g_mouse.hasFocus())		{ return false; }
 	return Host_IsKeyPressedGlobally(vk_code);
 }
 
-
-bool show_test_window = true;
-bool show_another_window = false;
-ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
 void SceneLogic()
 {
-	s_mouse.update();
+	g_mouse.update();
 
 	{
 		static float f = 0.0f;
-		ImGui::Text("Hello, world!");
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-		ImGui::ColorEdit3("clear color", (float*)&clear_color);
-		if (ImGui::Button("Test Window")) show_test_window ^= 1;
-		if (ImGui::Button("Another Window")) show_another_window ^= 1;
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		//ImGui::Text("Hello, world!");
+		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	g_console.DrawFrame();
-
 	g_TileMap.Tick();
 
 	for(auto& entitem : g_tickable_entities.ForEachForward())

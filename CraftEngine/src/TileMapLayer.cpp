@@ -222,8 +222,31 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 	// Sort various sprite batches
 }
 
+#include "Mouse.h"
+
+// 8x9 .. TODO: convert this into a texture given a simple legend.
+const char *TestDot[] = {
+	"---------",
+	"----+----",
+	"--+++++--",
+	"+++++++++",
+	"+++++++++",
+	"--+++++--",
+	"----+----",
+	"---------",
+};
+
 void TileMapLayer::Tick() {
 	// determine tile map draw position according to camera position.
+
+	auto relpos = g_mouse.getRelativeToCenter() * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
+	relpos += g_ViewCamera.m_frustrum_in_tiles / 2.f;
+	relpos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
+	ImGui::Text("RelPos   = %5.2f %5.2f", relpos.x, relpos.y);
+	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
+
+	// todo - decide on a function name, and refine the sprite draw listing mechanic.
+	//SceneSpriteList_Add(relpos, );
 
 	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(-g_ViewCamera.m_Eye.y));
 	gpu.consts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);

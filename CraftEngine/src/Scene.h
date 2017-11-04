@@ -74,8 +74,6 @@ extern void			Scene_PostMessage					(SceneMessageId msgId, sptr payload);
 extern void			Scene_DrainMsgQueue					();
 extern bool			Scene_HasStopReason					(u32 stopReason = ~0);
 
-extern float2		SceneMouse_GetPosRelativeToCenter();
-extern bool			SceneMouse_HasValidPos				();
 extern bool			Scene_IsKeyPressed					(VirtKey_t vk_code);
 
 namespace
