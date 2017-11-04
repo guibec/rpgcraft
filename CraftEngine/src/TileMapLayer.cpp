@@ -44,34 +44,32 @@ void TileMapLayer::SceneInit(const char* script_objname)
 
 	auto& script = g_scriptEnv;
 
-	// default test values in case script loading is bypassed.
-	ViewMeshSizeX = 24;
-	ViewMeshSizeY = 24;
-	ViewInstanceCount	= ViewMeshSizeY * ViewMeshSizeX;
-	ViewVerticiesCount	= ViewInstanceCount * 6;
+	// TODO: determine actual overage to render based on viewcamera angle.
+	ViewMeshSize = int2(g_ViewCamera.m_frustrum_in_tiles * 1.50f);
+	ViewMeshSize = int2(g_ViewCamera.m_frustrum_in_tiles * 1.00f);
 
+	//if (auto& worldViewTab = script.glob_open_table(script_objname))
+	//{
+	//	auto tileSheetFilename	= worldViewTab.get_string("TileSheet");
+	//
+	//	if (auto getMeshSize = worldViewTab.push_func("getMeshSize")) {
+	//		getMeshSize.pusharg("desktop");
+	//		getMeshSize.pusharg(1920.0f);
+	//		getMeshSize.pusharg(1080.0f);
+	//		getMeshSize.execcall(2);		// 2 - num return values
+	//		float SizeX = getMeshSize.getresult<float>();
+	//		float SizeY = getMeshSize.getresult<float>();
+	//
+	//		ViewMeshSizeX = int(std::ceilf(SizeX / TileSizeX));
+	//		ViewMeshSizeY = int(std::ceilf(SizeY / TileSizeY));
+	//
+	//		ViewMeshSizeX = std::min(ViewMeshSizeX, WorldSizeX);
+	//		ViewMeshSizeY = std::min(ViewMeshSizeY, WorldSizeY);
+	//	}
+	//}
 
-	if (auto& worldViewTab = script.glob_open_table(script_objname))
-	{
-		auto tileSheetFilename	= worldViewTab.get_string("TileSheet");
-
-		if (auto getMeshSize = worldViewTab.push_func("getMeshSize")) {
-			getMeshSize.pusharg("desktop");
-			getMeshSize.pusharg(1920.0f);
-			getMeshSize.pusharg(1080.0f);
-			getMeshSize.execcall(2);		// 2 - num return values
-			float SizeX = getMeshSize.getresult<float>();
-			float SizeY = getMeshSize.getresult<float>();
-
-			ViewMeshSizeX = int(std::ceilf(SizeX / TileSizeX));
-			ViewMeshSizeY = int(std::ceilf(SizeY / TileSizeY));
-
-			ViewMeshSizeX = std::min(ViewMeshSizeX, WorldSizeX);
-			ViewMeshSizeY = std::min(ViewMeshSizeY, WorldSizeY);
-			ViewInstanceCount  = ViewMeshSizeY * ViewMeshSizeX;
-			ViewVerticiesCount = ViewInstanceCount * 6;
-		}
-	}
+	ViewInstanceCount  = ViewMeshSize.y * ViewMeshSize.x;
+	ViewVerticiesCount = ViewInstanceCount * 6;
 
 	if (1) {
 		xBitmapData  pngtex;
@@ -106,7 +104,7 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	// TODO: only want to initialize this once for all tilemap instances.
 	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
 
-	dx11_CreateStaticMesh(gpu.mesh_tile,				g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
+	dx11_CreateStaticMesh(gpu.mesh_tile, g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 	//dx11_CreateStaticMesh(gpu.mesh_worldViewTileID,		g_ViewTileID,		sizeof(g_ViewTileID[0]),		ViewInstanceCount);
 	dx11_CreateDynamicVertexBuffer(gpu.mesh_worldViewTileID, sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 
@@ -152,11 +150,11 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 	vFloat2 incr_set_uv = vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY);
 	vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
-	for (int yl=0; yl<ViewMeshSizeY; ++yl) {
-		for (int xl=0; xl<ViewMeshSizeX; ++xl) {
+	for (int yl=0; yl<ViewMeshSize.y; ++yl) {
+		for (int xl=0; xl<ViewMeshSize.x; ++xl) {
 			int y = yl + viewport_offset.y;
 			int x = xl + viewport_offset.x;
-			int instanceId	= ((yl*ViewMeshSizeX) + xl);
+			int instanceId	= ((yl*ViewMeshSize.x) + xl);
 			int vertexId	= instanceId * 6;
 
 			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 12; continue; }
@@ -225,7 +223,7 @@ void TileMapLayer::PopulateUVs(const int2& viewport_offset)
 #include "Mouse.h"
 
 // 8x9 .. TODO: convert this into a texture given a simple legend.
-const char *TestDot[] = {
+const char* TestDot[] = {
 	"---------",
 	"----+----",
 	"--+++++--",
@@ -239,25 +237,13 @@ const char *TestDot[] = {
 void TileMapLayer::Tick() {
 	// determine tile map draw position according to camera position.
 
-	auto relpos = g_mouse.getRelativeToCenter() * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
-	relpos += g_ViewCamera.m_frustrum_in_tiles / 2.f;
-	relpos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
-	ImGui::Text("RelPos   = %5.2f %5.2f", relpos.x, relpos.y);
-	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
-
-	// todo - decide on a function name, and refine the sprite draw listing mechanic.
-//	g_drawlist_main.Add();
-
-
 	gpu.consts.TileAlignedDisp		= vFloat2(floorf(g_ViewCamera.m_Eye.x), floorf(-g_ViewCamera.m_Eye.y));
 	gpu.consts.SrcTexSizeInTiles	= vInt2(g_setCountX, g_setCountY);
 	gpu.consts.SrcTexTileSizeUV		= vFloat2(1.0f / g_setCountX, 1.0f / g_setCountY) / vFloat2(2.0f, 3.0f);
-	gpu.consts.TileMapSizeX			= ViewMeshSizeX;
-	gpu.consts.TileMapSizeY			= ViewMeshSizeY;
+	gpu.consts.TileMapSize			= ViewMeshSize;
 
-	auto disp = int2 { (int)gpu.consts.TileAlignedDisp.x, (int)gpu.consts.TileAlignedDisp.y  };
-	disp.x -= ViewMeshSizeX / 2;
-	disp.y -= ViewMeshSizeY / 2;
+	auto disp = int2 (gpu.consts.TileAlignedDisp);
+	disp -= (ViewMeshSize / 2);
 
 	PopulateUVs(disp);
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);

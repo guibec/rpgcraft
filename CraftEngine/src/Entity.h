@@ -396,7 +396,7 @@ extern void*								Entity_Malloc			(int size);
 extern void									EntityManager_Reset		();
 
 template< typename T >
-inline T* Entity_PlacementNew(const char* classname)
+inline T* NewEntityT(const char* classname)
 {
 	T* entity = new (Entity_Malloc(sizeof(T))) T;
 	entity->m_gid = Entity_Spawn(entity, classname);
@@ -412,5 +412,12 @@ T* Entity_LookupAs(EntityGid_t gid) {
 	Entity_Remove(instance.m_gid); instance.m_gid = 0;			\
 	instance.m_gid = Entity_Spawn(&instance, #instance __VA_ARGS__)
 
-#define NewEntity(type, ...)		Entity_PlacementNew<type>( #type, ## __VA_ARGS__)
+// Notice:  heap-allocated entities from C++ are strongly discouraged, as a great deal
+// of manual resource management is required.  And no, there's no magic-bullet fixfor that using
+// shared_ptr<> or CComPtr<> or whatever else.  Just don't do it, folks.
+//
+// There will be LUA-GC based dynamic entity management which is more ideal to the on-the-fly
+// spawner paradigm.
+
+#define NewEntity(type, ...)		NewEntityT<type>( #type ## __VA_ARGS__)
 
