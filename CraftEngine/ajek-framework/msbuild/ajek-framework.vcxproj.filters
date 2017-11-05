@@ -99,6 +99,9 @@
     <ClInclude Include="..\h\x-virtkey.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
+    <ClInclude Include="..\h\v-float.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">

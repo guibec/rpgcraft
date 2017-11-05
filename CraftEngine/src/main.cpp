@@ -245,9 +245,8 @@ void SceneRender()
 
 	for(const auto& entitem : g_drawlist_main.ForEachAlpha())
 	{
-		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
-		bug_on_qa(!entity);
-		entitem.Draw(entity, entitem.orderGidPair.Order());
+		bug_on_qa(!entitem.second.DrawFunc);
+		entitem.second.DrawFunc(entitem.second.ObjectData, entitem.first);
 	}
 }
 
