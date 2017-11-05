@@ -4,37 +4,77 @@
 #include "DbgFont.h"
 #include "Scene.h"
 
-#include "imgui_impl_dx11.h"
+static HostMouseState	s_mouseState;
 
 bool Mouse::isPressed(VirtKey_t button) const
 {
-	return isInScene() && Host_IsKeyPressedGlobally(button);
+	return isClickable() && Host_IsKeyPressedGlobally(button);
+}
+
+// returns true if the mouse is in a trackable state, for position tracking only.
+// Do not use this for button press response logic, since button presses must adhere to UI
+// overlay rules!
+bool Mouse::isTrackable() const
+{
+	// any valid mouse data is considered trackable by default, whether it's overtop a
+	// UI element or not.
+	return s_mouseState.isValid;
+}
+
+bool Mouse::isClickable() const
+{
+	return s_mouseState.isValid && !m_obstructed_by_ui && m_normalized.isInsideArea;
+}
+
+// allows for off-center normalization of backbuffer sub-area
+MouseNormalResult Mouse::clientToNormal(const int2& center_pix, const int4& viewarea) const
+{
+	auto viewsize   = int2 { (viewarea.u - viewarea.x), (viewarea.v - viewarea.y) };
+	auto ratio		= float(viewsize.x) / float(viewsize.y);
+	auto relpos		= s_mouseState.clientPos - (viewarea.xy + center_pix);
+	auto normalized = (float2(relpos) / viewsize) * 2.0f;
+
+	MouseNormalResult result;
+	result.normal		 = normalized;
+	result.normal.x		*= ratio;
+	result.isInsideArea  = (fabsf(normalized) <= 1.0f);
+
+	return result;
+}
+
+// view size is cenered around 'center_pix' area.  For use in calculating mouse position
+// within a render target view which has been projected onto the screen.
+MouseNormalResult Mouse::clientToNormal(const int2& center_pix, const int2& viewsize_pix) const
+{
+	auto ratio		= float(viewsize_pix.x) / float(viewsize_pix.y);
+	auto relpos		= s_mouseState.clientPos - center_pix;
+	auto normalized = (float2(relpos) / viewsize_pix) * 2.0f;
+
+	MouseNormalResult result;
+	result.normal		 = normalized;
+	result.normal.x		*= ratio;
+	result.isInsideArea  = (fabsf(normalized) <= 1.0f);
+
+	return result;
+}
+
+MouseNormalResult Mouse::clientToNormal(const int2& center_pix) const
+{
+	return clientToNormal(center_pix, g_client_size_pix);
+}
+
+MouseNormalResult Mouse::clientToNormal() const
+{
+	return m_normalized;
 }
 
 void Mouse::update()
 {
-	m_mouse_in_scene = false;
-	m_scene_has_focus = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
-
-	if (!ImGui::GetIO().WantCaptureMouse) {
-		auto mouseState = HostMouseImm_GetState();
-		if (mouseState.isValid) {
-			int2 relpos = mouseState.clientPos - (g_backbuffer_size_pix/2);
-
-			auto ratio		= float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
-			auto normalized = ((float2)relpos / (float2)(g_backbuffer_size_pix)) * 2.0f;
-
-			m_mouse_in_scene = (fabsf(normalized) <= 1.0f);
-
-			normalized.x   *= ratio;
-			g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, m_mouse_in_scene ? "yes" : "no" ));
-			g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
-			m_mouse_pix_relative_to_center = relpos;
-			m_mouse_pos_relative_to_center = normalized;
-		}
-		else {
-			m_mouse_in_scene = false;
-			m_mouse_pos_relative_to_center = {};
-		}
+	m_scene_has_focus  = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
+	m_obstructed_by_ui = ImGui::GetIO().WantCaptureMouse;
+	s_mouseState = HostMouseImm_GetState();
+	m_normalized = {};
+	if (s_mouseState.isValid) {
+		m_normalized = clientToNormal(g_client_size_pix/2, g_client_size_pix);
 	}
 }

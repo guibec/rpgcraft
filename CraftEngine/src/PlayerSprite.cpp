@@ -61,24 +61,29 @@ void PlayerSprite::Tick(int order)
 	m_position += { state.axis.LStick_X * 0.05f,
 					state.axis.LStick_Y * 0.05f };
 
-	if (g_mouse.isInScene()) {
-		if (Host_IsKeyPressedGlobally(VirtKey::MouseLeft)) {
-			auto mouse = g_mouse.getRelativeToCenter();
-			mouse.x = xBoundsCheck(mouse.x, -0.5f, 0.5f);
-			mouse.y = xBoundsCheck(mouse.y, -0.5f, 0.5f);
+	if (0) {
+		// relative movement toward mouse position.
+		auto mouse = g_mouse.clientToNormal();
+		if (g_mouse.isPressed(VirtKey::MouseLeft)) {
+			mouse.normal.x = xBoundsCheck(mouse.normal.x, -0.5f, 0.5f);
+			mouse.normal.y = xBoundsCheck(mouse.normal.y, -0.5f, 0.5f);
 
-			m_position += { mouse * 0.05f };
+			m_position += { mouse.normal * 0.05f };
 		}
 	}
+	else {
+		if (g_mouse.isTrackable()) {
+			// absolute float under cursor (for diagnostic!)
+			auto mouse = g_mouse.clientToNormal();
+			auto tilepos = mouse.normal * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
+			tilepos += (g_TileMap.ViewMeshSize * 0.5f);
+			tilepos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
 
-	auto relpos = g_mouse.getRelativeToCenter() * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
-	relpos += (g_TileMap.ViewMeshSize * 0.5f);
-	relpos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
-
-	ImGui::Text("RelPos   = %5.2f %5.2f", relpos.x, relpos.y);
-	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
-
-	m_position = relpos;
+			ImGui::Text("MousePos = %5.2f %5.2f", tilepos.x, tilepos.y);
+			ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
+			m_position = tilepos;
+		}
+	}
 
 	g_DbgFontOverlay.Write(0,3, xFmtStr("Eye: %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y));
 	g_drawlist_main.Add(this, 1);

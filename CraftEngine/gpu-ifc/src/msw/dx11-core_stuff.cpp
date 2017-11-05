@@ -37,8 +37,8 @@ static const int BackBufferCount = 3;
 extern HINSTANCE		g_hInst;
 extern HWND				g_hWnd;
 
-int2	g_backbuffer_size_pix = {0, 0};
-float	g_backbuffer_aspect_ratio = 1.0f;
+int2	g_client_size_pix = {0, 0};
+float	g_client_aspect_ratio = 1.0f;
 
 
 static ID3D11RasterizerState*	g_RasterState[_GPU_Fill_Count_][_GPU_Cull_Count_][_GPU_Scissor_Count_] = {};
@@ -344,12 +344,12 @@ void dx11_InitDevice()
 
 	RECT rc;
 	GetClientRect(g_hWnd, &rc);
-	g_backbuffer_size_pix = {
+	g_client_size_pix = {
 		rc.right - rc.left,
 		rc.bottom - rc.top
 	};
 
-	g_backbuffer_aspect_ratio = float(g_backbuffer_size_pix.x) / float(g_backbuffer_size_pix.y);
+	g_client_aspect_ratio = float(g_client_size_pix.x) / float(g_client_size_pix.y);
 
 	UINT createDeviceFlags = 0;
 #ifdef _DEBUG
@@ -467,8 +467,8 @@ void dx11_InitDevice()
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
-		sd.Width                = g_backbuffer_size_pix.x;
-		sd.Height               = g_backbuffer_size_pix.y;
+		sd.Width                = g_client_size_pix.x;
+		sd.Height               = g_client_size_pix.y;
 		sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count     = 1;
 		sd.SampleDesc.Quality   = 0;
@@ -487,8 +487,8 @@ void dx11_InitDevice()
 		// DirectX 11.0 systems
 		DXGI_SWAP_CHAIN_DESC sd = {};
 		sd.BufferCount          = 1;
-		sd.BufferDesc.Width     = g_backbuffer_size_pix.x;
-		sd.BufferDesc.Height    = g_backbuffer_size_pix.y;
+		sd.BufferDesc.Width     = g_client_size_pix.x;
+		sd.BufferDesc.Height    = g_client_size_pix.y;
 		sd.BufferDesc.Format    = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
@@ -666,8 +666,8 @@ void dx11_BeginFrameDrawing()
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp = {};
-	vp.Width	= (float)g_backbuffer_size_pix.x;
-	vp.Height	= (float)g_backbuffer_size_pix.y;
+	vp.Width	= (float)g_client_size_pix.x;
+	vp.Height	= (float)g_client_size_pix.y;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
@@ -1243,8 +1243,8 @@ void dx11_CreateDepthStencil()
 	bool create_srv = g_gpu_settings.debugviewer;
 
 	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width					= g_backbuffer_size_pix.x;
-	descDepth.Height				= g_backbuffer_size_pix.y;
+	descDepth.Width					= g_client_size_pix.x;
+	descDepth.Height				= g_client_size_pix.y;
 	descDepth.MipLevels				= 1;
 	descDepth.ArraySize				= 1;
 	descDepth.Format				= create_srv ? resformat : baseFmt;

@@ -2,25 +2,31 @@
 #include "x-simd.h"
 #include "x-virtkey.h"
 
+struct MouseNormalResult
+{
+	float2	normal;				// normal adjusted by display ratio
+	bool	isInsideArea;		// use for click filtering, but not for tracking filtering
+};
+
 class Mouse
 {
 	public:
 
-		void		update();
-		bool		isPressed(VirtKey_t button) const;
+		void				update();
+		bool				isPressed(VirtKey_t button) const;
 
-		bool		hasFocus() const { return m_scene_has_focus; }
-		bool		isInScene() const { return m_mouse_in_scene; }
-		int2		getRelativeToCenterPix() const { return m_mouse_pix_relative_to_center; }
-		float2		getRelativeToCenter() const { return m_mouse_pos_relative_to_center; }
+		bool				hasFocus() const { return m_scene_has_focus; }
+		bool				isTrackable() const;
+		bool				isClickable() const;
+		MouseNormalResult	clientToNormal() const;
+		MouseNormalResult	clientToNormal(const int2& center_pix) const;								// center is relative to backbuffer (client) area
+		MouseNormalResult	clientToNormal(const int2& center_pix, const int2& viewsize_pix) const;		// center is relative to backbuffer (client) area
+		MouseNormalResult	clientToNormal(const int2& center_pix, const int4& viewarea) const;			// center is relative to backbuffer (client) area
 
-	protected:
-	private:
-
-	bool	m_scene_has_focus = false;
-	bool	m_mouse_in_scene = false;
-	int2	m_mouse_pix_relative_to_center = {};
-	float2	m_mouse_pos_relative_to_center = {};
+	public:
+		MouseNormalResult m_normalized;
+		bool	m_obstructed_by_ui	= false;
+		bool	m_scene_has_focus	= false;
 };
 
 extern Mouse g_mouse;
