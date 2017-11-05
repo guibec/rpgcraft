@@ -58,8 +58,41 @@ void PlayerSprite::Tick(int order)
 
 	g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f };
 
-	m_position += { state.axis.LStick_X * 0.05f,
-					state.axis.LStick_Y * 0.05f };
+	const float playerSpeed = 1.f; // 1 tile per second
+
+	float2 direction;
+	direction.x = 0;
+	direction.y = 0;
+
+	if (Scene_IsKeyPressed(VirtKey::ArrowUp))
+	{
+		direction.y = -playerSpeed;
+	}
+	else if (Scene_IsKeyPressed(VirtKey::ArrowDown))
+	{
+		direction.y = playerSpeed;
+	}
+	if (Scene_IsKeyPressed(VirtKey::ArrowLeft))
+	{
+		direction.x = -playerSpeed;
+	}
+	else if (Scene_IsKeyPressed(VirtKey::ArrowRight))
+	{
+		direction.x = playerSpeed;
+	}
+	
+	if (state.axis.LStick_X < 0)
+		direction.x = -playerSpeed;
+	else if (state.axis.LStick_X > 0)
+		direction.x = playerSpeed;
+	if (state.axis.LStick_Y < 0)
+		direction.y = -playerSpeed;
+	else if (state.axis.LStick_Y > 0)
+		direction.y = playerSpeed;
+
+	float dt = 1 / 60.f; // need a Timer/FPS method
+
+	m_position += direction * dt;
 
 	if (0) {
 		// relative movement toward mouse position.
@@ -71,7 +104,7 @@ void PlayerSprite::Tick(int order)
 			m_position += { mouse.normal * 0.05f };
 		}
 	}
-	else {
+	else if (0){
 		if (g_mouse.isTrackable()) {
 			// absolute float under cursor (for diagnostic!)
 			auto mouse = g_mouse.clientToNormal();
