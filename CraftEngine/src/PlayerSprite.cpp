@@ -44,6 +44,8 @@ PlayerSprite::PlayerSprite() {
 	m_position = { 10, 10 };
 }
 
+extern float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix);
+
 void PlayerSprite::Tick(int order)
 {
 	PadState state;
@@ -70,8 +72,9 @@ void PlayerSprite::Tick(int order)
 	}
 
 	auto relpos = g_mouse.getRelativeToCenter() * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
-	relpos += g_ViewCamera.m_frustrum_in_tiles / 2.f;
+	relpos += (g_TileMap.ViewMeshSize * 0.5f);
 	relpos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
+
 	ImGui::Text("RelPos   = %5.2f %5.2f", relpos.x, relpos.y);
 	ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
 
@@ -97,11 +100,11 @@ void PlayerSprite::Draw(int order) const
 
 	struct {
 		float2	relpos;
-		int2	TileMapSizeXY;
+		int2	TileMapSize;
 	} consts;
 
 	consts.relpos			= m_position;
-	consts.TileMapSizeXY	= g_TileMap.ViewMeshSize;
+	consts.TileMapSize		= g_TileMap.ViewMeshSize;
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
 	dx11_BindConstantBuffer		(gpu_constbuf, 1);

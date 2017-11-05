@@ -27,7 +27,7 @@ cbuffer ConstantBuffer1 : register( b1 )
 	float2	TileAlignedDisp;
 	uint2 	SrcTexSizeInTiles;
 	float2	SrcTexTileSizeUV;
-	uint2   TileMapSizeXY;
+	uint2   TileMapSize;
 }
 
 //--------------------------------------------------------------------------------------
@@ -70,9 +70,9 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 
 	VS_OUTPUT outp;
 
-	uint2  tile_xy = uint2( instID % TileMapSizeXY.x, instID / TileMapSizeXY.x);
+	uint2  tile_xy = uint2( instID % TileMapSize.x, instID / TileMapSize.x);
 	float2 incr_xy = float2(1.0f, 1.0f);
-	float2 disp_xy = (TileMapSizeXY * -0.5f) + (tile_xy * incr_xy) - 0.5f;
+	float2 disp_xy = (TileMapSize * -0.5f) + (tile_xy * incr_xy) - 0.5f;
 
 	// Position Calculation
 	outp.Pos	 = float4(input.Pos.xy, 1.0f, 1.0f);
