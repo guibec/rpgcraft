@@ -1197,13 +1197,13 @@ void DbgFont_LoadInit()
 	//
 
 	float2 edgeOffset		 = float2 { 4, 4 };
-	float2 backbuffer_size	 = (g_backbuffer_size_pix - edgeOffset);
+	float2 backbuffer_size	 = (g_client_size_pix - edgeOffset);
 
 	// Provide a fixed-size font grid that scales "roughly" to match the backbuffer resolution.
 	// use floorf to ensure the scalar is even-numbered, to avoid uglified font syndrome.
 	// (note: in theory above 3x scale it's probably ok to be fractional, as it won't really look bad anyway...)
 
-	auto scalarxy = floorf(g_backbuffer_size_pix / float2 { 640, 360 });
+	auto scalarxy = floorf(g_client_size_pix / float2 { 640, 360 });
 	auto scalar = std::max(scalarxy.x, scalarxy.y);
 
 	edgeOffset		 /= scalar;
@@ -1211,7 +1211,7 @@ void DbgFont_LoadInit()
 
 	g_ConsoleSheet.font.size		= { 6, 8 };
 	g_DbgFontOverlay.font.size		= { 6, 8 };
-	auto consoleSizeInPix			= (int2)floorf(g_backbuffer_size_pix / 2	);
+	auto consoleSizeInPix			= (int2)floorf(g_client_size_pix / 2	);
 	auto overlaySizeInPix			= (int2)floorf(backbuffer_size);
 
 	lua_string consoleShaderFile;

@@ -472,15 +472,20 @@ union float2 {
 	__ai float2		operator/(const float2& src)		const		{ return { x / src.x, y / src.y }; }
 	__ai float2		operator*(const float2& src)		const		{ return { x * src.x, y * src.y }; }
 
+	__ai float2		operator+(const int2& src)			const;
+	__ai float2		operator-(const int2& src)			const;
+	__ai float2		operator/(const int2& src)			const;
+	__ai float2		operator*(const int2& src)			const;
+
 	__ai float2&	operator+=(float src)							{ x += src; y += src; return *this; }
 	__ai float2&	operator-=(float src)							{ x -= src; y -= src; return *this; }
 	__ai float2&	operator/=(float src)							{ x /= src; y /= src; return *this; }
 	__ai float2&	operator*=(float src)							{ x *= src; y *= src; return *this; }
 
-	__ai float2&	operator+=(const float2& src )					{ x += src.x; y += src.y; return *this; }
-	__ai float2&	operator-=(const float2& src )					{ x -= src.x; y -= src.y; return *this; }
-	__ai float2&	operator/=(const float2& src )					{ x /= src.x; y /= src.y; return *this; }
-	__ai float2&	operator*=(const float2& src )					{ x *= src.x; y *= src.y; return *this; }
+	__ai float2&	operator+=(const float2& src)					{ x += src.x; y += src.y; return *this; }
+	__ai float2&	operator-=(const float2& src)					{ x -= src.x; y -= src.y; return *this; }
+	__ai float2&	operator/=(const float2& src)					{ x /= src.x; y /= src.y; return *this; }
+	__ai float2&	operator*=(const float2& src)					{ x *= src.x; y *= src.y; return *this; }
 
 };
 
@@ -586,7 +591,7 @@ union int4 {
 	};
 
 	struct {
-		int		xy,zw;
+		int2	xy,zw;
 	};
 
 	struct {
@@ -614,6 +619,12 @@ inline __ai float2	int2::operator+(const float2& src)	const		{ return { x + src.
 inline __ai float2	int2::operator-(const float2& src)	const		{ return { x - src.x, y - src.y }; }
 inline __ai float2	int2::operator/(const float2& src)	const		{ return { x / src.x, y / src.y }; }
 inline __ai float2	int2::operator*(const float2& src)	const		{ return { x * src.x, y * src.y }; }
+
+inline __ai float2	float2::operator+(const int2& src)	const		{ return { x + src.x, y + src.y }; }
+inline __ai float2	float2::operator-(const int2& src)	const		{ return { x - src.x, y - src.y }; }
+inline __ai float2	float2::operator/(const int2& src)	const		{ return { x / src.x, y / src.y }; }
+inline __ai float2	float2::operator*(const int2& src)	const		{ return { x * src.x, y * src.y }; }
+
 
 inline float2::operator int2() const { return int2   { (int)  x, (int)  y }; }
 inline int2::operator float2() const { return float2 { (float)x, (float)y }; }

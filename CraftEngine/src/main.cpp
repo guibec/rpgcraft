@@ -172,7 +172,7 @@ void ViewCamera::SceneInit()
 	m_At	= { 0.0f, 0.0f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 
-	m_aspect				= g_backbuffer_aspect_ratio;
+	m_aspect				= g_client_aspect_ratio;
 	m_frustrum_in_tiles		= {14 * m_aspect, 14};
 }
 
