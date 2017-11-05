@@ -4,6 +4,7 @@
 #include "x-stl.h"
 
 #include <set>
+#include <map>
 #include <unordered_set>
 #include <unordered_map>
 #include <queue>
@@ -16,9 +17,16 @@ enum EntityContainerEvent_t
 	ECEvt_EntityRemove,
 };
 
-using EntityGid_t = u32;
+// EntityGid_t - Opaque type to avoid accidents during function overloading.
+struct EntityGid_t
+{
+	u32		val;
 
-enum EntitySystemGID_t : EntityGid_t {
+	bool operator==(const EntityGid_t& right) const { return  val == right.val; }
+	bool operator!=(const EntityGid_t& right) const { return  val != right.val; }
+};
+
+enum EntitySystemGID_t : u32 {
 	ESGID_Empty		= 0,
 };
 
@@ -81,8 +89,8 @@ union EntityGidOrderPair
 
 extern EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order);
 
-typedef void (EntityFn_LogicTick)	(		void* objdata, int orderGidPair);
-typedef void (EntityFn_Draw)		(const	void* objdata, int orderGidPair);
+typedef void (EntityFn_LogicTick)	(		void* objdata, int order);
+typedef void (EntityFn_Draw)		(const	void* objdata, float zorder);
 
 struct TickableEntity
 {
@@ -149,11 +157,11 @@ struct CompareDrawableEntity_Less {
 class FunctHashEntityItem {
 public:
 	__xi size_t operator()(const EntityGid_t& input) const {
-		return input;
+		return input.val;
 	}
 
 	__xi size_t operator()(const EntityPointerContainerItem& input) const {
-		return input.gid;
+		return input.gid.val;
 	}
 
 	__xi size_t operator()(const TickableEntityItem& input) const {
@@ -290,6 +298,7 @@ struct TickableEntityContainer {
 
 };
 
+
 // --------------------------------------------------------------------------------------
 //  OrderedDrawList
 // --------------------------------------------------------------------------------------
@@ -299,7 +308,13 @@ struct TickableEntityContainer {
 // you encounter situations where it's useful to remove objects in a draw list.
 //
 struct OrderedDrawList {
-	typedef std::set<DrawableEntityItem, CompareDrawableEntity_Less>								OrderedContainerType;
+	struct DrawListItem
+	{
+		const void*			ObjectData;
+		EntityFn_Draw*		DrawFunc;
+	};
+
+	typedef std::multimap<float, DrawListItem>	OrderedContainerType;
 
 	// Intentionally lacks a hashed container.  Element removal is extremely slow for this reason.
 	// If logic demands that an item in the draw list be removed after it has been added for some
@@ -307,23 +322,26 @@ struct OrderedDrawList {
 	// it to skip drawing -- and then modify that.
 
 	OrderedContainerType			m_ordered;
+	float4							m_visibleArea;			// visible area/frustrum - in tile coords - for culling
 
-	float4							m_visibleArea;			// visible area/frustrum - in tile coords
-
-	// Add/Remove note:
-	//  * modification of drawable entity list during draw is invalid.  It can only be modified from tick context/
-
-	void		_Add			(const DrawableEntityItem& entity);
-	void		Remove			(EntityGid_t entityGid, u32 order  = (u32)-1);
+	void		_Add			(const DrawListItem& entity, float zorder);
+	void		Add				(EntityGid_t entityGid, float zorder, EntityFn_Draw* draw);
+	void		Remove			(EntityGid_t entityGid, float order);
+	void		Remove			(EntityGid_t entityGid);
+	void		Remove			(void* objectData, float order);
+	void		Remove			(void* objectData);
 	void		Clear			();
 
-	__ai void Add(int orderGidPair, EntityGid_t entityGid, EntityFn_Draw* draw) {
-		_Add( { MakeGidOrder(entityGid, orderGidPair), draw } );
+	template< typename T >
+	__ai void Add(const T* anyobj, float zorder, EntityFn_Draw* draw) {
+		_Add( { anyobj, draw }, zorder );
 	}
 
+	// Use to bind any object, either managed by entity system or static/dynamic object managed by C++
+	// (ideally use only for entities or static items, to avoid accidental delete-before-frameout problem)
 	template< typename T >
-	__ai void Add(const T* entity, int order) {
-		Add(order, entity->m_gid, [](const void* entity, int order) { ((T*)entity)->Draw(order); } );
+	__ai void Add(const T* anyobj, float zorder) {
+		Add( anyobj, zorder, [](const void* anyobj, float zorder) { ((T*)anyobj)->Draw(zorder); } );
 	}
 
 	auto ForEachOpaque	() const;
@@ -409,7 +427,7 @@ T* Entity_LookupAs(EntityGid_t gid) {
 }
 
 #define PlaceEntity(instance, ...)	\
-	Entity_Remove(instance.m_gid); instance.m_gid = 0;			\
+	Entity_Remove(instance.m_gid); instance.m_gid = { 0 };			\
 	instance.m_gid = Entity_Spawn(&instance, #instance __VA_ARGS__)
 
 // Notice:  heap-allocated entities from C++ are strongly discouraged, as a great deal

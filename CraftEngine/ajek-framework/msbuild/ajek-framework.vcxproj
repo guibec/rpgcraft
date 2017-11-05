@@ -93,6 +93,7 @@
     <ClInclude Include="..\h\msw-error.h" />
     <ClInclude Include="..\h\msw-redtape.h" />
     <ClInclude Include="..\h\sse_intrinsics.h" />
+    <ClInclude Include="..\h\v-float.h" />
     <ClInclude Include="..\h\x-assertion.h" />
     <ClInclude Include="..\h\x-atomic.h" />
     <ClInclude Include="..\h\x-BitmapData.h" />

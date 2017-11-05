@@ -13,6 +13,9 @@
 
 DECLARE_MODULE_NAME("Entity");
 
+
+#define EntityLog(...)		log_host( __VA_ARGS__ )
+
 static u32 s_entity_spawn_id = 1;
 
 EntityPointerContainer	g_GlobalEntities;
@@ -27,7 +30,7 @@ static EntityGid_t getNextSpawnId()
 		// but zero is an invalid spawn ID, so discard it:
 		result = AtomicInc((s32&)s_entity_spawn_id);
 	}
-	return result;
+	return { result };
 }
 
 
@@ -167,25 +170,68 @@ void TickableEntityContainer::Remove(EntityGid_t entityGid, u32 order)
 // On theory a linked list might be slightly faster for sorted insertion... but they have a lot of other
 // drawbacks so let's stick to the set unless it becomes a problem.  --jstine
 
-void OrderedDrawList::_Add(const DrawableEntityItem& entityInfo)
+void OrderedDrawList::_Add(const DrawListItem& entityInfo, float zorder)
 {
-	m_ordered	.insert(entityInfo);
+	m_ordered.insert({ zorder, entityInfo });
 }
 
-// SLOW!  Do not use, except for rapid iteration or debugging purpose.
-void OrderedDrawList::Remove(EntityGid_t entityGid, u32 order)
-{
-	// Impl dependent erase, should be logarithmic (bisect search).
-	// Pretty sure set::erase(object{}) does a full comparision match after finding an item,
-	// which means matching the drawfunc in addition to GID and order.  So use find() and
-	// erase(it) instead so that drawFunc can be nullptr.
-
-	//m_ordered.erase( { MakeGidOrder(entityGid, order), nullptr } );		// simple one, see above.
-	auto it = m_ordered.find ( { MakeGidOrder(entityGid, order), nullptr } );
-	if (it != m_ordered.end()) {
-		m_ordered.erase( it );
+void OrderedDrawList::Add(EntityGid_t entityGid, float zorder, EntityFn_Draw* draw) {
+	auto entityPtr = Entity_Lookup(entityGid).objectptr;
+	if (entityPtr) {
+		_Add( { entityPtr, draw }, zorder );
+	}
+	else {
+		EntityLog("DrawList: ignoring nil entity, gid=0x%08x.");
 	}
 }
+
+// OrderedDrawList::Remove (all variants):
+//   Impl dependent erase, should be logarithmic (bisect search).
+
+// SLOW!  Do not use, except for rapid iteration or debugging purpose.
+void OrderedDrawList::Remove(EntityGid_t entityGid, float order)
+{
+	auto entityPtr = Entity_Lookup(entityGid).objectptr;
+	if (entityPtr) {
+		Remove(entityPtr, order);
+	}
+}
+
+void OrderedDrawList::Remove(void* objectData, float order)
+{
+	auto itpair = m_ordered.equal_range(order);
+	auto it = itpair.first;
+	while (it != m_ordered.end() && it != itpair.second) {
+		if (it->second.ObjectData == objectData) {
+			it = m_ordered.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+void OrderedDrawList::Remove(EntityGid_t entityGid)
+{
+	auto entityPtr = Entity_Lookup(entityGid).objectptr;
+	if (entityPtr) {
+		Remove(entityPtr);
+	}
+}
+
+void OrderedDrawList::Remove(void* objectData)
+{
+	auto it = m_ordered.begin();
+	while (it != m_ordered.end()) {
+		if (it->second.ObjectData == objectData) {
+			it = m_ordered.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
 
 void OrderedDrawList::Clear()
 {
