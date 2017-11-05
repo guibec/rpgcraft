@@ -29,6 +29,7 @@ void Mouse::update()
 			normalized.x   *= ratio;
 			g_DbgFontOverlay.Write(0,4, xFmtStr("Mouse: %4d %4d  client=%s", relpos.x, relpos.y, m_mouse_in_scene ? "yes" : "no" ));
 			g_DbgFontOverlay.Write(0,5, xFmtStr("Norm : %5.3f %5.3f", normalized.x, normalized.y));
+			m_mouse_pix_relative_to_center = relpos;
 			m_mouse_pos_relative_to_center = normalized;
 		}
 		else {

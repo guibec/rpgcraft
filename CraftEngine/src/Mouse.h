@@ -11,6 +11,7 @@ class Mouse
 
 		bool		hasFocus() const { return m_scene_has_focus; }
 		bool		isInScene() const { return m_mouse_in_scene; }
+		int2		getRelativeToCenterPix() const { return m_mouse_pix_relative_to_center; }
 		float2		getRelativeToCenter() const { return m_mouse_pos_relative_to_center; }
 
 	protected:
@@ -18,6 +19,7 @@ class Mouse
 
 	bool	m_scene_has_focus = false;
 	bool	m_mouse_in_scene = false;
+	int2	m_mouse_pix_relative_to_center = {};
 	float2	m_mouse_pos_relative_to_center = {};
 };
 
