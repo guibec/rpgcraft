@@ -29,6 +29,15 @@ HWND                    g_hWnd					= nullptr;
 static INT64			g_Time = 0;
 static INT64			g_TicksPerSecond = 0;
 
+static HostClockTick g_SettingsDirtyTimeout;
+
+void MarkUserSettingsDirty()
+{
+	if (g_SettingsDirtyTimeout.asTicks() == 0) {
+		g_SettingsDirtyTimeout = HostClockTick::Now() + HostClockTick::Seconds(3);
+	}
+}
+
 //--------------------------------------------------------------------------------------
 // WINDOWS BOILERPLATE
 //--------------------------------------------------------------------------------------
@@ -41,6 +50,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
+		case WM_MOVE: {
+			MarkUserSettingsDirty();
+		} break;
+
+		case WM_SIZE: {
+			MarkUserSettingsDirty();
+		} break;
+
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
 			EndPaint(hWnd, &ps);
@@ -119,8 +136,91 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+BOOL MonitorEnumerator(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM lparam)
+{
+	log_host("Monitor: rect = %d, %d, %d, %d", rect->left, rect->top, rect->right, rect->bottom);
+	return true;
+}
+
+template< typename T >
+void table_get_xy(T& dest, LuaTableScope& table)
+{
+	auto xs = table.get_s32("x");
+	auto ys = table.get_s32("y");
+
+	if (xs.isnil()) { xs = table.get_s32(1); }
+	if (ys.isnil()) { ys = table.get_s32(2); }
+
+	if (xs.isnil() || ys.isnil()) {
+		bug_qa("Invalid table layout for expected Int2 parameter.");
+		// Todo: expose a ThrowError that pushes message onto Lua stack and invokes longjmp.
+		// Pre-req: must have a single global lua state for all scene magic.
+		//ThrowError
+	}
+
+	dest.x = xs;
+	dest.y = ys;
+}
+
+template< typename T >
+void table_get_rect(T& dest, LuaTableScope& table)
+{
+	if (auto& subtab = table.get_table(1)) {
+		table_get_xy(dest.xy, subtab);
+	}
+
+	if (auto& subtab = table.get_table(2)) {
+		table_get_xy(dest.zw, subtab);
+	}
+}
+
+void ApplyDesktopSettings()
+{
+	auto& script = g_scriptEnv;
+	if (auto& deskset = script.glob_open_table("UserSettings", false))
+	{
+		if (auto& tbl_clientRect = deskset.get_table("ClientRect")) {
+			int4 client_rect;
+			table_get_rect(client_rect,	tbl_clientRect);
+
+			RECT rc = { client_rect.x, client_rect.y, client_rect.z, client_rect.w };
+			::AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
+			::SetWindowPos(g_hWnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+	}
+}
+
+void SaveDesktopSettings()
+{
+	if (!g_SettingsDirtyTimeout.m_val || (g_SettingsDirtyTimeout > Host_GetProcessTicks())) {
+		return;
+	}
+
+	g_SettingsDirtyTimeout.m_val = 0;
+
+	FILE* f = fopen("saved-settings.lua", "wb");
+	if (!f) return;
+
+	RECT rc;
+
+	::GetClientRect(g_hWnd, &rc);
+
+	POINT topleft		= { rc.left, rc.top };
+	POINT bottomright   = { rc.right, rc.bottom };
+	::ClientToScreen(g_hWnd, &topleft);
+	::ClientToScreen(g_hWnd, &bottomright);
+
+	fprintf(f, "if UserSettings == nil then UserSettings = {} end\n\n");
+	fprintf(f, "UserSettings.ClientRect = { {%d,%d}, {%d,%d} }\n", topleft.x, topleft.y, bottomright.x, bottomright.y);
+
+	fclose(f);
+}
+
+
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
+	EnumDisplayMonitors(nullptr, nullptr, MonitorEnumerator, 0);
+
 	// Register class
 	WNDCLASSEX wcex;
 	wcex.cbSize			= sizeof(WNDCLASSEX);
@@ -134,15 +234,15 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 	wcex.hCursor		= LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName	= nullptr;
-	wcex.lpszClassName	= L"GameClass";
+	wcex.lpszClassName	= L"RpgCraftGame";
 	if (!RegisterClassEx(&wcex))
 		return E_FAIL;
 
 	// Create window
 	g_hInst = hInstance;
 	RECT rc = { 0, 0, 1280, 720 };
-	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-	g_hWnd = CreateWindow(L"GameClass", L"Playable Game Thing",
+	AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
+	g_hWnd = CreateWindow(L"RpgCraftGame", L"RPG Craft: Bloody Spectacular Edition",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
 		nullptr);
@@ -276,12 +376,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
+	ApplyDesktopSettings();
 	dx11_InitDevice();
 
 	KPad_SetMapping(g_kpad_btn_map_default);
 	KPad_SetMapping(g_kpad_axs_map_default);
 
-	// tODO: pulled from imgui - repeal and replace with existing msw-chrono stuff.
+	// TODO: pulled from imgui - repeal and replace with existing msw-chrono stuff.
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&g_TicksPerSecond))
 		return false;
 	if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
@@ -427,6 +528,8 @@ void _hostImpl_ImGui_NewFrame()
 			::SetCursor(NULL);
 		}
 	}
+
+	SaveDesktopSettings();
 
 	// Start the frame
 	ImGui::NewFrame();

@@ -223,6 +223,7 @@ public:
 	lua_bool		get_bool	(const char* key)	const;
 	lua_string		get_string	(const char* key)	const;
 	LuaTableScope	get_table	(const char* key);
+	LuaTableScope	get_table	(int keyidx);
 
 	LuaFuncScope	push_func	(const char* key);
 
