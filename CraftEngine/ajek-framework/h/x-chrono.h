@@ -10,7 +10,9 @@ struct HostClockTick {
 	static host_tick_t	s_ticks_per_second;
 	static double		s_ticks_per_second_f;
 
-	static void			Init();
+	static void				Init	();
+	static HostClockTick	Now		();
+	static HostClockTick	Seconds	(double secs);
 
 	host_tick_t			m_val;
 
@@ -30,6 +32,9 @@ struct HostClockTick {
 	__ai bool operator==(const HostClockTick& right) const { return m_val == right.m_val; }
 	__ai bool operator!=(const HostClockTick& right) const { return m_val != right.m_val; }
 
+	__ai HostClockTick operator+ (const HostClockTick& right) const { return HostClockTick(m_val + right.m_val); }
+	__ai HostClockTick operator- (const HostClockTick& right) const { return HostClockTick(m_val + right.m_val); }
+
 	// Delta-time comparisons used to avoid overflow conundruns.
 
 	__ai bool operator> (const HostClockTick& right) const { return tick_delta_t(m_val - right.m_val) >  0; }
@@ -46,3 +51,8 @@ struct HostClockTick {
 extern HostClockTick	Host_GetProcessTicks		();
 extern host_tick_t		Host_GetProcessTickRate		();			// intended for internal/init use only, see HostClockTick for cached value
 
+
+inline HostClockTick HostClockTick::Now() { return Host_GetProcessTicks(); }
+inline HostClockTick HostClockTick::Seconds(double secs) {
+	return HostClockTick (s_ticks_per_second_f * secs);
+}

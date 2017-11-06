@@ -156,13 +156,13 @@ extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t 
 	xString result = xPath_Combine(s_script_dbg_path_prefix, source);
 
 	size_t l = result.GetLength();
-    if (l <= bufflen)  /* small enough? */
+	if (l <= bufflen)  /* small enough? */
 		memcpy(out, result.c_str(), l * sizeof(char) + 1);
-    else {  /* add '...' before rest of name */
+	else {  /* add '...' before rest of name */
 		addstr(out, RETS, LL(RETS));
 		bufflen -= LL(RETS);
 		memcpy(out, result.c_str() + l - bufflen, bufflen * sizeof(char) + 1);
-    }
+	}
 }
 
 extern "C" void ajek_lua_printf(const char *fmt, ...)
@@ -268,7 +268,8 @@ void AjekScriptEnv::NewState()
 {
 	DisposeState();
 
-	m_L		= luaL_newstate();
+	m_L			= luaL_newstate();
+	m_lua_error = AsError_None;
 
 	log_and_abort_on( !m_L, "Create new Lua state failed." );
 	log_host( "luaState = %s", cPtrStr(m_L) );
@@ -378,7 +379,7 @@ void AjekScriptEnv::_check_int_trunc(T result, int stackidx, const char* funcnam
 void AjekScriptEnv::RegisterFrameworkLibs()
 {
 	luaL_requiref(m_L, "ajek", luaopen_ajek, 1);
-    lua_pop(m_L, 1);  /* remove lib */
+	lua_pop(m_L, 1);  /* remove lib */
 }
 
 lua_State* AjekScriptEnv::getLuaState()
@@ -533,13 +534,13 @@ void AjekScriptEnv::_throw_type_mismatch(int keyidx, const char* expected_type) 
 void LuaTableScope::_internal_gettable() const {
 	auto* L = m_env->m_L;
 	int topidx = m_top - lua_gettop(L);
-    lua_gettable(L, topidx);
+	lua_gettable(L, topidx);
 }
 
 lua_s32 LuaTableScope::get_s32(int keyidx) const
 {
 	auto* L = m_env->m_L;
-    lua_pushinteger(L, keyidx);
+	lua_pushinteger(L, keyidx);
 	_internal_gettable();
 
 	lua_s32 result = m_env->get_s32();
@@ -557,8 +558,8 @@ lua_s32 LuaTableScope::get_s32(int keyidx) const
 lua_s32 LuaTableScope::get_s32(const char* key) const
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
-    lua_gettable(L, -2);
+	lua_pushstring(L, key);
+	lua_gettable(L, -2);
 
 	lua_s32 result = m_env->get_s32();
 	m_env->_check_int_trunc(result, -1, "get_s32", key);
@@ -576,8 +577,8 @@ lua_s32 LuaTableScope::get_s32(const char* key) const
 lua_bool LuaTableScope::get_bool(const char* key) const
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
-    _internal_gettable();
+	lua_pushstring(L, key);
+	_internal_gettable();
 
 	lua_bool result;
 	result.m_isNil = lua_isnil(L, -1);
@@ -596,7 +597,7 @@ lua_bool LuaTableScope::get_bool(const char* key) const
 lua_string LuaTableScope::_impl_get_string() const
 {
 	auto* L = m_env->m_L;
-    _internal_gettable();
+	_internal_gettable();
 
 	lua_string	result;
 	result.m_isNil = lua_isnil(L, -1);
@@ -614,7 +615,7 @@ lua_string LuaTableScope::_impl_get_string() const
 lua_string LuaTableScope::_impl_conv_string()
 {
 	auto* L = m_env->m_L;
-    _internal_gettable();
+	_internal_gettable();
 
 	// lua_tostring()   modifies the table by converting integers to strings (generally not good for us)
 	// lua_tolstring()  pushes a new string onto heap/stack, and also resolves __string and __name meta-table refs.  Good!
@@ -642,22 +643,22 @@ lua_string LuaTableScope::_impl_conv_string()
 lua_string LuaTableScope::get_string(int keyidx) const
 {
 	auto* L = m_env->m_L;
-    lua_pushinteger(L, keyidx);
+	lua_pushinteger(L, keyidx);
 	return _impl_get_string();
 }
 
 lua_string LuaTableScope::get_string(const char* key) const
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
+	lua_pushstring(L, key);
 	return _impl_get_string();
 }
 
 LuaTableScope LuaTableScope::get_table(const char* key)
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
-    _internal_gettable();
+	lua_pushstring(L, key);
+	_internal_gettable();
 
 	LuaTableScope result (*m_env);
 
@@ -668,11 +669,25 @@ LuaTableScope LuaTableScope::get_table(const char* key)
 
 }
 
+LuaTableScope LuaTableScope::get_table(int keyidx)
+{
+	auto* L = m_env->m_L;
+	lua_pushinteger(L, keyidx);
+	_internal_gettable();
+
+	LuaTableScope result (*m_env);
+
+	if (!result.isNil() && !lua_istable(L, -1)) {
+		m_env->_throw_type_mismatch(keyidx, "table");
+	};
+	return result;
+}
+
 LuaFuncScope LuaTableScope::push_func(const char* key)
 {
 	auto* L = m_env->m_L;
-    lua_pushstring(L, key);
-    _internal_gettable();
+	lua_pushstring(L, key);
+	_internal_gettable();
 
 	bug_on (!lua_isfunction(L, -1));
 

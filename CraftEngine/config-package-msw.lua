@@ -5,34 +5,30 @@
 -- This configuration is provided by git repo, and applies default settings according
 -- to the target platform.  
 
+print "Checkpoint?"
 ScriptConfig = {}
-
-ScriptConfig.IncludePaths 		= { "./", 	"./lua_req"		} 
-ScriptConfig.DebugIncludePaths	= { "./", 	"./lua_dbg_req"	}
 ScriptConfig.ModulePath			= "./lua_modules"
-
 ScriptConfig.UseProtectedCall	= true
 ScriptConfig.ScriptDebugging    = true
 ScriptConfig.LuaPrintEnable		= true
+print "Checkpoint?"
 
-Engine = {}
-Engine.TileSizeX				= 8
-Engine.TileSizeY				= 8
+--[[
+-- TODO : switch to a functional method of applying settings, rather than data-driven?
+SetScriptParams({
+	-- IncludePaths		= { "./", 	"./lua_req"		},
+	-- DebugIncludePaths   = { "./", 	"./lua_dbg_req"	},
+	ModulePath			= "./lua_modules",
+	UseProtectedCall	= true,
+	ScriptDebugging     = true,
+	LuaPrintEnable		= true
+})
+-- ]]
 
--- ------------------------------------------------------------------------------------------------
--- DevForce
---
--- Parameters provided to allow devs to hack up certain behaviors in their local running environment.
--- Values can be specified in config-local, allowing them to avoid accidentally checking these hacks
--- into git.  May also be used to define package-specific behaviors (such as iPhone deployment).
-
-DevForce = {}
-
-DevForce.FormFactor 		= nil			-- 'desktop','phone','tablet'
-
-DevForce.WorldView = {}
-DevForce.WorldView.MeshSize	= nil 			-- { x=nil, y=nil }
--- ------------------------------------------------------------------------------------------------
+-- Read in settings saved during previous run
+-- (this step would likely not be included on console editions)
+pcall(function () require("saved-settings") end)
 
 -- Read in local developer configuration settings.
-load("config-local.lua")
+pcall(function () require("config-local") end)
+
