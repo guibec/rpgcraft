@@ -64,7 +64,7 @@ void EntityManager_Reset()
 	}
 
 	g_GlobalEntities.clear();
-
+	g_EntitiesByName.clear();
 	// Wipe mspace here...
 }
 
@@ -172,6 +172,8 @@ EntityGid_t _impl_Entity_Spawn(EntityPointerContainerItem& item, const char* cla
 		strcpy(namedup, classname);
 	}
 
+	item.classname = namedup;
+
 	for (;;) {
 		item.gid = getNextSpawnId();
 		if (g_GlobalEntities.find(item.gid) != g_GlobalEntities.end()) {
@@ -190,7 +192,7 @@ void Entity_AddUnmanaged(EntityGid_t& gid, void* entity, const char* classname)
 	EntityPointerContainerItem item;
 	item.gid			= { 0 };
 	item.objectptr		= entity;
-	item.managed		= 1;
+	item.managed		= 0;
 	item.deleted		= 0;
 	gid = _impl_Entity_Spawn(item, classname);
 }
