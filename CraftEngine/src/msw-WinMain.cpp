@@ -33,10 +33,16 @@ static HostClockTick g_SettingsDirtyTimeout;
 
 void MarkUserSettingsDirty()
 {
+	// TODO: move this to its own thread that just executes xThreadSleep(3000) after handling a
+	// SaveSettings request.
+
 	if (g_SettingsDirtyTimeout.asTicks() == 0) {
 		g_SettingsDirtyTimeout = HostClockTick::Now() + HostClockTick::Seconds(3);
 	}
 }
+
+static bool s_isMinimized = false;
+static bool s_isMaximized = false;
 
 //--------------------------------------------------------------------------------------
 // WINDOWS BOILERPLATE
@@ -51,11 +57,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 		case WM_MOVE: {
-			MarkUserSettingsDirty();
+			if (!s_isMinimized) {
+				MarkUserSettingsDirty();
+			}
 		} break;
 
 		case WM_SIZE: {
-			MarkUserSettingsDirty();
+			s_isMinimized = (wParam & SIZE_MINIMIZED);
+			s_isMaximized = (wParam & SIZE_MAXIMIZED);
+			if (!s_isMinimized) {
+				MarkUserSettingsDirty();
+			}
 		} break;
 
 		case WM_PAINT:
@@ -190,6 +202,28 @@ void ApplyDesktopSettings()
 	}
 }
 
+static POINT s_lastknown_topleft		= { };
+static POINT s_lastknown_bottomright   = { };
+
+static void UpdateLastKnownWindowPosition()
+{
+	if (!s_isMinimized && !s_isMaximized) {
+		RECT rc;
+		::GetClientRect(g_hWnd, &rc);
+
+		POINT topleft			= { rc.left, rc.top };
+		POINT bottomright		= { rc.right, rc.bottom };
+
+		::ClientToScreen(g_hWnd, &s_lastknown_topleft);
+		::ClientToScreen(g_hWnd, &s_lastknown_bottomright);
+
+		// TODO: reject/ignore updating lastknown with clearly invalid window positions,
+		// according to enumerated windows displays
+		s_lastknown_topleft			= topleft;
+		s_lastknown_bottomright		= bottomright;
+	}
+}
+
 void SaveDesktopSettings()
 {
 	if (!g_SettingsDirtyTimeout.m_val || (g_SettingsDirtyTimeout > Host_GetProcessTicks())) {
@@ -201,18 +235,18 @@ void SaveDesktopSettings()
 	FILE* f = fopen("saved-settings.lua", "wb");
 	if (!f) return;
 
-	RECT rc;
+	// This version ensures the client position stays consistent even if the decaling sizes change between sessions,
+	// (eg, user changes window title bar sizes or similar) -- and generally makes more sense from a human-readable
+	// perspective.
 
-	::GetClientRect(g_hWnd, &rc);
+	UpdateLastKnownWindowPosition();
 
-	POINT topleft		= { rc.left, rc.top };
-	POINT bottomright   = { rc.right, rc.bottom };
-	::ClientToScreen(g_hWnd, &topleft);
-	::ClientToScreen(g_hWnd, &bottomright);
-
+	fprintf(f, "-- Machine-generated user saved-settings file.\n");
+	fprintf(f, "-- Any modifications here will be lost!\n\n");
 	fprintf(f, "if UserSettings == nil then UserSettings = {} end\n\n");
-	fprintf(f, "UserSettings.ClientRect = { {%d,%d}, {%d,%d} }\n", topleft.x, topleft.y, bottomright.x, bottomright.y);
-
+	fprintf(f, "UserSettings.ClientRect = { {%d,%d}, {%d,%d} }\n",
+		s_lastknown_topleft.x, s_lastknown_topleft.y, s_lastknown_bottomright.x, s_lastknown_bottomright.y
+	);
 	fclose(f);
 }
 
@@ -373,11 +407,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	Scene_InitMessages();
 	// -----------------------------------------------------------
 
-	if (FAILED(InitWindow(hInstance, nCmdShow)))
+	if (FAILED(InitWindow(hInstance, false)))
 		return 0;
 
 	ApplyDesktopSettings();
 	dx11_InitDevice();
+	ShowWindow(g_hWnd, true);
+	UpdateLastKnownWindowPosition();
 
 	KPad_SetMapping(g_kpad_btn_map_default);
 	KPad_SetMapping(g_kpad_axs_map_default);
