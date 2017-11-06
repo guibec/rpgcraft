@@ -62,16 +62,26 @@ public:
 #define throw_abort(...)						((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
 #define throw_abort_on(cond, ...)	( (cond) && ((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(# cond " " __VA_ARGS__))	, true)) || _inline_abort_( "(throw)" # cond, __VA_ARGS__)) )
 
+struct CatchFinalizer{
+	~CatchFinalizer();
+};
+
 #define x_try()																\
 	jmp_buf _jmp_buf;														\
 	int		_setjmp_result = (g_ThrowCtx.Try(_jmp_buf), setjmp(_jmp_buf));	\
+	CatchFinalizer _setjmp_finalizer;										\
 	if (_setjmp_result == 0)
 
 #define x_catch()															\
 	else switch (_setjmp_result)
 
-#define x_finalize() (g_ThrowCtx.Finalize()); if(1)
+#define x_finalize() if(1)
 
 #define x_exccode()  (_setjmp_result)
 
 extern xThrowContext	g_ThrowCtx;
+
+
+inline CatchFinalizer::~CatchFinalizer() {
+	g_ThrowCtx.Finalize();
+}
