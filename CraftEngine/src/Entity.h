@@ -421,7 +421,7 @@ extern const EntityPointerContainerItem&	Entity_Lookup				(EntityGid_t gid);
 extern const EntityPointerContainerItem&	Entity_Lookup				(const xString& name);
 extern const char*							Entity_LookupName			(EntityGid_t gid);
 extern void									Entity_Remove				(EntityGid_t gid);
-extern EntityGid_t							Entity_AddManaged					(void* entity, const char* classname=nullptr);
+extern EntityGid_t							Entity_AddManaged			(void* entity, const char* classname=nullptr);
 extern void									Entity_AddUnmanaged			(EntityGid_t& gid, void* entity, const char* classname);
 extern void*								Entity_Malloc				(int size);
 extern void									EntityManager_Reset			();
