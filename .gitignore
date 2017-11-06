@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+imgui.ini
 
 # User-specific files (Unity/MonoDevelop/Xamarin Studio)
 *.userprefs
