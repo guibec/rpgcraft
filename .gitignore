@@ -6,10 +6,13 @@
 *.user
 *.userosscache
 *.sln.docstates
-imgui.ini
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+
+# User-specific files (CraftEngine/ImGui)
+imgui.ini
+saved-settings.lua
 
 # Build results
 [Dd]ebug/
