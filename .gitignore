@@ -6,13 +6,16 @@
 *.user
 *.userosscache
 *.sln.docstates
-imgui.ini
 
 # User-specific files (Unity/MonoDevelop/Xamarin Studio)
 *.userprefs
 *.unityproj
 *.booproj
 *.svg
+
+# User-specific files (CraftEngine/ImGui)
+imgui.ini
+saved-settings.lua
 
 # Build results
 [Dd]ebug/
