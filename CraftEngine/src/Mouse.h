@@ -15,7 +15,6 @@ class Mouse
 		void				update();
 		bool				isPressed(VirtKey_t button) const;
 
-		bool				hasFocus() const { return m_scene_has_focus; }
 		bool				isTrackable() const;
 		bool				isClickable() const;
 		MouseNormalResult	clientToNormal() const;
@@ -26,7 +25,6 @@ class Mouse
 	public:
 		MouseNormalResult m_normalized;
 		bool	m_obstructed_by_ui	= false;
-		bool	m_scene_has_focus	= false;
 };
 
 extern Mouse g_mouse;

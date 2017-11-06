@@ -70,7 +70,6 @@ MouseNormalResult Mouse::clientToNormal() const
 
 void Mouse::update()
 {
-	m_scene_has_focus  = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
 	m_obstructed_by_ui = ImGui::GetIO().WantCaptureMouse;
 	s_mouseState = HostMouseImm_GetState();
 	m_normalized = {};

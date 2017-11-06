@@ -35,7 +35,13 @@ static bool					s_scene_initialized			= false;
 static bool					s_scene_thread_running		= false;
 
 static int					s_scene_frame_count			= 0;
+static bool					s_scene_has_keyfocus = false;
 
+bool Scene_IsKeyPressed(VirtKey_t vk_code)
+{
+	if (!s_scene_has_keyfocus)		{ return false; }
+	return Host_IsKeyPressedGlobally(vk_code);
+}
 
 int Scene_GetFrameCount()
 {
@@ -230,6 +236,8 @@ static void* SceneProducerThreadProc(void*)
 		Host_ImGui_NewFrame();
 		DbgFont_NewFrame();
 		Scene_DrainMsgQueue();
+
+		s_scene_has_keyfocus  = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
 
 		if (Scene_HasStopReason(_SceneStopReason_Shutdown)) {
 			log_host("SceneThread has been shutdown.");

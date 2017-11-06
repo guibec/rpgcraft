@@ -56,7 +56,7 @@ ViewCamera		g_ViewCamera;
 TileMapLayer	g_TileMap;
 Mouse			g_mouse;
 
-bool s_CanRenderScene = false;
+static bool s_CanRenderScene = false;
 
 float2 get2dPoint(const float4& point3D, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix)
 {
@@ -97,12 +97,6 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	// TODO: subtract camera position?
 
 	return (float4&)result;
-}
-
-bool Scene_IsKeyPressed(VirtKey_t vk_code)
-{
-	if (!g_mouse.hasFocus())		{ return false; }
-	return Host_IsKeyPressedGlobally(vk_code);
 }
 
 struct IndicatorSprite {
