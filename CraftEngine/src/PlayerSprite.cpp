@@ -46,6 +46,8 @@ PlayerSprite::PlayerSprite() {
 
 extern float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix);
 
+static bool s_isAbsolute = false;
+
 void PlayerSprite::Tick(int order)
 {
 	PadState state;
@@ -80,7 +82,7 @@ void PlayerSprite::Tick(int order)
 	{
 		direction.x = playerSpeed;
 	}
-	
+
 	if (state.axis.LStick_X < 0)
 		direction.x = -playerSpeed;
 	else if (state.axis.LStick_X > 0)
@@ -94,6 +96,9 @@ void PlayerSprite::Tick(int order)
 
 	m_position += direction * dt;
 
+
+	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
+
 	if (0) {
 		// relative movement toward mouse position.
 		auto mouse = g_mouse.clientToNormal();
@@ -104,7 +109,7 @@ void PlayerSprite::Tick(int order)
 			m_position += { mouse.normal * 0.05f };
 		}
 	}
-	else if (0){
+	else if (s_isAbsolute){
 		if (g_mouse.isTrackable()) {
 			// absolute float under cursor (for diagnostic!)
 			auto mouse = g_mouse.clientToNormal();
