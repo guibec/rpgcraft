@@ -263,6 +263,7 @@ static void* SceneProducerThreadProc(void*)
 			DbgFont_SceneRender();
 			ImGui::Render();
 			dx11_SubmitFrameAndSwap();
+			EntityManager_CollectGarbage();
 		}
 
 		// TODO : framerate pacing (vsync disabled)

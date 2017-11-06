@@ -108,6 +108,25 @@ typedef std::string		tString;
 #define cDecStr( value )		(xDecStr		( value )				.c_str())
 #define cPosixErrorStr()		(xPosixErrorStr	()						.c_str())
 
+// semi-internal-use struct for efficiently accepting either xString or `const char*` as input
+// parameters to a function.
+
+struct qstringlen
+{
+	qstringlen(const char* src) {
+		strptr = src;
+		length = strlen(src);
+	}
+
+	qstringlen(const char* _strptr, int _len)
+	{
+		strptr = _strptr;
+		length = _len;
+	}
+
+	const char* strptr;
+	int			length;
+};
 
 // --------------------------------------------------------------------------------------
 //  xString  (definition)
@@ -223,6 +242,7 @@ public:
 	__ai bool			operator!=	( const char* right ) const		{ return m_string != right; }
 
 	__ai operator const char*() const { return m_string.c_str(); }
+	__ai operator qstringlen()  const { return qstringlen(m_string.c_str(), m_string.length() ); }
 };
 
 inline __ai xString operator+( const xString& right, const char* src )

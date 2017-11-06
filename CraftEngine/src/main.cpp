@@ -306,8 +306,8 @@ bool Scene_TryLoadInit()
 	dx11_LoadShaderVS(g_ShaderVS_Spriter, "Sprite.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
-	PlaceEntity(g_ViewCamera);
-	PlaceEntity(g_TileMap);
+	NewStaticEntity(g_ViewCamera);
+	NewStaticEntity(g_TileMap);
 
 	g_ViewCamera.SceneInit();
 	g_TileMap.SceneInit("WorldView");

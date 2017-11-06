@@ -35,6 +35,8 @@ struct EntityPointerContainerItem
 	EntityGid_t		gid;
 	void*			objectptr;
 	char*			classname;		// alloc'd in same heap as entity
+	bool			managed;		// managed entities are on the entity heap
+	bool			deleted;		// managed entity has been deleted.
 };
 
 union EntityGidOrderPair
@@ -181,11 +183,12 @@ public:
 
 typedef std::queue<EntityContainerEvent> EntityContainerEventQueue;
 
+using StringHashVal = u32;
+
 // Could also be defined with a 32-bit displacement from the base heap pointer, if entities
 // are given a custom heap.
-typedef std::unordered_set<EntityPointerContainerItem, FunctHashEntityItem, CompareEntityGid> EntityPointerContainer;
-
-
+typedef std::unordered_map<EntityGid_t, EntityPointerContainerItem, FunctHashEntityItem>	EntityPointerContainer;
+typedef std::unordered_multimap<StringHashVal, EntityGid_t, FunctHashIdentity>				EntityNameAssociator;
 // --------------------------------------------------------------------------------------
 //  TickableEntityContainer
 // --------------------------------------------------------------------------------------
@@ -403,21 +406,46 @@ inline EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order)
 	return EntityGidOrderPair().SetOrder(order).SetGid(gid);
 }
 
+// --------------------------------------------------------
+// Internal-ish APIs for use by templates...
+extern const EntityPointerContainerItem*	_impl_entity_TryLookup	(const char* name, int length);
+extern const EntityPointerContainerItem&	_impl_entity_Lookup		(const char* name, int length);
+// --------------------------------------------------------
 
-extern const EntityPointerContainerItem*	Entity_TryLookup		(EntityGid_t gid);
-extern const EntityPointerContainerItem&	Entity_Lookup			(EntityGid_t gid);
-extern const char*							Entity_LookupName		(EntityGid_t gid);
-extern void*								Entity_Remove			(EntityGid_t gid);
-extern EntityGid_t							Entity_Spawn			(void* entity, const char* classname=nullptr);
-extern void*								Entity_Malloc			(int size);
+// --------------------------------------------------------
+// Public APIs!
 
-extern void									EntityManager_Reset		();
+extern const EntityPointerContainerItem*	Entity_TryLookup			(EntityGid_t gid);
+extern const EntityPointerContainerItem*	Entity_TryLookup			(const xString& name);
+extern const EntityPointerContainerItem&	Entity_Lookup				(EntityGid_t gid);
+extern const EntityPointerContainerItem&	Entity_Lookup				(const xString& name);
+extern const char*							Entity_LookupName			(EntityGid_t gid);
+extern void									Entity_Remove				(EntityGid_t gid);
+extern EntityGid_t							Entity_AddManaged					(void* entity, const char* classname=nullptr);
+extern void									Entity_AddUnmanaged			(EntityGid_t& gid, void* entity, const char* classname);
+extern void*								Entity_Malloc				(int size);
+extern void									EntityManager_Reset			();
+extern void									EntityManager_CollectGarbage();
+
+// --------------------------------------------------------
+
+template< int _len >
+const EntityPointerContainerItem& Entity_Lookup(const char* (&name)[_len])
+{
+	return _impl_entity_Lookup(name, _len);
+}
+
+template< int _len >
+const EntityPointerContainerItem* Entity_TryLookup(const char* (&name)[_len])
+{
+	return _impl_entity_TryLookup(name, _len);
+}
 
 template< typename T >
 inline T* NewEntityT(const char* classname)
 {
 	T* entity = new (Entity_Malloc(sizeof(T))) T;
-	entity->m_gid = Entity_Spawn(entity, classname);
+	entity->m_gid = Entity_AddManaged(entity, classname);
 	return entity;
 }
 
@@ -426,16 +454,17 @@ T* Entity_LookupAs(EntityGid_t gid) {
 	return (T*)Entity_Lookup(gid).objectptr;
 }
 
-#define PlaceEntity(instance, ...)	\
-	Entity_Remove(instance.m_gid); instance.m_gid = { 0 };			\
-	instance.m_gid = Entity_Spawn(&instance, #instance __VA_ARGS__)
+template<typename T>
+T* Entity_LookupAs(const xString& name) {
+	return (T*)Entity_Lookup(name).objectptr;
+}
 
-// Notice:  heap-allocated entities from C++ are strongly discouraged, as a great deal
-// of manual resource management is required.  And no, there's no magic-bullet fixfor that using
-// shared_ptr<> or CComPtr<> or whatever else.  Just don't do it, folks.
-//
-// There will be LUA-GC based dynamic entity management which is more ideal to the on-the-fly
-// spawner paradigm.
+template<typename T, int _len>
+T* Entity_LookupAs(const char* (&name)[_len]) {
+	return (T*)Entity_Lookup(name).objectptr;
+}
 
-#define NewEntity(type, ...)		NewEntityT<type>( #type ## __VA_ARGS__)
+
+#define NewStaticEntity(instance, ...)	Entity_AddUnmanaged(instance.m_gid, &instance, #instance __VA_ARGS__)
+#define NewEntity(type, ...)			NewEntityT<type>( #type ## __VA_ARGS__)
 

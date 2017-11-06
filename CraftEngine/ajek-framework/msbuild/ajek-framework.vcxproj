@@ -92,6 +92,7 @@
     <ClInclude Include="..\..\gpu-ifc\h\x-gpu-ifc.h" />
     <ClInclude Include="..\h\msw-error.h" />
     <ClInclude Include="..\h\msw-redtape.h" />
+    <ClInclude Include="..\h\PCH-msw.h" />
     <ClInclude Include="..\h\sse_intrinsics.h" />
     <ClInclude Include="..\h\v-float.h" />
     <ClInclude Include="..\h\x-assertion.h" />
