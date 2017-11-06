@@ -14,12 +14,21 @@
 DECLARE_MODULE_NAME("Entity");
 
 
+// Entity Engineering Thoughts:
+//   Currently supporting managed and unmanaged entities for sake of completeness.  Unmnaged entities
+//   are typically static (persisitent) objects within C++ for which pointers are always valid.  There's
+//   actually no good motivation currently to even have these as part of the "entity system."  I'm going
+//   to leave the managed flag in for now tho, in case some use case crops up.  --jstine
+
 #define EntityLog(...)		log_host( __VA_ARGS__ )
 
 static u32 s_entity_spawn_id = 1;
 
 EntityPointerContainer	g_GlobalEntities;
-EntityPointerContainer	g_GlobalEntityAlloc;
+EntityNameAssociator	g_EntitiesByName;
+
+
+static std::vector<EntityGid_t>	s_DeletedEntities;
 
 static EntityGid_t getNextSpawnId()
 {
@@ -39,43 +48,102 @@ void* Entity_Malloc(int size)
 	return xMalloc(size);
 }
 
+static void freeManagedEntity(EntityPointerContainerItem& item)
+{
+	xFree(item.classname);
+	if (item.managed) {
+		xFree(item.objectptr);
+	}
+}
+
 void EntityManager_Reset()
 {
 	// Remove this once global entity MSPACE is provided...
-	for(auto& item : g_GlobalEntityAlloc) {
-		xFree(item.objectptr);
-	}
-
-	// Remove this once global entity MSPACE is provided...
 	for(auto& item : g_GlobalEntities) {
-		xFree(item.classname);
+		freeManagedEntity(item.second);
 	}
 
-	g_GlobalEntities	.clear();
-	g_GlobalEntityAlloc	.clear();
+	g_GlobalEntities.clear();
 
 	// Wipe mspace here...
+}
+
+void EntityManager_CollectGarbage()
+{
+	for (const auto& gid : s_DeletedEntities)
+	{
+		auto it = g_GlobalEntities.find( gid );
+		if (it == g_GlobalEntities.end()) continue;
+		freeManagedEntity(it->second);
+		g_GlobalEntities.erase(it);
+	}
+	s_DeletedEntities.clear();
 }
 
 const EntityPointerContainerItem s_missing =
 {
 	ESGID_Empty,
 	nullptr,
-	"Missing"
+	"Missing",
+	false,
+	false
 };
+
+u32 _getStringHash(const char* name, int length, u32 curhash=0)
+{
+	u32 result = curhash;
+	const char* c = name;
+	int i=0;
+	for(; i<length/8; i += 4) {
+		result = i_crc32(result, (u32&)c[i]);
+	}
+
+	for(; i<length; i += 1) {
+		result = i_crc32(result, (u8&)c[i]);
+	}
+
+	return result;
+}
+
+__xi const EntityPointerContainerItem* _impl_entity_TryLookup(const char* name, int length)
+{
+	auto result = _getStringHash(name, length);
+	auto it1 = g_EntitiesByName.find(result);
+	auto it2 = g_GlobalEntities.find(it1->second);
+
+	if (it2 == g_GlobalEntities.end()) return nullptr;
+	return &it2->second;
+}
+
+const EntityPointerContainerItem& _impl_entity_Lookup(const char* name, int length)
+{
+	auto* result = _impl_entity_TryLookup(name, length);
+	if (!result) return s_missing;
+	return *result;
+}
 
 const EntityPointerContainerItem* Entity_TryLookup(EntityGid_t gid)
 {
-	auto it = g_GlobalEntities.find( {gid, nullptr} );
+	auto it = g_GlobalEntities.find( gid );
 	if (it == g_GlobalEntities.end()) return nullptr;
-	return &(*it);
+	return &it->second;
+}
+
+const EntityPointerContainerItem& Entity_Lookup(const xString& name)
+{
+	return _impl_entity_Lookup(name, name.GetLength());
+}
+
+const EntityPointerContainerItem* Entity_TryLookup(const xString& name)
+{
+	return _impl_entity_TryLookup(name, name.GetLength());
 }
 
 const EntityPointerContainerItem& Entity_Lookup(EntityGid_t gid)
 {
-	auto it = g_GlobalEntities.find( {gid, nullptr} );
+	auto it = g_GlobalEntities.find( gid );
 	if (it == g_GlobalEntities.end()) return s_missing;
-	return *it;
+	return it->second;
 }
 
 const char* Entity_LookupName(EntityGid_t gid)
@@ -83,17 +151,20 @@ const char* Entity_LookupName(EntityGid_t gid)
 	return Entity_Lookup(gid).classname;
 }
 
-void* Entity_Remove(EntityGid_t gid)
+void Entity_Remove(EntityGid_t gid)
 {
-	auto it = g_GlobalEntities.find( {gid, nullptr} );
-	if (it == g_GlobalEntities.end()) return nullptr;
-	void* retval = it->objectptr;
-	g_GlobalEntities.erase(it);
-	return retval;
+	auto it = g_GlobalEntities.find( gid );
+	if (it == g_GlobalEntities.end()) return;
+	if (it->second.managed) {
+		s_DeletedEntities.push_back(gid);
+		it->second.deleted = 1;
+	}
 }
 
-EntityGid_t Entity_Spawn(void* entity, const char* classname)
+EntityGid_t _impl_Entity_Spawn(EntityPointerContainerItem& item, const char* classname)
 {
+	// TODO - change asManaged to a proper enum type.
+
 	char* namedup = nullptr;
 	auto  namelen = strlen(classname);
 	if (namelen) {
@@ -101,15 +172,37 @@ EntityGid_t Entity_Spawn(void* entity, const char* classname)
 		strcpy(namedup, classname);
 	}
 
-	EntityPointerContainerItem item = {0, entity, namedup};
 	for (;;) {
 		item.gid = getNextSpawnId();
-		if (g_GlobalEntities.find(item) != g_GlobalEntities.end()) {
+		if (g_GlobalEntities.find(item.gid) != g_GlobalEntities.end()) {
 			continue;
 		}
-		g_GlobalEntities.insert(item);
+		auto namehash = _getStringHash(classname, namelen);
+		g_GlobalEntities.insert({item.gid, item});
+		g_EntitiesByName.insert({namehash, item.gid});
 		return item.gid;
 	}
+}
+
+void Entity_AddUnmanaged(EntityGid_t& gid, void* entity, const char* classname)
+{
+	Entity_Remove(gid); gid = { 0 };
+	EntityPointerContainerItem item;
+	item.gid			= { 0 };
+	item.objectptr		= entity;
+	item.managed		= 1;
+	item.deleted		= 0;
+	gid = _impl_Entity_Spawn(item, classname);
+}
+
+EntityGid_t Entity_AddManaged(void* entity, const char* classname)
+{
+	EntityPointerContainerItem item;
+	item.gid			= { 0 };
+	item.objectptr		= entity;
+	item.managed		= 1;
+	item.deleted		= 0;
+	return _impl_Entity_Spawn(item, classname);
 }
 
 void TickableEntityContainer::ExecEventQueue()
