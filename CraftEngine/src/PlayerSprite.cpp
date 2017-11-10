@@ -99,17 +99,7 @@ void PlayerSprite::Tick(int order)
 
 	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
 
-	if (0) {
-		// relative movement toward mouse position.
-		auto mouse = g_mouse.clientToNormal();
-		if (g_mouse.isPressed(VirtKey::MouseLeft)) {
-			mouse.normal.x = xBoundsCheck(mouse.normal.x, -0.5f, 0.5f);
-			mouse.normal.y = xBoundsCheck(mouse.normal.y, -0.5f, 0.5f);
-
-			m_position += { mouse.normal * 0.05f };
-		}
-	}
-	else if (s_isAbsolute){
+	if (s_isAbsolute){
 		if (g_mouse.isTrackable()) {
 			// absolute float under cursor (for diagnostic!)
 			auto mouse = g_mouse.clientToNormal();

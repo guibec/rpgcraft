@@ -99,19 +99,7 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
-struct IndicatorSprite {
-	EntityGid_t					m_gid;
-	float2						m_position;		// specified in tile coords
-
-	struct {
-		GPU_TextureResource2D	tex;
-		GPU_VertexBuffer		mesh;
-	} gpu;
-};
-
-IndicatorSprite			s_indicator;
-
-void SceneLogic()
+void GameplaySceneLogic()
 {
 	g_drawlist_main.Clear();
 	g_mouse.update();
@@ -202,7 +190,7 @@ void ViewCamera::SetEyeAt(const float2& xy)
 	m_At.xy		= xy;
 }
 
-void SceneRender()
+void GameplaySceneRender()
 {
 
 	if (!s_CanRenderScene) return;

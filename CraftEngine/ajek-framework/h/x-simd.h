@@ -548,10 +548,6 @@ union int2 {
 	};
 
 	struct {
-		int		z, w;
-	};
-
-	struct {
 		int		u, v;
 	};
 
