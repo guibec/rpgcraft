@@ -5,13 +5,11 @@
 -- This configuration is provided by git repo, and applies default settings according
 -- to the target platform.  
 
-print "Checkpoint?"
 ScriptConfig = {}
 ScriptConfig.ModulePath			= "./lua_modules"
 ScriptConfig.UseProtectedCall	= true
 ScriptConfig.ScriptDebugging    = true
 ScriptConfig.LuaPrintEnable		= true
-print "Checkpoint?"
 
 --[[
 -- TODO : switch to a functional method of applying settings, rather than data-driven?

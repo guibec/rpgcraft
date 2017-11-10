@@ -148,9 +148,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+std::vector<RECT>  s_msw_monitors;
+
 BOOL MonitorEnumerator(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM lparam)
 {
-	log_host("Monitor: rect = %d, %d, %d, %d", rect->left, rect->top, rect->right, rect->bottom);
+	log_host("MonitorEnumerator: rect = %d, %d, %d, %d", rect->left, rect->top, rect->right, rect->bottom);
+	s_msw_monitors.push_back(*rect);
 	return true;
 }
 
@@ -186,6 +189,88 @@ void table_get_rect(T& dest, LuaTableScope& table)
 	}
 }
 
+static RECT s_lastknown_window_rect		= { };
+
+static bool validate_window_pos(RECT& window, bool tryFix)
+{
+	// * the "top" of a window should always be visible on load, because it's important for being
+	//   able to grab and move the window.
+	// * The rest of the window position isn't too important, however at least 240px or 1/3rd of
+	//   the window along the X (horizontal) axis should be visble, otherwise it might be hard to
+	//   grab the title bar.
+
+	// 1.  test if the window title bar satisfies any monitor.
+	//   if failed, then:
+	// 2. adjust the window to be within a monitor (whichever it's closest to, ideally)
+
+	RECT window_important_area = {  window.left, window.top, window.right, window.top + 32 };
+	int importantHeight = window_important_area.bottom - window_important_area.top;
+	int importantWidth	= min(240, window_important_area.right-window_important_area.left);
+	for (const auto& monitor_rect : s_msw_monitors) {
+		RECT dest;
+		if (::IntersectRect(&dest, &window_important_area, &monitor_rect)) {
+			if ((dest.bottom - dest.top) < importantHeight) {
+				// not enough of title bar is visible, reject!
+				//log_host("title bar rejection #1");
+				continue;
+			}
+			if ((dest.right - dest.left) < importantWidth) {
+				// not enough of title bar is visible, reject!
+				//log_host("title bar rejection #2");
+				continue;
+			}
+
+			// Seems OK, let the position through unmodified...
+			return true;
+		}
+	}
+
+	if (!tryFix) {
+		return false;
+	}
+
+
+	// get the work area or entire monitor rect.
+	auto hMonitor = ::MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO  mi = {};
+	mi.cbSize = sizeof(mi);
+	GetMonitorInfo(hMonitor, &mi);
+	RECT best_monitor = mi.rcWork;
+
+#if 0
+	// our hand-rolled version of MonitorFromRect()
+	RECT best_monitor = {};
+	int  best_area = 0;
+
+	for (const auto& monitor_rect : s_msw_monitors) {
+		RECT dest;
+		if (::IntersectRect(&dest, &window, &monitor_rect)) {
+			int area = (dest.bottom - dest.top) * (dest.right - dest.left);
+			if (best_area < area) {
+				best_area		= area;
+				best_monitor	= monitor_rect;
+			}
+		}
+	}
+
+	if (!best_area) {
+		return false;
+	}
+#endif
+
+	POINT moveby = {
+		best_monitor.left		- window.left,
+		best_monitor.top		- window.top,
+	};
+
+	window.left		+= moveby.x;
+	window.top		+= moveby.y;
+	window.right	+= moveby.x;
+	window.bottom	+= moveby.y;
+
+	return true;
+}
+
 void ApplyDesktopSettings()
 {
 	auto& script = g_scriptEnv;
@@ -196,14 +281,14 @@ void ApplyDesktopSettings()
 			table_get_rect(client_rect,	tbl_clientRect);
 
 			RECT rc = { client_rect.x, client_rect.y, client_rect.z, client_rect.w };
+
 			::AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
-			::SetWindowPos(g_hWnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOOWNERZORDER | SWP_NOZORDER);
+			if (validate_window_pos(rc, true)) {
+				::SetWindowPos(g_hWnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
 		}
 	}
 }
-
-static POINT s_lastknown_topleft		= { };
-static POINT s_lastknown_bottomright   = { };
 
 static void UpdateLastKnownWindowPosition()
 {
@@ -214,13 +299,14 @@ static void UpdateLastKnownWindowPosition()
 		POINT topleft			= { rc.left, rc.top };
 		POINT bottomright		= { rc.right, rc.bottom };
 
-		::ClientToScreen(g_hWnd, &s_lastknown_topleft);
-		::ClientToScreen(g_hWnd, &s_lastknown_bottomright);
+		::ClientToScreen(g_hWnd, &topleft);
+		::ClientToScreen(g_hWnd, &bottomright);
 
-		// TODO: reject/ignore updating lastknown with clearly invalid window positions,
-		// according to enumerated windows displays
-		s_lastknown_topleft			= topleft;
-		s_lastknown_bottomright		= bottomright;
+		RECT newpos = { topleft.x, topleft.y, bottomright.x, bottomright.y };
+
+		if (validate_window_pos(newpos, false)) {
+			s_lastknown_window_rect		= newpos;
+		}
 	}
 }
 
@@ -245,7 +331,7 @@ void SaveDesktopSettings()
 	fprintf(f, "-- Any modifications here will be lost!\n\n");
 	fprintf(f, "if UserSettings == nil then UserSettings = {} end\n\n");
 	fprintf(f, "UserSettings.ClientRect = { {%d,%d}, {%d,%d} }\n",
-		s_lastknown_topleft.x, s_lastknown_topleft.y, s_lastknown_bottomright.x, s_lastknown_bottomright.y
+		s_lastknown_window_rect.left, s_lastknown_window_rect.top, s_lastknown_window_rect.right, s_lastknown_window_rect.bottom
 	);
 	fclose(f);
 }
@@ -253,6 +339,7 @@ void SaveDesktopSettings()
 
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
+	s_msw_monitors.clear();
 	EnumDisplayMonitors(nullptr, nullptr, MonitorEnumerator, 0);
 
 	// Register class
