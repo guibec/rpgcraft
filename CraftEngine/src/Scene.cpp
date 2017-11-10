@@ -29,8 +29,8 @@ static thread_t				s_thr_scene_producer;
 static xMutex				s_mtx_MsgQueue;
 static xSemaphore			s_sem_thread_done;
 static SceneMessageList		s_MsgQueue;
-static u32					s_scene_isPaused;
-
+static u32					s_scene_stopReason			= 0;
+static u32					s_scene_devExecMask			= 0xffffffff;
 static bool					s_scene_initialized			= false;
 static bool					s_scene_thread_running		= false;
 
@@ -94,24 +94,24 @@ void Scene_DrainMsgQueue()
 		lock.Unlock();
 		processed = true;
 
-	    ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();
 		switch(msg.msgid)
 		{
 			case SceneMsg_StopExec: {
-				s_scene_isPaused	|=  _getStopReason(msg.payload);
+				s_scene_stopReason	 |=  _getStopReason(msg.payload);
 			} break;
 
 			case SceneMsg_StartExec: {
-				s_scene_isPaused	&= ~_getStopReason(msg.payload);
+				s_scene_stopReason	 &= ~_getStopReason(msg.payload);
 			} break;
 
 			case SceneMsg_ToggleExec: {
-				s_scene_isPaused    ^=  _getStopReason(msg.payload);
+				s_scene_stopReason   ^=  _getStopReason(msg.payload);
 			} break;
 
 			case SceneMsg_StepExec: {
-				s_scene_isPaused	^= SceneStopReason_Developer;
-				//step_exec			 = !s_scene_isPaused;
+				s_scene_stopReason	 ^= SceneStopReason_Developer;
+				//step_exec			  = !s_scene_stopReason;
 			} break;
 
 			case SceneMsg_Reload: {
@@ -119,7 +119,7 @@ void Scene_DrainMsgQueue()
 			} break;
 
 			case SceneMsg_Shutdown: {
-				s_scene_isPaused |= _SceneStopReason_Shutdown;
+				s_scene_stopReason |= _SceneStopReason_Shutdown;
 			} break;
 
 			case SceneMsg_KeyDown: {
@@ -227,6 +227,25 @@ static void* GlobalKeyboardThreadProc(void*)
 	}
 }
 
+#include "x-chrono.h"
+
+// Local world time is time measured while the game is not in a paused state.
+// This differs from network time, which will be based on either universal QPC results,
+// or something roughly similar that at at least 5ms resolution.
+
+HostClockTick	s_world_localtime;
+HostClockTick	s_world_localtime_qpc_last_update;
+
+HostClockTick	s_world_qpc_frametick;			// cached QPC value, once per frame (scene loop)
+
+
+HostClockTick WorldTick_Now()
+{
+	return s_world_qpc_frametick;
+}
+
+#include <ctime>
+
 static void* SceneProducerThreadProc(void*)
 {
 	Host_ImGui_Init();
@@ -235,43 +254,107 @@ static void* SceneProducerThreadProc(void*)
 	{
 		Host_ImGui_NewFrame();
 		DbgFont_NewFrame();
-		Scene_DrainMsgQueue();
 
+		// Timer Features!
+		//  - Changes to Pause/Stop status occur during the msg queue
+		//  - World Timer should not count time when the game has been paused
+		//     * this includes time spent in the sleeping or vsync'ing since prev frame
+		//  - Delta is not applied until scene is resumed, this allows the game delta state
+		//    to be identical for paused scene reloads.
+
+		Scene_DrainMsgQueue();
 		s_scene_has_keyfocus  = !ImGui::GetIO().WantCaptureKeyboard && Host_HasWindowFocus();
+
+		s_world_qpc_frametick = HostClockTick::Now();
+
+		if (!s_scene_stopReason && s_world_localtime_qpc_last_update.asTicks() != 0) {
+			s_world_localtime += (WorldTick_Now() - s_world_localtime_qpc_last_update);
+		}
+		s_world_localtime_qpc_last_update = HostClockTick::Now();
 
 		if (Scene_HasStopReason(_SceneStopReason_Shutdown)) {
 			log_host("SceneThread has been shutdown.");
 			break;
 		}
 
-		if (Scene_HasStopReason(SceneStopReason_ScriptError | SceneStopReason_Developer)) {
+		if (ImGui::Begin("Clocks")) {
+			auto secs  = time(nullptr);
+
+			// calc local time and the current timezone.
+			// no function to return the current timezon, so use gmtime to calculate it ourselves...
+			tm   localtm, gmtm;
+			localtime_s	(&localtm,	&secs);
+			gmtime_s	(&gmtm,		&secs);
+
+			auto loc_secs = mktime(&localtm);
+			auto gm_secs  = mktime(&gmtm);
+			auto tz_shift_secs	= loc_secs - gm_secs;
+
+			ImGui::Text("walltime: %02d:%02d:%02d %02d:%02d   (%04d-%02d-%02d)",
+				localtm.tm_hour, localtm.tm_min, localtm.tm_sec,
+				(tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
+				localtm.tm_year+1900, localtm.tm_mon, localtm.tm_mday
+			);
+			ImGui::Value("worldtime", s_world_localtime.asSeconds(), "%5.2f");
+			ImGui::Value("proctime", HostClockTick::Now().asSeconds(), "%5.2f");
+		} ImGui::End();
+
+		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
 			dx11_BeginFrameDrawing();
 			DbgFont_SceneRender();
 			ImGui::Render();
 			dx11_SubmitFrameAndSwap();
 			xThreadSleep(32);
+			s_world_localtime_qpc_last_update = HostClockTick::Now();
 			continue;
 		}
 
 		if (Scene_HasStopReason(SceneStopReason_Background | SceneStopReason_HostDialog)) {
 			xThreadSleep(32);
+			s_world_localtime_qpc_last_update = HostClockTick::Now();
 			continue;
 		}
 
 		if (!SceneInitialized()) {
 			SceneInit();
+			s_world_localtime_qpc_last_update = HostClockTick::Now();
+		}
+
+		if (!SceneInitialized()) {
+			// init failed, don't render scene.
+			// There should be a SceneStopReason set at this point to prevent constant
+			// initialization loop feedback.  But we can't bug on it here since the stop
+			// reason change is probably in the message queue and hasn't been applied yet.
+			xThreadSleep(15);
+			continue;
 		}
 
 		if (SceneInitialized()) {
+
 			s_scene_frame_count += 1;
-			SceneLogic();
+
+			if (s_scene_devExecMask & SceneExecMask_GameplayLogic) {
+				GameplaySceneLogic();
+			}
+
+			if (s_scene_devExecMask & SceneExecMask_HudLogic) {
+				//HudSceneLogic();
+			}
 
 			dx11_BeginFrameDrawing();
-			SceneRender();
+			if (s_scene_devExecMask & SceneExecMask_GameplayRender) {
+				GameplaySceneRender();
+			}
+			if (s_scene_devExecMask & SceneExecMask_HudRender) {
+				//HudSceneRender();
+			}
 			DbgFont_SceneRender();
 			ImGui::Render();
 			dx11_SubmitFrameAndSwap();
-			EntityManager_CollectGarbage();
+
+			if (Scene_HasStopReason(SceneStopReason_Developer)) {
+				EntityManager_CollectGarbage();
+			}
 		}
 
 		// TODO : framerate pacing (vsync disabled)
@@ -301,5 +384,5 @@ void Scene_ShutdownThreads()
 
 bool Scene_HasStopReason(u32 stopReason)
 {
-	return (s_scene_isPaused & stopReason) != 0;
+	return (s_scene_stopReason & stopReason) != 0;
 }

@@ -19,6 +19,12 @@ DECLARE_MODULE_NAME("Entity");
 //   are typically static (persisitent) objects within C++ for which pointers are always valid.  There's
 //   actually no good motivation currently to even have these as part of the "entity system."  I'm going
 //   to leave the managed flag in for now tho, in case some use case crops up.  --jstine
+//
+//   Entity lookup by gid_t can be optimized considerably using an associative cache.
+//      * create a fixed-sized array large enough to handle most entities in a scene (64k), containing:
+//               gid_t, pointer to entity
+//      * do lookup using gid_t & (cache_size-1)
+//               if (cache[gid_masked] == gid) { return result; } else { do_full_lookup(); }
 
 #define EntityLog(...)		log_host( __VA_ARGS__ )
 

@@ -32,19 +32,36 @@ enum SceneMessageId {
 
 };
 
-// ------------------------------------------------------------------------------------------------
 // SceneStopReason
 //   These should *always* be specified using Scene_SendMessage API, even when being assigned from
 //   the SceneProducer thread.  StopReasons are handled transactionally, such that multiple changes
 //   to stop state can be made during a series of synchronous logic operations on SceneThread, and
-//   the resultint Stop  State will be calculated once, and coherently.
+//   the resultint Stop State will be calculated once, and coherently.
+//
+//   GAMEPLAY STOP THINGS DON'T BELONG HERE.  This is related to scene/engine control, and it'll stop
+//   everything except ImGui.  Gameplay pauses should be implemented by nullifying the delta-time
+//   between frames and/or skipping the Tick step.  (Draw/Render still execute).
 
 static const u32 SceneStopReason_Developer			= 1ul << 0;		// Pause exec via 'P', Stepping exec by frame, etc.
 static const u32 SceneStopReason_ScriptError		= 1ul << 1;		// Debugging of script
 static const u32 SceneStopReason_Background			= 1ul << 4;		// Game has been placed in the background (console/mobile specific, maybe)
-static const u32 SceneStopReason_HostDialog			= 1ul << 5;		// Similar to Background but refers to self-made dialogs rather than system0imposed background execution
+static const u32 SceneStopReason_HostDialog			= 1ul << 5;		// Similar to Background but refers to self-made dialogs rather than system-imposed background execution
 static const u32 _SceneStopReason_Shutdown			= 1ul << 7;		// Scene thread is being shut down for good (do not use directly -- invoked by Scene_ShutdownThreads)
-// ------------------------------------------------------------------------------------------------
+
+// SceneExecMask
+//   Used to control which parts of a scene are updated when producing a new frame.  Note that these will
+//   also affect any ImGui controls which might also be issued from each step -- eg, entire windows or
+//   controls may disappear when specific steps are disabled.
+//
+//    * If Logic is disabled, the render list from prev frame is preserved and Render will render the
+//      previous scene, unmodified.  This may be useful for debugging shaders or other GPU backend operations.
+//    * If Render is disabled, then logic will be updated and render lists generated, but no rendering
+//      will occur.
+//
+static const u32 SceneExecMask_GameplayLogic		= 1ul << 0;
+static const u32 SceneExecMask_GameplayRender		= 1ul << 1;
+static const u32 SceneExecMask_HudLogic				= 1ul << 2;
+static const u32 SceneExecMask_HudRender			= 1ul << 3;
 
 struct SceneMessage
 {
@@ -64,8 +81,8 @@ extern void			Scene_ShutdownThreads				();
 
 extern bool			SceneInitialized					();
 extern void			SceneInit							();
-extern void			SceneRender							();
-extern void			SceneLogic							();
+extern void			GameplaySceneRender							();
+extern void			GameplaySceneLogic							();
 extern int			Scene_GetFrameCount					();
 
 extern void			Scene_InitMessages					();

@@ -33,7 +33,10 @@ struct HostClockTick {
 	__ai bool operator!=(const HostClockTick& right) const { return m_val != right.m_val; }
 
 	__ai HostClockTick operator+ (const HostClockTick& right) const { return HostClockTick(m_val + right.m_val); }
-	__ai HostClockTick operator- (const HostClockTick& right) const { return HostClockTick(m_val + right.m_val); }
+	__ai HostClockTick operator- (const HostClockTick& right) const { return HostClockTick(m_val - right.m_val); }
+
+	__ai HostClockTick& operator+= (const HostClockTick& right) { m_val += right.m_val; return *this; }
+	__ai HostClockTick& operator-= (const HostClockTick& right) { m_val += right.m_val; return *this; }
 
 	// Delta-time comparisons used to avoid overflow conundruns.
 
