@@ -29,20 +29,20 @@ HWND                    g_hWnd					= nullptr;
 static INT64			g_Time = 0;
 static INT64			g_TicksPerSecond = 0;
 
-static HostClockTick g_SettingsDirtyTimeout;
+static xCountedSemaphore	s_sem_SettingsDirtied;
+static volatile s32			s_settings_dirty;
 
 void MarkUserSettingsDirty()
 {
-	// TODO: move this to its own thread that just executes xThreadSleep(3000) after handling a
-	// SaveSettings request.
-
-	if (g_SettingsDirtyTimeout.asTicks() == 0) {
-		g_SettingsDirtyTimeout = HostClockTick::Now() + HostClockTick::Seconds(3);
+	if (!AtomicExchange(s_settings_dirty, 1)) {
+		s_sem_SettingsDirtied.PostIfNeeded();
 	}
 }
 
 static bool s_isMinimized = false;
 static bool s_isMaximized = false;
+static bool s_msg_moved	  = false;
+static bool s_msg_sized   = false;
 
 //--------------------------------------------------------------------------------------
 // WINDOWS BOILERPLATE
@@ -301,35 +301,75 @@ static void UpdateLastKnownWindowPosition()
 	}
 }
 
-void SaveDesktopSettings()
+void GenDesktopSettings(xString& dest)
 {
-	if (!g_SettingsDirtyTimeout.m_val || (g_SettingsDirtyTimeout > Host_GetProcessTicks())) {
-		return;
-	}
-
-	g_SettingsDirtyTimeout.m_val = 0;
-
-	FILE* f = fopen("saved-settings.lua", "wb");
-	if (!f) return;
-
 	// This version ensures the client position stays consistent even if the decaling sizes change between sessions,
 	// (eg, user changes window title bar sizes or similar) -- and generally makes more sense from a human-readable
 	// perspective.
 
 	UpdateLastKnownWindowPosition();
-
-	fprintf(f, "-- Machine-generated user saved-settings file.\n");
-	fprintf(f, "-- Any modifications here will be lost!\n\n");
-	fprintf(f, "if UserSettings == nil then UserSettings = {} end\n\n");
-
-	fprintf(f, "UserSettings.WindowClientPos  = { %d,%d }\n",
+	dest.Clear();
+	dest.AppendFmt("UserSettings.WindowClientPos  = { %d,%d }\n",
 		s_lastknown_window_rect.left, s_lastknown_window_rect.top
 	);
 
-	fprintf(f, "UserSettings.WindowClientSize = { %d,%d }\n",
+	dest.AppendFmt("UserSettings.WindowClientSize = { %d,%d }\n",
 		g_client_size_pix.x, g_client_size_pix.y
 	);
-	fclose(f);
+}
+
+static xString s_settings_content_KnownVersion;
+static xString s_settings_content_NewVersion;
+
+bool SaveDesktopSettings(bool isMarkedDirty)
+{
+	GenDesktopSettings(s_settings_content_NewVersion);
+
+	if (s_settings_content_NewVersion == s_settings_content_KnownVersion) {
+		return false;
+	}
+
+	if (!isMarkedDirty) {
+		// periodic save detected unexpected changes, which means there's something
+		// changing in the settings env that's not issuing dirty pings...
+		// TODO : print a diff of the specific lines that changed, so we can identify what needs
+		//        to be fixed to call the Dirty function.
+		log_host( "Unexpected saved settings occured." );
+	}
+
+	if (FILE* f = fopen("saved-settings.lua", "wb")) {
+		fputs("-- Machine-generated user saved-settings file.\n",f);
+		fputs("-- Any modifications here will be lost!\n\n",f);
+		fputs("if UserSettings == nil then UserSettings = {} end\n\n",f);
+		fputs(s_settings_content_NewVersion, f);
+		s_settings_content_KnownVersion = s_settings_content_NewVersion;
+		fclose(f);
+	}
+	return true;
+}
+
+// Optional thread to ping settings periodically, to cover handling settings that aren't correctly
+// pinging s_sem_SettingsDirtied.
+void* PingSaveSettingsThread(void*)
+{
+	while (1) {
+		s_sem_SettingsDirtied.PostIfNeeded();
+		xThreadSleep(10000);
+	}
+}
+
+void* SaveSettingsThread(void*)
+{
+	while (1) {
+		s_sem_SettingsDirtied.Wait();
+		auto isMarkedDirty = (AtomicExchange(s_settings_dirty,0) >= 1);
+		if (SaveDesktopSettings(isMarkedDirty)) {
+			xThreadSleep(3000);
+		}
+		else {
+			xThreadSleep(250);
+		}
+	}
 }
 
 
@@ -409,6 +449,8 @@ bool Msw_DrainMsgQueue()
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	s_sem_SettingsDirtied.Create("SettingsDirtied");
+
 	HostClockTick::Init();
 	MSW_InitChrono();
 	LogHostInit();
@@ -514,6 +556,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	// No especially good reason for this -- there's just a bunch of poo in the windows
 	// message queue after window creation and stuff, and I like to drain it all in as
 	// synchronous an environment as possible.  --jstine
+
+	thread_t s_thr_save_settings;
+	thread_t s_thr_save_settings_ping;
+	thread_create(s_thr_save_settings, SaveSettingsThread, "SaveSettings");
+	thread_create(s_thr_save_settings_ping, PingSaveSettingsThread, "PingSaveSettings");
 
 	if (Msw_DrainMsgQueue()) {
 
@@ -650,8 +697,6 @@ void _hostImpl_ImGui_NewFrame()
 			::SetCursor(NULL);
 		}
 	}
-
-	SaveDesktopSettings();
 
 	// Start the frame
 	ImGui::NewFrame();
