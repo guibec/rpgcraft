@@ -148,14 +148,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-std::vector<RECT>  s_msw_monitors;
-
-BOOL MonitorEnumerator(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM lparam)
-{
-	log_host("MonitorEnumerator: rect = %d, %d, %d, %d", rect->left, rect->top, rect->right, rect->bottom);
-	s_msw_monitors.push_back(*rect);
-	return true;
-}
+//std::vector<RECT>  s_msw_monitors;
+//BOOL MonitorEnumerator(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM lparam)
+//{
+//	log_host("MonitorEnumerator: rect = %d, %d, %d, %d", rect->left, rect->top, rect->right, rect->bottom);
+//	s_msw_monitors.push_back(*rect);
+//	return true;
+//}
 
 template< typename T >
 void table_get_xy(T& dest, LuaTableScope& table)
@@ -178,6 +177,17 @@ void table_get_xy(T& dest, LuaTableScope& table)
 }
 
 template< typename T >
+bool table_get_xy(T& dest, LuaTableScope& table, const char* subtable)
+{
+	bug_on(!subtable);
+	if (auto& subtab = table.get_table(subtable)) {
+		table_get_xy(dest, subtab);
+		return true;
+	}
+	return false;
+}
+
+template< typename T >
 void table_get_rect(T& dest, LuaTableScope& table)
 {
 	if (auto& subtab = table.get_table(1)) {
@@ -193,33 +203,41 @@ static RECT s_lastknown_window_rect		= { };
 
 static bool validate_window_pos(RECT& window, bool tryFix)
 {
+	// This logic mimics Win10's built-in movement restrictions, which aren't applied when using
+	// ::ShowWindow() -- so we have to do it manually in case the inputs from the config file are
+	// garbage.
+
 	// * the "top" of a window should always be visible on load, because it's important for being
 	//   able to grab and move the window.
 	// * The rest of the window position isn't too important, however at least 240px or 1/3rd of
 	//   the window along the X (horizontal) axis should be visble, otherwise it might be hard to
 	//   grab the title bar.
 
-	// 1.  test if the window title bar satisfies any monitor.
-	//   if failed, then:
-	// 2. adjust the window to be within a monitor (whichever it's closest to, ideally)
+	// get the work area of the monitor that best matches our window position:
+	auto hMonitor = ::MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO  mi = {};
+	mi.cbSize = sizeof(mi);
+	GetMonitorInfo(hMonitor, &mi);
+	RECT best_monitor = mi.rcWork;
 
-	RECT window_important_area = {  window.left, window.top, window.right, window.top + 32 };
-	int importantHeight = window_important_area.bottom - window_important_area.top;
-	int importantWidth	= min(240, window_important_area.right-window_important_area.left);
-	for (const auto& monitor_rect : s_msw_monitors) {
-		RECT dest;
-		if (::IntersectRect(&dest, &window_important_area, &monitor_rect)) {
-			if ((dest.bottom - dest.top) < importantHeight) {
-				// not enough of title bar is visible, reject!
-				//log_host("title bar rejection #1");
-				continue;
-			}
-			if ((dest.right - dest.left) < importantWidth) {
-				// not enough of title bar is visible, reject!
-				//log_host("title bar rejection #2");
-				continue;
-			}
+	// Determine the non-client area cleverly, without having to go through all the stupid
+	// windows metrics APIs:
 
+	RECT nonclientarea = { 0,0,1,1 };
+	POINT titlebarSize = { 8, 8    };		// default assumption in case AdjustWindowRect() fails for any reaosn
+	auto style = ::GetWindowLong(g_hWnd, GWL_STYLE);
+	if (::AdjustWindowRect(&nonclientarea, style, FALSE)) {
+		titlebarSize = { -nonclientarea.left, -nonclientarea.top };
+	}
+
+	RECT dest;
+	RECT window_important_area = {  window.left, window.top, window.right, window.top + titlebarSize.y };
+	int importantWidth = min(240, window.right-window.left);
+
+	if (::IntersectRect(&dest, &window_important_area, &best_monitor)) {
+		bool horizCheckOk = (dest.bottom - dest.top) >= titlebarSize.y;
+		bool vertCheckOk  = (dest.right - dest.left) >= importantWidth;
+		if (horizCheckOk && vertCheckOk) {
 			// Seems OK, let the position through unmodified...
 			return true;
 		}
@@ -228,35 +246,6 @@ static bool validate_window_pos(RECT& window, bool tryFix)
 	if (!tryFix) {
 		return false;
 	}
-
-
-	// get the work area or entire monitor rect.
-	auto hMonitor = ::MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST);
-	MONITORINFO  mi = {};
-	mi.cbSize = sizeof(mi);
-	GetMonitorInfo(hMonitor, &mi);
-	RECT best_monitor = mi.rcWork;
-
-#if 0
-	// our hand-rolled version of MonitorFromRect()
-	RECT best_monitor = {};
-	int  best_area = 0;
-
-	for (const auto& monitor_rect : s_msw_monitors) {
-		RECT dest;
-		if (::IntersectRect(&dest, &window, &monitor_rect)) {
-			int area = (dest.bottom - dest.top) * (dest.right - dest.left);
-			if (best_area < area) {
-				best_area		= area;
-				best_monitor	= monitor_rect;
-			}
-		}
-	}
-
-	if (!best_area) {
-		return false;
-	}
-#endif
 
 	POINT moveby = {
 		best_monitor.left		- window.left,
@@ -276,17 +265,19 @@ void ApplyDesktopSettings()
 	auto& script = g_scriptEnv;
 	if (auto& deskset = script.glob_open_table("UserSettings", false))
 	{
-		if (auto& tbl_clientRect = deskset.get_table("ClientRect")) {
-			int4 client_rect;
-			table_get_rect(client_rect,	tbl_clientRect);
+		int2 client_pos		= { 64, 64 };
+		int2 client_size	= { 1280, 720 };
+		bool has_pos		= table_get_xy(client_pos,	deskset, "WindowClientPos");
+		bool has_size		= table_get_xy(client_size,	deskset, "WindowClientSize");
 
-			RECT rc = { client_rect.x, client_rect.y, client_rect.z, client_rect.w };
+		RECT rc = { client_pos.x, client_pos.y, client_pos.x + client_size.u, client_pos.y + client_size.v };
+		auto style = ::GetWindowLong(g_hWnd, GWL_STYLE);
+		::AdjustWindowRect(&rc, style, FALSE);
 
-			::AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
-			if (validate_window_pos(rc, true)) {
-				::SetWindowPos(g_hWnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOOWNERZORDER | SWP_NOZORDER);
-			}
-		}
+		// always validate window pos even if has_pos is false, since it also validates window size.
+		validate_window_pos(rc, true);
+		u32 posflags = SWP_NOOWNERZORDER | SWP_NOZORDER | (has_pos ? 0 : SWP_NOMOVE);
+		::SetWindowPos(g_hWnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, posflags);
 	}
 }
 
@@ -330,8 +321,13 @@ void SaveDesktopSettings()
 	fprintf(f, "-- Machine-generated user saved-settings file.\n");
 	fprintf(f, "-- Any modifications here will be lost!\n\n");
 	fprintf(f, "if UserSettings == nil then UserSettings = {} end\n\n");
-	fprintf(f, "UserSettings.ClientRect = { {%d,%d}, {%d,%d} }\n",
-		s_lastknown_window_rect.left, s_lastknown_window_rect.top, s_lastknown_window_rect.right, s_lastknown_window_rect.bottom
+
+	fprintf(f, "UserSettings.WindowClientPos  = { %d,%d }\n",
+		s_lastknown_window_rect.left, s_lastknown_window_rect.top
+	);
+
+	fprintf(f, "UserSettings.WindowClientSize = { %d,%d }\n",
+		g_client_size_pix.x, g_client_size_pix.y
 	);
 	fclose(f);
 }
@@ -339,8 +335,11 @@ void SaveDesktopSettings()
 
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
-	s_msw_monitors.clear();
-	EnumDisplayMonitors(nullptr, nullptr, MonitorEnumerator, 0);
+	// note: current unused: MonitorFromRect() combined with GetMonitorInfo() is a much more useful
+	// set of functions.
+
+	//s_msw_monitors.clear();
+	//EnumDisplayMonitors(nullptr, nullptr, MonitorEnumerator, 0);
 
 	// Register class
 	WNDCLASSEX wcex;
