@@ -233,6 +233,7 @@ static void* GlobalKeyboardThreadProc(void*)
 // This differs from network time, which will be based on either universal QPC results,
 // or something roughly similar that at at least 5ms resolution.
 
+HostClockTick	s_world_deltatime;			// in seconds.
 HostClockTick	s_world_localtime;
 HostClockTick	s_world_localtime_qpc_last_update;
 
@@ -268,7 +269,8 @@ static void* SceneProducerThreadProc(void*)
 		s_world_qpc_frametick = HostClockTick::Now();
 
 		if (!s_scene_stopReason && s_world_localtime_qpc_last_update.asTicks() != 0) {
-			s_world_localtime += (WorldTick_Now() - s_world_localtime_qpc_last_update);
+			s_world_deltatime  = WorldTick_Now() - s_world_localtime_qpc_last_update;
+			s_world_localtime += s_world_deltatime;
 		}
 		s_world_localtime_qpc_last_update = HostClockTick::Now();
 
@@ -281,7 +283,7 @@ static void* SceneProducerThreadProc(void*)
 			auto secs  = time(nullptr);
 
 			// calc local time and the current timezone.
-			// no function to return the current timezon, so use gmtime to calculate it ourselves...
+			// no function to return the current timezone, so use gmtime to calculate it ourselves...
 			tm   localtm, gmtm;
 			localtime_s	(&localtm,	&secs);
 			gmtime_s	(&gmtm,		&secs);
@@ -290,13 +292,14 @@ static void* SceneProducerThreadProc(void*)
 			auto gm_secs  = mktime(&gmtm);
 			auto tz_shift_secs	= loc_secs - gm_secs;
 
-			ImGui::Text("walltime: %02d:%02d:%02d %02d:%02d   (%04d-%02d-%02d)",
+			ImGui::Text("walltime  : %02d:%02d:%02d %02d:%02d   (%04d-%02d-%02d)",
 				localtm.tm_hour, localtm.tm_min, localtm.tm_sec,
 				(tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
 				localtm.tm_year+1900, localtm.tm_mon, localtm.tm_mday
 			);
-			ImGui::Value("worldtime", s_world_localtime.asSeconds(), "%5.2f");
-			ImGui::Value("proctime", HostClockTick::Now().asSeconds(), "%5.2f");
+			ImGui::Value("worldtime ", s_world_localtime.asSeconds(), "%7.2fs");
+			ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
+			ImGui::Value("deltatime ", s_world_deltatime.asMilliseconds(), "%7.02fms");
 		} ImGui::End();
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
@@ -334,7 +337,7 @@ static void* SceneProducerThreadProc(void*)
 			s_scene_frame_count += 1;
 
 			if (s_scene_devExecMask & SceneExecMask_GameplayLogic) {
-				GameplaySceneLogic();
+				GameplaySceneLogic(s_world_deltatime.asSeconds());
 			}
 
 			if (s_scene_devExecMask & SceneExecMask_HudLogic) {
