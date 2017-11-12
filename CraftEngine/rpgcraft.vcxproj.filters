@@ -63,6 +63,9 @@
     <ClCompile Include="src\Mouse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\fmod-ifc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="src\Mouse.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fmod-ifc.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

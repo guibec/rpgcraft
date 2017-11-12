@@ -71,6 +71,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\fmod-ifc.cpp" />
     <ClCompile Include="src\imgui-console.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\PCH-rpgcraft.cpp">
@@ -97,6 +98,7 @@
     <ClInclude Include="src\Bezier2D.h" />
     <ClInclude Include="src\DbgFont.h" />
     <ClInclude Include="src\Entity.h" />
+    <ClInclude Include="src\fmod-ifc.h" />
     <ClInclude Include="src\imgui-console.h" />
     <ClInclude Include="src\Mouse.h" />
     <ClInclude Include="src\mswStandard.h" />
