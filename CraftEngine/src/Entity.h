@@ -91,7 +91,7 @@ union EntityGidOrderPair
 
 extern EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order);
 
-typedef void (EntityFn_LogicTick)	(		void* objdata, int order);
+typedef void (EntityFn_LogicTick)	(		void* objdata, int order, float deltaTime);
 typedef void (EntityFn_Draw)		(const	void* objdata, float zorder);
 
 struct TickableEntity
@@ -220,7 +220,7 @@ struct TickableEntityContainer {
 
 	template< typename T >
 	__ai void Add(T* entity, int order) {
-		Add(order, entity->m_gid, [](void* entity, int order) { ((T*)entity)->Tick(order); } );
+		Add(order, entity->m_gid, [](void* entity, int order, float dt) { ((T*)entity)->Tick(order, dt); } );
 	}
 
 	auto	ForEachForward		();

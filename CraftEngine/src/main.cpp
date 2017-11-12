@@ -99,7 +99,7 @@ float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& vie
 	return (float4&)result;
 }
 
-void GameplaySceneLogic()
+void GameplaySceneLogic(float deltaTime)
 {
 	g_drawlist_main.Clear();
 	g_mouse.update();
@@ -120,7 +120,7 @@ void GameplaySceneLogic()
 		// Probably log and ignore bydefault with option to bug ...
 		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
 		bug_on_qa(!entity);
-		entitem.Tick(entity, entitem.orderGidPair.Order());
+		entitem.Tick(entity, entitem.orderGidPair.Order(), deltaTime);
 	}
 
 	// Process messages and modifications which have been submitted to view camera here?

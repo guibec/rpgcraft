@@ -81,8 +81,8 @@ extern void			Scene_ShutdownThreads				();
 
 extern bool			SceneInitialized					();
 extern void			SceneInit							();
-extern void			GameplaySceneRender							();
-extern void			GameplaySceneLogic							();
+extern void			GameplaySceneRender					();
+extern void			GameplaySceneLogic					(float deltaTime);
 extern int			Scene_GetFrameCount					();
 
 extern void			Scene_InitMessages					();

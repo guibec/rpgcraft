@@ -48,7 +48,7 @@ extern float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATR
 
 static bool s_isAbsolute = false;
 
-void PlayerSprite::Tick(int order)
+void PlayerSprite::Tick(int order, float dt)
 {
 	PadState state;
 	KPad_GetState(state);
@@ -91,8 +91,6 @@ void PlayerSprite::Tick(int order)
 		direction.y = -playerSpeed;
 	else if (state.axis.LStick_Y > 0)
 		direction.y = playerSpeed;
-
-	float dt = 1 / 60.f; // need a Timer/FPS method
 
 	m_position += direction * dt;
 
