@@ -38,10 +38,10 @@ DECLARE_MODULE_NAME("kpad");
 
 const VirtKeyBindingPair g_kpad_btn_map_default[NUM_PAD_INPUT_BUTTONS] =
 {
-	{ VirtKey::ArrowLeft,	VirtKey::Unmapped	},	// PadBtn_DPad_Up
+	{ VirtKey::ArrowUp,		VirtKey::Unmapped	},	// PadBtn_DPad_Up
 	{ VirtKey::ArrowRight,	VirtKey::Unmapped	},	// PadBtn_DPad_Right
-	{ VirtKey::ArrowUp,		VirtKey::Unmapped	},	// PadBtn_DPad_Down
-	{ VirtKey::ArrowDown,	VirtKey::Unmapped	},	// PadBtn_DPad_Left
+	{ VirtKey::ArrowDown,	VirtKey::Unmapped	},	// PadBtn_DPad_Down
+	{ VirtKey::ArrowLeft,	VirtKey::Unmapped	},	// PadBtn_DPad_Left
 	{ VirtKey::BackQuote,	VirtKey::Unmapped	},	// PadBtn_Options
 	{ VirtKey::Tab,			VirtKey::Unmapped	},	// PadBtn_ViewMap
 

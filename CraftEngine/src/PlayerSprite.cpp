@@ -66,19 +66,19 @@ void PlayerSprite::Tick(int order, float dt)
 	direction.x = 0;
 	direction.y = 0;
 
-	if (Scene_IsKeyPressed(VirtKey::ArrowUp))
+	if (state.buttons.DPad_Up)
 	{
 		direction.y = -playerSpeed;
 	}
-	else if (Scene_IsKeyPressed(VirtKey::ArrowDown))
+	else if (state.buttons.DPad_Down)
 	{
 		direction.y = playerSpeed;
 	}
-	if (Scene_IsKeyPressed(VirtKey::ArrowLeft))
+	if (state.buttons.DPad_Left)
 	{
 		direction.x = -playerSpeed;
 	}
-	else if (Scene_IsKeyPressed(VirtKey::ArrowRight))
+	else if (state.buttons.DPad_Right)
 	{
 		direction.x = playerSpeed;
 	}
