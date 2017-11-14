@@ -3,6 +3,7 @@
 #include "x-gpu-ifc.h"
 #include "v-float.h"
 #include "x-png-decode.h"
+#include "fmod-ifc.h"
 
 #include "ajek-script.h"
 #include "Scene.h"
@@ -11,6 +12,9 @@
 #include "DbgFont.h"
 
 DECLARE_MODULE_NAME("TileMap");
+
+static FmodMusic	s_music_world;
+static float		s_bgm_volume =	1.0f;
 
 // Probably need some sort of classification system here.
 // Some terrains may change over time, such as grow moss after being crafted.
@@ -43,6 +47,10 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	}
 
 	auto& script = g_scriptEnv;
+
+	fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
+	fmod_Play(s_music_world);
+
 
 	// Add +1 to cover overlap area when tile is not "centered" on the screen
 	// TODO: determine actual overage to render based on viewcamera angle.
@@ -248,6 +256,10 @@ void TileMapLayer::Tick() {
 
 	PopulateUVs(disp);
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
+
+	if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {
+		fmod_SetVolume(s_music_world, s_bgm_volume);
+	}
 }
 
 
