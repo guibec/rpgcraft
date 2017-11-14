@@ -21,6 +21,7 @@ enum xThrowModuleCode
 	xThrowModule_Script  = 1,
 	xThrowModule_Bridge,
 	xThrowModule_GPU,
+	xThrowModule_FMOD,
 };
 
 class xThrowContext
