@@ -3,7 +3,7 @@
 #include "x-assertion.h"
 #include "x-ThrowContext.h"
 
-#include "fmod.hpp"
+#include "fmod.h"
 #include "fmod-ifc.h"
 
 #pragma comment(lib,"fmod64_vc")
@@ -11,7 +11,7 @@
 // Our FMOD Interface is mostly just a thin liater on top of FMOD's existing `low-level` API, but
 // tied into our error handling system.
 
-static FMOD::System*		fmsys = nullptr;
+static FMOD_SYSTEM*		fmsys = nullptr;
 
 enum {
 	AudioRoute_Main,
@@ -136,10 +136,10 @@ void fmod_CheckLib()
 	FMOD_RESULT		result;
 	unsigned int    version;
 
-	result = FMOD::System_Create(&fmsys);
+	result = FMOD_System_Create(&fmsys);
 	check_result(result);
 
-	result = fmsys->getVersion(&version);
+	result = FMOD_System_GetVersion(fmsys, &version);
 	check_result(result);
 
 	if (version < FMOD_VERSION)
@@ -157,89 +157,98 @@ void fmod_InitSystem()
 
 	// TODO : parameterize maxChannels, virtualvol, etc.
 
-	result = fmsys->init(128, FMOD_INIT_NORMAL | FMOD_INIT_VOL0_BECOMES_VIRTUAL, extradriverdata);
+	result = FMOD_System_Init(fmsys, 128, FMOD_INIT_NORMAL | FMOD_INIT_VOL0_BECOMES_VIRTUAL, extradriverdata);
 	check_result(result);
 	FMOD_ADVANCEDSETTINGS adv = {};
-	adv.vol0virtualvol = 0.01;
-	fmsys->setAdvancedSettings(&adv);
+	adv.vol0virtualvol = 0.01f;
+	FMOD_System_SetAdvancedSettings(fmsys,&adv);
 }
-
-// FMOD streams are restricted to only being able to be played once, so it makes sense to have a custom
-// FmodStream type that has a strong association between sound and channel.
-
-struct FmodStream
-{
-	FMOD::Sound*	sndptr	= nullptr;
-	FMOD::Channel*	channel = nullptr;
-};
-
-struct FmodSound
-{
-	FMOD::Sound*	sndptr	= nullptr;
-};
-
-struct FmodPlayingSound
-{
-	FMOD::Sound*	sndptr	= nullptr;
-	FMOD::Channel*	channel = nullptr;
-};
 
 // TODO: add looping control parameter? -- should probably include loop flag, loopstart, loop end, etc. since it's highly unlikely
 //       we would ever want dynamic control over such things.
 
-void fmod_CreateStream(FmodStream& dest, const xString& fullpath)
+void fmod_CreateMusic(FmodMusic& dest, const xString& fullpath)
 {
-	FMOD::Sound*	sndptr;
-	FMOD::Channel*	channel = 0;
-
 	if (dest.sndptr) {
-		auto result = dest.sndptr->release();
+		auto result		= FMOD_Sound_Release(dest.sndptr);
+		dest.sndptr		= nullptr;
 		check_result(result);
 	}
+	elif (dest.channel) {
+		// possible oddity?  channel is non-null for a null sound handle?
+	}
 
-	auto result = fmsys->createStream(fullpath, FMOD_LOOP_NORMAL | FMOD_2D, 0, &sndptr);
-	//result = fmsys->createStream("C:\\Projects\\rpgcraft\\unity\\Assets\\Audio\\Music\\ff2over.s3m", FMOD_LOOP_NORMAL | FMOD_2D, 0, &sound);
+	dest.channel	= nullptr;
+	auto result		= FMOD_System_CreateStream(fmsys, fullpath, FMOD_LOOP_NORMAL | FMOD_2D, 0, &dest.sndptr);
+	if (result) {
+		dest.sndptr = nullptr;
+	}
 	check_result(result);
 }
 
-void fmod_PlayStream(FmodStream& stream)
+void fmod_CreateSound(FmodSound& dest, const xString& fullpath)
+{
+	if (dest.sndptr) {
+		auto result = FMOD_Sound_Release(dest.sndptr);
+	}
+	auto result = FMOD_System_CreateSound(fmsys, fullpath, FMOD_LOOP_NORMAL | FMOD_2D, 0, &dest.sndptr );
+	if (result) {
+		dest.sndptr = nullptr;
+	}
+	check_result(result);
+}
+
+void fmod_Play(FmodMusic& stream)
 {
 	if (!stream.sndptr) {
 		soft_error("Attempted to play a null stream.");
 	}
 
-	auto result = fmsys->playSound(stream.sndptr, 0, false, &stream.channel);
+	if (!stream.channel) {
+		auto result = FMOD_System_PlaySound(fmsys, stream.sndptr, 0, false, &stream.channel);
+		check_result(result);
+	}
+}
+
+void fmod_SetPause(FmodMusic& stream, bool isPaused)
+{
+	if (!stream.channel) return;
+	auto result = FMOD_Channel_SetPaused(stream.channel, isPaused);
 	check_result(result);
 }
 
+void fmod_SetVolume(const FmodMusic& stream, float vol)
+{
+	if (!stream.channel) return;
+	auto result = FMOD_Channel_SetVolume(stream.channel, vol);
+	check_result(result);
+}
 
-FmodSoundPlayInstance* fmod_PlaySound(const FmodSound& sound)
+FMOD_CHANNEL* fmod_PlaySound(const FmodSound& sound)
 {
 	if (!sound.sndptr) {
 		soft_error("Attempted to play a null stream.");
 	}
 
-	FMOD::Channel* channel;
-	auto result = fmsys->playSound(sound.sndptr, 0, false, &channel);
-	check_result(result);
-
+	FMOD_CHANNEL* channel;
+	auto result = FMOD_System_PlaySound(fmsys, sound.sndptr, 0, false, &channel);
 	if (result) {
-		// not sure if FMOD sets to null on error, so let's force it:
 		channel = nullptr;
 	}
-
+	check_result(result);
 	return channel;
 }
 
-
-void fmod_SetVolume(const FmodStream& stream) {
-
-}
-
-void fmod_SetVolume(FMOD::Channel* channel, float volume) {
+void fmod_SetVolume(FMOD_CHANNEL* channel, float volume) {
 	if (channel) {
-		channel->setVolume(volume);
+		auto result = FMOD_Channel_SetVolume(channel, volume);
+		check_result(result);
 	}
 }
 
-void fmod_SetVolume(FMOD::ChannelGroup* channel, float volume) {
+void fmod_SetVolume(FMOD_CHANNELGROUP* cg, float volume) {
+	if (cg) {
+		auto result = FMOD_ChannelGroup_SetVolume(cg, volume);
+		check_result(result);
+	}
+}
