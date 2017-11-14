@@ -708,6 +708,18 @@ void LuaTableScope::PrintTable()
 }
 
 
+void AjekScriptEnv::pushreg(const AjekReg_Closure& closure)
+{
+	lua_rawgeti(m_L, LUA_REGISTRYINDEX, closure.m_regkey);
+	bug_on(!lua_isfunction(m_L, -1), "Invalid closure key.");
+}
+
+void AjekScriptEnv::pushreg(const AjekReg_Table& table)
+{
+	lua_rawgeti(m_L, LUA_REGISTRYINDEX, table.m_regkey);
+	bug_on(!lua_istable(m_L, -1), "Invalid table key.");
+}
+
 void AjekScriptEnv::pushvalue(const xString& string)
 {
 	lua_pushstring(m_L, string);
@@ -718,7 +730,7 @@ void AjekScriptEnv::pushvalue(const float& number)
 	lua_pushnumber(m_L, number);
 }
 
-void AjekScriptEnv::pushvalue(const lua_func& function)
+void AjekScriptEnv::pushvalue(const lua_cfunc& function)
 {
 	lua_pushcfunction(m_L, function.m_value);
 }
