@@ -8,6 +8,7 @@
 #include "x-host-ifc.h"
 #include "x-chrono.h"
 #include "x-pad.h"
+#include "fmod-ifc.h"
 
 #include "appConfig.h"
 #include "ajek-script.h"
@@ -454,6 +455,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	HostClockTick::Init();
 	MSW_InitChrono();
 	LogHostInit();
+
+	fmod_CheckLib();
+	fmod_InitSystem();
 
 	// Tokenizer.
 	//   * only care about double dash "--" anything lacking a double-dash prefix is an error.
