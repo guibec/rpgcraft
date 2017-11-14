@@ -3,6 +3,8 @@
 #include "x-types.h"
 #include "x-stl.h"
 
+#include "ajek-script.h"
+
 #include <set>
 #include <map>
 #include <unordered_set>
@@ -30,14 +32,19 @@ enum EntitySystemGID_t : u32 {
 	ESGID_Empty		= 0,
 };
 
-struct EntityPointerContainerItem
-{
-	EntityGid_t		gid;
-	void*			objectptr;
-	char*			classname;		// alloc'd in same heap as entity
-	bool			managed;		// managed entities are on the entity heap
-	bool			deleted;		// managed entity has been deleted.
-};
+// Global hash registry can be optimized later using hash table LUT:
+//  - Define set maximum such as 20 bits of entity GIDs (1 million).
+//  - Pick new IDs sequentually.
+//  - If an entity exists in an ID slot, keep trying until an empty slot is realized.
+//
+// Or --
+//  - Define a smaller set maximum, eg. 14 bits (16k entities)
+//  - Perform a "cache check" when grabbing an entity to ensure that the full GID matches the cached one.
+//  - On mismatch, perform cache eviction -- reload correct entity from global hash into "fast lut"
+//
+
+typedef void (EntityFn_LogicTick)	(		void* objdata, int order, float deltaTime);
+typedef void (EntityFn_Draw)		(const	void* objdata, float zorder);
 
 union EntityGidOrderPair
 {
@@ -78,44 +85,31 @@ union EntityGidOrderPair
 	bool operator>=(const EntityGidOrderPair& right) const { return m_fullSortOrder >= right.m_fullSortOrder; }
 };
 
-// Global hash registry can be optimized later using hash table LUT:
-//  - Define set maximum such as 20 bits of entity GIDs (1 million).
-//  - Pick new IDs sequentually.
-//  - If an entity exists in an ID slot, keep trying until an empty slot is realized.
-//
-// Or --
-//  - Define a smaller set maximum, eg. 14 bits (16k entities)
-//  - Perform a "cache check" when grabbing an entity to ensure that the full GID matches the cached one.
-//  - On mismatch, perform cache eviction -- reload correct entity from global hash into "fast lut"
-//
+// Can either have members in a table separate from methods...
+// or methods and members together?
 
-extern EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order);
-
-typedef void (EntityFn_LogicTick)	(		void* objdata, int order, float deltaTime);
-typedef void (EntityFn_Draw)		(const	void* objdata, float zorder);
-
-struct TickableEntity
+struct EntityPointerContainerItem
 {
-	EntityFn_LogicTick*		Tick;
-	EntityGid_t				entityGid;
-};
-
-struct DrawableEntity
-{
-	EntityFn_Draw*			Draw;
-	EntityGid_t				entityGid;
+	EntityGid_t		gid;
+	void*			objectptr;
+	char*			classname;		// alloc'd in same heap as entity
+	AjekReg_Table	lua_object;		// self table from lua
+	bool			managed;		// managed entities are on the entity heap
+	bool			deleted;		// managed entity has been deleted.
 };
 
 struct TickableEntityItem
 {
 	EntityGidOrderPair		orderGidPair;
-	EntityFn_LogicTick*		Tick;
+	EntityFn_LogicTick*		Tick;		// native C++ invocation
+	AjekReg_Closure			lua_tick;	// for invoking Lua tick callback
 };
 
 struct DrawableEntityItem
 {
 	EntityGidOrderPair		orderGidPair;
 	EntityFn_Draw*			Draw;
+	AjekReg_Closure			lua_draw;	// for invoking Lua draw callback
 };
 
 // Needed only for TickableEntityContainer, due to OrderedDrawList being const iterator at all times.
@@ -180,6 +174,8 @@ public:
 		return input.m_fullSortOrder;
 	}
 };
+
+extern EntityGidOrderPair MakeGidOrder(const EntityGid_t gid, u32 order);
 
 typedef std::queue<EntityContainerEvent> EntityContainerEventQueue;
 

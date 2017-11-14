@@ -114,32 +114,47 @@ void GameplaySceneLogic(float deltaTime)
 	g_console.DrawFrame();
 	g_TileMap.Tick();
 
+	// OrderedFirst and OrderedLast can use existing TickableEntityContainer.  Unordered will use an efficient
+	// unordered set and, ideally, most game logic should fit within the context of order-agnostic processing.  --jstine
+	pragma_todo("Create multiple tick lists?  OrderedFirst, Unordered, OrderedLast (see comment for details)");
+
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
-		// Hmm.. might be better to throw on null entity? or log and ignore?
-		// Probably log and ignore bydefault with option to bug ...
-		auto* entity = Entity_Lookup(entitem.orderGidPair.Gid()).objectptr;
-		bug_on_qa(!entity);
-		entitem.Tick(entity, entitem.orderGidPair.Order(), deltaTime);
+		auto entity = Entity_Lookup(entitem.orderGidPair.Gid());
+		bug_on (!entity.objectptr);
+
+		if (entitem.Tick) {
+			entitem.Tick(entity.objectptr, entitem.orderGidPair.Order(), deltaTime);
+		}
+		else {
+			// no C++ native tick() binding.  Look up and execute Lua module binding.
+			// [Optimization] Should be able to cache the lua function/table values and avoid looking them up in the registry.
+
+			// and what about coroutines?  how do those impact this logic?
+			// See luaB_cowrap and luaB_auxwrap.
+			//
+			// Our IDEAL:
+			//   1. exec all Ticks() as coroutines.
+			//   2. record status on exit,  if resumable, resume.  If "finished" then create new coroutine.
+			//
+			// long-tail: creating coroutines when yield() will never be called is very expensive.
+			// Workarounds:
+			//   A. Paradigm where all lua Tick() functions are expected to manage their own Yield() loops, eg:
+			//        while (1) { Logic(); Yield(); }
+			//   B. Flag to signify if a Tick() is Tieldable or not?  Thus some tick calls are regular, some are
+			//      coroutines.  This seems the better option!
+			//
+
+			g_scriptEnv.pushreg(entitem.lua_tick);		// function to call
+			g_scriptEnv.pushreg(entity.lua_object);		// self object (lua table)
+			g_scriptEnv.pushvalue(deltaTime);
+			g_scriptEnv.call(2, 0);
+		}
 	}
 
 	// Process messages and modifications which have been submitted to view camera here?
 	g_ViewCamera.Tick();
 }
-
-void SceneInputPoll()
-{
-	// TODO : Add some keyboard handler magic here ... !!
-	//Host_IsKeyPressed('a');
-}
-
-//template< typename T >
-//T* CreateEntity()
-//{
-//	T* entity = placement_new(T);
-//	entity->m_gid = Entity_Spawn(entity);
-//	return entity;
-//}
 
 GPU_ConstantBuffer		g_gpu_constbuf;
 

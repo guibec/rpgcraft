@@ -138,7 +138,7 @@ inline xString&	xString::operator=( const lua_string& lua_str ) {
 inline xString::xString(const lua_string& lua_str)	: m_string(lua_str.c_str(), lua_str.m_length) { }
 //inline xString::xString(lua_string&& lua_str)	: m_string(lua_str.c_str(), lua_str.m_length) { }
 
-struct lua_func {
+struct lua_cfunc {
 	lua_CFunction	m_value;
 	bool			m_isNil;
 
@@ -147,6 +147,13 @@ struct lua_func {
 	}
 };
 
+struct AjekReg_Closure {
+	int				m_regkey;				// registry key for the closure
+};
+
+struct AjekReg_Table {
+	int				m_regkey;				// registry key for the table
+};
 
 struct AjekScriptEnv;
 
@@ -156,7 +163,7 @@ class LuaFuncScope
 
 public:
 	AjekScriptEnv*	m_env;					// also contains lua_State
-	int				m_cur_retval= 0;			// current return value being read
+	int				m_cur_retval= 0;		// current return value being read
 	bool			m_isNil		= true;
 	int				m_numargs	= 0;		// number of argument pushes to pop after finished.
 
@@ -273,8 +280,15 @@ volatile
 
 	void			pushvalue			(const xString&		string);
 	void			pushvalue			(const float&		number);
-	void			pushvalue			(const lua_func&	function);
+	void			pushvalue			(const lua_cfunc&	function);
 	void			pushvalue			(s64				integer);
+
+// pushreg() - pushes values onto the stack after looking them up on the registry.
+// could just overload pushvalue() instead of giving these their own name, but for now
+// strong differentiation seems wise.
+
+	void			pushreg				(const AjekReg_Closure&		closure_id);
+	void			pushreg				(const AjekReg_Table&		table_id);
 
 	template<typename T>	T			to			(int stackidx)	const;
 
