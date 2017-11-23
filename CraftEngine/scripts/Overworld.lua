@@ -2,32 +2,52 @@
 -- quick sample of what we want a lua script to look like:
 --  (please modify/fix !)
 
+-- Dunno if this C-provided object definition makes sense.
+-- I just borrowed it from 
 local Overworld = ...
 
-function Overworld:Something()
+function Overworld:Something(dt)
 {
-	print "test 1"
-	coroutine.yield()
-	print "test 2"
-	coroutine.yield()
-	print "test 3"
+	while true
+		local timeout = 2.0		-- seconds
+
+		print "test 1"
+		while timeout > 0 do
+			dt = coroutine.yield()
+			timeout = timeout - dt
+		end
+
+		print "test 2"
+		timeout = timeout + 2.0
+		while GetTimeInGame() < timeout do
+			dt = coroutine.yield()
+		end
+
+		print "test 3"
+		timeout = timeout + 2.0
+		while GetTimeInGame() < timeout do
+			dt = coroutine.yield()
+		end
+	end
 }
 
-function Overworld:Init(float dt)
-{
-	Entity_OnTick(Overworld.Tick);
-}
-
-function Overworld:Tick(float dt)
+function Overworld:Tick(dt)
 {
 	-- age things?
-	
-	if some_condition then
-		Entity_AddCoTick(Overworld.Something);
-	end
-	
-	-- set up some params used by renerer later on.
+
+	-- set up some params used by renderer later on.
 	-- Could do this using local API passed into lua module
 	Overworld:SetTileMapRenderParams(...)
 }
 
+function Overworld:Spawner()
+{
+	-- Do things to spawn world thngs here?
+}
+
+function Overworld:Init()
+{
+	-- these invoke C functions:
+	OnTickCo(Overworld.Something)
+	OnTick  (Overworld.Spawner)
+}

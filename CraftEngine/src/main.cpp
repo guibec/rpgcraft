@@ -137,12 +137,12 @@ void GameplaySceneLogic(float deltaTime)
 			//   1. exec all Ticks() as coroutines.
 			//   2. record status on exit,  if resumable, resume.  If "finished" then create new coroutine.
 			//
-			// long-tail: creating coroutines when yield() will never be called is very expensive.
-			// Workarounds:
-			//   A. Paradigm where all lua Tick() functions are expected to manage their own Yield() loops, eg:
-			//        while (1) { Logic(); Yield(); }
-			//   B. Flag to signify if a Tick() is Tieldable or not?  Thus some tick calls are regular, some are
-			//      coroutines.  This seems the better option!
+			// REALITY:
+			//   creating coroutines when yield() will never be called is very expensive.
+			//
+			// Workaround:
+			//   Tick functions are bound as either regular functions or as coroutines, delimited according to the
+			//   function used to register them -- eg, OnTick() vs. OnTickCo()
 			//
 
 			g_scriptEnv.pushreg(entitem.lua_tick);		// function to call
