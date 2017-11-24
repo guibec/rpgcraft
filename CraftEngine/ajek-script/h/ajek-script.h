@@ -255,6 +255,8 @@ struct AjekScriptEnv
 
 	AjekScriptError		m_lua_error;
 
+	xString				m_log_buffer;
+
 volatile
 	AjekScriptEnv() {
 		m_L				= nullptr;

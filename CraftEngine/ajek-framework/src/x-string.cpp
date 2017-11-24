@@ -252,8 +252,6 @@ size_t xString::FindLastNot( const xString& delims, size_t offset ) const
 
 xString& xString::FormatV( const char* fmt, va_list list )
 {
-	if (!fmt) return *this;
-
 	// Formatting notes:
 	// Once upon a time, formatting directly into std::string was frowned upon.
 	// This was changed with the C++11 standard.
@@ -261,7 +259,7 @@ xString& xString::FormatV( const char* fmt, va_list list )
 	// (v)sprintf_s functions assert if the dest buffer isn't big enough to fit.
 	// The correct usage is to calculate the length first using _vscprintf().
 
-	int destSize = _vscprintf( fmt, list );
+	int destSize = fmt ? _vscprintf( fmt, list ) : 0;
 	bug_on_qa( destSize < 0, "Invalid string formatting parameters! -- or nasty old glibc?" );
 
 	// Reserve truncates allocations to the specific size (why?), so don't use it.
