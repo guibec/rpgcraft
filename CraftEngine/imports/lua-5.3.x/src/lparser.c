@@ -597,11 +597,19 @@ static int block_follow (LexState *ls, int withuntil) {
 
 static void statlist (LexState *ls) {
   /* statlist -> { stat [';'] } */
+
+  // AjekScript Extension: Allow 'return' mid-block.
+  //   Return mid-block must be followed by a semicolon, otherwise the behavior is
+  //   somewhat ambiguous.  To be fair, this sort of ambiguous behavior occurs on any
+  //   function within lua.  Just make sure and follow mid-block return statements with
+  //   semicolons.
+
   while (!block_follow(ls, 1)) {
+#if !AJEK_SCRIPT
     if (ls->t.token == TK_RETURN) {
       statement(ls);
-      return;  /* 'return' must be last statement */
     }
+#endif
     statement(ls);
   }
 }
