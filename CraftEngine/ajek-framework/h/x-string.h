@@ -216,9 +216,10 @@ public:
 	__ai int			Compare		(const xString& right)	const	{ return m_string.compare(right);	}
 
 	__ai const char*	c_str		()	const						{ return m_string.c_str();			}
-	__ai xString&		Append		( const char* src )				{ m_string.append( src );	return *this; }
-	__ai xString&		Append		( char src )					{ m_string += src;			return *this; }
-	__ai xString&		PopBack		()								{ m_string.pop_back();		return *this; }
+	__ai xString&		Append		( const char* src )				{ m_string.append( src );		return *this; }
+	__ai xString&		Append		( const char* src, int len )	{ m_string.append( src, len );	return *this; }
+	__ai xString&		Append		( char src )					{ m_string += src;				return *this; }
+	__ai xString&		PopBack		()								{ m_string.pop_back();			return *this; }
 
 	// non-const data member is a C++17 addition.  For now it's entirely equivalent to const_cast it.
 	__ai const	char*	data		()	const						{ return m_string.data();			}

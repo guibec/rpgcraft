@@ -5,6 +5,7 @@
 #include "x-string.h"
 
 #include "x-assertion.h"
+#include "x-thread.h"
 
 #include "ajek-script.h"
 #include "ajek-script-internal.h"
@@ -169,15 +170,8 @@ extern "C" void ajek_lua_printf(const char *fmt, ...)
 {
 	va_list list;
 	va_start(list, fmt);
-	if (g_ScriptConfig.lua_print_enabled) {
-		_host_log_v(xLogFlag_Default, "Lua", fmt, list);
-		if (!TARGET_CONSOLE) {
-			// to support 'tail' utils via CLI
-			// limited to non-console builds to avoid potential perf impacts, and on orbis/xbox
-			// use of the orbis console stream should be preferred.
-			flush_log();
-		}
-	}
+	_host_log_v(xLogFlag_Important, "Lua", fmt, list);
+	flush_log();
 	va_end(list);
 }
 
@@ -264,6 +258,53 @@ static int lua_panic(lua_State* L)
 	return 0;
 }
 
+// The default lua library version of `print` is problematic because it uses the same
+// lua_writestring() as the rest of the lua engine core, even though it always writes
+// text with newlines, and batch-writes a bunch of lines at a time (one per parameter).
+// This is ideal for passing through a structured logger that provides mutex locking and
+// grep-able annotated line prefixes.  Ergo, I copy-pasted here and replace the global
+// _G['print'] entry with our own...  --jstine
+
+static int ajek_luaB_print (lua_State *L) {
+
+	// hmm... this also bypasses tostring checks on parameters... but do we care if we're not printing?
+	if (!g_ScriptConfig.lua_print_enabled) return 0;
+
+	int n = lua_gettop(L);  /* number of arguments */
+	int i;
+
+	lua_getglobal(L, "AjekScriptThisPtr");
+	auto* ajek = (AjekScriptEnv*)lua_topointer(L, -1);
+	bug_on(!ajek);
+
+
+	ajek->m_log_buffer.Clear();
+	pragma_todo("Use lua module name here...");
+	ajek->m_log_buffer.AppendFmt("%-20s: ", "Lua");
+
+	lua_getglobal(L, "tostring");
+	for (i=1; i<=n; i++) {
+		const char *s;
+		size_t l;
+		lua_pushvalue(L, -1);  /* function to be called */
+		lua_pushvalue(L, i);   /* value to print */
+		lua_call(L, 1, 1);
+		if (s = lua_tolstring(L, -1, &l)) {
+			if (i>1) ajek->m_log_buffer += "\t";
+			ajek->m_log_buffer.Append(s, l);
+		}
+		else {
+			return luaL_error(L, "'tostring' must return a string to 'print'");
+		}
+		lua_pop(L, 1);  /* pop result */
+	}
+	xPrintLn(ajek->m_log_buffer);		// TODO: add log_host_unfmt() func to bypass formatting.
+	return 0;
+}
+
+// _G['print_delim'] = '\n' ?
+pragma_todo("Create a 'println' function similar to 'print' but using newline separators instead of tabs?  -or- add a global variable that specifies the delimiter?");
+
 void AjekScriptEnv::NewState()
 {
 	DisposeState();
@@ -278,11 +319,16 @@ void AjekScriptEnv::NewState()
 	// referenced from Lua) -- might want make a custom registry in the future if more vars are
 	// added.  See LUA_RIDX_LAST.
 
-	lua_pushinteger	(m_L, (sptr)this);
-	lua_setglobal	(m_L, "AjekScriptThisPtr");
-	lua_atpanic		(m_L, &lua_panic);
+	lua_pushlightuserdata	(m_L, this);
+	lua_setglobal			(m_L, "AjekScriptThisPtr");
+	lua_atpanic				(m_L, &lua_panic);
 
-	luaL_openlibs(m_L);
+	luaL_openlibs			(m_L);
+	//lua_getglobal			(m_L, "_G");
+	//lua_pushstring		(m_L, "print");
+	lua_pushcfunction		(m_L, ajek_luaB_print);
+	lua_setglobal			(m_L, "print");
+
 }
 
 void AjekScriptEnv::DisposeState()

@@ -124,10 +124,19 @@ static void advanceMyLog( int numChars )
 }
 
 // --------------------------------------------------------------------------------------
-static void vlog_append_host_clock(xString& dest)
+void vlog_append_host_clock(xString& dest)
 {
 	dest.AppendFmt("[%8.03fsec] ", Host_GetProcessTicks().asSeconds());
 }
+
+void vlog_append_prefix(xString& buffer, const char* moduleName)
+{
+	if (moduleName && moduleName[0])
+		buffer.AppendFmt("%-8s", moduleName);
+	else
+		buffer.Append("        ");
+}
+
 
 // --------------------------------------------------------------------------------------
 void xPrintLn(const xString& msg)
@@ -153,12 +162,8 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
 	}
 
 	xString buffer;
-	if (moduleName && moduleName[0])
-		buffer.Format("%-8s", moduleName);
-	else
-		buffer = "        ";
-
-	vlog_append_host_clock(buffer);
+	vlog_append_prefix		(buffer, moduleName);
+	vlog_append_host_clock	(buffer);
 
 	if (fmt && fmt[0])
 	{
@@ -198,12 +203,8 @@ void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list li
 	}
 
 	xString buffer;
-	if (moduleName && moduleName[0])
-		buffer.Format("%-8s", moduleName);
-	else
-		buffer = "        ";
-
-	vlog_append_host_clock(buffer);
+	vlog_append_prefix		(buffer, moduleName);
+	vlog_append_host_clock	(buffer);
 
 	if (fmt && fmt[0])
 	{

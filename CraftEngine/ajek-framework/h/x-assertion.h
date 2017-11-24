@@ -211,6 +211,9 @@ enum xLogFlag {
 	xLogFlag_Undecorated	= (1 << 1),		// dnoes not print any timestamp information  (for lua/compiler errors)
 };
 
+extern void		vlog_append_host_clock	(xString& dest);
+extern void		vlog_append_prefix		(xString& buffer, const char* moduleName);
+
 extern void		_host_log			(uint flags, const char* moduleName, const char* fmt = nullptr, ...)	__verify_fmt(4, 5);
 extern void		_host_log_v			(uint flags, const char* moduleName, const char* fmt, va_list params);
 
