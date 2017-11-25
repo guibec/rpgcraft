@@ -25,6 +25,7 @@
 #	pragma warning(disable: 4702)		// unreachable code (extremely common and valid coding technique)
 #	pragma warning(disable: 4324)		// structure padding due to __declspec (that's the whole idea of using __declspec(align))
 #	pragma warning(disable: 4800)		// 'u32' : forcing value to bool 'true' or 'false' (perf problem?  really?  compiler generates a test/setx pair for this in the WORST case)
+#	pragma warning(disable: 4141)		// 'inline': used more than once  (which happens when using __forceinline -- indicating that microsoft still doesn't quite understand that `inline` in C++ is TU directive and not an optimization directive)
 	// conversion from int to (smaller_type), possible loss of data
 	// (happens all the time in x64, and explicit typecasts to avoid these warnings are redundant and annoying)
 #	pragma warning(disable: 4244)
