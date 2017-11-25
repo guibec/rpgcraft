@@ -714,24 +714,6 @@ void dx11_PreDrawPrep()
 	s_NeedsPreDrawPrep = 0;
 }
 
-template< typename T >
-T* xReallocObj(T* &ptr)
-{
-	pragma_todo( "Check that xRealloc is smart and re-uses existing pointer data if sizes match..." );
-	ptr->~T();
-	ptr = new ((T*)xRealloc(ptr, sizeof(*ptr))) T();
-	return ptr;
-}
-
-template< typename T >
-T* xReallocT(T* &ptr)
-{
-	static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xReallocObj<T> instead.")
-	//static_assert(!std::is_trivially_copyable<T>::value, "Non-trivial type has meaningful destructor.  Use xReallocObj<T> instead.")
-	ptr = xRealloc(ptr, sizeof(*ptr));
-	return ptr;
-}
-
 bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char* entryPointFn)
 {
 	HRESULT hr;
@@ -742,7 +724,7 @@ bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char
 	if (shader) { shader->Release(); shader	= nullptr; }
 	if (info)	{ info	->Dispose(); }
 
-	xReallocObj(info);
+	xMallocNew(info);
 
 	bug_on( !entryPointFn || !entryPointFn[0] );
 	info->blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "vs_4_0");
@@ -783,7 +765,7 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	if (shader) { shader->Release(); shader = nullptr; }
 	if (info)	{ info	->Dispose(); }
 
-	xReallocObj(info);
+	xMallocNew(info);
 
 	bug_on( !entryPointFn || !entryPointFn[0] );
 	info->blob = CompileShaderFromFile(toUTF16(srcfile).wc_str(), entryPointFn, "ps_4_0");
