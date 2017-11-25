@@ -109,18 +109,18 @@ static int   Strnicmp(const char* str1, const char* str2, int n) { int d = 0; wh
 
 void ImGuiConsole::ClearLog()
 {
-	Buf.clear(); LineOffsets.clear();
+	Buf.Clear(); LineOffsets.clear();
 	ScrollToBottom = true;
 }
 
 void ImGuiConsole::AddLog(const char* fmt, ...)
 {
-	int old_size = Buf.size();
+	int old_size = Buf.GetLength();
 	va_list args;
 	va_start(args, fmt);
-	Buf.appendv(fmt, args);
+	Buf.AppendFmtV(fmt, args);
 	va_end(args);
-	for (int new_size = Buf.size(); old_size < new_size; old_size++)
+	for (int new_size = Buf.GetLength(); old_size < new_size; old_size++)
 		if (Buf[old_size] == '\n')
 			LineOffsets.push_back(old_size);
 	ScrollToBottom = true;
@@ -182,7 +182,7 @@ void ImGuiConsole::AppendToCurrentFrame()
 
 	if (filter.IsActive())
 	{
-		const char* buf_begin = Buf.begin();
+		const char* buf_begin = Buf;
 		const char* line = buf_begin;
 		for (int line_no = 0; line != NULL; line_no++)
 		{
@@ -204,7 +204,7 @@ void ImGuiConsole::AppendToCurrentFrame()
 	}
 	else
 	{
-		ImGui::TextUnformatted(Buf.begin());
+		ImGui::TextUnformatted(Buf);
 	}
 
 	if (copy_to_clipboard)
