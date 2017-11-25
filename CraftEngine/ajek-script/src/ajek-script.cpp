@@ -258,12 +258,15 @@ static int lua_panic(lua_State* L)
 	return 0;
 }
 
-// The default lua library version of `print` is problematic because it uses the same
-// lua_writestring() as the rest of the lua engine core, even though it always writes
-// text with newlines, and batch-writes a bunch of lines at a time (one per parameter).
-// This is ideal for passing through a structured logger that provides mutex locking and
-// grep-able annotated line prefixes.  Ergo, I copy-pasted here and replace the global
-// _G['print'] entry with our own...  --jstine
+// The default lua library version of `print` is problematic for fowllowing reasons:
+//  * it uses the same lua_writestring() as the rest of the lua engine core, even though it
+//    always writes text with newlines, and batch-writes a bunch of lines at a time (one per
+//    parameter).
+//  * it delimits using tab character and there's barely any useful reason to ever do that.
+//
+// Replaced it with a `print` that:
+//  * delimits by newline and adds grep-able module-name prefix
+//  * provides mutex locking around entire set of lines being printed
 
 static int ajek_luaB_print (lua_State *L) {
 
@@ -277,10 +280,20 @@ static int ajek_luaB_print (lua_State *L) {
 	auto* ajek = (AjekScriptEnv*)lua_topointer(L, -1);
 	bug_on(!ajek);
 
-
 	ajek->m_log_buffer.Clear();
-	pragma_todo("Use lua module name here...");
-	ajek->m_log_buffer.AppendFmt("%-20s: ", "Lua");
+
+	// obtaining module name is tricky and slow using vanilla lua:  one must walk up the stack until
+	// a valid module name is spotted, using lua_getstack() and lua_getinfo().  Can't make any assumptions
+	// that the stack entry directly above us is a valid lua module-scope stack.
+	//
+	// A more efficient method would be to use C closure upvalues and bind a custom `print` closure for
+	// every module that's loaded by the engine.  Caveat: modules loaded by `require` would default to
+	// using the closure bound whenever the first `require` instance is encountered.
+	//
+	// Alternative: use a global variable _G.Ajek.PrintPrefix, which is set up when modules are loaded,
+	// and can be overridden from inside the module too, if desired.  Ok yea, I like that one!  --jstine
+
+	pragma_todo("Use current lua module name as `print` prefix, via global (see comment)");
 
 	lua_getglobal(L, "tostring");
 	for (i=1; i<=n; i++) {
@@ -290,7 +303,8 @@ static int ajek_luaB_print (lua_State *L) {
 		lua_pushvalue(L, i);   /* value to print */
 		lua_call(L, 1, 1);
 		if (s = lua_tolstring(L, -1, &l)) {
-			if (i>1) ajek->m_log_buffer += "\t";
+			if (i>1) ajek->m_log_buffer += "\n";
+			ajek->m_log_buffer.AppendFmt("%-20s: ", "Lua");
 			ajek->m_log_buffer.Append(s, l);
 		}
 		else {
@@ -298,12 +312,9 @@ static int ajek_luaB_print (lua_State *L) {
 		}
 		lua_pop(L, 1);  /* pop result */
 	}
-	xPrintLn(ajek->m_log_buffer);		// TODO: add log_host_unfmt() func to bypass formatting.
+	xPrintLn(ajek->m_log_buffer);
 	return 0;
 }
-
-// _G['print_delim'] = '\n' ?
-pragma_todo("Create a 'println' function similar to 'print' but using newline separators instead of tabs?  -or- add a global variable that specifies the delimiter?");
 
 void AjekScriptEnv::NewState()
 {
@@ -324,8 +335,6 @@ void AjekScriptEnv::NewState()
 	lua_atpanic				(m_L, &lua_panic);
 
 	luaL_openlibs			(m_L);
-	//lua_getglobal			(m_L, "_G");
-	//lua_pushstring		(m_L, "print");
 	lua_pushcfunction		(m_L, ajek_luaB_print);
 	lua_setglobal			(m_L, "print");
 
