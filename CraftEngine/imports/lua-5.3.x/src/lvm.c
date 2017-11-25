@@ -54,7 +54,7 @@
 ** sizeof(integer) == 32.)
 */
 #if ((((LUA_MAXINTEGER >> (NBM / 4)) >> (NBM / 4)) >> (NBM / 4)) \
-	>> (NBM - (3 * (NBM / 4))))  >  0
+    >> (NBM - (3 * (NBM / 4))))  >  0
 
 #define l_intfitsf(i)  \
   (-((lua_Integer)1 << NBM) <= (i) && (i) <= ((lua_Integer)1 << NBM))
@@ -452,7 +452,7 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
 
 /* macro used by 'luaV_concat' to ensure that element at 'o' is a string */
 #define tostring(L,o)  \
-	(ttisstring(o) || (cvt2str(o) && (luaO_tostring(L, o), 1)))
+    (ttisstring(o) || (cvt2str(o) && (luaO_tostring(L, o), 1)))
 
 #define isemptystr(o)	(ttisshrstring(o) && tsvalue(o)->shrlen == 0)
 
@@ -729,9 +729,9 @@ void luaV_finishOp (lua_State *L) {
 #define RB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgR, base+GETARG_B(i))
 #define RC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgR, base+GETARG_C(i))
 #define RKB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgK, \
-	ISK(GETARG_B(i)) ? k+INDEXK(GETARG_B(i)) : base+GETARG_B(i))
+    ISK(GETARG_B(i)) ? k+INDEXK(GETARG_B(i)) : base+GETARG_B(i))
 #define RKC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgK, \
-	ISK(GETARG_C(i)) ? k+INDEXK(GETARG_C(i)) : base+GETARG_C(i))
+    ISK(GETARG_C(i)) ? k+INDEXK(GETARG_C(i)) : base+GETARG_C(i))
 
 
 /* execute a jump instruction */
@@ -747,7 +747,7 @@ void luaV_finishOp (lua_State *L) {
 #define Protect(x)	{ {x;}; base = ci->u.l.base; }
 
 #define checkGC(L,c)  \
-	{ luaC_condGC(L, L->top = (c),  /* limit of live values */ \
+    { luaC_condGC(L, L->top = (c),  /* limit of live values */ \
                          Protect(L->top = ci->top));  /* restore top */ \
            luai_threadyield(L); }
 
@@ -851,19 +851,19 @@ void luaV_execute (lua_State *L) {
         TValue *rc = RKC(i);
 
 #if AJEK_SCRIPT
-		// internal handling of creating new global variables.
-		//   Idea here is to catch typos meant to access local variables.
-		//   Lua's nature makes it infeasible to track these things at lex-parse stage due to
-		//   the number of language features that rely on resolving objects at execution (eg,
-		//   right here and right now).
+        // internal handling of creating new global variables.
+        //   Idea here is to catch typos meant to access local variables.
+        //   Lua's nature makes it infeasible to track these things at lex-parse stage due to
+        //   the number of language features that rely on resolving objects at execution (eg,
+        //   right here and right now).
 
-		const TValue *slot;
-		if (!luaV_fastset(L,upval,rb,slot,luaH_get,rc)) {
-			if (slot == luaO_nilobject && GETARG_A(i) == 0) {
-				Protect(ajek_warn_new_global(L));
-			}
-		    Protect(luaV_finishset(L,upval,rb,rc,slot));
-		}
+        const TValue *slot;
+        if (!luaV_fastset(L,upval,rb,slot,luaH_get,rc)) {
+            if (slot == luaO_nilobject && GETARG_A(i) == 0) {
+                Protect(ajek_warn_new_global(L));
+            }
+            Protect(luaV_finishset(L,upval,rb,rc,slot));
+        }
 #else
         settableProtected(L, upval, rb, rc);
 #endif
