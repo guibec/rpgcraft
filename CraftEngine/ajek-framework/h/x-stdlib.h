@@ -227,6 +227,29 @@ extern bool		xFgets					(xString& dest, FILE* stream);
 extern bool		xCreateDirectory		(const xString& dir);
 extern FILE*	xFopen					(const xString& fullpath, const char* mode);
 
+// Performs cleanup of existing object pointer (if non-null) and creates a new object in its place.
+// Memory is allocated if the provided pointer is null.
+template< typename T >
+__xi T* xMallocNew(T* &ptr)
+{
+	if (ptr) {
+		ptr->~T();
+	}
+	else {
+		ptr = (T*)xMalloc(sizeof(*ptr));
+	}
+	return new (ptr) T();
+}
+
+// Memory is allocated if the provided pointer is null.  if pointer is non-null, then no action is taken.
+template< typename T >
+__xi T* xMallocT(T* &ptr)
+{
+	static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.")
+	//static_assert(!std::is_trivially_copyable<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.")
+	return ptr ? ptr : xMalloc(sizeof(*ptr));
+}
+
 template< typename T >
 inline void xMemMove(T* dest, size_t destLen, const T* src, size_t srcLen)
 {
