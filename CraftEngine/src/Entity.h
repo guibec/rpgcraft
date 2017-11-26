@@ -199,7 +199,6 @@ struct TickableEntityContainer {
 	typedef std::set<TickableEntityItem, CompareTickableEntity_Less>								OrderedContainerType;
 
 	HashedContainerType			m_hashed;
-//	OrderedContainerType		m_ordered;			// ordered by priority
 	OrderedContainerType		m_ordered;			// ordered by priority
 	EntityContainerEventQueue	m_evt_queue;
 	int							m_max_container_size;
@@ -210,13 +209,14 @@ struct TickableEntityContainer {
 	void		Clear			();
 	void		ExecEventQueue	();
 
-	__ai void Add(int orderGidPair, EntityGid_t entityGid, EntityFn_LogicTick* logic) {
-		_Add( { MakeGidOrder(entityGid, orderGidPair), logic } );
+
+	__ai void Add(EntityGid_t entityGid, u32 order, EntityFn_LogicTick* logic) {
+		_Add( { MakeGidOrder(entityGid, order), logic } );
 	}
 
 	template< typename T >
 	__ai void Add(T* entity, int order) {
-		Add(order, entity->m_gid, [](void* entity, int order, float dt) { ((T*)entity)->Tick(order, dt); } );
+		Add(entity->m_gid, order, [](void* entity, int order, float dt) { ((T*)entity)->Tick(order, dt); } );
 	}
 
 	auto	ForEachForward		();

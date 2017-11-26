@@ -114,10 +114,6 @@ void GameplaySceneLogic(float deltaTime)
 	g_console.DrawFrame();
 	g_TileMap.Tick();
 
-	// OrderedFirst and OrderedLast can use existing TickableEntityContainer.  Unordered will use an efficient
-	// unordered set and, ideally, most game logic should fit within the context of order-agnostic processing.  --jstine
-	pragma_todo("Create multiple tick lists?  OrderedFirst, Unordered, OrderedLast (see comment for details)");
-
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
 		auto entity = Entity_Lookup(entitem.orderGidPair.Gid());
@@ -207,9 +203,7 @@ void ViewCamera::SetEyeAt(const float2& xy)
 
 void GameplaySceneRender()
 {
-
 	if (!s_CanRenderScene) return;
-
 
 	// Clear the back buffer
 	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);

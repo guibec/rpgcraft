@@ -1,10 +1,10 @@
 
--- quick sample of what we want a lua script to look like:
---  (please modify/fix !)
+-- Sample enemy lua scirpt template thing!
+-- (not hooked to anything in engine yet)
 
-local Overworld = ...
+local Enemy = ...
 
-function Overworld:DoSomething(dt)
+function Enemy:Something(dt)
 {
 	while true
 		local timeout = 2.0		-- seconds
@@ -31,18 +31,15 @@ function Overworld:DoSomething(dt)
 	end
 }
 
-function Overworld:Tick(dt)
+function Enemy:Tick(dt)
 {
-	-- age things?
-
-	-- set up some params used by renderer later on.
-	-- Could do this using local API passed into lua module
-	Overworld:SetTileMapRenderParams(...)
+	-- Move me!
+	-- Perform some attack?
 }
 
-function Overworld:OnSpawn()
+function Enemy:OnSpawn()
 {
 	-- these invoke C functions:
-	Ent_OnTickCo(Overworld.DoSomething)
-	Ent_OnTick  (Overworld.Tick)
+	Ent_OnTickCo(Overworld.Something)
+	Ent_OnTick  (Overworld.Spawner)
 }
