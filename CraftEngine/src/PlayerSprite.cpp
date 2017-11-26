@@ -44,56 +44,43 @@ PlayerSprite::PlayerSprite() {
 	m_position = { 10, 10 };
 }
 
-extern float4 get3dPoint(const int2& viewPos, const int2& viewSize, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix);
-
 static bool s_isAbsolute = false;
 
-void PlayerSprite::Tick(int order, float dt)
+void PlayerSprite::Tick(u32 order, float dt)
 {
+	// Pad Input processing should be moved to Main and invoked as a "PollLocalUserInput", which in
+	// turn updates the LocalUser's PlayerSprite accordingly.
+
 	PadState state;
 	KPad_GetState(state);
 
-	//g_ViewCamera.SetEyeAt( {
-	//	g_ViewCamera.m_Eye.x + (state.axis.RStick_X * 0.05f),
-	//	g_ViewCamera.m_Eye.y + (state.axis.RStick_Y * 0.05f),
-	//} );
-
 	g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f };
 
-	const float playerSpeed = 1.f; // 1 tile per second
+	const float playerSpeed = 3.f;	// tiles per second
 
-	float2 direction;
-	direction.x = 0;
-	direction.y = 0;
+	float2 direction = {};
 
 	if (state.buttons.DPad_Up)
-	{
 		direction.y = -playerSpeed;
-	}
 	else if (state.buttons.DPad_Down)
-	{
 		direction.y = playerSpeed;
-	}
+
 	if (state.buttons.DPad_Left)
-	{
 		direction.x = -playerSpeed;
-	}
 	else if (state.buttons.DPad_Right)
-	{
 		direction.x = playerSpeed;
-	}
 
 	if (state.axis.LStick_X < 0)
 		direction.x = -playerSpeed;
 	else if (state.axis.LStick_X > 0)
 		direction.x = playerSpeed;
+
 	if (state.axis.LStick_Y < 0)
 		direction.y = -playerSpeed;
 	else if (state.axis.LStick_Y > 0)
 		direction.y = playerSpeed;
 
 	m_position += direction * dt;
-
 
 	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
 
@@ -115,7 +102,7 @@ void PlayerSprite::Tick(int order, float dt)
 }
 
 
-void PlayerSprite::Draw(int order) const
+void PlayerSprite::Draw(float zorder) const
 {
 	// TODO: most of this is generic for all sprites and should be default for all items
 	// in the sprites render list.  Moreover, the API should be such that any locally-modified GPU

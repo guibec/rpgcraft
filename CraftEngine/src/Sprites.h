@@ -51,8 +51,8 @@ public:
 	PlayerSprite();
 
 public:
-	void Tick(int orderGidPair, float deltaTime);
-	void Draw(int orderGidPair) const;
+	void Tick(u32 order, float deltaTime);
+	void Draw(float zorder) const;
 };
 
 extern GPU_ShaderVS				g_ShaderVS_Spriter;
