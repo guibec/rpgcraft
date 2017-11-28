@@ -293,7 +293,11 @@ union u128
 	{
 		//return (lo == right.lo) && (hi == right.hi);
 
-		u128 result;
+		// all 128 bits must match to pass test.  ptestz() returns 0 if *any* of them match, and
+		// returns 1 is all of them don't match.  To fix that, xor the result so that ptestz() is
+		// testing inequality rather than equality.  ptestz() then returns 1 only if all fields are matched.
+
+		__m128 result;
 		i_pcmpeqd	(result, qf, right.qf);
 		i_pxor		(result, result, u128().SetFFs());
 		return i_ptestz(result);
@@ -303,7 +307,7 @@ union u128
 	{
 		//return (lo != right.lo) || (hi != right.hi);
 
-		u128 result;
+		__m128 result;
 		i_pcmpeqd	(result, qf, right.qf);
 		i_pxor		(result, result, u128().SetFFs());
 		return !i_ptestz(result);
@@ -457,6 +461,8 @@ union float2 {
 
 	explicit operator int2() const;
 
+	bool isEmpty() const { return _i64val == 0; }
+
 	__ai bool		operator==(const float2& right)		const		{ return _i64val == right._i64val; }
 	__ai bool		operator!=(const float2& right)		const		{ return _i64val != right._i64val; }
 	__ai bool		operator<=(const float2& right)		const		{ return  x <= right.x && y <= right.y; }
@@ -512,6 +518,10 @@ union float4 {
 
 	__m128	q;
 
+	bool isEmpty() const {
+		return i_ptestz(q);
+	}
+
 	__ai operator __m128&			()			{ return q;			}
 
 	__ai operator u128				() const	{ return {{ q }};	}
@@ -555,6 +565,8 @@ union int2 {
 
 	explicit operator float2 () const;
 	explicit operator vFloat2() const;
+
+	bool isEmpty() const { return _i64val == 0; }
 
 	// note: intentionally omitted u64 operator assignment.
 
