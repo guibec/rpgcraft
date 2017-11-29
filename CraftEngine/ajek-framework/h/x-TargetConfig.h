@@ -250,15 +250,33 @@
 // --------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------
-// USE_SMALLER_TYPE_CHECKS
+// MASK_SMALLER_TYPE_CASTS
 //
 // Set this to 1 when using smaller type checking (MSDN /RTCc)
 // When enabled, several int->char and int->word conversions will use explicit bit masks
 // instead of typecasts alone.  This disables the MSVCRT's assertion throws when enabling
 // compiler type checking support.
 //
-#if !defined(USE_SMALLER_TYPE_CHECKS)
-#	define USE_SMALLER_TYPE_CHECKS			0
+// UNSIGNED_OVERFLOW_CHECK
+//
+// Enables in-house assertions on uint2 / uint4 type conversions.  Note that these truncations
+// are also caught by MSVCs Smaller type checker (/RTCc) and so enabling them is probably not
+// needed.  So unless this is needed in an /O3 build for some reason, just use the compiler
+// instrumentation instead.  It's way faster/better.
+//
+// Note that the __MSVC_RUNTIME_CHECKS is not helpful for this because it gets set to '1'
+// in cases where any runtime check is enabled, such as the stackframe runtime check (which
+// is enabled by default due to low cpu-overhead).  Ergo, in tpical microsoft fashion, it's
+// useless.  I dream of a day when I can bill Microsoft for time wasted having to read docs
+// that describe poorly-designed and ultimately useless things seen fit to be added to their
+// asinine compiler toolchain. --jstine
+//
+#if !defined(MASK_SMALLER_TYPE_CASTS)
+#	define MASK_SMALLER_TYPE_CASTS			0
+#endif
+
+#if !defined(UNSIGNED_OVERFLOW_CHECK)
+#	define UNSIGNED_OVERFLOW_CHECK			0
 #endif
 // --------------------------------------------------------------------------------------
 

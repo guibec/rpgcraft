@@ -611,6 +611,85 @@ union int4 {
 	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 };
 
+// uint2 implementation note: this structure pretty much only exists to satisfy some asinine C++ type
+// conversion error which is imposed only on initializer lists, eg `int2 {ux, uy}`. As such, this class
+// intentionally allows implicit conversion to int2, and (optionally!) does an overflow check. --jstine
+//
+union uint2 {
+
+
+	struct {
+		uint		x, y;
+	};
+
+	struct {
+		uint		u, v;
+	};
+
+	u64			_i64val;
+
+	explicit operator float2 () const;
+	explicit operator vFloat2() const;
+
+	operator int2 () const;
+
+	bool isEmpty() const { return _i64val == 0; }
+
+	// note: intentionally omitted u64 operator assignment.
+
+	__ai bool	operator==(const uint2& right)		const		{ return _i64val == right._i64val; }
+	__ai bool	operator!=(const uint2& right)		const		{ return _i64val != right._i64val; }
+
+	__ai uint2&	operator+=(const uint2& src)					{ x += src.x; y += src.y; return *this; }
+	__ai uint2&	operator-=(const uint2& src)					{ x -= src.x; y -= src.y; return *this; }
+
+	__ai uint2	operator+(const uint2& src)		const		{ return { x + src.x, y + src.y }; }
+	__ai uint2	operator-(const uint2& src)		const		{ return { x - src.x, y - src.y }; }
+	__ai uint2	operator/(const uint2& src)		const		{ return { x / src.x, y / src.y }; }
+	__ai uint2	operator*(const uint2& src)		const		{ return { x * src.x, y * src.y }; }
+
+	__ai float2	operator+(const float2& src)	const;
+	__ai float2	operator-(const float2& src)	const;
+	__ai float2	operator/(const float2& src)	const;
+	__ai float2	operator*(const float2& src)	const;
+
+	__ai uint2	operator+(int src)				const		{ return { x + src, y + src }; }
+	__ai uint2	operator-(int src)				const		{ return { x - src, y - src }; }
+	__ai uint2	operator/(int src)				const		{ return { x / src, y / src }; }
+	__ai uint2	operator*(int src)				const		{ return { x * src, y * src }; }
+
+	__ai float2 operator+(float src)			const;
+	__ai float2 operator-(float src)			const;
+	__ai float2 operator/(float src)			const;
+	__ai float2 operator*(float src)			const;
+};
+
+
+//union int4 {
+//	struct {
+//		int		x,y,z,w;
+//	};
+//
+//	struct {
+//		int2	xy,zw;
+//	};
+//
+//	struct {
+//		int		u,v;
+//	};
+//
+//	u128	q;
+//
+//	__ai operator __m128&			()			{ return q.qf;	}
+//	__ai operator u128&				()			{ return q;		}
+//
+//	__ai operator const __m128&		() const	{ return q.qf;	}
+//	__ai operator const u128&		() const	{ return q;		}
+//
+//	__ai bool operator==( const u128& right ) const	{ return q == right; }
+//	__ai bool operator!=( const u128& right ) const	{ return q != right; }
+//};
+
 inline __ai float2	int2::operator+(float src)			const		{ return { x + src, y + src }; }
 inline __ai float2	int2::operator-(float src)			const		{ return { x - src, y - src }; }
 inline __ai float2	int2::operator/(float src)			const		{ return { x / src, y / src }; }
@@ -629,7 +708,6 @@ inline __ai float2	float2::operator*(const int2& src)	const		{ return { x * src.
 
 inline float2::operator int2() const { return int2   { (int)  x, (int)  y }; }
 inline int2::operator float2() const { return float2 { (float)x, (float)y }; }
-
 
 // Non-member operators...
 

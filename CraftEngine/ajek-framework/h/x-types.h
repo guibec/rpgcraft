@@ -512,7 +512,7 @@ static const s64 _4gb	= _1gb * 4;
 // The feature is only useful/effective if intentional value truncations are macro-
 // encapsulated to mask off the truncated bits first.
 //
-#if !USE_SMALLER_TYPE_CHECKS
+#if !MASK_SMALLER_TYPE_CASTS
 
 #	define _NCS8(a)			((s8)(a))
 #	define _NCS16(a)		((s16)(a))
