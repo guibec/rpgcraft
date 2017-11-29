@@ -444,95 +444,71 @@ static __ai inline bool rawflt4_cmp_eq(const __m128& left, const __m128& right)
 	return i_ptestz(result);
 }
 
+#define xSIMD_PROTO_CMP_OPERATORS(n)						\
+	bool	operator<=(const int##n& right)		const;		\
+	bool	operator>=(const int##n& right)		const;		\
+	bool	operator<=(const float##n& right)	const;		\
+	bool	operator>=(const float##n& right)	const;		\
+	bool	operator< (const int##n& right)		const;		\
+	bool	operator> (const int##n& right)		const;		\
+	bool	operator< (const float##n& right)	const;		\
+	bool	operator> (const float##n& right)	const;		\
+	bool	operator<=(int right)				const;		\
+	bool	operator>=(int right)				const;		\
+	bool	operator<=(float right)				const;		\
+	bool	operator>=(float right)				const;		\
+	bool	operator< (int right)				const;		\
+	bool	operator> (int right)				const;		\
+	bool	operator< (float right)				const;		\
+	bool	operator> (float right)				const
+
+
+struct float4_cmp_all
+{
+	const float		x, y, z, w;
+	xSIMD_PROTO_CMP_OPERATORS(4);
+};
+
+struct float4_cmp_any
+{
+	const float		x, y, z, w;
+	xSIMD_PROTO_CMP_OPERATORS(4);
+};
+
+struct int4_cmp_all
+{
+	const int		x, y, z, w;
+	xSIMD_PROTO_CMP_OPERATORS(4);
+};
+
+struct int4_cmp_any
+{
+	int		x, y, z, w;
+	xSIMD_PROTO_CMP_OPERATORS(4);
+};
+
 struct float2_cmp_all
 {
-	float		x, y;
-
-	bool	operator<=(const int2& right)		const;
-	bool	operator>=(const int2& right)		const;
-	bool	operator<=(const float2& right)		const;
-	bool	operator>=(const float2& right)		const;
-	bool	operator< (const int2& right)		const;
-	bool	operator> (const int2& right)		const;
-	bool	operator< (const float2& right)		const;
-	bool	operator> (const float2& right)		const;
-	bool	operator<=(int right)				const;
-	bool	operator>=(int right)				const;
-	bool	operator<=(float right)				const;
-	bool	operator>=(float right)				const;
-	bool	operator< (int right)				const;
-	bool	operator> (int right)				const;
-	bool	operator< (float right)				const;
-	bool	operator> (float right)				const;
-
+	const float		x, y;
+	xSIMD_PROTO_CMP_OPERATORS(2);
 };
 
 struct float2_cmp_any
 {
-	float		x, y;
-
-	bool	operator<=(const int2& right)		const;
-	bool	operator>=(const int2& right)		const;
-	bool	operator<=(const float2& right)		const;
-	bool	operator>=(const float2& right)		const;
-	bool	operator< (const int2& right)		const;
-	bool	operator> (const int2& right)		const;
-	bool	operator< (const float2& right)		const;
-	bool	operator> (const float2& right)		const;
-	bool	operator<=(int right)				const;
-	bool	operator>=(int right)				const;
-	bool	operator<=(float right)				const;
-	bool	operator>=(float right)				const;
-	bool	operator< (int right)				const;
-	bool	operator> (int right)				const;
-	bool	operator< (float right)				const;
-	bool	operator> (float right)				const;
-
+	const float		x, y;
+	xSIMD_PROTO_CMP_OPERATORS(2);
 };
 
 struct int2_cmp_all
 {
-	int		x, y;
-
-	bool	operator<=(const int2& right)		const;
-	bool	operator>=(const int2& right)		const;
-	bool	operator<=(const float2& right)		const;
-	bool	operator>=(const float2& right)		const;
-	bool	operator< (const int2& right)		const;
-	bool	operator> (const int2& right)		const;
-	bool	operator< (const float2& right)		const;
-	bool	operator> (const float2& right)		const;
-	bool	operator<=(int right)				const;
-	bool	operator>=(int right)				const;
-	bool	operator<=(float right)				const;
-	bool	operator>=(float right)				const;
-	bool	operator< (int right)				const;
-	bool	operator> (int right)				const;
-	bool	operator< (float right)				const;
-	bool	operator> (float right)				const;
-
+	const int		x, y;
+	xSIMD_PROTO_CMP_OPERATORS(2);
 };
 
 struct int2_cmp_any
 {
 	int		x, y;
-
-	bool	operator<=(const int2& right)		const;
-	bool	operator>=(const int2& right)		const;
-	bool	operator<=(const float2& right)		const;
-	bool	operator>=(const float2& right)		const;
-	bool	operator< (const int2& right)		const;
-	bool	operator> (const int2& right)		const;
-	bool	operator< (const float2& right)		const;
-	bool	operator> (const float2& right)		const;
-	bool	operator<=(int right)				const;
-	bool	operator>=(int right)				const;
-	bool	operator<=(float right)				const;
-	bool	operator>=(float right)				const;
-	bool	operator< (int right)				const;
-	bool	operator> (int right)				const;
-	bool	operator< (float right)				const;
-	bool	operator> (float right)				const;
+	xSIMD_PROTO_CMP_OPERATORS(2);
 };
 
 union float2 {
@@ -621,9 +597,11 @@ union float4 {
 	}
 
 	__ai operator __m128&			()			{ return q;			}
-
 	__ai operator u128				() const	{ return {{ q }};	}
 	__ai operator const __m128&		() const	{ return q;			}
+
+	__ai const float4_cmp_all& cmp_all()				const		{ return (float4_cmp_all&)*this; }
+	__ai const float4_cmp_any& cmp_any()				const		{ return (float4_cmp_any&)*this; }
 
 	__ai bool		operator==(const float4& right)	const		{ return  rawflt4_cmp_eq(q, right.q); }
 	__ai bool		operator!=(const float4& right)	const		{ return !rawflt4_cmp_eq(q, right.q); }
@@ -691,15 +669,15 @@ union int2 {
 	__ai int2	operator/(const int2& src)		const		{ return { x / src.x, y / src.y }; }
 	__ai int2	operator*(const int2& src)		const		{ return { x * src.x, y * src.y }; }
 
-	__ai float2	operator+(const float2& src)	const;
-	__ai float2	operator-(const float2& src)	const;
-	__ai float2	operator/(const float2& src)	const;
-	__ai float2	operator*(const float2& src)	const;
-
 	__ai int2	operator+(int src)				const		{ return { x + src, y + src }; }
 	__ai int2	operator-(int src)				const		{ return { x - src, y - src }; }
 	__ai int2	operator/(int src)				const		{ return { x / src, y / src }; }
 	__ai int2	operator*(int src)				const		{ return { x * src, y * src }; }
+
+	__ai float2	operator+(const float2& src)	const;
+	__ai float2	operator-(const float2& src)	const;
+	__ai float2	operator/(const float2& src)	const;
+	__ai float2	operator*(const float2& src)	const;
 
 	__ai float2 operator+(float src)			const;
 	__ai float2 operator-(float src)			const;
@@ -725,12 +703,14 @@ union int4 {
 
 	__ai operator __m128&			()			{ return q.qf;	}
 	__ai operator u128&				()			{ return q;		}
-
 	__ai operator const __m128&		() const	{ return q.qf;	}
 	__ai operator const u128&		() const	{ return q;		}
 
-	__ai bool operator==( const u128& right ) const	{ return q == right; }
-	__ai bool operator!=( const u128& right ) const	{ return q != right; }
+	__ai const int4_cmp_all& cmp_all()			const	{ return (int4_cmp_all&)*this; }
+	__ai const int4_cmp_any& cmp_any()			const	{ return (int4_cmp_any&)*this; }
+
+	__ai bool operator==( const u128& right )		const	{ return q == right; }
+	__ai bool operator!=( const u128& right )		const	{ return q != right; }
 };
 
 // uint2 implementation note: this structure pretty much only exists to satisfy some asinine C++ type
@@ -770,15 +750,15 @@ union uint2 {
 	__ai uint2	operator/(const uint2& src)		const		{ return { x / src.x, y / src.y }; }
 	__ai uint2	operator*(const uint2& src)		const		{ return { x * src.x, y * src.y }; }
 
-	__ai float2	operator+(const float2& src)	const;
-	__ai float2	operator-(const float2& src)	const;
-	__ai float2	operator/(const float2& src)	const;
-	__ai float2	operator*(const float2& src)	const;
-
 	__ai uint2	operator+(int src)				const		{ return { x + src, y + src }; }
 	__ai uint2	operator-(int src)				const		{ return { x - src, y - src }; }
 	__ai uint2	operator/(int src)				const		{ return { x / src, y / src }; }
 	__ai uint2	operator*(int src)				const		{ return { x * src, y * src }; }
+
+	__ai float2	operator+(const float2& src)	const;
+	__ai float2	operator-(const float2& src)	const;
+	__ai float2	operator/(const float2& src)	const;
+	__ai float2	operator*(const float2& src)	const;
 
 	__ai float2 operator+(float src)			const;
 	__ai float2 operator-(float src)			const;
@@ -812,23 +792,32 @@ union uint2 {
 //	__ai bool operator!=( const u128& right ) const	{ return q != right; }
 //};
 
-inline __ai float2	int2::operator+(float src)			const		{ return { x + src, y + src }; }
-inline __ai float2	int2::operator-(float src)			const		{ return { x - src, y - src }; }
-inline __ai float2	int2::operator/(float src)			const		{ return { x / src, y / src }; }
-inline __ai float2	int2::operator*(float src)			const		{ return { x * src, y * src }; }
-
+inline __ai float2	int2::operator+(float src)			const		{ return { x + src,   y + src }; }
+inline __ai float2	int2::operator-(float src)			const		{ return { x - src,   y - src }; }
+inline __ai float2	int2::operator/(float src)			const		{ return { x / src,   y / src }; }
+inline __ai float2	int2::operator*(float src)			const		{ return { x * src,   y * src }; }
 inline __ai float2	int2::operator+(const float2& src)	const		{ return { x + src.x, y + src.y }; }
 inline __ai float2	int2::operator-(const float2& src)	const		{ return { x - src.x, y - src.y }; }
 inline __ai float2	int2::operator/(const float2& src)	const		{ return { x / src.x, y / src.y }; }
 inline __ai float2	int2::operator*(const float2& src)	const		{ return { x * src.x, y * src.y }; }
+
+inline __ai float2	uint2::operator+(float src)			const		{ return { x + src,   y + src }; }
+inline __ai float2	uint2::operator-(float src)			const		{ return { x - src,   y - src }; }
+inline __ai float2	uint2::operator/(float src)			const		{ return { x / src,   y / src }; }
+inline __ai float2	uint2::operator*(float src)			const		{ return { x * src,   y * src }; }
+inline __ai float2	uint2::operator+(const float2& src)	const		{ return { x + src.x, y + src.y }; }
+inline __ai float2	uint2::operator-(const float2& src)	const		{ return { x - src.x, y - src.y }; }
+inline __ai float2	uint2::operator/(const float2& src)	const		{ return { x / src.x, y / src.y }; }
+inline __ai float2	uint2::operator*(const float2& src)	const		{ return { x * src.x, y * src.y }; }
 
 inline __ai float2	float2::operator+(const int2& src)	const		{ return { x + src.x, y + src.y }; }
 inline __ai float2	float2::operator-(const int2& src)	const		{ return { x - src.x, y - src.y }; }
 inline __ai float2	float2::operator/(const int2& src)	const		{ return { x / src.x, y / src.y }; }
 inline __ai float2	float2::operator*(const int2& src)	const		{ return { x * src.x, y * src.y }; }
 
-inline float2::operator int2() const { return int2   { (int)  x, (int)  y }; }
-inline int2::operator float2() const { return float2 { (float)x, (float)y }; }
+inline float2::operator int2	() const { return int2   { (int)  x, (int)  y }; }
+inline int2  ::operator float2	() const { return float2 { (float)x, (float)y }; }
+inline uint2 ::operator float2	() const { return float2 { (float)x, (float)y }; }
 
 // Non-member operators...
 
