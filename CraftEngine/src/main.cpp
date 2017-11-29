@@ -294,6 +294,8 @@ bool Scene_TryLoadInit()
 		dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
 	}
 
+	PlayerSprite::LoadStaticAssets();
+
 	dx11_LoadShaderVS(g_ShaderVS_Spriter, "Sprite.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 

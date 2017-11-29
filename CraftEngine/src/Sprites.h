@@ -34,18 +34,22 @@ struct TileMapVertexLit {
 	//vFloat4     rgba;		// current light intensity
 };
 
-
 class PlayerSprite
 {
 private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	EntityGid_t			m_gid;
 	GPU_InputDesc		gpu_layout_sprite;
-	GPU_VertexBuffer	gpu_mesh_box2D;
 
+public:
+	EntityGid_t			m_gid;
 	float2				m_position;
+	float				m_frame_timeout;
+	int					m_frame_id;
+
+public:
+	static void LoadStaticAssets();
 
 public:
 	PlayerSprite();
