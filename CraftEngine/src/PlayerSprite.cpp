@@ -4,20 +4,38 @@
 #include "DbgFont.h"
 
 #include "x-pad.h"
+#include "x-BitmapData.h"
+#include "x-png-decode.h"
+#include "imgtools.h"
+
 #include "TileMapLayer.h"
 #include "Scene.h"
 #include "Mouse.h"
 
 DECLARE_MODULE_NAME("player");
 
-GPU_ConstantBuffer gpu_constbuf;
+GPU_ConstantBuffer		gpu_constbuf;
+GPU_TextureResource2D	tex_camel[3];
+GPU_VertexBuffer		gpu_mesh_box2D;
 
-PlayerSprite::PlayerSprite() {
-	xMemZero(gpu_layout_sprite);
-	gpu_layout_sprite.AddVertexSlot( {
-		{ "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT	},
-		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT		}
-	});
+void PlayerSprite::LoadStaticAssets()
+{
+	xBitmapData		pngsrc;
+	xBitmapData		texbmp;
+
+	// Because we're using an RPGMaker style sprite sheet sample:
+	//   Cut sprites from the source image and paste them into a well-formed GPU texture.
+
+	png_LoadFromFile(pngsrc, ".\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+	imgtool::ConvertOpaqueColorToAlpha(pngsrc, rgba32(0x007575));
+
+	xBitmapData		curtex;
+	int2			cutpos  = { 0, 32 };
+	int2			cutsize = { 24, 32 };
+	for (int i=0; i<3; ++i, cutpos.x += cutsize.x) {
+		imgtool::CutTex(curtex, pngsrc, cutpos, cutpos + cutsize);
+		dx11_CreateTexture2D(tex_camel[2-i], curtex.buffer.GetPtr(), curtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
+	}
 
 	// ---------------------------------------------------------------------------------------------
 	TileMapVertex vertices[] =
@@ -30,18 +48,28 @@ PlayerSprite::PlayerSprite() {
 		//{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
 		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 
-		{ vFloat3(  0.0f,  0.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
-		{ vFloat3(  0.0f,  1.0f, 1.0f ), vFloat2( 0.0f, 64.0f) },
-		{ vFloat3(  1.0f,  1.0f, 1.0f ), vFloat2(24.0f, 64.0f) },
-		{ vFloat3(  1.0f,  0.0f, 1.0f ), vFloat2(24.0f, 32.0f) }
+		{ vFloat3(  0.0f,  0.0f, 1.0f ), vFloat2( 1.0f,  1.0f) },
+		{ vFloat3(  0.0f,  1.0f, 1.0f ), vFloat2( 1.0f, 32.0f) },
+		{ vFloat3(  1.0f,  1.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
+		{ vFloat3(  1.0f,  0.0f, 1.0f ), vFloat2(24.0f,  1.0f) }
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
 	// ---------------------------------------------------------------------------------------------
+}
+
+PlayerSprite::PlayerSprite() {
+	xMemZero(gpu_layout_sprite);
+	gpu_layout_sprite.AddVertexSlot( {
+		{ "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT	},
+		{ "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT		}
+	});
 
 	dx11_CreateConstantBuffer(gpu_constbuf, sizeof(float2) + sizeof(int2));
 
 	m_position = { 10, 10 };
+	m_frame_id = 0;
+	m_frame_timeout = 0;
 }
 
 static bool s_isAbsolute = false;
@@ -82,6 +110,15 @@ void PlayerSprite::Tick(u32 order, float dt)
 
 	m_position += direction * dt;
 
+	if (!direction.isEmpty()) {
+		m_frame_timeout -= dt;
+		if (m_frame_timeout < 0) {
+			m_frame_timeout += 0.15f;
+			if (++m_frame_id >= 3) {
+				m_frame_id = 0;
+			}
+		}
+	}
 	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
 
 	if (s_isAbsolute){
@@ -111,7 +148,7 @@ void PlayerSprite::Draw(float zorder) const
 	dx11_BindShaderVS		(g_ShaderVS_Spriter);
 	dx11_BindShaderFS		(g_ShaderFS_Spriter);
 	dx11_SetInputLayout		(gpu_layout_sprite);
-	dx11_BindShaderResource	(tex_chars, 0);
+	dx11_BindShaderResource	(tex_camel[m_frame_id], 0);
 	dx11_SetVertexBuffer	(gpu_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 	dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
 
