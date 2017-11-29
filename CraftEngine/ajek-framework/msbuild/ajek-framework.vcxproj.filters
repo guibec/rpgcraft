@@ -23,6 +23,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gpu-ifc\src\x-gpu-colors.cpp" />
+    <ClCompile Include="..\src\imgtools.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">
@@ -103,6 +106,9 @@
       <Filter>Public Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\h\PCH-msw.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\imgtools.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
   </ItemGroup>
