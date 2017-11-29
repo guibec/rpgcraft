@@ -83,12 +83,12 @@ void TileMapLayer::SceneInit(const char* script_objname)
 	if (1) {
 		xBitmapData  pngtex;
 		png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
-		dx11_CreateTexture2D(gpu.tex_floor, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+		dx11_CreateTexture2D(gpu.tex_floor, pngtex.buffer.GetPtr(), pngtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
 
 		// Assume pngtex is rpgmaker layout for now.
 
-		g_setCountX = pngtex.width	/ 64;
-		g_setCountY = pngtex.height	/ (64 + 32);
+		g_setCountX = pngtex.size.x	/ 64;
+		g_setCountY = pngtex.size.y	/ (64 + 32);
 	}
 
 	WorldMap_Procgen();

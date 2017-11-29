@@ -18,8 +18,7 @@ void png_LoadFromFile(xBitmapData& dest, const xString& filename)
 
 	image.format	= PNG_FORMAT_RGBA;
 
-	dest.width		= image.width;
-	dest.height		= image.height;
+	dest.size = uint2 { image.width, image.height };
 	dest.buffer.Resize(PNG_IMAGE_SIZE(image));
 
 	int finishResult = png_image_finish_read(&image, &background, dest.buffer.GetPtr(),
@@ -46,8 +45,7 @@ void png_LoadFromFile(xBitmapData& dest, FILE* fp)
 
 	image.format	= PNG_FORMAT_RGBA;
 
-	dest.width		= image.width;
-	dest.height		= image.height;
+	dest.size = uint2 { image.width, image.height };
 	dest.buffer.Resize(PNG_IMAGE_SIZE(image));
 
 	int finishResult = png_image_finish_read(&image, &background, dest.buffer.GetPtr(),
