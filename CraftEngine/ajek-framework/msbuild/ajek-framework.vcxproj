@@ -81,6 +81,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\imgtools.cpp" />
     <ClCompile Include="..\src\x-png-decode.cpp" />
     <ClCompile Include="..\src\x-stdlib.cpp" />
     <ClCompile Include="..\src\x-string.cpp" />
@@ -101,6 +102,7 @@
     <ClInclude Include="..\h\x-chrono.h" />
     <ClInclude Include="..\h\x-ForwardDefs.h" />
     <ClInclude Include="..\h\x-host-ifc.h" />
+    <ClInclude Include="..\h\imgtools.h" />
     <ClInclude Include="..\h\x-libPngEncoder.h" />
     <ClInclude Include="..\h\x-pad.h" />
     <ClInclude Include="..\h\x-png-decode.h" />
