@@ -1052,8 +1052,7 @@ static void blitToTexture(xBitmapData& dest)
 
 	int2 texdim = { 6 * HighCharacterCode, 8 };
 	dest.buffer.Resize(texdim.x * texdim.y * 4);
-	dest.width	= texdim.x;
-	dest.height = texdim.y;
+	dest.size = texdim;
 
 	u32* destPtr = (u32*)dest.buffer.GetPtr();
 	for (int ch=0; ch<HighCharacterCode; ++ch) {
@@ -1246,7 +1245,7 @@ void DbgFont_LoadInit()
 	if (1) {
 		xBitmapData  pngtex;
 		blitToTexture(pngtex);
-		dx11_CreateTexture2D(tex_6x8, pngtex.buffer.GetPtr(), pngtex.width, pngtex.height, GPU_ResourceFmt_R8G8B8A8_UNORM);
+		dx11_CreateTexture2D(tex_6x8, pngtex.buffer.GetPtr(), pngtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
 	}
 
 	g_ConsoleSheet.font.texture		= &tex_6x8;

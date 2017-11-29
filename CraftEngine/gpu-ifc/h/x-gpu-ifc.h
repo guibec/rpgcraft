@@ -255,6 +255,7 @@ extern void					dx11_CreateDynamicVertexBuffer	(GPU_DynVsBuffer& dest, int buffe
 extern void					dx11_CreateStaticMesh			(GPU_VertexBuffer&	dest, void* vertexData, int itemSizeInBytes, int vertexCount);
 extern void					dx11_CreateIndexBuffer			(GPU_IndexBuffer&	dest, void* indexBuffer, int bufferSize);
 extern void					dx11_CreateConstantBuffer		(GPU_ConstantBuffer& dest, int bufferSize);
+extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, const int2& size, GPU_ResourceFmt format);
 extern void					dx11_CreateTexture2D			(GPU_TextureResource2D& dest, const void* src_bitmap_data, int width, int height, GPU_ResourceFmt format);
 extern void					dx11_UploadDynamicBufferData	(const GPU_DynVsBuffer& bufferIdx, const void* srcData, int sizeInBytes);
 extern void					dx11_UpdateConstantBuffer		(const GPU_ConstantBuffer& buffer, const void* data);
