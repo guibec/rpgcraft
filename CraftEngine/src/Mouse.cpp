@@ -37,7 +37,7 @@ MouseNormalResult Mouse::clientToNormal(const int2& center_pix, const int4& view
 	MouseNormalResult result;
 	result.normal		 = normalized;
 	result.normal.x		*= ratio;
-	result.isInsideArea  = (fabsf(normalized) <= 1.0f);
+	result.isInsideArea  = (fabsf(normalized).cmp_all() <= 1.0f);
 
 	return result;
 }
@@ -53,7 +53,7 @@ MouseNormalResult Mouse::clientToNormal(const int2& center_pix, const int2& view
 	MouseNormalResult result;
 	result.normal		 = normalized;
 	result.normal.x		*= ratio;
-	result.isInsideArea  = (fabsf(normalized) <= 1.0f);
+	result.isInsideArea  = (fabsf(normalized).cmp_all() <= 1.0f);
 
 	return result;
 }
