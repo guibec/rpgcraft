@@ -171,6 +171,15 @@ DXGI_FORMAT get_DXGI_Format(GPU_ResourceFmt bitmapFmt)
 	return DXGI_FORMAT_R8G8B8A8_UNORM;
 }
 
+template<int TNameLength>
+inline void SetDebugObjectName(ID3D11DeviceChild* resource, const char (&name)[TNameLength])
+{
+#if TARGET_DEBUG
+	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
+#endif
+}
+
+
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
 // With VS 11, we could load up prebuilt .cso files instead...
@@ -923,11 +932,18 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 	dest.m_buffer_idx = bufferIdx;
 }
 
+void GPU_VertexBuffer::Dispose()
+{
+	if (auto& buffer = ptr_cast<ID3D11Buffer*&>(m_driverData)) {
+		buffer->Release(); buffer = nullptr;
+	}
+}
+
 void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSizeInBytes, int vertexCount)
 {
-	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData );
-	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+	dest.Dispose();
 
+	auto& buffer = ptr_cast<ID3D11Buffer*&>(dest.m_driverData);
 	D3D11_BUFFER_DESC bd = {};
 
 	bd.Usage = D3D11_USAGE_DEFAULT;

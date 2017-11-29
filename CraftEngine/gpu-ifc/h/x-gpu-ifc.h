@@ -103,6 +103,7 @@ enum GpuRasterScissorMode {
 
 struct GPU_VertexBuffer {
 	sptr		m_driverData	= 0;		// can be either memory pointer or handle index into table (driver-dependent)
+	void Dispose();
 };
 
 struct GPU_IndexBuffer {
