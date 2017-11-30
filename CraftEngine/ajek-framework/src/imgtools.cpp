@@ -29,11 +29,10 @@ void imgtool::ConvertOpaqueColorToAlpha(xBitmapData& image, const rgba32& color)
 
 void imgtool::CutTex(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2)
 {
-	bug_on(xy1.cmp_ge_any(src.size) || xy2.cmp_ge_any(src.size));
-	bug_on(xy1.cmp_lt_any(0)		|| xy2.cmp_lt_any(0));
+	bug_on((xy1.cmp_any() >= (src.size-1)	) || (xy2.cmp_any() >= src.size	));
+	bug_on((xy1.cmp_any() <  0				) || (xy2.cmp_any() <= 0		));
 
-	int2 srcsize = xy2 - xy1;
-	dest.size  = srcsize;
+	dest.size  = xy2 - xy1;
 	dest.buffer.Resize(dest.size.x * dest.size.y * 4);
 
 	// copy from src to dest
@@ -58,11 +57,10 @@ void imgtool::CutTex(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 x
 
 void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color)
 {
-	bug_on(xy1.cmp_ge_any(src.size) || xy2.cmp_ge_any(src.size));
-	bug_on(xy1.cmp_lt_any(0)		|| xy2.cmp_lt_any(0));
+	bug_on((xy1.cmp_any() >= (src.size-1)	) || (xy2.cmp_any() >= src.size	));
+	bug_on((xy1.cmp_any() <  0				) || (xy2.cmp_any() <= 0		));
 
-	int2 srcsize = xy2 - xy1;
-	dest.size  = srcsize;
+	dest.size  = xy2 - xy1;
 	dest.buffer.Resize(dest.size.x * dest.size.y * 4);
 
 	// copy from src to dest
