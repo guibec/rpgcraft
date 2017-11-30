@@ -15,8 +15,18 @@
 DECLARE_MODULE_NAME("player");
 
 GPU_ConstantBuffer		gpu_constbuf;
-GPU_TextureResource2D	tex_camel[3];
+GPU_TextureResource2D	tex_camel[4][3];
 GPU_VertexBuffer		gpu_mesh_box2D;
+
+// Just for annotation purposes.  The player has four directions, which are stored in
+// standard clockwise order:
+enum AnimDirId
+{
+	AnimDir_Up,
+	AnimDir_Right,
+	AnimDir_Down,
+	AnimDir_Left,
+};
 
 void PlayerSprite::LoadStaticAssets()
 {
@@ -30,11 +40,15 @@ void PlayerSprite::LoadStaticAssets()
 	//imgtool::ConvertOpaqueColorToAlpha(pngsrc, rgba32(0x007575));		// git-checked copy is currently pre-converted via imagemagick...
 
 	xBitmapData		curtex;
-	int2			cutpos  = { 0, 32 };
 	int2			cutsize = { 24, 32 };
-	for (int i=0; i<3; ++i, cutpos.x += cutsize.x) {
-		imgtool::CutTex(curtex, pngsrc, cutpos, cutpos + cutsize);
-		dx11_CreateTexture2D(tex_camel[2-i], curtex.buffer.GetPtr(), curtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
+
+	for (int dir=0; dir<4; ++dir) {
+		GPU_TextureResource2D (&anim)[3] = tex_camel[dir];
+		int2 cutpos  = { 0, dir*32 };
+		for (int i=0; i<3; ++i, cutpos.x += cutsize.x) {
+			imgtool::CutTex(curtex, pngsrc, cutpos, cutpos + cutsize);
+			dx11_CreateTexture2D(anim[2-i], curtex.buffer.GetPtr(), curtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
+		}
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -70,6 +84,7 @@ PlayerSprite::PlayerSprite() {
 	m_position = { 10, 10 };
 	m_frame_id = 0;
 	m_frame_timeout = 0;
+	m_anim_dir = 0;
 }
 
 static bool s_isAbsolute = false;
@@ -121,6 +136,22 @@ void PlayerSprite::Tick(u32 order, float dt)
 				m_frame_id = 0;
 			}
 		}
+
+		// Best way to calculate the animation dir would be to determine the angle of the
+		// player's movement according to X/Y magnitudes, and then divide into four (4) to
+		// get the nearest direction matching.  But my sin/cos math is rusty, so let's just hack
+		// it with some if()'s instead!!  --jstine
+
+		// Magic number adjust Y to favor showing left/right character sprite animation, because
+		// generally speaking it looks cooler and makes the user (me!) happier.  --jstine
+
+		if (fabsf(direction.x) >= (fabsf(direction.y) - 0.1)) {
+			m_anim_dir = (direction.x >= 0) ? AnimDir_Right : AnimDir_Left;
+		}
+		else {
+			m_anim_dir = (direction.y >= 0) ? AnimDir_Down : AnimDir_Up;
+		}
+
 	}
 	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
 
@@ -151,7 +182,7 @@ void PlayerSprite::Draw(float zorder) const
 	dx11_BindShaderVS		(g_ShaderVS_Spriter);
 	dx11_BindShaderFS		(g_ShaderFS_Spriter);
 	dx11_SetInputLayout		(gpu_layout_sprite);
-	dx11_BindShaderResource	(tex_camel[m_frame_id], 0);
+	dx11_BindShaderResource	(tex_camel[m_anim_dir][m_frame_id], 0);
 	dx11_SetVertexBuffer	(gpu_mesh_box2D, 0, sizeof(TileMapVertex), 0);
 	dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
 
