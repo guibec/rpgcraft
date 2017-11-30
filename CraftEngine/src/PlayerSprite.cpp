@@ -48,10 +48,10 @@ void PlayerSprite::LoadStaticAssets()
 		//{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
 		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 
-		{ vFloat3(  0.0f,  0.0f, 1.0f ), vFloat2( 1.0f,  1.0f) },
-		{ vFloat3(  0.0f,  1.0f, 1.0f ), vFloat2( 1.0f, 32.0f) },
+		{ vFloat3(  0.0f,  0.0f, 1.0f ), vFloat2( 0.0f,  0.0f) },
+		{ vFloat3(  0.0f,  1.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
 		{ vFloat3(  1.0f,  1.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
-		{ vFloat3(  1.0f,  0.0f, 1.0f ), vFloat2(24.0f,  1.0f) }
+		{ vFloat3(  1.0f,  0.0f, 1.0f ), vFloat2(24.0f,  0.0f) }
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
@@ -110,7 +110,10 @@ void PlayerSprite::Tick(u32 order, float dt)
 
 	m_position += direction * dt;
 
-	if (!direction.isEmpty()) {
+	if (direction.isEmpty()) {
+		m_frame_id = 1;
+	}
+	else {
 		m_frame_timeout -= dt;
 		if (m_frame_timeout < 0) {
 			m_frame_timeout += 0.15f;
