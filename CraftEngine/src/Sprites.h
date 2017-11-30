@@ -47,6 +47,7 @@ public:
 	float2				m_position;
 	float				m_frame_timeout;
 	int					m_frame_id;
+	int					m_anim_dir;
 
 public:
 	static void LoadStaticAssets();
