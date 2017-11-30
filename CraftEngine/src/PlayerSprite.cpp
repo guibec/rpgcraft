@@ -27,7 +27,7 @@ void PlayerSprite::LoadStaticAssets()
 	//   Cut sprites from the source image and paste them into a well-formed GPU texture.
 
 	png_LoadFromFile(pngsrc, ".\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
-	imgtool::ConvertOpaqueColorToAlpha(pngsrc, rgba32(0x007575));
+	//imgtool::ConvertOpaqueColorToAlpha(pngsrc, rgba32(0x007575));		// git-checked copy is currently pre-converted via imagemagick...
 
 	xBitmapData		curtex;
 	int2			cutpos  = { 0, 32 };
