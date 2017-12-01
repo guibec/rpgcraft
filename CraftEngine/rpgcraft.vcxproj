@@ -74,6 +74,7 @@
     <ClCompile Include="src\fmod-ifc.cpp" />
     <ClCompile Include="src\imgui-console.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
+    <ClCompile Include="src\OpenWorldEnviron.cpp" />
     <ClCompile Include="src\PCH-rpgcraft.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCH-rpgcraft.h</PrecompiledHeaderFile>

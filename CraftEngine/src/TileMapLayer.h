@@ -1,6 +1,8 @@
 #pragma once
 
 #include "x-gpu-ifc.h"
+#include "x-BitmapData.h"
+
 #include "Entity.h"
 #include "UniformMeshes.h"
 
@@ -18,13 +20,28 @@ public:
 	ViewCamera() {
 	}
 
-	void			SceneInit		();
-	void			SetEyeAt	(const float2& xy);
-	float4			ClientToWorld(const int2& clientPosInPix);
+	void			InitScene		();
+	void			SetEyeAt		(const float2& xy);
+	float4			ClientToWorld	(const int2& clientPosInPix);
 
 	virtual void Tick();
 
 };
+
+struct TerrainMapItem {
+	int		tilesetId;		// specific tile from the set is determined according to surrounding tiles at render time.
+};
+
+class OpenWorldEnviron
+{
+public:
+	EntityGid_t	m_gid;
+
+public:
+	void InitScene();
+	virtual void Tick();
+};
+
 
 class TileMapLayer
 {
@@ -34,7 +51,7 @@ public:
 		vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
 		vInt2	SrcTexSizeInTiles;
 		vFloat2	SrcTexTileSizeUV;
-		int2	TileMapSize;
+		vInt2	ViewMeshSize;
 	};
 
 public:
@@ -52,21 +69,28 @@ public:
 		GPU_TileMapConstants	consts;
 	} gpu;
 
-	int2 ViewMeshSize;
-	int ViewInstanceCount;
-	int ViewVerticiesCount;
+
+	int2	m_setCount;
+
+	float2	TileAlignedDisp;
+	int2	ViewMeshSize;
+	int		ViewInstanceCount;
+	int		ViewVerticiesCount;
 
 public:
 	TileMapLayer();
-	void PopulateUVs(const int2& viewport_offset);
-	void SceneInit(const char* script_objname);
+	void PopulateUVs(const TerrainMapItem* terrain, const int2& viewport_offset);
+	void PopulateUVs(const TerrainMapItem* terrain);
+	void InitScene(const char* script_objname);
+	void SetSourceTexture(const xBitmapData& srctex, const int2& setCount);
+	void CenterViewOn(const float2& dest);
 
 	virtual void Tick();
 	virtual void Draw() const;
 };
 
 extern ViewCamera			g_ViewCamera;
-extern TileMapLayer			g_TileMap;
+extern TileMapLayer			g_GroundLayer;
 
 extern GPU_ShaderVS			g_ShaderVS_Tiler;
 extern GPU_ShaderFS			g_ShaderFS_Tiler;
@@ -75,7 +99,7 @@ extern GPU_ConstantBuffer	g_cnstbuf_TileMap;
 static const int TileSizeX = 8;
 static const int TileSizeY = 8;
 
-// TODO: Make this dynamic ...
+// TODO: Make this dynamic ... and pair with TerrtainMapItem
 
 static const int WorldSizeX		= 1024;
 static const int WorldSizeY		= 1024;

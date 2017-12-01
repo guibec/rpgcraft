@@ -181,7 +181,7 @@ __ni void SceneInit()
 			g_ThrowCtx.PrintLastError();
 
 			if (!xIsDebuggerAttached()) {
-				log_and_abort("Application aborted during SceneInit.");
+				log_and_abort("Application aborted during InitScene.");
 			}
 
 			Scene_PostMessage(SceneMsg_StopExec, SceneStopReason_ScriptError);

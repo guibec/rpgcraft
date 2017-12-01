@@ -160,7 +160,7 @@ void PlayerSprite::Tick(u32 order, float dt)
 			// absolute float under cursor (for diagnostic!)
 			auto mouse = g_mouse.clientToNormal();
 			auto tilepos = mouse.normal * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
-			tilepos += (g_TileMap.ViewMeshSize * 0.5f);
+			tilepos += (g_GroundLayer.ViewMeshSize * 0.5f);
 			tilepos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
 
 			ImGui::Text("MousePos = %5.2f %5.2f", tilepos.x, tilepos.y);
@@ -192,7 +192,7 @@ void PlayerSprite::Draw(float zorder) const
 	} consts;
 
 	consts.relpos			= m_position;
-	consts.TileMapSize		= g_TileMap.ViewMeshSize;
+	consts.TileMapSize		= g_GroundLayer.ViewMeshSize;
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
 	dx11_BindConstantBuffer		(gpu_constbuf, 1);

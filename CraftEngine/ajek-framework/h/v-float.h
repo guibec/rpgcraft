@@ -89,6 +89,7 @@ struct vInt2
 
 	vInt2() {}
 	vInt2(int _x, int _y);
+	vInt2(const int2& src);
 
 	vInt2& operator+=(const vInt2& right) {
 		x += right.x;
@@ -174,6 +175,11 @@ inline vFloat2::vFloat2(const int2& src) {
 inline vInt2::vInt2(int _x, int _y) {
 	x = _x;
 	y = _y;
+}
+
+inline vInt2::vInt2(const int2& src) {
+	x = src.x;
+	y = src.y;
 }
 
 

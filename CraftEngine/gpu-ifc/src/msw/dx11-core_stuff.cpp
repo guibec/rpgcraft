@@ -883,6 +883,7 @@ void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcDat
 	// Trying to decide between assert or silent ignore if the buffer is not initialized...
 	// Or we could have a "dx11_TryUploadDynamicBufferData" too!
 
+	bug_on(!srcData);
 	bug_on(!src.IsValid());
 	if (!src.IsValid()) return;
 
