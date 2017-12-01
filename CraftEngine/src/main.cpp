@@ -52,9 +52,10 @@ OrderedDrawList		g_drawlist_main;
 OrderedDrawList		g_drawlist_ui;
 
 
-ViewCamera		g_ViewCamera;
-TileMapLayer	g_TileMap;
-Mouse			g_mouse;
+ViewCamera			g_ViewCamera;
+TileMapLayer		g_GroundLayer;
+OpenWorldEnviron	g_OpenWorld;
+Mouse				g_mouse;
 
 static bool s_CanRenderScene = false;
 
@@ -112,7 +113,8 @@ void GameplaySceneLogic(float deltaTime)
 	}
 
 	g_console.DrawFrame();
-	g_TileMap.Tick();
+	g_OpenWorld.Tick();
+	g_GroundLayer.Tick();
 
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
@@ -154,7 +156,7 @@ void GameplaySceneLogic(float deltaTime)
 
 GPU_ConstantBuffer		g_gpu_constbuf;
 
-void ViewCamera::SceneInit()
+void ViewCamera::InitScene()
 {
 	// Note: current default values are just for testing ... no other significant meaning
 
@@ -232,7 +234,7 @@ void GameplaySceneRender()
 	dx11_BindConstantBuffer	 (g_gpu_constbuf, 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 
-	g_TileMap.Draw();
+	g_GroundLayer.Draw();
 
 	for(const auto& entitem : g_drawlist_main.ForEachAlpha())
 	{
@@ -300,10 +302,12 @@ bool Scene_TryLoadInit()
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
 	NewStaticEntity(g_ViewCamera);
-	NewStaticEntity(g_TileMap);
+	NewStaticEntity(g_GroundLayer);
+	NewStaticEntity(g_OpenWorld);
 
-	g_ViewCamera.SceneInit();
-	g_TileMap.SceneInit("WorldView");
+	g_ViewCamera .InitScene();
+	g_GroundLayer.InitScene("GroundLayer");
+	g_OpenWorld	 .InitScene();
 
 	auto* player	= NewEntity(PlayerSprite);
 

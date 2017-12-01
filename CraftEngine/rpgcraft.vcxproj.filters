@@ -66,6 +66,9 @@
     <ClCompile Include="src\fmod-ifc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpenWorldEnviron.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
