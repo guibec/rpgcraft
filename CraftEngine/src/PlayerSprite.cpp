@@ -88,9 +88,13 @@ PlayerSprite::PlayerSprite() {
 }
 
 static bool s_isAbsolute = false;
+static bool s_CameraFollowPlayer = true;
 
 void PlayerSprite::Tick(u32 order, float dt)
 {
+	ImGui::Checkbox("Camera Follows My Camel!", &s_CameraFollowPlayer);
+	ImGui::Checkbox("Camel Follows My Mouse!", &s_isAbsolute);
+
 	// Pad Input processing should be moved to Main and invoked as a "PollLocalUserInput", which in
 	// turn updates the LocalUser's PlayerSprite accordingly.
 
@@ -123,7 +127,14 @@ void PlayerSprite::Tick(u32 order, float dt)
 	else if (state.axis.LStick_Y > 0)
 		direction.y = playerSpeed;
 
-	m_position += direction * dt;
+	m_position			+= direction * dt;
+
+	auto newCameraPos = m_position;
+	newCameraPos -= (g_GroundLayer.ViewMeshSize * 0.5f);
+
+	if (s_CameraFollowPlayer) {
+		g_ViewCamera.SetEyeAt(newCameraPos);
+	}
 
 	if (direction.isEmpty()) {
 		m_frame_id = 1;
@@ -153,8 +164,6 @@ void PlayerSprite::Tick(u32 order, float dt)
 		}
 
 	}
-	ImGui::Checkbox("Absolute Position Test Mode", &s_isAbsolute);
-
 	if (s_isAbsolute){
 		if (g_mouse.isTrackable()) {
 			// absolute float under cursor (for diagnostic!)
@@ -167,6 +176,10 @@ void PlayerSprite::Tick(u32 order, float dt)
 			ImGui::Text("Frustrum = %5.2f %5.2f", g_ViewCamera.m_frustrum_in_tiles.x, g_ViewCamera.m_frustrum_in_tiles.y);
 			m_position = tilepos;
 		}
+	}
+	else {
+		ImGui::Text("CamelPos  = %5.2f %5.2f", m_position.x, m_position.y);
+		ImGui::Text("CameraPos = %5.2f %5.2f", g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y);
 	}
 
 	g_drawlist_main.Add(this, 1);

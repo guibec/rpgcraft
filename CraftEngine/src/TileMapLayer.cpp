@@ -106,6 +106,8 @@ void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain, const int2& viewpo
 	}
 
 	// Sort various sprite batches
+
+	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
 
 void TileMapLayer::InitScene(const char* script_objname)
@@ -139,7 +141,7 @@ void TileMapLayer::InitScene(const char* script_objname)
 	// Add +1 to cover overlap area when tile is not "centered" on the screen
 	// TODO: determine actual overage to render based on viewcamera angle.
 	//ViewMeshSize = int2(ceilf((g_ViewCamera.m_frustrum_in_tiles + 1) * 1.50f));
-	ViewMeshSize = int2(ceilf((g_ViewCamera.m_frustrum_in_tiles + 1) * 1.00f));		// for now this is OK
+	ViewMeshSize = int2(ceilf((g_ViewCamera.m_frustrum_in_tiles + 1) * 1.20f));		// for now this is OK
 
 	ViewInstanceCount  = ViewMeshSize.y * ViewMeshSize.x;
 	ViewVerticiesCount = ViewInstanceCount * 6;
@@ -203,15 +205,16 @@ void TileMapLayer::SetSourceTexture(const xBitmapData& srctex, const int2& tileS
 
 void TileMapLayer::CenterViewOn(const float2& dest)
 {
-	TileAlignedDisp					= floorf(dest);
-	gpu.consts.TileAlignedDisp		= TileAlignedDisp;
+	auto newdisp = floorf(dest);
+
+	if (newdisp != TileAlignedDisp) {
+		TileAlignedDisp					= floorf(dest);
+		gpu.consts.TileAlignedDisp		= TileAlignedDisp;
+	}
 }
 
 
 void TileMapLayer::Tick() {
-	// determine tile map draw position according to camera position.
-
-	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
 
 void TileMapLayer::Draw() const

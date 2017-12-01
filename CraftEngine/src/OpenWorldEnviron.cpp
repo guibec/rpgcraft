@@ -62,7 +62,7 @@ void OpenWorldEnviron::InitScene()
 
 void OpenWorldEnviron::Tick()
 {
-	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, -g_ViewCamera.m_Eye.y });
+	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
 	g_GroundLayer.PopulateUVs(g_WorldMap);
 
 	fmod_Play(s_music_world);

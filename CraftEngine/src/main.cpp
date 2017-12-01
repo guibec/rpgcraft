@@ -113,8 +113,6 @@ void GameplaySceneLogic(float deltaTime)
 	}
 
 	g_console.DrawFrame();
-	g_OpenWorld.Tick();
-	g_GroundLayer.Tick();
 
 	for(auto& entitem : g_tickable_entities.ForEachForward())
 	{
@@ -152,6 +150,8 @@ void GameplaySceneLogic(float deltaTime)
 
 	// Process messages and modifications which have been submitted to view camera here?
 	g_ViewCamera.Tick();
+	g_OpenWorld.Tick();
+	g_GroundLayer.Tick();
 }
 
 GPU_ConstantBuffer		g_gpu_constbuf;
@@ -163,8 +163,8 @@ void ViewCamera::InitScene()
 	// Eye and At should move laterally together so that the eye is always looking straight down
 	// at a specific point on the map.
 
-	m_Eye	= { 0.0f, 0.0f, -1.0f, 0.0f };
-	m_At	= { 0.0f, 0.0f,  1.0f, 0.0f };
+	m_Eye	= { 0.0f, 5.0f, -1.0f, 0.0f };
+	m_At	= { 0.0f, 5.0f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 
 	m_aspect				= g_client_aspect_ratio;
@@ -179,8 +179,11 @@ void ViewCamera::InitScene()
 void ViewCamera::Tick() {
 	bool usePerspective = 0;
 
-	m_Eye.z				= usePerspective ? -4.0f : -4.0f;
-	m_Consts.View		= XMMatrixLookAtLH(m_Eye, m_At, m_Up);
+	auto Eye = m_Eye * float4 { 1.0f, -1.0f, 1.0f, 1.0f };
+	auto At  = m_At  * float4 { 1.0f, -1.0f, 1.0f, 1.0f };
+
+	Eye.z				= usePerspective ? -4.0f : -4.0f;
+	m_Consts.View		= XMMatrixLookAtLH(Eye, At, m_Up);
 	//m_Consts.Projection = XMMatrixPerspectiveFovLH( XM_PIDIV2, m_aspect, 0.01f, 1000.0f );
 
 	if (usePerspective) {
@@ -189,7 +192,7 @@ void ViewCamera::Tick() {
 		//  * Max Z influences clipping behavior only, has no effect on perspective
 		//  * Frustrum scaled according to MinZ
 		float minZ = 0.010f;
-		float frustrumscale = fabsf(m_At.z - m_Eye.z);
+		float frustrumscale = fabsf(At.z - Eye.z);
 		m_Consts.Projection = XMMatrixPerspectiveLH (m_frustrum_in_tiles.x*minZ/frustrumscale, m_frustrum_in_tiles.y*minZ/frustrumscale, minZ, 1000.0f);
 	}
 	else {
