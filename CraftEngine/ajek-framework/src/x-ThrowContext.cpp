@@ -30,3 +30,16 @@ void xThrowContext::Throw(xThrowModuleCode module_code, const xString& msg)
 	if (!msg.IsEmpty()) { error_msg = msg; }
 	longjmp(*jmp_buffer, module_code);
 }
+
+void xThrowContext::Throw(xThrowModuleCode module_code, const AssertContextInfoTriad& triad, const xString& msg)
+{
+	bug_on_qa(module_code == 0);			// module code must never be 0!
+	bug_on_qa(!jmp_buffer);
+	error_msg = xFmtStr("%s: %s", triad.filepos, (msg.IsEmpty() && triad.cond) ? triad.cond : msg.c_str());
+	if (triad.funcname) {
+		error_msg += "\n\t... in function: ";
+		error_msg += triad.funcname;
+	}
+
+	longjmp(*jmp_buffer, module_code);
+}

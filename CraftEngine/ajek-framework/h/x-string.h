@@ -185,8 +185,8 @@ public:
 #if TARGET_MSW
 	 xString&	FormatV			( const wchar_t* fmt, va_list list );
 	 xString&	AppendFmtV		( const wchar_t* fmt, va_list list );
-	 xString&	Format			( const wchar_t* fmt=nullptr, ... )		__verify_fmt(2,3);
-	 xString&	AppendFmt		( const wchar_t* fmt=nullptr, ... )		__verify_fmt(2,3);
+	 xString&	Format			( const wchar_t* fmt, ... )		__verify_fmt(2,3);
+	 xString&	AppendFmt		( const wchar_t* fmt, ... )		__verify_fmt(2,3);
 #endif
 
 	 void		LowercaseInPlace();
@@ -451,6 +451,7 @@ extern  xString xDecStr		( const u32& src );
 extern  xString xDecStr		( const s32& src );
 extern  xString xDecStr		( const u64& src );
 extern  xString xDecStr		( const s64& src );
+extern  xString xDecStr		( const int2& src );
 
 #if !defined(_MSC_VER)
 extern  xString xDecStr		( const long long& src );

@@ -304,6 +304,10 @@ static void* SceneProducerThreadProc(void*)
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
 			dx11_BeginFrameDrawing();
+
+			// Clear the back buffer
+			dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
+			dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
 			DbgFont_SceneRender();
 			ImGui::Render();
 			dx11_SubmitFrameAndSwap();

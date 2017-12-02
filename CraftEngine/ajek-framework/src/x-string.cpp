@@ -618,6 +618,11 @@ xString xDecStr( const s64& src )
 	return xFmtStr( FMT_S64, src );
 }
 
+xString xDecStr( const int2& src )
+{
+	return xFmtStr( "%d,%d", src.x, src.y );
+}
+
 #if !defined(_MSC_VER)
 xString xDecStr( const long long& src )
 {

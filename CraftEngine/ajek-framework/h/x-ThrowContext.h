@@ -27,7 +27,7 @@ enum xThrowModuleCode
 class xThrowContext
 {
 	// Dev Note:
-	//  It is possible to extend this system to support nexted try/catch blocks, if warranted.
+	//  It is possible to extend this system to support nested try/catch blocks, if warranted.
 	//  Current goal is to design the software so that such nesting is *not* required, and if
 	//  used, only done so in a debugging capacity.
 	//
@@ -50,6 +50,7 @@ public:
 
 	virtual void	SetErrorInfo	(s64 code)	{ error_info = code;			}
 	virtual void	Throw			(xThrowModuleCode module_code, const xString& msg=xString());		// noreturn type
+	virtual void	Throw			(xThrowModuleCode module_code, const AssertContextInfoTriad& triad, const xString& msg=xString());		// noreturn type
 	virtual void	PrintLastError	() const;
 };
 
@@ -57,11 +58,14 @@ public:
 	static xThrowContext&	s_ThrowCtxModuleAlias	= g_ThrowCtx;		\
 	static xThrowModuleCode	s_ThrowCtxModuleCode	= module_code
 
-#define x_throw_ex(info, ...)					((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)))
-#define x_throw(info, ...)						((s_ThrowCtxModuleAlias.CanThrow() &&											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)))
-#define throw_abort_ex(info, ...)				((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
-#define throw_abort(...)						((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(           __VA_ARGS__))	, true)) || _inline_abort_(  "throw"   , __VA_ARGS__))
-#define throw_abort_on(cond, ...)	( (cond) && ((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, xFmtStr(# cond " " __VA_ARGS__))	, true)) || _inline_abort_( "(throw)" # cond, __VA_ARGS__)) )
+
+#define throw_abort_ex(info, ...)				((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, {__FILEPOS__, __FUNCTION_NAME__, nullptr}, xFmtStr(__VA_ARGS__))	, true)) || _inline_abort_(  "throw"          , __VA_ARGS__))
+#define throw_abort(...)						((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, {__FILEPOS__, __FUNCTION_NAME__, nullptr}, xFmtStr(__VA_ARGS__))	, true)) || _inline_abort_(  "throw"          , __VA_ARGS__))
+#define throw_abort_on(cond, ...)	( (cond) && ((s_ThrowCtxModuleAlias.CanThrow() && (											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, {__FILEPOS__, __FUNCTION_NAME__, # cond }, xFmtStr(__VA_ARGS__))	, true)) || _inline_abort_( "(throw)" # cond  , __VA_ARGS__)) )
+
+// x_throw disabled -- all throws should conditionally abort if no catch handler is registered.
+//#define x_throw_ex(info, ...)					((s_ThrowCtxModuleAlias.CanThrow() && (s_ThrowCtxModuleAlias.SetErrorInfo(info)	,s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, {__FILEPOS__, __FUNCTION_NAME__, nullptr}, xFmtStr(__VA_ARGS__))	, true)))
+//#define x_throw(info, ...)					((s_ThrowCtxModuleAlias.CanThrow() &&											 s_ThrowCtxModuleAlias.Throw(s_ThrowCtxModuleCode, {__FILEPOS__, __FUNCTION_NAME__, nullptr}, xFmtStr(__VA_ARGS__))	, true)))
 
 struct CatchFinalizer{
 	~CatchFinalizer();

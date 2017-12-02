@@ -318,8 +318,6 @@ volatile
 
 	template<typename T>
 	void			_check_int_trunc	(T result, int stackidx, const char* funcname, const char* varname = "") const;
-	void			_throw_type_mismatch(const char* key, const char* expected_type)	const;
-	void			_throw_type_mismatch(int keyidx, const char* expected_type)			const;
 
 	void			BindThrowContext(xThrowContext& ctx);
 };

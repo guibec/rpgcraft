@@ -377,7 +377,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 			log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
 		}
 		m_lua_error = cvtLuaErrorToAjekError(ret);
-		x_throw_ex(AsError_Syntax, lua_tostring(m_L, -1));
+		throw_abort_ex(AsError_Syntax, lua_tostring(m_L, -1));
 	}
 
 	//assume(s_module_id == LuaModule_State_NotLoading);
@@ -418,6 +418,17 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	//log_and_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
 	GCUSAGE(m_L);
 }
+
+// Use macros to throw errors so that file/funcname information is more useful and accurate --jstine
+#define _throw_type_mismatch(env, key, expected_type)											\
+	throw_abort_ex(AsError_Runtime, "Table member '%s.%s': Expected %s but got %s.",			\
+		"{table}", key, expected_type, lua_typename((env)->m_L, lua_type((env)->m_L, -1))		\
+	);
+
+#define _throw_type_mismatch_idx(env, keyidx, expected_type)									\
+	throw_abort_ex(AsError_Runtime, "Table member '%s[%d]': Expected %s but got %s.",			\
+		"{table}", keyidx, expected_type, lua_typename((env)->m_L, lua_type((env)->m_L, -1))	\
+	);
 
 template<typename T>
 void AjekScriptEnv::_check_int_trunc(T result, int stackidx, const char* funcname, const char* varname) const
@@ -472,7 +483,7 @@ lua_s32	AjekScriptEnv::glob_get_s32(const char* varname) const
 	auto result = get_s32();
 
 	if (!result.isnil() && !lua_isinteger(m_L, -1)) {
-		_throw_type_mismatch(varname, "s32");
+		_throw_type_mismatch(this, varname, "s32");
 	};
 
 	_check_int_trunc(result, -1, "glob_get_s32", varname);
@@ -487,7 +498,7 @@ lua_bool AjekScriptEnv::glob_get_bool(const char* varname) const
 	result.m_isNil = lua_isnil(m_L, -1);
 
 	if (!result.isnil() && !lua_isboolean(m_L, -1)) {
-		_throw_type_mismatch(varname, "bool");
+		_throw_type_mismatch(this, varname, "bool");
 	};
 	result.m_value = lua_toboolean(m_L, -1);
 	lua_pop(m_L, 1);
@@ -567,24 +578,8 @@ LuaTableScope::LuaTableScope(AjekScriptEnv& env)
 	m_top	= lua_gettop(m_env->m_L) - 1;
 }
 
-void AjekScriptEnv::_throw_type_mismatch(const char* key, const char* expected_type) const
-{
-	auto* L = m_L;
-	throw_abort_ex(AsError_Runtime, "Table member '%s.%s': Expected %s but got %s.",
-		"{table}", key, expected_type, lua_typename(L, lua_type(L, -1))
-	);
-}
-
-void AjekScriptEnv::_throw_type_mismatch(int keyidx, const char* expected_type) const
-{
-	// this is needed for properly testing non-script stack value sites:
-	pragma_todo("Make Ajek-version of lua_tointeger() that does assertion checking on type");
-
-	auto* L = m_L;
-	throw_abort_ex(AsError_Runtime, "Table member '%s[%d]': Expected %s but got %s.",
-		"{table}", keyidx, expected_type, lua_typename(L, lua_type(L, -1))
-	);
-}
+// this is needed for properly testing non-script stack value sites:
+pragma_todo("Make Ajek-version of lua_tointeger() that does assertion checking on type");
 
 void LuaTableScope::_internal_gettable() const {
 	auto* L = m_env->m_L;
@@ -602,7 +597,7 @@ lua_s32 LuaTableScope::get_s32(int keyidx) const
 	m_env->_check_int_trunc(result, -1, "get_s32");
 
 	if (!result.isnil() && !lua_isinteger(L, -1)) {
-		m_env->_throw_type_mismatch(keyidx, "s32");
+		_throw_type_mismatch_idx(m_env, keyidx, "s32");
 	}
 
 	lua_pop(L, 1);
@@ -620,7 +615,7 @@ lua_s32 LuaTableScope::get_s32(const char* key) const
 	m_env->_check_int_trunc(result, -1, "get_s32", key);
 
 	if (!result.isnil() && !lua_isinteger(L, -1)) {
-		m_env->_throw_type_mismatch(key, "s32");
+		_throw_type_mismatch(m_env, key, "s32");
 	}
 
 	lua_pop(L, 1);
@@ -642,7 +637,7 @@ lua_bool LuaTableScope::get_bool(const char* key) const
 	// strings, ints, numbers are OK.  But make an API for it because it should be a standard rule...
 	pragma_todo("Relax bool type checking here to include non-table values.");
 	if (!result.isnil() && !lua_isboolean(L, -1)) {
-		m_env->_throw_type_mismatch(key, "bool");
+		_throw_type_mismatch(m_env, key, "bool");
 	}
 
 	lua_pop(L, 1);
@@ -718,7 +713,7 @@ LuaTableScope LuaTableScope::get_table(const char* key)
 	LuaTableScope result (*m_env);
 
 	if (!result.isNil() && !lua_istable(L, -1)) {
-		m_env->_throw_type_mismatch(key, "table");
+		_throw_type_mismatch(m_env, key, "table");
 	};
 	return result;
 
@@ -733,7 +728,7 @@ LuaTableScope LuaTableScope::get_table(int keyidx)
 	LuaTableScope result (*m_env);
 
 	if (!result.isNil() && !lua_istable(L, -1)) {
-		m_env->_throw_type_mismatch(keyidx, "table");
+		_throw_type_mismatch_idx(m_env, keyidx, "table");
 	};
 	return result;
 }

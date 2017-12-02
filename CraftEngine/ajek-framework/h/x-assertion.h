@@ -228,13 +228,19 @@ enum DbgBreakType
 enum xLogFlag {
 	xLogFlag_Default		= 0,
 	xLogFlag_Important		= (1 << 0),		// warnings or errors, honored by log_verbose only, also assumes NoRepeat.
-	xLogFlag_Undecorated	= (1 << 1),		// dnoes not print any timestamp information  (for lua/compiler errors)
 };
+
+struct AssertContextInfoTriad {
+	const char*		filepos;
+	const char*		funcname;
+	const char*		cond;
+};
+
 
 extern void		vlog_append_host_clock	(xString& dest);
 extern void		vlog_append_prefix		(xString& buffer, const char* moduleName);
 
-extern void		_host_log			(uint flags, const char* moduleName, const char* fmt = nullptr, ...)	__verify_fmt(4, 5);
+extern void		_host_log			(uint flags, const char* moduleName, const char* fmt = nullptr, ...)	__verify_fmt(3, 4);
 extern void		_host_log_v			(uint flags, const char* moduleName, const char* fmt, va_list params);
 
 extern void		xPrintLn			(const xString& msg);
@@ -244,8 +250,8 @@ extern void		xLogSetMaxSpamSize	(s64 newSize);
 
 extern void		xStopProcess		( const char* filepos, const char* funcname );
 
-extern assert_t	xDebugBreak			( DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt=nullptr, ... ) __verify_fmt(5, 6);
-extern assert_t xDebugBreak_v		( DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt, va_list list );
+extern assert_t	xDebugBreak			( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt=nullptr, ... ) __verify_fmt(3, 4);
+extern assert_t xDebugBreak_v		( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt, va_list list );
 
 // Writes directly to debug console where supported (visual studio), or stdout otherwise.
 extern void		xOutputString		(const char* str);
@@ -381,7 +387,6 @@ extern bool		xIsDebuggerAttached	();
 #endif
 // -------------------------------------------------------------------------------------
 
-
 #if DISABLE_ASSERTIONS
 #	define _inline_debugbreak_(prefix,...)		(false)
 #	define _inline_abort_(prefix,...)			(false)
@@ -403,8 +408,8 @@ extern bool		xIsDebuggerAttached	();
 
 namespace
 {
-	template< int hash_key > assert_t _Ignorable_DebugBreak(DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt=nullptr, ... ) __verify_fmt(5, 6);
-	template< int hash_key > assert_t _Ignorable_DebugBreak(DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt, ... ) {
+	template< int hash_key > assert_t _Ignorable_DebugBreak(DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt=nullptr, ... ) __verify_fmt(3, 4);
+	template< int hash_key > assert_t _Ignorable_DebugBreak(DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt, ... ) {
 		#if ALLOW_IGNORABLE_ASSERT
 		static int		done	= 0;
 		if (done) return assert_none;
@@ -412,10 +417,10 @@ namespace
 
 		va_list list;
 		va_start(list, fmt);
-		assert_t result = xDebugBreak_v( breakType, filepos, funcname, cond, fmt, list);
+		assert_t result = xDebugBreak_v( breakType, triad, fmt, list);
 		va_end(list);
 
-		#if !TARGET_ORBIS
+		#if ALLOW_IGNORABLE_ASSERT
 		if (result == assert_ignore_all) {
 			done = 1;
 		}
@@ -425,8 +430,8 @@ namespace
 	}
 }
 
-#	define _inline_debugbreak_(prefix,...)		((_Ignorable_DebugBreak<__COUNTER__>(DbgBreakType_Assert,	__FILEPOS__, __FUNCTION_NAME__, prefix , ##__VA_ARGS__) == assert_break) && (__debugbreak(), true))
-#	define _inline_abort_(prefix,...)			((_Ignorable_DebugBreak<__COUNTER__>(DbgBreakType_Abort,	__FILEPOS__, __FUNCTION_NAME__, prefix , ##__VA_ARGS__) == assert_break) && (__debugbreak(), true))
+#	define _inline_debugbreak_(prefix,...)		((_Ignorable_DebugBreak<__COUNTER__>(DbgBreakType_Assert,	{__FILEPOS__, __FUNCTION_NAME__, prefix}, ##__VA_ARGS__) == assert_break) && (__debugbreak(), true))
+#	define _inline_abort_(prefix,...)			((_Ignorable_DebugBreak<__COUNTER__>(DbgBreakType_Abort,	{__FILEPOS__, __FUNCTION_NAME__, prefix}, ##__VA_ARGS__) == assert_break) && (__debugbreak(), true))
 
 #endif
 
@@ -438,7 +443,7 @@ namespace
 
 #if TARGET_DEBUG
 #	define unreachable(...)				unreachable_all		( __VA_ARGS__ )
-#	define assume(cond, ...)			(!(cond) && (_inline_debugbreak_("(assume)" # cond , ## __VA_ARGS__), false))
+#	define assume(cond, ...)			(!(cond) && (_inline_debugbreak_("(assume)" # cond, ## __VA_ARGS__), false))
 #else
 #	define unreachable(...)				__unreachable()
 #	if TARGET_ORBIS

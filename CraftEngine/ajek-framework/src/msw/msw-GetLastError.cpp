@@ -111,7 +111,7 @@ bool msw_AssertLastError( const char* filepos, const char* funcname, int lastErr
 	}
 
 	return xDebugBreak(
-		DbgBreakType_Assert, filepos, funcname, NULL, "Windows Error #%d: %s%s", lastErrorId, t_Msg, details.c_str()
+		DbgBreakType_Assert, {filepos, funcname}, "Windows Error #%d: %s%s", lastErrorId, t_Msg, details.c_str()
 	) == assert_break;
 }
 
