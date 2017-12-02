@@ -45,8 +45,11 @@ void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain, const int2& viewpo
 			int instanceId	= ((yl*ViewMeshSize.x) + xl);
 			int vertexId	= instanceId * 6;
 
-			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 12; continue; }
-			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 12; continue; }
+			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 1; continue; }
+			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 1; continue; }
+
+			g_ViewTileID[instanceId] = 0;
+			continue;
 
 			int setId		= terrain[(y * WorldSizeX) + x].tilesetId;
 			int setX		= setId % m_setCount.x;
@@ -193,14 +196,15 @@ void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain)
 	PopulateUVs(terrain, disp);
 }
 
-void TileMapLayer::SetSourceTexture(const xBitmapData& srctex, const int2& tileSetCount)
+void TileMapLayer::SetSourceTexture(const TextureAtlas& atlas)
 {
-	m_setCount = tileSetCount;
+	m_setCount = atlas.m_bufferSizeInTiles;
 	gpu.consts.SrcTexSizeInTiles	= vInt2(m_setCount);
-	gpu.consts.SrcTexTileSizeUV		= vFloat2(1.0f / m_setCount / float2{2.0f, 3.0f});
+	gpu.consts.SrcTexTileSizePix	= {16,16};
+	gpu.consts.SrcTexBorderPix		= {1,1};
 	gpu.consts.ViewMeshSize			= ViewMeshSize;
 
-	dx11_CreateTexture2D(gpu.tex_floor, srctex.buffer.GetPtr(), srctex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
+	dx11_CreateTexture2D(gpu.tex_floor, atlas, GPU_ResourceFmt_R8G8B8A8_UNORM);
 }
 
 void TileMapLayer::CenterViewOn(const float2& dest)

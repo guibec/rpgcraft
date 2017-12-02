@@ -30,9 +30,9 @@ namespace imgtool
 	static const u32 mask_alpha = 0x000000ff;
 	static const u32 mask_rgb   = 0xffffff00;
 
-	void ConvertOpaqueColorToAlpha(xBitmapData& image, const rgba32& color);
-	void CutTex(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2);
-	void CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color);
-	int AddTileToAtlas(TextureAtlas& dest, xBitmapData& src, const int2& srcpos = {0,0});
+	void		ConvertOpaqueColorToAlpha				(xBitmapData& image, const rgba32& color);
+	void		CutTex									(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2);
+	void		CutTex_and_ConvertOpaqueColorToAlpha	(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color);
+	int			AddTileToAtlas							(TextureAtlas& dest, xBitmapData& src, const int2& srcpos = {0,0});
 };
 

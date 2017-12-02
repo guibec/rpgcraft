@@ -48,10 +48,11 @@ class TileMapLayer
 public:
 	struct GPU_TileMapConstants
 	{
-		vFloat2 TileAlignedDisp;		// TODO: move calculation of this to shader.
-		vInt2	SrcTexSizeInTiles;
-		vFloat2	SrcTexTileSizeUV;
-		vInt2	ViewMeshSize;
+		vFloat2	TileAlignedDisp;
+		vInt2 	SrcTexSizeInTiles;
+		vInt2   SrcTexTileSizePix;
+		vInt2   SrcTexBorderPix;
+		vInt2   ViewMeshSize;
 	};
 
 public:
@@ -79,11 +80,13 @@ public:
 
 public:
 	TileMapLayer();
-	void PopulateUVs(const TerrainMapItem* terrain, const int2& viewport_offset);
-	void PopulateUVs(const TerrainMapItem* terrain);
-	void InitScene(const char* script_objname);
-	void SetSourceTexture(const xBitmapData& srctex, const int2& setCount);
-	void CenterViewOn(const float2& dest);
+
+	void		PopulateUVs			(const TerrainMapItem* terrain, const int2& viewport_offset);
+	void		PopulateUVs			(const TerrainMapItem* terrain);
+	void		InitScene			(const char* script_objname);
+	void		SetSourceTexture	(const xBitmapDataRO& srctex, const int2& setCount);
+	void		SetSourceTexture	(const TextureAtlas&  atlas);
+	void		CenterViewOn		(const float2& dest);
 
 	virtual void Tick();
 	virtual void Draw() const;

@@ -25,9 +25,10 @@ cbuffer ConstantBuffer1 : register( b1 )
 	//    populated on every frame.
 
 	float2	TileAlignedDisp;
-	uint2 	SrcTexSizeInTiles;
-	float2	SrcTexTileSizeUV;
-	uint2   TileMapSize;
+	int2 	SrcTexSizeInTiles;
+	int2    SrcTexTileSizePix;
+	int2    SrcTexBorderPix;
+	int2    ViewMeshSize;
 }
 
 //--------------------------------------------------------------------------------------
@@ -70,9 +71,9 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 
 	VS_OUTPUT outp;
 
-	uint2  tile_xy = uint2( instID % TileMapSize.x, instID / TileMapSize.x);
+	int2   tile_xy = int2( instID % ViewMeshSize.x, instID / ViewMeshSize.x);
 	float2 incr_xy = float2(1.0f, 1.0f);
-	float2 disp_xy = (TileMapSize * -0.5f) + (tile_xy * incr_xy) - 0.5f;
+	float2 disp_xy = (ViewMeshSize * -0.5f) + (tile_xy * incr_xy) - 0.5f;
 
 	// Position Calculation
 	outp.Pos	 = float4(input.Pos.xy, 1.0f, 1.0f);
@@ -82,12 +83,20 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 	outp.Pos	 = mul( outp.Pos, View );
 	outp.Pos	 = mul( outp.Pos, Projection );
 
+	float2 texSize;
+	float  iggy;
+	txHeightMap.GetDimensions(0, texSize.x, texSize.y, iggy);
+
 	// Texture UV Calculation
-	float2  incr_set_uv = 1.0f / SrcTexSizeInTiles;
-	uint2   tiletex_uv  = uint2( input.TileID % SrcTexSizeInTiles.x, input.TileID / SrcTexSizeInTiles.x);
-	outp.UV		= input.UV;
-	outp.UV		= input.UV * SrcTexTileSizeUV;
-	outp.UV	   += float2(tiletex_uv * incr_set_uv);
+	// In order to align things to the correct pixel boundaries, it works best to operate in pixel
+	// coordinate space.
+
+	int2   tiletex_uv;
+	tiletex_uv  = int2( input.TileID % SrcTexSizeInTiles.x, input.TileID / SrcTexSizeInTiles.x);
+	tiletex_uv *= int2(18,18); //((SrcTexBorderPix*2) + SrcTexTileSizePix);
+	tiletex_uv += 1;
+	tiletex_uv += input.UV * 16; //SrcTexTileSizePix;
+	outp.UV     = float2(tiletex_uv) / (float2)texSize;
 
 	// Color & Lighting Calculation  (not implemented)
 	outp.Color	= float4(1.0f, 0.0f, 0.0f, 1.0f);
