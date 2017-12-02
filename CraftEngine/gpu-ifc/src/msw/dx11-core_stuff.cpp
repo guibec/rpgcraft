@@ -1067,6 +1067,11 @@ void dx11_BindConstantBuffer(const GPU_ConstantBuffer& buffer, int startSlot)
 	g_pImmediateContext->PSSetConstantBuffers(startSlot, 1, &drvbuf);
 }
 
+void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const xBitmapDataRO& bitmap, GPU_ResourceFmt format)
+{
+	dx11_CreateTexture2D(dest, bitmap.buffer, bitmap.size.x, bitmap.size.y, format);
+}
+
 void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_data, const int2& size, GPU_ResourceFmt format)
 {
 	dx11_CreateTexture2D(dest, src_bitmap_data, size.x, size.y, format);
