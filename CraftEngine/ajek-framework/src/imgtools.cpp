@@ -84,8 +84,26 @@ void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBit
 	}
 }
 
-int imgtool::AddTileToAtlas(TextureAtlas& dest, xBitmapData& src, int gpu_border)
+int imgtool::AddTileToAtlas(TextureAtlas& dest, xBitmapData& src, const int2& srcpos)
 {
+	int  tileId		= dest.AllocTile();
+	auto tileSize	= dest.m_tileSizePix;
+	auto tilePos	= dest.GetTilePosPix(tileId);
+	auto tilePosEnd = tilePos + tileSize;
+	auto destSize	= dest.GetSizePix();
+
+	bug_on((srcpos+tileSize).cmp_any() > src.size, "Requested tile cut is outside bounds of source image.");
+
+	const	u32* srcptr		= (u32*)src.buffer.GetPtr()	+ (srcpos.y  * src.size.x)	+ srcpos.x;
+			u32* dstptr		= (u32*)dest.GetRawPtr32()	+ (tilePos.y * destSize.x)	+ tilePos.x;
+
+	for(int y=0; y<dest.m_tileSizePix.y; ++y, srcptr+=src.size.x, dstptr+=destSize.x)
+	{
+		auto* sptr	= srcptr;
+		auto* dptr	= dstptr;
+
+		xMemCopy32(dptr, sptr, dest.m_tileSizePix.x);
+	}
 	return 0;
 }
 
@@ -100,10 +118,8 @@ void TextureAtlas::AddRows(int numrows) {
 	m_bufferSizeInTiles.y += numrows;
 
 	auto tileSizeFull	= m_tileSizePix + (m_borderSizePix * 2);
-	auto sizeInPix		= (m_bufferSizeInTiles * tileSizeFull);
-	auto newAllocSize	= sizeInPix.x * sizeInPix.y * 4;		// 32bpp
-
-	m_buffer.Resize(newAllocSize);
+	Bitmap.size = (m_bufferSizeInTiles * tileSizeFull);
+	Bitmap.buffer.Resize(Bitmap.size.x * Bitmap.size.y * 4);
 }
 
 int TextureAtlas::AllocTile()
