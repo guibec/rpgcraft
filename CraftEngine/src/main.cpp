@@ -210,10 +210,6 @@ void GameplaySceneRender()
 {
 	if (!s_CanRenderScene) return;
 
-	// Clear the back buffer
-	dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
-	dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
-
 	//
 	// Update variables
 	//

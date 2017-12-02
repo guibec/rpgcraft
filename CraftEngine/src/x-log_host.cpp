@@ -26,7 +26,7 @@ void LogHostInit()
 	s_mtx_unilogger.Create();
 }
 
-static void _debugBreakContext( xString& context, const char* filepos, const char* funcname, const char* cond )
+static void _debugBreakContext( xString& context, const AssertContextInfoTriad& triad )
 {
 	const char* threadname = thread_getname();
 
@@ -35,8 +35,8 @@ static void _debugBreakContext( xString& context, const char* filepos, const cha
 		"Function   :  %s\n"
 		"Thread     :  %s\n",
 
-		cond ? cond : "(none)",
-		funcname,
+		triad.cond ? triad.cond : "(none)",
+		triad.funcname,
 		threadname ? threadname : "(unknown)"
 	);
 }
@@ -47,7 +47,7 @@ static void _flush_all_that_filesystem_jazz()
 }
 
 // --------------------------------------------------------------------------------------
-assert_t xDebugBreak_v( DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt, va_list list )
+assert_t xDebugBreak_v( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt, va_list list )
 {
 	static __threadlocal int s_recursion_guard = 0;
 
@@ -60,7 +60,7 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const char* filepos, const char*
 	}
 
 	xString context;
-	_debugBreakContext( context, filepos, funcname, cond );
+	_debugBreakContext( context, triad );
 
 	xString message;
 	if (fmt) {
@@ -79,7 +79,7 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const char* filepos, const char*
 		break;
 	}
 
-	xPrintLn( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", filepos, message.c_str(), context.c_str()) );
+	xPrintLn( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", triad.filepos, message.c_str(), context.c_str()) );
 	_flush_all_that_filesystem_jazz();
 
 	assert_t breakit = assert_none;
@@ -98,11 +98,11 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const char* filepos, const char*
 }
 
 // --------------------------------------------------------------------------------------
-assert_t xDebugBreak( DbgBreakType breakType, const char* filepos, const char* funcname, const char* cond, const char* fmt, ... )
+assert_t xDebugBreak( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt, ... )
 {
 	va_list list;
 	va_start(list, fmt);
-	assert_t result = xDebugBreak_v( breakType, filepos, funcname, cond, fmt, list );
+	assert_t result = xDebugBreak_v( breakType, triad, fmt, list );
 	va_end(list);
 
 	return result;
