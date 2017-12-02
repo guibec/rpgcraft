@@ -21,26 +21,16 @@ struct xBitmapData
 	operator xBitmapDataRO() const {
 		return { size, (u32*)buffer.GetPtr() };
 	}
+
+			u32*	GetPtr32()			{ return (u32*)buffer.GetPtr(); }
+	const	u32*	GetPtr32() const	{ return (u32*)buffer.GetPtr(); }
 };
 
-union AtlasBorderFlags
+struct AtlasNeighborTiles
 {
-	struct {
-		u8			Left_Neighbor	: 1;
-		u8			Left_Self		: 1;
-		u8			Right_Neighbor	: 1;
-		u8			Right_Self		: 1;
-		u8			Bottom_Neighbor	: 1;
-		u8			Bottom_Self		: 1;
-		u8			Top_Neighbor	: 1;
-		u8			Top_Self		: 1;
-	};
-
-	u8		b;
-
-	void _static_check() const {
-		static_assert(sizeof(AtlasBorderFlags) == sizeof(b), "Ill-formed bitfield union");
-	}
+	// eight neighbor tile IDs, starting at high noon and going clockwise around the tile.
+	// Negative value indicates "no neighbor" -- edges will be copied from self tile.
+	int		tileid[8];
 };
 
 
@@ -57,11 +47,17 @@ public:
 	int					m_allocWidthHint	= 0;			// hint for more optimal realloc (may be ignored depending on GPU restrictions)
 	int					m_initialSize		= 0;			// initial size in tiles
 	int					m_numPasted			= 0;			// total number of tiles pasted into the atlas; also serves as index into the next empty slot to paste into.
+	bool				m_Solidified		= 0;
 
-	AtlasBorderFlags*	m_flags				= nullptr;		// flags for each tile.
 
 public:
+	AtlasNeighborTiles*	Neighbors			= nullptr;		// neighboring tile information for each tile.
 	xBitmapData			Bitmap;
+
+protected:
+	void				doNeighborCorner	(int destid, int neighborid, int2 writepos, int2 readpos);
+	void				doNeighborAB		(int destid, int neighborid, int writepos, int readpos);					// above / below neighbors
+	void				doNeighborLR		(int destid, int neighborid, int writepos, int readpos);					// left  / right neighbors
 
 public:
 	TextureAtlas&		SetBorderSize		(int pix)			{ m_borderSizePix		= pix;				return *this; }
@@ -71,6 +67,7 @@ public:
 	void		Init			(const int2& tileSizePix, int texWidthHint = 0);
 	void		AddRows			(int numrows);
 	int			AllocTile		();
+	int			AllocTiles		(int numTiles);
 	void		Solidify		();		// fills in all the edges between tiles.
 
 
@@ -87,7 +84,7 @@ public:
 	}
 
 	__ai int2 GetTilePosPix(int tileId) const {
-		auto fullTileSize = m_tileSizePix + m_borderSizePix;
-		return int2 { tileId % m_bufferSizeInTiles.x, tileId / m_bufferSizeInTiles.x } * fullTileSize;
+		auto fullTileSize = m_tileSizePix + (m_borderSizePix*2);
+		return (int2 { tileId % m_bufferSizeInTiles.x, tileId / m_bufferSizeInTiles.x } * fullTileSize) + m_borderSizePix;
 	}
 };
