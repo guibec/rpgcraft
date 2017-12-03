@@ -16,7 +16,7 @@ cbuffer ConstantBuffer1 : register( b1 )
 {
 	//matrix World;
 	float2   worldpos;
-	uint2    TileMapSize;		// TODO - move this to cb0
+	uint2    ViewMeshSize;		// TODO - move this to cb0
 }
 
 //--------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ VS_OUTPUT VS( VS_INPUT input )
 	VS_OUTPUT outp;
 
 	float2 incr_xy = float2(1.0f, 1.0f);
-	float2 disp_xy = (TileMapSize * -0.5f) + (worldpos * incr_xy) - 0.5f;
+	float2 disp_xy = (worldpos * incr_xy) - 0.5f;
 
 	outp.Pos	 = float4(input.Pos, 1.0f);
 	outp.Pos.xy += disp_xy;
