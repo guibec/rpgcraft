@@ -62,10 +62,10 @@ void PlayerSprite::LoadStaticAssets()
 		//{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
 		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 
-		{ vFloat3(  0.0f,  0.0f, 2.0f ), vFloat2( 0.0f,  0.0f) },
-		{ vFloat3(  0.0f,  2.0f, 2.0f ), vFloat2( 0.0f, 32.0f) },
-		{ vFloat3(  2.0f,  2.0f, 2.0f ), vFloat2(24.0f, 32.0f) },
-		{ vFloat3(  2.0f,  0.0f, 2.0f ), vFloat2(24.0f,  0.0f) }
+		{ vFloat3(  0.0f,  0.0f, 1.0f ), vFloat2( 0.0f,  0.0f) },
+		{ vFloat3(  0.0f,  2.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
+		{ vFloat3(  1.75f,  2.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
+		{ vFloat3(  1.75f,  0.0f, 1.0f ), vFloat2(24.0f,  0.0f) }
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
@@ -81,7 +81,7 @@ PlayerSprite::PlayerSprite() {
 
 	dx11_CreateConstantBuffer(gpu_constbuf, sizeof(float2) + sizeof(int2));
 
-	m_position = { 10, 10 };
+	m_position = { 0, 0 };
 	m_frame_id = 0;
 	m_frame_timeout = 0;
 	m_anim_dir = 0;
@@ -130,7 +130,7 @@ void PlayerSprite::Tick(u32 order, float dt)
 	m_position			+= direction * dt;
 
 	auto newCameraPos = m_position;
-	newCameraPos -= (g_GroundLayer.ViewMeshSize * 0.5f);
+	//newCameraPos -= (g_GroundLayer.ViewMeshSize * 0.5f);
 
 	if (s_CameraFollowPlayer) {
 		g_ViewCamera.SetEyeAt(newCameraPos);
@@ -200,12 +200,12 @@ void PlayerSprite::Draw(float zorder) const
 	dx11_SetIndexBuffer		(g_idx_box2D, 16, 0);
 
 	struct {
-		float2	relpos;
-		int2	TileMapSize;
+		float2	worldpos;
+		int2	ViewMeshSize;
 	} consts;
 
-	consts.relpos			= m_position;
-	consts.TileMapSize		= g_GroundLayer.ViewMeshSize;
+	consts.worldpos			= m_position;
+	consts.ViewMeshSize		= g_GroundLayer.ViewMeshSize;
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
 	dx11_BindConstantBuffer		(gpu_constbuf, 1);

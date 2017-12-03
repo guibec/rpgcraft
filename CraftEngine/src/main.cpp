@@ -167,8 +167,10 @@ void ViewCamera::InitScene()
 	m_At	= { 0.0f, 5.0f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 
+
+	// frustrum based on ratio of client size against tile size.  Enasures neatly-scaled graphics.
 	m_aspect				= g_client_aspect_ratio;
-	m_frustrum_in_tiles		= {32 * m_aspect, 32};
+	m_frustrum_in_tiles		= g_client_size_pix / float2 { 16, 16 } / 2.f;
 }
 
 // Eye and At should move laterally together so that the eye is always looking straight down
