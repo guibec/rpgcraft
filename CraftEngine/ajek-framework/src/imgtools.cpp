@@ -34,7 +34,7 @@ void imgtool::ConvertOpaqueColorToAlpha(xBitmapData& image, const rgba32& color)
 static void _cuttex_prepDest(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2)
 {
 	bool paramInvalid =
-			((xy1.cmp_any() >= xy2	) || (xy2.cmp_any() >= src.size	))
+			((xy1.cmp_any() >= xy2	) || (xy2.cmp_any() >  src.size	))
 		||	((xy1.cmp_any() <  0	) || (xy2.cmp_any() <= 0		));
 
 	throw_abort_on(paramInvalid, "X/Y parameters are outside the bounds of the source image (xy1=%s xy2=%s src=%s",
