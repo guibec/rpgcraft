@@ -40,7 +40,7 @@ private:
 	NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	GPU_InputDesc		gpu_layout_sprite;
+	GPU_InputDesc			gpu_layout_sprite;
 
 public:
 	EntityGid_t			m_gid;
@@ -48,6 +48,7 @@ public:
 	float				m_frame_timeout;
 	int					m_frame_id;
 	int					m_anim_dir;
+	int					m_char_type;
 
 public:
 	static void LoadStaticAssets();
