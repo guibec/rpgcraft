@@ -53,6 +53,7 @@ OrderedDrawList		g_drawlist_ui;
 
 
 ViewCamera			g_ViewCamera;
+TileMapLayer		g_GroundSubLayer;
 TileMapLayer		g_GroundLayer;
 OpenWorldEnviron	g_OpenWorld;
 Mouse				g_mouse;
@@ -151,6 +152,7 @@ void GameplaySceneLogic(float deltaTime)
 	// Process messages and modifications which have been submitted to view camera here?
 	g_ViewCamera.Tick();
 	g_OpenWorld.Tick();
+	g_GroundSubLayer.Tick();
 	g_GroundLayer.Tick();
 }
 
@@ -239,6 +241,9 @@ void GameplaySceneRender()
 	dx11_BindConstantBuffer	 (g_gpu_constbuf, 0);
 	dx11_SetPrimType(GPU_PRIM_TRIANGLELIST);
 
+	// No Z-depth stencil rejection, so draw layers bottom-up.
+
+	g_GroundSubLayer.Draw();
 	g_GroundLayer.Draw();
 
 	for(const auto& entitem : g_drawlist_main.ForEachAlpha())
@@ -307,12 +312,14 @@ bool Scene_TryLoadInit()
 	dx11_LoadShaderFS(g_ShaderFS_Spriter, "Sprite.fx", "PS");
 
 	NewStaticEntity(g_ViewCamera);
+	NewStaticEntity(g_GroundSubLayer);
 	NewStaticEntity(g_GroundLayer);
 	NewStaticEntity(g_OpenWorld);
 
-	g_ViewCamera .InitScene();
-	g_GroundLayer.InitScene("GroundLayer");
-	g_OpenWorld	 .InitScene();
+	g_ViewCamera	.InitScene();
+	g_GroundSubLayer.InitScene("GroundSubLayer");
+	g_GroundLayer	.InitScene("GroundLayer");
+	g_OpenWorld		.InitScene();
 
 	auto* player	= NewEntity(PlayerSprite);
 

@@ -45,10 +45,10 @@ void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain, const int2& viewpo
 			int instanceId	= ((yl*ViewMeshSize.x) + xl);
 			int vertexId	= instanceId * 6;
 
-			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 1; continue; }
-			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 1; continue; }
+			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 31; continue; }
+			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 31; continue; }
 
-			g_ViewTileID[instanceId] = 0;
+			g_ViewTileID[instanceId] = terrain[(y * WorldSizeX) + x].tilesetId;
 			continue;
 
 			int setId		= terrain[(y * WorldSizeX) + x].tilesetId;
