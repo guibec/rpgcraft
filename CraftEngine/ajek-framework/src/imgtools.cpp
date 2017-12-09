@@ -93,7 +93,7 @@ void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBit
 	}
 }
 
-int imgtool::AddTileToAtlas(TextureAtlas& dest, xBitmapData& src, const int2& srcpos)
+int imgtool::AddTileToAtlas(TextureAtlas& dest, const xBitmapData& src, const int2& srcpos)
 {
 	int  tileId		= dest.AllocTile();
 	auto tileSize	= dest.m_tileSizePix;

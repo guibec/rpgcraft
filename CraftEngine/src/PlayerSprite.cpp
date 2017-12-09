@@ -67,11 +67,6 @@ void PlayerSprite::LoadStaticAssets()
 		// UV is in pixels (as it should be).
 		// XY is in tiles .. where Z is expected to be 1.0f
 
-		//{ vFloat3( -0.5f, -0.5f, 0.0f ), vFloat2( 0.0f, 32.0f) },
-		//{ vFloat3( -0.5f,  0.5f, 0.0f ), vFloat2( 0.0f, 64.0f) },
-		//{ vFloat3(  0.5f,  0.5f, 0.0f ), vFloat2(24.0f, 64.0f) },
-		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
-
 		{ vFloat3(   0.0f,  0.0f, 1.0f ), vFloat2( 0.0f,  0.0f) },
 		{ vFloat3(   0.0f,  1.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
 		{ vFloat3(  0.75f,  1.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
