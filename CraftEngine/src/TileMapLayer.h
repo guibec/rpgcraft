@@ -14,6 +14,7 @@ public:
 	float4					m_At;
 	float4					m_Up;			// X is angle.  Y is just +/- (orientation)? Z is unused?
 	float2					m_frustrum_in_tiles;
+	float2					m_tile_size_pix;
 	float					m_aspect;
 	GPU_ViewCameraConsts	m_Consts;
 
@@ -21,6 +22,7 @@ public:
 	}
 
 	void			InitScene		();
+	void			UpdateFrustrum	();
 	void			SetEyeAt		(const float2& xy);
 	float4			ClientToWorld	(const int2& clientPosInPix);
 

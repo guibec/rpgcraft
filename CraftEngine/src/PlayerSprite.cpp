@@ -73,9 +73,9 @@ void PlayerSprite::LoadStaticAssets()
 		//{ vFloat3(  0.5f, -0.5f, 0.0f ), vFloat2(24.0f, 32.0f) }
 
 		{ vFloat3(   0.0f,  0.0f, 1.0f ), vFloat2( 0.0f,  0.0f) },
-		{ vFloat3(   0.0f,  2.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
-		{ vFloat3(  1.75f,  2.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
-		{ vFloat3(  1.75f,  0.0f, 1.0f ), vFloat2(24.0f,  0.0f) }
+		{ vFloat3(   0.0f,  1.0f, 1.0f ), vFloat2( 0.0f, 32.0f) },
+		{ vFloat3(  0.75f,  1.0f, 1.0f ), vFloat2(24.0f, 32.0f) },
+		{ vFloat3(  0.75f,  0.0f, 1.0f ), vFloat2(24.0f,  0.0f) }
 	};
 
 	dx11_CreateStaticMesh(gpu_mesh_box2D, vertices, sizeof(vertices[0]), bulkof(vertices));
