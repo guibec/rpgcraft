@@ -93,9 +93,9 @@ VS_OUTPUT VS( VS_INPUT_TILEMAP input, uint instID : SV_InstanceID )		// uint ver
 
 	int2   tiletex_uv;
 	tiletex_uv  = int2( input.TileID % SrcTexSizeInTiles.x, input.TileID / SrcTexSizeInTiles.x);
-	tiletex_uv *= int2(18,18); //((SrcTexBorderPix*2) + SrcTexTileSizePix);
+	tiletex_uv *= ((SrcTexBorderPix*2) + SrcTexTileSizePix);
 	tiletex_uv += 1;
-	tiletex_uv += input.UV * 16; //SrcTexTileSizePix;
+	tiletex_uv += input.UV * SrcTexTileSizePix;
 	outp.UV     = float2(tiletex_uv) / (float2)texSize;
 
 	// Color & Lighting Calculation  (not implemented)

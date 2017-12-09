@@ -45,7 +45,7 @@ void WorldMap_Procgen()
 
 void OpenWorldEnviron::InitScene()
 {
-	if (1) {
+	if (0) {
 		xBitmapData  pngtex;
 		png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
 
@@ -83,6 +83,55 @@ void OpenWorldEnviron::InitScene()
 		pragma_todo("Create a global temp dir mount and dump things to subdirs in there...");
 		xCreateDirectory("..\\tempout\\");
 		pngenc.SaveImage(xFmtStr("..\\tempout\\atlas.png"));
+
+		g_GroundLayer.SetSourceTexture(atlas);
+	}
+
+	if (1) {
+		xBitmapData  pngtex;
+		png_LoadFromFile(pngtex, ".\\sheets\\tiles\\terrain_2.png");
+
+		// cut sets out of the source and paste them into a properly-formed TextureAtlas.
+
+		// terrain2 is designed a bit differently than the painhurt set:
+		//   * Each tile is 32x32 pix
+		//   * Each terrain set is 96x192 pixels
+		//   * Sets are subdivided into four smaller sets:
+		//        32x64  -- highlight decals for being placed on top of other terrain types
+		//        64x64  -- obtuse turns
+		//        96x96  -- acute turns and filler
+		//        96x32  -- four fill tiles
+		//   * In some cases the highlight decal is a single 32x64 tile, rather than two independent tiles,
+		//     and might even be some special decoration unrelated to the tile set.
+
+		int2 setSize	= {96, 192};
+		int2 tileSize	= {32, 32};
+		int2 setToGrab	= {0, 1};
+		auto sizeInSets = pngtex.size / setSize;
+
+		TextureAtlas atlas;
+		xBitmapData  tile;
+
+		atlas.Init(tileSize);
+
+		auto topLeft = setToGrab * setSize;
+		topLeft.y += 64;	// grab the area set.
+
+		x_png_enc pngenc;
+
+		for (int y=0; y<4; ++y, topLeft.y += tileSize.y) {
+			auto tl = topLeft;
+			for (int x=0; x<4; ++x, tl.x += tileSize.x) {
+				imgtool::AddTileToAtlas(atlas, pngtex, tl);
+			}
+		}
+
+		atlas.Solidify();
+		pngenc.WriteImage(atlas);
+
+		pragma_todo("Create a global temp dir mount and dump things to subdirs in there...");
+		xCreateDirectory("..\\tempout\\");
+		pngenc.SaveImage(xFmtStr("..\\tempout\\atlas2.png"));
 
 		g_GroundLayer.SetSourceTexture(atlas);
 	}

@@ -167,10 +167,15 @@ void ViewCamera::InitScene()
 	m_At	= { 0.0f, 5.0f,  1.0f, 0.0f };
 	m_Up	= { 0.0f, 1.0f,  0.0f, 0.0f };
 
+	m_tile_size_pix = float2 { 32, 32 };
+	UpdateFrustrum();
+}
 
+void ViewCamera::UpdateFrustrum()
+{
 	// frustrum based on ratio of client size against tile size.  Enasures neatly-scaled graphics.
 	m_aspect				= g_client_aspect_ratio;
-	m_frustrum_in_tiles		= g_client_size_pix / float2 { 16, 16 } / 2.f;
+	m_frustrum_in_tiles		= g_client_size_pix / m_tile_size_pix / 2.f;
 }
 
 // Eye and At should move laterally together so that the eye is always looking straight down
@@ -186,7 +191,6 @@ void ViewCamera::Tick() {
 
 	Eye.z				= usePerspective ? -4.0f : -4.0f;
 	m_Consts.View		= XMMatrixLookAtLH(Eye, At, m_Up);
-	//m_Consts.Projection = XMMatrixPerspectiveFovLH( XM_PIDIV2, m_aspect, 0.01f, 1000.0f );
 
 	if (usePerspective) {
 		// the frustrum is relative to the minimum Z.

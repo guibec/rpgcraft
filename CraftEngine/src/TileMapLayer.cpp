@@ -200,7 +200,7 @@ void TileMapLayer::SetSourceTexture(const TextureAtlas& atlas)
 {
 	m_setCount = atlas.m_bufferSizeInTiles;
 	gpu.consts.SrcTexSizeInTiles	= vInt2(m_setCount);
-	gpu.consts.SrcTexTileSizePix	= {16,16};
+	gpu.consts.SrcTexTileSizePix	= atlas.m_tileSizePix;
 	gpu.consts.SrcTexBorderPix		= {1,1};
 	gpu.consts.ViewMeshSize			= ViewMeshSize;
 
