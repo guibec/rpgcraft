@@ -46,6 +46,54 @@ void WorldMap_Procgen()
 	}
 }
 
+namespace TerrainSetStandardTile {
+	enum enum_t
+	{
+		Solid = 0,
+
+		ObtuseCorners,
+		Obtuse_HiL		= ObtuseCorners,
+		Obtuse_HiR,
+		Obtuse_LoL,
+		Obtuse_LoR,
+
+		AcuteCorners,
+		Acute_HiL		= AcuteCorners,
+		Acute_HiR,
+		Acute_LoL,
+		Acute_LoR,
+
+		Spans,
+		Span_HorizHi	= Spans,
+		Span_HorizLo,
+		Span_VertL,
+		Span_VertR,
+
+		NUM_STD_TILES
+	};
+
+	using TerrainSetStandardTile_t = TerrainSetStandardTile::enum_t;
+	static const int2 RipSrcTilePos[NUM_STD_TILES];
+}
+
+pragma_todo("FIXME: Fill this in and apply it to GrabTerrainSet2()");
+static const int2 GrabCoords[TerrainSetStandardTile::NUM_STD_TILES] = {
+	{ }, // Solid,
+	{ }, // Obtuse_HiL
+	{ }, // Obtuse_HiR
+	{ }, // Obtuse_LoL
+	{ }, // Obtuse_LoR
+	{ }, // Acute_HiL,
+	{ }, // Acute_HiR
+	{ }, // Acute_LoL
+	{ }, // Acute_LoR
+	{ }, // Span_HorizHi
+	{ }, // Span_HorizLo
+	{ }, // Span_VertL
+	{ }, // Span_VertR
+};
+
+
 static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, const int2& setSize, const int2& setToGrab)
 {
 	auto topLeft = setToGrab * setSize;
@@ -55,9 +103,9 @@ static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, cons
 
 	x_png_enc pngenc;
 
-	for (int y=0; y<4; ++y, topLeft.y += tileSize.y) {
+	for (int y=0; y<3; ++y, topLeft.y += tileSize.y) {
 		auto tl = topLeft;
-		for (int x=0; x<4; ++x, tl.x += tileSize.x) {
+		for (int x=0; x<3; ++x, tl.x += tileSize.x) {
 			imgtool::AddTileToAtlas(atlas, pngtex, tl);
 		}
 	}
