@@ -31,7 +31,8 @@ public:
 };
 
 struct TerrainMapItem {
-	int		tilesetId;		// specific tile from the set is determined according to surrounding tiles at render time.
+	int		underlay;			// always renders as a Solid (no edge/cornering logic performed)
+	int		overlay;			// pulls from edges, corners, and solids according to surrounding math tests.
 };
 
 class OpenWorldEnviron
@@ -79,12 +80,13 @@ public:
 	int2	ViewMeshSize;
 	int		ViewInstanceCount;
 	int		ViewVerticiesCount;
+	int		m_edge_tile;
 
 public:
 	TileMapLayer();
 
-	void		PopulateUVs			(const TerrainMapItem* terrain, const int2& viewport_offset);
-	void		PopulateUVs			(const TerrainMapItem* terrain);
+	void		PopulateUVs			(const void* terrain_data, int stride_in_words, int offset_in_words, const int2& viewport_offset);
+	void		PopulateUVs			(const void* terrain_data, int stride_in_words, int offset_in_words);
 	void		InitScene			(const char* script_objname);
 	void		SetSourceTexture	(const xBitmapDataRO& srctex, const int2& setCount);
 	void		SetSourceTexture	(const TextureAtlas&  atlas);
