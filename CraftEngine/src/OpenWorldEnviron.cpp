@@ -10,41 +10,9 @@
 #include "imgui.h"
 
 TerrainMapItem*		g_WorldMap		= nullptr;
-TerrainMapItem*		g_wm_SubLayer	= nullptr;
 
 static FmodMusic	s_music_world;
 static float		s_bgm_volume =	1.0f;
-
-void WorldMap_Procgen()
-{
-	g_WorldMap		= (TerrainMapItem*)	xRealloc(g_WorldMap,	WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-	g_wm_SubLayer	= (TerrainMapItem*)	xRealloc(g_wm_SubLayer, WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
-
-	// Fill map with boring grass.
-
-	for (int y=0; y<WorldSizeY; ++y) {
-		for (int x=0; x<WorldSizeX; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].tilesetId = 14;
-			g_wm_SubLayer	[(y * WorldSizeX) + x].tilesetId = 31;
-		}
-	}
-
-	// Write a border around the entire map for now.
-
-	for (int x=0; x<WorldSizeX; ++x) {
-		g_WorldMap[((     0	     ) * WorldSizeX) + x].tilesetId = 1;
-		//g_WorldMap[((     1	     ) * WorldSizeX) + x].tilesetId = 2;
-		//g_WorldMap[((WorldSizeY-1) * WorldSizeX) + x].tilesetId = 2;
-		g_WorldMap[((WorldSizeY-2) * WorldSizeX) + x].tilesetId = 1;
-	}
-
-	for (int y=0; y<WorldSizeY; ++y) {
-		g_WorldMap[(y * WorldSizeX) + 0				].tilesetId = 4;
-		//g_WorldMap[(y * WorldSizeX) + 1				].tilesetId = 4;
-		//g_WorldMap[(y * WorldSizeX) + (WorldSizeX-2)].tilesetId = 4;
-		g_WorldMap[(y * WorldSizeX) + (WorldSizeX-1)].tilesetId = 4;
-	}
-}
 
 namespace TerrainSetStandardTile {
 	enum enum_t
@@ -76,21 +44,44 @@ namespace TerrainSetStandardTile {
 	static const int2 RipSrcTilePos[NUM_STD_TILES];
 }
 
-pragma_todo("FIXME: Fill this in and apply it to GrabTerrainSet2()");
-static const int2 GrabCoords[TerrainSetStandardTile::NUM_STD_TILES] = {
-	{ }, // Solid,
-	{ }, // Obtuse_HiL
-	{ }, // Obtuse_HiR
-	{ }, // Obtuse_LoL
-	{ }, // Obtuse_LoR
-	{ }, // Acute_HiL,
-	{ }, // Acute_HiR
-	{ }, // Acute_LoL
-	{ }, // Acute_LoR
-	{ }, // Span_HorizHi
-	{ }, // Span_HorizLo
-	{ }, // Span_VertL
-	{ }, // Span_VertR
+namespace StdTileOffset
+{
+	using TerrainSetStandardTile::NUM_STD_TILES;
+
+	static const int Water			= 0 * NUM_STD_TILES;
+	static const int Sandy			= 1 * NUM_STD_TILES;
+	static const int Grassy			= 2 * NUM_STD_TILES;
+}
+
+
+void WorldMap_Procgen()
+{
+	g_WorldMap		= (TerrainMapItem*)	xRealloc(g_WorldMap,	WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
+
+	// Fill map with boring grass.  or sand.
+
+	for (int y=0; y<WorldSizeY; ++y) {
+		for (int x=0; x<WorldSizeX; ++x) {
+			g_WorldMap		[(y * WorldSizeX) + x].underlay = StdTileOffset::Water;
+			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileOffset::Sandy;
+		}
+	}
+}
+
+static const int2 T2_GrabCoords[TerrainSetStandardTile::NUM_STD_TILES] = {
+	{ 1, 3 },	// Solid,
+	{ 1, 0 },	// Obtuse_HiL
+	{ 2, 0 },	// Obtuse_HiR
+	{ 1, 1 },	// Obtuse_LoL
+	{ 2, 1 },	// Obtuse_LoR
+	{ 0, 2 },	// Acute_HiL,
+	{ 2, 2 },	// Acute_HiR
+	{ 0, 4 },	// Acute_LoL
+	{ 2, 4 },	// Acute_LoR
+	{ 1, 2 },	// Span_HorizHi
+	{ 1, 2 },	// Span_HorizLo
+	{ 0, 3 },	// Span_VertL
+	{ 2, 3 },	// Span_VertR
 };
 
 
@@ -99,15 +90,12 @@ static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, cons
 	auto topLeft = setToGrab * setSize;
 	const auto& tileSize = atlas.m_tileSizePix;
 
-	topLeft.y += 64;	// grab the area set.
+	//topLeft.y += 64;	// grabbing from the area set.
 
 	x_png_enc pngenc;
-
-	for (int y=0; y<3; ++y, topLeft.y += tileSize.y) {
-		auto tl = topLeft;
-		for (int x=0; x<3; ++x, tl.x += tileSize.x) {
-			imgtool::AddTileToAtlas(atlas, pngtex, tl);
-		}
+	for(const auto& coord : T2_GrabCoords) {
+		auto tl = topLeft + (coord * tileSize);
+		imgtool::AddTileToAtlas(atlas, pngtex, tl);
 	}
 }
 
@@ -179,8 +167,8 @@ void OpenWorldEnviron::InitScene()
 		TextureAtlas atlas;
 		atlas.Init(tileSize);
 
-		GrabTerrainSet2(atlas, pngtex, setSize, {0, 1});
-		GrabTerrainSet2(atlas, pngtex, setSize, {5, 0});
+		GrabTerrainSet2(atlas, pngtex, setSize, {0, 2});
+		GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});
 		atlas.Solidify();
 
 		x_png_enc pngenc;
@@ -194,8 +182,8 @@ void OpenWorldEnviron::InitScene()
 	}
 
 	WorldMap_Procgen();
-	g_GroundLayer.PopulateUVs(g_WorldMap, {0,0});
-	g_GroundSubLayer.PopulateUVs(g_wm_SubLayer, {0,0});
+	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 0, {0,0});
+	g_GroundLayer	.PopulateUVs(g_WorldMap, 2, 1, {0,0});
 
 	fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
 }
@@ -203,10 +191,10 @@ void OpenWorldEnviron::InitScene()
 void OpenWorldEnviron::Tick()
 {
 	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundLayer.PopulateUVs(g_WorldMap);
+	g_GroundLayer.PopulateUVs(g_WorldMap, 2, 0);
 
 	g_GroundSubLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundSubLayer.PopulateUVs(g_wm_SubLayer);
+	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 1);
 
 	fmod_Play(s_music_world);
 	if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {

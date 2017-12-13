@@ -28,9 +28,11 @@ GPU_ConstantBuffer		g_cnstbuf_TileMap;
 TileMapLayer::TileMapLayer() {
 }
 
-void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain, const int2& viewport_offset)
+void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, int offset_in_words, const int2& viewport_offset)
 {
-	bug_on(!terrain);
+	bug_on(!terrain_data);
+	const int* tileptr = (int*)terrain_data;
+
 	g_ViewTileID = (u32*)xRealloc(g_ViewTileID, ViewInstanceCount * sizeof(u32));
 
 	// Populate view mesh according to world map information:
@@ -45,70 +47,15 @@ void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain, const int2& viewpo
 			int instanceId	= ((yl*ViewMeshSize.x) + xl);
 			int vertexId	= instanceId * 6;
 
-			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 31; continue; }
-			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 31; continue; }
+			// Fill in area past the end of the map.
+			// This could be filled procedurally to allow for some patterned expanse of terrain type...
 
-			g_ViewTileID[instanceId] = terrain[(y * WorldSizeX) + x].tilesetId;
-			continue;
+			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = m_edge_tile; continue; }
+			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = m_edge_tile; continue; }
 
-			int setId		= terrain[(y * WorldSizeX) + x].tilesetId;
-			int setX		= setId % m_setCount.x;
-			int setY		= setId / m_setCount.x;
-
-			// Look at surrounding tiles to decide how to match this tile...
-			// TODO: Try moving this into Lua?  As a proof-of-concept for rapid iteration?
-			//    Or is this not appropriate scope for; scripting yet?  Hmm!
-
-			bool match_above1 = false;
-			bool match_below1 = false;
-			bool match_left1  = false;
-			bool match_right1 = false;
-
-			if (y > 0) {
-				int idx = ((y-1) * WorldSizeX) + (x+0);
-				match_above1 = (terrain[idx].tilesetId == setId);
-			}
-
-			if (y < WorldSizeY-1) {
-				int idx = ((y+1) * WorldSizeX) + (x+0);
-				match_below1 = (terrain[idx].tilesetId == setId);
-			}
-
-			if (x > 0) {
-				int idx  = ((y+0) * WorldSizeX) + (x-1);
-				match_left1 = (terrain[idx].tilesetId == setId);
-			}
-
-			if (x < WorldSizeX-1) {
-				int idx = ((y+0) * WorldSizeX) + (x+1);
-				match_right1 = (terrain[idx].tilesetId == setId);
-			}
-
-			int subTileX = 0;
-			int subTileY = 0;
-
-			if (match_above1 && match_below1) {
-				if (!match_left1 || !match_right1) {
-					//subTileX = 0;
-					//subTileY = 1;
-				}
-			}
-
-			if (match_left1 && match_right1) {
-				//subTileX = 1;
-				if (match_above1) {
-					//subTileY = 4;
-				}
-			}
-
-			//subTileY += 3;
-
-			g_ViewTileID[instanceId]  = (setY * m_setCount.x) + setX;
-			g_ViewTileID[instanceId] += (subTileY * 4) + subTileX;
+			g_ViewTileID[instanceId] = tileptr[((y * WorldSizeX) + x + offset_in_words) * stride_in_words];
 		}
 	}
-
-	// Sort various sprite batches
 
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
@@ -189,11 +136,11 @@ const char* TestDot[] = {
 	"---------",
 };
 
-void TileMapLayer::PopulateUVs(const TerrainMapItem* terrain)
+void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, int offset_in_words)
 {
 	auto disp = int2(gpu.consts.TileAlignedDisp);
 	disp -= (ViewMeshSize / 2);
-	PopulateUVs(terrain, disp);
+	PopulateUVs(terrain_data, stride_in_words, offset_in_words, disp);
 }
 
 void TileMapLayer::SetSourceTexture(const TextureAtlas& atlas)
