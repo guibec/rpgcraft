@@ -44,13 +44,15 @@ namespace TerrainSetStandardTile {
 	static const int2 RipSrcTilePos[NUM_STD_TILES];
 }
 
+static const int StdTileEmpty;
+
 namespace StdTileOffset
 {
 	using TerrainSetStandardTile::NUM_STD_TILES;
 
-	static const int Water			= 0 * NUM_STD_TILES;
-	static const int Sandy			= 1 * NUM_STD_TILES;
-	static const int Grassy			= 2 * NUM_STD_TILES;
+	static const int Water			= 1 + (0 * NUM_STD_TILES);
+	static const int Sandy			= 1 + (1 * NUM_STD_TILES);
+	static const int Grassy			= 1 + (2 * NUM_STD_TILES);
 }
 
 
@@ -66,6 +68,14 @@ void WorldMap_Procgen()
 			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileOffset::Sandy;
 		}
 	}
+
+	// carve a watering hole...
+	for (int y=4; y<4+8; ++y) {
+		for (int x=4; x<4+8; ++x) {
+			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileEmpty;
+		}
+	}
+
 }
 
 static const int2 T2_GrabCoords[TerrainSetStandardTile::NUM_STD_TILES] = {
@@ -167,8 +177,10 @@ void OpenWorldEnviron::InitScene()
 		TextureAtlas atlas;
 		atlas.Init(tileSize);
 
-		GrabTerrainSet2(atlas, pngtex, setSize, {0, 2});
-		GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});
+		imgtool::AddEmptyTileToAtlas(atlas);
+
+		GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});		//water
+		GrabTerrainSet2(atlas, pngtex, setSize, {0, 2});		// sand
 		atlas.Solidify();
 
 		x_png_enc pngenc;
@@ -191,10 +203,10 @@ void OpenWorldEnviron::InitScene()
 void OpenWorldEnviron::Tick()
 {
 	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundLayer.PopulateUVs(g_WorldMap, 2, 0);
+	g_GroundLayer.PopulateUVs(g_WorldMap, 2, 1);
 
 	g_GroundSubLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 1);
+	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 0);
 
 	fmod_Play(s_music_world);
 	if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {

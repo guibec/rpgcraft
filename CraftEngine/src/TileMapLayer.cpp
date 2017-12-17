@@ -50,10 +50,10 @@ void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, in
 			// Fill in area past the end of the map.
 			// This could be filled procedurally to allow for some patterned expanse of terrain type...
 
-			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = m_edge_tile; continue; }
-			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = m_edge_tile; continue; }
+			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 1; continue; }
+			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 1; continue; }
 
-			g_ViewTileID[instanceId] = tileptr[((y * WorldSizeX) + x + offset_in_words) * stride_in_words];
+			g_ViewTileID[instanceId] = tileptr[(((y * WorldSizeX) + x) * stride_in_words) + offset_in_words];
 		}
 	}
 
@@ -163,7 +163,6 @@ void TileMapLayer::CenterViewOn(const float2& dest)
 		gpu.consts.TileAlignedDisp		= TileAlignedDisp;
 	}
 }
-
 
 void TileMapLayer::Tick() {
 }

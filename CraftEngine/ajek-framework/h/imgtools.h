@@ -34,5 +34,6 @@ namespace imgtool
 	void		CutTex									(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2);
 	void		CutTex_and_ConvertOpaqueColorToAlpha	(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color);
 	int			AddTileToAtlas							(TextureAtlas& dest, const xBitmapData& src, const int2& srcpos = {0,0});
+	int			AddEmptyTileToAtlas						(TextureAtlas& dest);
 };
 
