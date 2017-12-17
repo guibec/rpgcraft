@@ -93,6 +93,24 @@ void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBit
 	}
 }
 
+int imgtool::AddEmptyTileToAtlas(TextureAtlas& dest)
+{
+	int  tileId		= dest.AllocTile();
+	auto tileSize	= dest.m_tileSizePix;
+	auto tilePos	= dest.GetTilePosPix(tileId);
+	auto tilePosEnd = tilePos + tileSize;
+	auto destSize	= dest.GetSizePix();
+
+	u32* dstptr		= (u32*)dest.GetRawPtr32()	+ (tilePos.y * destSize.x)	+ tilePos.x;
+
+	for(int y=0; y<dest.m_tileSizePix.y; ++y, dstptr+=destSize.x)
+	{
+		auto* dptr	= dstptr;
+		memset(dptr, 0, dest.m_tileSizePix.x * 4);
+	}
+	return 0;
+}
+
 int imgtool::AddTileToAtlas(TextureAtlas& dest, const xBitmapData& src, const int2& srcpos)
 {
 	int  tileId		= dest.AllocTile();
