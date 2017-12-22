@@ -14,47 +14,67 @@ TerrainMapItem*		g_WorldMap		= nullptr;
 static FmodMusic	s_music_world;
 static float		s_bgm_volume =	1.0f;
 
-namespace TerrainSetStandardTile {
-	enum enum_t
-	{
-		Solid = 0,
+enum class TerrainTileConstructId
+{
+	FIRST = 0,
+	Solid = 0,
 
-		ObtuseCorners,
-		Obtuse_HiL		= ObtuseCorners,
-		Obtuse_HiR,
-		Obtuse_LoL,
-		Obtuse_LoR,
+	ObtuseCorners,
+	Obtuse_HiL		= ObtuseCorners,
+	Obtuse_HiR,
+	Obtuse_LoL,
+	Obtuse_LoR,
 
-		AcuteCorners,
-		Acute_HiL		= AcuteCorners,
-		Acute_HiR,
-		Acute_LoL,
-		Acute_LoR,
+	AcuteCorners,
+	Acute_HiL		= AcuteCorners,
+	Acute_HiR,
+	Acute_LoL,
+	Acute_LoR,
 
-		Spans,
-		Span_HorizHi	= Spans,
-		Span_HorizLo,
-		Span_VertL,
-		Span_VertR,
+	Spans,
+	Span_HorizHi	= Spans,
+	Span_HorizLo,
+	Span_VertL,
+	Span_VertR,
 
-		NUM_STD_TILES
-	};
+	LAST
+};
 
-	using TerrainSetStandardTile_t = TerrainSetStandardTile::enum_t;
-	static const int2 RipSrcTilePos[NUM_STD_TILES];
+TerrainTileConstructId _TerrainTileSet_incr(const TerrainTileConstructId& src) {
+	TerrainTileConstructId result = src;
+	(int&)result += 1;
+	bug_on(int(result) >= int(TerrainTileConstructId::LAST));
+	return result;
 }
 
-static const int StdTileEmpty;
+TerrainTileConstructId _TerrainTileSet_decr(const TerrainTileConstructId& src) {
+	TerrainTileConstructId result = src;
+	(int&)result += 1;
+	bug_on(int(result) >= int(TerrainTileConstructId::LAST));
+	return result;
+}
+
+TerrainTileConstructId& operator++(TerrainTileConstructId& left)      { return left = _TerrainTileSet_incr(left); }
+TerrainTileConstructId  operator++(TerrainTileConstructId& left, int) { return        _TerrainTileSet_incr(left); }
+TerrainTileConstructId& operator--(TerrainTileConstructId& left)      { return left = _TerrainTileSet_decr(left); }
+TerrainTileConstructId  operator--(TerrainTileConstructId& left, int) { return        _TerrainTileSet_decr(left); }
+
+static const int TerrainTileConstruct_Count = (int)TerrainTileConstructId::LAST;
+
+static const int2 RipSrcTilePos[TerrainTileConstruct_Count];
 
 namespace StdTileOffset
 {
-	using TerrainSetStandardTile::NUM_STD_TILES;
-
-	static const int Water			= 1 + (0 * NUM_STD_TILES);
-	static const int Sandy			= 1 + (1 * NUM_STD_TILES);
-	static const int Grassy			= 1 + (2 * NUM_STD_TILES);
+	static const int Empty			= 0;
+	static const int Water			= 1 + (0 * TerrainTileConstruct_Count);
+	static const int Sandy			= 1 + (1 * TerrainTileConstruct_Count);
+	static const int Grassy			= 1 + (2 * TerrainTileConstruct_Count);
 }
 
+void PlaceTileWithRules()
+{
+
+}
 
 void WorldMap_Procgen()
 {
@@ -72,13 +92,13 @@ void WorldMap_Procgen()
 	// carve a watering hole...
 	for (int y=4; y<4+8; ++y) {
 		for (int x=4; x<4+8; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileEmpty;
+			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileOffset::Empty;
 		}
 	}
 
 }
 
-static const int2 T2_GrabCoords[TerrainSetStandardTile::NUM_STD_TILES] = {
+static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
 	{ 1, 3 },	// Solid,
 	{ 1, 0 },	// Obtuse_HiL
 	{ 2, 0 },	// Obtuse_HiR
@@ -99,8 +119,6 @@ static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, cons
 {
 	auto topLeft = setToGrab * setSize;
 	const auto& tileSize = atlas.m_tileSizePix;
-
-	//topLeft.y += 64;	// grabbing from the area set.
 
 	x_png_enc pngenc;
 	for(const auto& coord : T2_GrabCoords) {
@@ -179,8 +197,9 @@ void OpenWorldEnviron::InitScene()
 
 		imgtool::AddEmptyTileToAtlas(atlas);
 
-		GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});		//water
+		GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});		// water
 		GrabTerrainSet2(atlas, pngtex, setSize, {0, 2});		// sand
+		GrabTerrainSet2(atlas, pngtex, setSize, {0, 1});		// grassy
 		atlas.Solidify();
 
 		x_png_enc pngenc;
@@ -200,13 +219,22 @@ void OpenWorldEnviron::InitScene()
 	fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
 }
 
+bool s_showLayer_above = 1;
+bool s_showLayer_below = 1;
+
 void OpenWorldEnviron::Tick()
 {
 	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
 	g_GroundLayer.PopulateUVs(g_WorldMap, 2, 1);
 
+	ImGui::Checkbox("Show Above-Ground Layer", &s_showLayer_above);
+	ImGui::Checkbox("Show Below-Ground Layer", &s_showLayer_below);
+
 	g_GroundSubLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
 	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 0);
+
+	g_GroundLayer   .m_enableDraw = s_showLayer_above;
+	g_GroundSubLayer.m_enableDraw = s_showLayer_below;
 
 	fmod_Play(s_music_world);
 	if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {

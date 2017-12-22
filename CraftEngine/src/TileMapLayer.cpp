@@ -115,11 +115,13 @@ void TileMapLayer::InitScene(const char* script_objname)
 	// TODO: only want to initialize this once for all tilemap instances.
 	dx11_CreateConstantBuffer(g_cnstbuf_TileMap,	sizeof(GPU_TileMapConstants));
 
-	dx11_CreateStaticMesh(gpu.mesh_tile, g_mesh_UniformQuad,	sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
+	dx11_CreateStaticMesh(gpu.mesh_tile, g_mesh_UniformQuad, sizeof(g_mesh_UniformQuad[0]),	bulkof(g_mesh_UniformQuad));
 	dx11_CreateDynamicVertexBuffer(gpu.mesh_worldViewTileID, sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 
 	dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
 	dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
+
+	m_enableDraw = 1;
 }
 
 #include "Mouse.h"
@@ -169,6 +171,8 @@ void TileMapLayer::Tick() {
 
 void TileMapLayer::Draw() const
 {
+	if (!m_enableDraw) return;
+
 	dx11_BindShaderVS(g_ShaderVS_Tiler);
 	dx11_BindShaderFS(g_ShaderFS_Tiler);
 	dx11_SetInputLayout(gpu.layout_tilemap);
