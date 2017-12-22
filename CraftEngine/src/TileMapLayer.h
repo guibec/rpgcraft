@@ -31,6 +31,7 @@ public:
 };
 
 struct TerrainMapItem {
+	int		biome;
 	int		underlay;			// always renders as a Solid (no edge/cornering logic performed)
 	int		overlay;			// pulls from edges, corners, and solids according to surrounding math tests.
 };
@@ -81,6 +82,7 @@ public:
 	int		ViewInstanceCount;
 	int		ViewVerticiesCount;
 	int		m_edge_tile;
+	bool	m_enableDraw;
 
 public:
 	TileMapLayer();
