@@ -99,8 +99,8 @@ public:
 };
 
 extern ViewCamera			g_ViewCamera;
-extern TileMapLayer			g_GroundLayer;
-extern TileMapLayer			g_GroundSubLayer;
+extern TileMapLayer			g_GroundLayerAbove;
+extern TileMapLayer			g_GroundLayerBelow;
 
 extern GPU_ShaderVS			g_ShaderVS_Tiler;
 extern GPU_ShaderFS			g_ShaderFS_Tiler;

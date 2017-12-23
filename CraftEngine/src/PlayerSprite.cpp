@@ -137,7 +137,7 @@ void PlayerSprite::Tick(u32 order, float dt)
 	m_position			+= direction * dt;
 
 	auto newCameraPos = m_position;
-	//newCameraPos -= (g_GroundLayer.ViewMeshSize * 0.5f);
+	//newCameraPos -= (g_GroundLayerAbove.ViewMeshSize * 0.5f);
 
 	if (s_CameraFollowPlayer) {
 		g_ViewCamera.SetEyeAt(newCameraPos);
@@ -178,7 +178,7 @@ void PlayerSprite::Tick(u32 order, float dt)
 			// absolute float under cursor (for diagnostic!)
 			auto mouse = g_mouse.clientToNormal();
 			auto tilepos = mouse.normal * g_ViewCamera.m_frustrum_in_tiles.y / 2.f;
-			tilepos += (g_GroundLayer.ViewMeshSize * 0.5f);
+			tilepos += (g_GroundLayerAbove.ViewMeshSize * 0.5f);
 			tilepos += float2 { g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y };
 
 			ImGui::Text("MousePos = %5.2f %5.2f", tilepos.x, tilepos.y);
@@ -215,7 +215,7 @@ void PlayerSprite::Draw(float zorder) const
 	} consts;
 
 	consts.worldpos			= m_position;
-	consts.ViewMeshSize		= g_GroundLayer.ViewMeshSize;
+	consts.ViewMeshSize		= g_GroundLayerAbove.ViewMeshSize;
 
 	dx11_UpdateConstantBuffer	(gpu_constbuf, &consts);
 	dx11_BindConstantBuffer		(gpu_constbuf, 1);
