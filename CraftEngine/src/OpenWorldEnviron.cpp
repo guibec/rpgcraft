@@ -168,7 +168,7 @@ void OpenWorldEnviron::InitScene()
 		xCreateDirectory("..\\tempout\\");
 		pngenc.SaveImage(xFmtStr("..\\tempout\\atlas.png"));
 
-		g_GroundLayer.SetSourceTexture(atlas);
+		g_GroundLayerAbove.SetSourceTexture(atlas);
 	}
 
 	if (1) {
@@ -208,13 +208,13 @@ void OpenWorldEnviron::InitScene()
 		xCreateDirectory("..\\tempout\\");
 		pngenc.SaveImage(xFmtStr("..\\tempout\\atlas2.png"));
 
-		g_GroundLayer	.SetSourceTexture(atlas);
-		g_GroundSubLayer.SetSourceTexture(atlas);
+		g_GroundLayerAbove.SetSourceTexture(atlas);
+		g_GroundLayerBelow.SetSourceTexture(atlas);
 	}
 
 	WorldMap_Procgen();
-	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 0, {0,0});
-	g_GroundLayer	.PopulateUVs(g_WorldMap, 2, 1, {0,0});
+	g_GroundLayerBelow.PopulateUVs(g_WorldMap, 2, 0, {0,0});
+	g_GroundLayerAbove	.PopulateUVs(g_WorldMap, 2, 1, {0,0});
 
 	fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
 }
@@ -224,17 +224,17 @@ bool s_showLayer_below = 1;
 
 void OpenWorldEnviron::Tick()
 {
-	g_GroundLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundLayer.PopulateUVs(g_WorldMap, 2, 1);
-
 	ImGui::Checkbox("Show Above-Ground Layer", &s_showLayer_above);
 	ImGui::Checkbox("Show Below-Ground Layer", &s_showLayer_below);
 
-	g_GroundSubLayer.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundSubLayer.PopulateUVs(g_WorldMap, 2, 0);
+	g_GroundLayerAbove.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
+	g_GroundLayerAbove.PopulateUVs(g_WorldMap, sizeof(TerrainMapItem)/4, 2);
 
-	g_GroundLayer   .m_enableDraw = s_showLayer_above;
-	g_GroundSubLayer.m_enableDraw = s_showLayer_below;
+	g_GroundLayerBelow.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
+	g_GroundLayerBelow.PopulateUVs(g_WorldMap, sizeof(TerrainMapItem)/4, 1);
+
+	g_GroundLayerAbove.m_enableDraw = s_showLayer_above;
+	g_GroundLayerBelow.m_enableDraw = s_showLayer_below;
 
 	fmod_Play(s_music_world);
 	if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {

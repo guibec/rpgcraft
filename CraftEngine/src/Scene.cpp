@@ -304,8 +304,6 @@ static void* SceneProducerThreadProc(void*)
 
 		if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
 			dx11_BeginFrameDrawing();
-
-			// Clear the back buffer
 			dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
 			dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
 			DbgFont_SceneRender();
@@ -349,6 +347,13 @@ static void* SceneProducerThreadProc(void*)
 			}
 
 			dx11_BeginFrameDrawing();
+
+			// Clear background for diagnostic purposes:
+			// TODO: Replace this with some pattern that clearly invokes "non-gameplay component", like a gray/black checkerboard.
+
+			dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
+			dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::DarkGray);
+
 			if (s_scene_devExecMask & SceneExecMask_GameplayRender) {
 				GameplaySceneRender();
 			}
