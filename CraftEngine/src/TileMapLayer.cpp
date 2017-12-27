@@ -28,9 +28,11 @@ GPU_ConstantBuffer		g_cnstbuf_TileMap;
 TileMapLayer::TileMapLayer() {
 }
 
-void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, int offset_in_words, const int2& viewport_offset)
+void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, const int2& viewport_offset)
 {
 	bug_on(!terrain_data);
+	bug_on(stride_in_words <= m_data_offset_uv);
+
 	const int* tileptr = (int*)terrain_data;
 
 	g_ViewTileID = (u32*)xRealloc(g_ViewTileID, ViewInstanceCount * sizeof(u32));
@@ -53,12 +55,20 @@ void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, in
 			if (y<0 || x<0)						{ g_ViewTileID[instanceId] = 1; continue; }
 			if (y>=WorldSizeY || x>=WorldSizeX) { g_ViewTileID[instanceId] = 1; continue; }
 
-			g_ViewTileID[instanceId] = tileptr[(((y * WorldSizeX) + x) * stride_in_words) + offset_in_words];
+			g_ViewTileID[instanceId] = tileptr[(((y * WorldSizeX) + x) * stride_in_words) + m_data_offset_uv];
 		}
 	}
 
 	dx11_UploadDynamicBufferData(gpu.mesh_worldViewTileID, g_ViewTileID,  sizeof(g_ViewTileID[0]) * ViewInstanceCount);
 }
+
+void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words)
+{
+	auto disp = int2(gpu.consts.TileAlignedDisp);
+	disp -= (ViewMeshSize / 2);
+	PopulateUVs(terrain_data, stride_in_words, disp);
+}
+
 
 void TileMapLayer::InitScene(const char* script_objname)
 {
@@ -137,13 +147,6 @@ const char* TestDot[] = {
 	"----+----",
 	"---------",
 };
-
-void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, int offset_in_words)
-{
-	auto disp = int2(gpu.consts.TileAlignedDisp);
-	disp -= (ViewMeshSize / 2);
-	PopulateUVs(terrain_data, stride_in_words, offset_in_words, disp);
-}
 
 void TileMapLayer::SetSourceTexture(const TextureAtlas& atlas)
 {
