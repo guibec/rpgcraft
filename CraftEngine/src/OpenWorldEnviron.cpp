@@ -84,15 +84,15 @@ void WorldMap_Procgen()
 
 	for (int y=0; y<WorldSizeY; ++y) {
 		for (int x=0; x<WorldSizeX; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].underlay = StdTileOffset::Water;
-			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileOffset::Sandy;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_below = StdTileOffset::Water;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_above  = StdTileOffset::Sandy;
 		}
 	}
 
 	// carve a watering hole...
 	for (int y=4; y<4+8; ++y) {
 		for (int x=4; x<4+8; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].overlay  = StdTileOffset::Empty;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_above  = StdTileOffset::Empty;
 		}
 	}
 
@@ -213,8 +213,12 @@ void OpenWorldEnviron::InitScene()
 	}
 
 	WorldMap_Procgen();
-	g_GroundLayerBelow.PopulateUVs(g_WorldMap, 2, 0, {0,0});
-	g_GroundLayerAbove	.PopulateUVs(g_WorldMap, 2, 1, {0,0});
+
+	g_GroundLayerBelow.SetDataOffsetUV(offsetof(TerrainMapItem, tile_below) / 4);
+	g_GroundLayerAbove.SetDataOffsetUV(offsetof(TerrainMapItem, tile_above) / 4);
+
+	g_GroundLayerBelow.PopulateUVs(g_WorldMap, {0,0});
+	g_GroundLayerAbove.PopulateUVs(g_WorldMap, {0,0});
 
 	fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
 }
@@ -227,11 +231,11 @@ void OpenWorldEnviron::Tick()
 	ImGui::Checkbox("Show Above-Ground Layer", &s_showLayer_above);
 	ImGui::Checkbox("Show Below-Ground Layer", &s_showLayer_below);
 
-	g_GroundLayerAbove.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundLayerAbove.PopulateUVs(g_WorldMap, sizeof(TerrainMapItem)/4, 2);
-
 	g_GroundLayerBelow.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
-	g_GroundLayerBelow.PopulateUVs(g_WorldMap, sizeof(TerrainMapItem)/4, 1);
+	g_GroundLayerAbove.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
+
+	g_GroundLayerBelow.PopulateUVs(g_WorldMap);
+	g_GroundLayerAbove.PopulateUVs(g_WorldMap);
 
 	g_GroundLayerAbove.m_enableDraw = s_showLayer_above;
 	g_GroundLayerBelow.m_enableDraw = s_showLayer_below;

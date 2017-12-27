@@ -31,9 +31,11 @@ public:
 };
 
 struct TerrainMapItem {
-	int		biome;
-	int		underlay;			// always renders as a Solid (no edge/cornering logic performed)
-	int		overlay;			// pulls from edges, corners, and solids according to surrounding math tests.
+	int		tile_below;			// should always be a Solid (no edge/cornering tiles allowed)
+	int		tile_above;			// can be edges, corners, etc.  No Solids allowed.
+
+	int		biome_below;		// biome classification below-ground
+	int		biome_above;		// biome classification above-ground
 };
 
 class OpenWorldEnviron
@@ -81,22 +83,45 @@ public:
 	int2	ViewMeshSize;
 	int		ViewInstanceCount;
 	int		ViewVerticiesCount;
+
+	int		m_data_offset_uv;
 	int		m_edge_tile;
 	bool	m_enableDraw;
 
 public:
 	TileMapLayer();
 
-	void		PopulateUVs			(const void* terrain_data, int stride_in_words, int offset_in_words, const int2& viewport_offset);
-	void		PopulateUVs			(const void* terrain_data, int stride_in_words, int offset_in_words);
+	void		SetDataOffsetUV		(int offset_in_words);
+	void		PopulateUVs			(const void* terrain_data, int stride_in_words, const int2& viewport_offset);
+	void		PopulateUVs			(const void* terrain_data, int stride_in_words);
 	void		InitScene			(const char* script_objname);
 	void		SetSourceTexture	(const xBitmapDataRO& srctex, const int2& setCount);
 	void		SetSourceTexture	(const TextureAtlas&  atlas);
 	void		CenterViewOn		(const float2& dest);
 
+	template<typename T> void PopulateUVs (const T* terrain_data, const int2& viewport_offset);
+	template<typename T> void PopulateUVs (const T* terrain_data);
+
 	virtual void Tick();
 	virtual void Draw() const;
 };
+
+template<typename T> inline void TileMapLayer::PopulateUVs (const T* terrain_data, const int2& viewport_offset)
+{
+	int struct_size_words = sizeof(T)/4;
+	PopulateUVs(terrain_data, struct_size_words);
+}
+
+template<typename T> inline void TileMapLayer::PopulateUVs (const T* terrain_data)
+{
+	int struct_size_words = sizeof(T)/4;
+	PopulateUVs(terrain_data, struct_size_words);
+}
+
+inline void TileMapLayer::SetDataOffsetUV(int offset_in_words)
+{
+	m_data_offset_uv = offset_in_words;
+}
 
 extern ViewCamera			g_ViewCamera;
 extern TileMapLayer			g_GroundLayerAbove;
