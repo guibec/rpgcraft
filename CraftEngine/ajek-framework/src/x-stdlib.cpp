@@ -440,7 +440,7 @@ void xFileSetSize( int fd, size_t filesize )
 	int result = sceKernelFtruncate(fd, filesize);
 	if (result < 0)
 	{
-		log_and_abort("Failed to set file size to %s bytes, error 0x%08x",
+		x_abort("Failed to set file size to %s bytes, error 0x%08x",
 			cDecStr(filesize), result
 		);
 	}
@@ -453,7 +453,7 @@ void xFileSetSize( int fd, size_t filesize )
 		int error  = errno;
 	#endif
 		if (result==-1) {
-			log_and_abort("Failed to set file size to %s bytes, error #%d: %s",
+			x_abort("Failed to set file size to %s bytes, error #%d: %s",
 				cDecStr(filesize), error, xPosixErrorStr(error).c_str()
 			);
 		}
@@ -496,7 +496,7 @@ bool xFileRename( const xString& src_, const xString& dest_ )
 		return false;
 
 		case EINVAL:
-			log_and_abort(
+			x_abort(
 				"Invalid parameters, one or both filenames contain invalid characters...\n"
 				"srcfile : %s\n"
 				"destfile: %s",

@@ -495,24 +495,24 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #endif
 		char optmp[128] = { 0 };
 
-		log_and_abort_on(!utf8.StartsWith("--"), "Invalid CLI option specified: %s", utf8.c_str());
+		x_abort_on(!utf8.StartsWith("--"), "Invalid CLI option specified: %s", utf8.c_str());
 		int readpos  = 2;
 		int writepos = 0;
 		for(;;) {
-			log_and_abort_on(!utf8.data()[readpos] || readpos >= utf8.GetLength(),
+			x_abort_on(!utf8.data()[readpos] || readpos >= utf8.GetLength(),
 				"Unexpected end of CLI option while searching for '='\n   Option Text: %s", utf8.c_str()
 			);
-			log_and_abort_on(_sopt_isWhitespace(utf8.data()[readpos]),
+			x_abort_on(_sopt_isWhitespace(utf8.data()[readpos]),
 				"Invalid whitespace detected in CLI lvalue: %s", utf8.c_str()
 			);
-			log_and_abort_on(writepos >= bulkof(optmp)-1, "CLI option text is too long!");
+			x_abort_on(writepos >= bulkof(optmp)-1, "CLI option text is too long!");
 
 			if (utf8.data()[readpos] == '=') break;
 			optmp[writepos] = utf8.data()[readpos];
 			++writepos;
 			++readpos;
 		}
-		log_and_abort_on(!writepos, "Invalid zero-length option: %s", utf8.c_str());
+		x_abort_on(!writepos, "Invalid zero-length option: %s", utf8.c_str());
 		optmp[writepos+1] = 0;
 		xString val		(utf8.data() + readpos + 1);		// forward past '='
 		xString option	(optmp);

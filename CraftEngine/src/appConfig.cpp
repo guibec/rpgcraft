@@ -29,14 +29,14 @@ resumeLoop:
 		case xThrowModule_Bridge:
 			g_ThrowCtx.PrintLastError();
 			if (!xIsDebuggerAttached()) {
-				log_and_abort("Application aborted due to scriptConfig error.");
+				x_abort("Application aborted due to scriptConfig error.");
 			}
 			AjekScript_PrintBreakReloadMsg();
 			__debugbreak();		// allows developer to resume after correcting errors.
 		goto resumeLoop;
 
 		default:
-			log_and_abort("Unhandled exception type!");
+			x_abort("Unhandled exception type!");
 		break;
 	}
 	x_finalize() {
