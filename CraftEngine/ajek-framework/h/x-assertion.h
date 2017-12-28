@@ -266,16 +266,16 @@ extern bool		xIsDebuggerAttached	();
 
 #if ENABLE_ABORT_LOG
 #	if ENABLE_POPUP_ERRORS && !DISABLE_ASSERTIONS
-#		define	log_and_abort(...)								 (void(_inline_abort_("error/abort", ## __VA_ARGS__)))
-#		define	log_and_abort_on(cond,...)			( (cond) &&  (    (_inline_abort_( # cond,       ## __VA_ARGS__)), true) )
+#		define	x_abort(...)								 (void(_inline_abort_("error/abort", ## __VA_ARGS__)))
+#		define	x_abort_on(cond,...)			( (cond) &&  (    (_inline_abort_( # cond,       ## __VA_ARGS__)), true) )
 #	else
-#		define	log_and_abort(...)					             (_host_log(xLogFlag_Important, "abort",	## __VA_ARGS__),	__stop())
-#		define	log_and_abort_on(cond,...)			( (cond) &&  (_host_log(xLogFlag_Important, "abort",	## __VA_ARGS__),	__stop(), true) )
+#		define	x_abort(...)					             (_host_log(xLogFlag_Important, "abort",	## __VA_ARGS__),	__stop())
+#		define	x_abort_on(cond,...)			( (cond) &&  (_host_log(xLogFlag_Important, "abort",	## __VA_ARGS__),	__stop(), true) )
 #	endif
 #	define		abort_var(...)						__VA_ARGS__
 #else
-#	define		log_and_abort(...)					(			 (__stop())
-#	define		log_and_abort_on(cond,...)			( (cond) &&  (__stop(), true) )
+#	define		x_abort(...)					(			 (__stop())
+#	define		x_abort_on(cond,...)			( (cond) &&  (__stop(), true) )
 #	define		abort_var(...)
 #endif
 

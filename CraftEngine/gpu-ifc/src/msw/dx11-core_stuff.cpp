@@ -234,7 +234,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 			throw_abort("Shader file not found: %S", szFileName);
 		}
 		else {
-			log_and_abort("D3DCompileFromFile(%S) failed with no errorBlob, hr=0x%08x", szFileName, hr);
+			x_abort("D3DCompileFromFile(%S) failed with no errorBlob, hr=0x%08x", szFileName, hr);
 		}
 	}
 
@@ -327,7 +327,7 @@ InputLayoutSlot& InputLayoutSlot::Append(const InputLayoutItemEx& item)
 
 InputLayoutSlot& InputLayoutSlot::Append(const char* semanticName, GPU_ResourceFmt format, int offset)
 {
-	log_and_abort_on(m_numElements >= MaxElementsPerSlot, "Too many data elements added to InputLayoutSlot.");
+	x_abort_on(m_numElements >= MaxElementsPerSlot, "Too many data elements added to InputLayoutSlot.");
 
 	// Check for redundant semantic name ...
 	for (int i=0; i<m_numElements; ++i) {
@@ -399,7 +399,7 @@ void dx11_InitDevice()
 			break;
 	}
 
-	log_and_abort_on (FAILED(hr));
+	x_abort_on (FAILED(hr));
 
 	//  * DX Docs recommend always having MSAA enabled.
 	//  * Depth Bias options are pretty much just for shadow implementations
@@ -461,7 +461,7 @@ void dx11_InitDevice()
 			dxgiDevice->Release();
 		}
 	}
-	log_and_abort_on (hr);
+	x_abort_on (hr);
 
 	// Create swap chain
 	IDXGIFactory2* dxgiFactory2 = nullptr;
@@ -509,7 +509,7 @@ void dx11_InitDevice()
 
 		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
 	}
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
 	dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
@@ -517,12 +517,12 @@ void dx11_InitDevice()
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
 	pBackBuffer->Release();
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
 	rtView->Release();
@@ -703,7 +703,7 @@ void dx11_BeginFrameDrawing()
 
 	// Create the sampler
 	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 }
 
 void dx11_PreDrawPrep()
@@ -759,7 +759,7 @@ bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char
 	info->hash = hash;
 
 	hr = g_pd3dDevice->CreateVertexShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	return true;
 }
@@ -781,7 +781,7 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	if (!info->blob) return false;
 
 	hr = g_pd3dDevice->CreatePixelShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	info->blob->Release();
 	info->blob = nullptr;
@@ -911,7 +911,7 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 		}
 	}
 
-	log_and_abort_on(bufferIdx < 0, "Ran out of Dynamic buffer handles");
+	x_abort_on(bufferIdx < 0, "Ran out of Dynamic buffer handles");
 
 	for (int i=0; i<BackBufferCount; ++i) {
 		D3D11_BUFFER_DESC bd = {};
@@ -1139,7 +1139,7 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 	initData.SysMemSlicePitch	= rowPitch * height;
 
 	hr = g_pd3dDevice->CreateTexture2D(&desc, (autogen_mipmaps) ? nullptr : &initData, &texture);
-	log_and_abort_on(FAILED(hr) || !texture);
+	x_abort_on(FAILED(hr) || !texture);
 
 	// textureView bits
 
@@ -1149,7 +1149,7 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 	SRVDesc.Texture2D.MipLevels = autogen_mipmaps ? -1 : 1;
 
 	hr = g_pd3dDevice->CreateShaderResourceView(texture, &SRVDesc, &textureView);
-	log_and_abort_on (FAILED(hr));
+	x_abort_on (FAILED(hr));
 
 	if (autogen_mipmaps)
 	{
@@ -1264,7 +1264,7 @@ void dx11_CreateDepthStencil()
 	descDepth.MiscFlags				= 0;
 
 	hr = g_pd3dDevice->CreateTexture2D( &descDepth, nullptr, &g_pDepthStencil );
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	ID3D11ShaderResourceView* srv = nullptr;
 	if (create_srv) {
@@ -1274,7 +1274,7 @@ void dx11_CreateDepthStencil()
 		srvd.Texture2D.MipLevels = 1;
 
 		hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil,&srvd,&srv);
-		log_and_abort_on(FAILED(hr));
+		x_abort_on(FAILED(hr));
 	}
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -1282,14 +1282,14 @@ void dx11_CreateDepthStencil()
 	descDSV.ViewDimension		= D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice	= 0;
 	hr = g_pd3dDevice->CreateDepthStencilView( g_pDepthStencil, &descDSV, &g_pDepthStencilView );
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	// Set the Depth Stencil as the Output Merger Target
 	// (this should be broken itno separate step ...)
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	log_and_abort_on(FAILED(hr));
+	x_abort_on(FAILED(hr));
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);

@@ -177,7 +177,7 @@ extern "C" void ajek_lua_printf(const char *fmt, ...)
 
 extern "C" void ajek_lua_abort()
 {
-	log_and_abort( "lua aborted!" );
+	x_abort( "lua aborted!" );
 
 	// abort is technically unreachable -- just here for __noreturn adherence, since log_abort()
 	// is not always marked as noreturn depending on the build target configuration.
@@ -250,7 +250,7 @@ static int lua_panic(lua_State* L)
 	lua_getglobal(L, "AjekScriptThisPtr");
 	AjekScriptEnv* env = (AjekScriptEnv*)lua_tointeger(L, -1);
 	lua_pop(L, 1);
-	log_and_abort_on(!env);
+	x_abort_on(!env);
 
 	env->m_lua_error = cvtLuaErrorToAjekError(L->status);
 	const char* err_msg = lua_tostring(L, -1);
@@ -323,7 +323,7 @@ void AjekScriptEnv::NewState()
 	m_L			= luaL_newstate();
 	m_lua_error = AsError_None;
 
-	log_and_abort_on( !m_L, "Create new Lua state failed." );
+	x_abort_on( !m_L, "Create new Lua state failed." );
 	log_host( "luaState = %s", cPtrStr(m_L) );
 
 	// store this ajekscript handle in the lua heap for error handling (not really meant to be
@@ -374,7 +374,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	if (ret) {
 		bool isAbortErr = ret != LUA_ERRSYNTAX && ret != LUA_ERRFILE;
 		if (isAbortErr) {
-			log_and_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
+			x_abort( "luaL_loadfile failed : %s", lua_tostring(m_L, -1) );
 		}
 		m_lua_error = cvtLuaErrorToAjekError(ret);
 		throw_abort_ex(AsError_Syntax, lua_tostring(m_L, -1));
@@ -415,7 +415,7 @@ void AjekScriptEnv::LoadModule(const xString& path)
 	//  # remove init-only APIs.
 
 	// just for low-level debugging...
-	//log_and_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
+	//x_abort_on(ret, "script load error.\n%s", lua_tostring(m_L, -1) );
 	GCUSAGE(m_L);
 }
 

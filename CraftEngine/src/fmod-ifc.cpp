@@ -144,13 +144,13 @@ void fmod_CheckLib()
 
 	if (version < FMOD_VERSION)
 	{
-		log_and_abort("FMOD lib version %08x doesn't match header version %08x", version, FMOD_VERSION);
+		x_abort("FMOD lib version %08x doesn't match header version %08x", version, FMOD_VERSION);
 	}
 }
 
 void fmod_InitSystem()
 {
-	log_and_abort_on(!fmsys);
+	x_abort_on(!fmsys);
 
 	FMOD_RESULT		result;
 	void           *extradriverdata = 0;
