@@ -66,11 +66,15 @@ int						g_curBufferIdx = 0;
 // Therefore, when DX11 Debug Flag support is enabled, the engine does process-wide loose object tracking of its
 // own so that it can just wipe everything that's been allocated, and thus suppress the annoying error.
 //
+// DX11_DEBUG_FLAG_SUPPORT is managed independently of _DEBUG, since it's entirely OK to be doing scriptable
+// shader-like development on a release-mode build of the CraftEngine.
+//
 #if !defined(DX11_DEBUG_FLAG_SUPPORT)
 #	define DX11_DEBUG_FLAG_SUPPORT		1
 #endif
 
 #if DX11_DEBUG_FLAG_SUPPORT
+	pragma_todo("Add s_dx11_ObjectReporting to user config settings");
 	using  DX11_ObjectPointerSet = std::unordered_multiset<void*, FunctHashAlignedPtr>;
 	static DX11_ObjectPointerSet s_dx11_managed_objects;
 	static bool s_dx11_ObjectReporting	 = 0;
@@ -215,7 +219,7 @@ void dx11_Release(T*& resource)
 	if (!resource) return;
 
 	if (dx11_ObjectReportEnabled()) {
-		log_host("(runtime) Releasing managed object @ %s", cPtrStr(resource));
+		log_host("(runtime) Releasing managed object @ %s", cPtrStr(resource, ""));
 	}
 
 #if DX11_DEBUG_FLAG_SUPPORT
@@ -296,7 +300,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 
 	if (FAILED(hr)) {
 		if (pErrorBlob) {
-			throw_abort("%s", reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+			throw_abort("%s", ptr_cast<const char*>(pErrorBlob->GetBufferPointer()));
 		}
 		elif (hr == D3D11_ERROR_FILE_NOT_FOUND || hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
 			throw_abort("Shader file not found: %S", szFileName);
@@ -342,14 +346,14 @@ void dx11_CleanupDevice()
 
 	ID3D11Debug* m_d3dDebug = nullptr;
 	if (dx11_ObjectReportEnabled()) {
-		auto hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
+		auto hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), ptr_cast<void**>(&m_d3dDebug));
 		x_abort_on(FAILED(hr));
 	}
 
 #if DX11_DEBUG_FLAG_SUPPORT
 	for(auto& ref : s_dx11_managed_objects) {
 		if (dx11_ObjectReportEnabled()) {
-			log_host("(Cleanup) Releasing managed object @ %s", cPtrStr(ref));
+			log_host("(Cleanup) Releasing managed object @ %s", cPtrStr(ref, ""));
 		}
 		((IUnknown*)ref)->Release();
 	}
@@ -363,6 +367,15 @@ void dx11_CleanupDevice()
 	dx11_ReleaseLocal(g_pImmediateContext1	);
 	dx11_ReleaseLocal(g_pImmediateContext	);
 	if (m_d3dDebug) {
+		// The objects in the normal diag report are unnammed -- and so they must be cross-referenced with the named objects output
+		// by ReportLiveDeviceObjects().  Unfortunately, this call _depends_ on the device context, and as long as that's alive, the
+		// system will insist on listing a whole bunch of Live objects (most refcount:0) which will all disappear as soon as the debug
+		// object is disposed.  Thanks, COM. --jstine
+
+		OutputDebugStringA("====================================================================  DX11 ReportLiveDeviceObjects  ========\n"	);
+		OutputDebugStringA("  > The following list of warnings may be entirely bogus.  What matters is matching these against any\n"		);
+		OutputDebugStringA("  > Live Object warnings issued by DX11 itself when the process is unloaded.  This list of warnings\n"			);
+		OutputDebugStringA("  > should be ignored if no unnamed live objects are reported dring process termination below.\n\n"				);
 		m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 	}
 	dx11_ReleaseLocal(m_d3dDebug			);
@@ -537,14 +550,14 @@ void dx11_InitDevice()
 	IDXGIFactory1* dxgiFactory = nullptr;
 	{
 		IDXGIDevice* dxgiDevice = nullptr;
-		hr = g_pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		hr = g_pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), ptr_cast<void**>(&dxgiDevice));
 		if (SUCCEEDED(hr))
 		{
 			IDXGIAdapter* adapter = nullptr;
 			hr = dxgiDevice->GetAdapter(&adapter);
 			if (SUCCEEDED(hr))
 			{
-				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
+				hr = adapter->GetParent(__uuidof(IDXGIFactory1), ptr_cast<void**>(&dxgiFactory));
 				dx11_ReleaseLocal(adapter);
 			}
 			dx11_ReleaseLocal(dxgiDevice);
@@ -554,14 +567,14 @@ void dx11_InitDevice()
 
 	// Create swap chain
 	IDXGIFactory2* dxgiFactory2 = nullptr;
-	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory2));
+	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), ptr_cast<void**>(&dxgiFactory2));
 	if (dxgiFactory2)
 	{
 		// DirectX 11.1 or later
-		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&g_pd3dDevice1));
+		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), ptr_cast<void**>(&g_pd3dDevice1));
 		if (SUCCEEDED(hr))
 		{
-			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1));
+			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), ptr_cast<void**>(&g_pImmediateContext1));
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
@@ -576,7 +589,7 @@ void dx11_InitDevice()
 		hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
 		if (SUCCEEDED(hr))
 		{
-			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&g_pSwapChain));
+			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), ptr_cast<void**>(&g_pSwapChain));
 		}
 
 		dx11_ReleaseLocal(dxgiFactory2);
@@ -605,7 +618,7 @@ void dx11_InitDevice()
 	dx11_ReleaseLocal(dxgiFactory);
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), ptr_cast<void**>(&pBackBuffer));
 	x_abort_on(FAILED(hr));
 
 	pragma_todo("Implement and expose render target API.");
@@ -1379,7 +1392,7 @@ void dx11_CreateDepthStencil()
 	// (this should be broken itno separate step ...)
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), ptr_cast<void**>(&pBackBuffer));
 	x_abort_on(FAILED(hr));
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
