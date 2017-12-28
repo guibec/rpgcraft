@@ -179,6 +179,14 @@ inline void SetDebugObjectName(ID3D11DeviceChild* resource, const char (&name)[T
 #endif
 }
 
+template<typename T>
+void dx11_Release(T*& resource)
+{
+	if (!resource) return;
+	resource->Release();
+	resource = nullptr;
+}
+
 
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
@@ -204,7 +212,7 @@ HRESULT TryCompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, L
 #endif
 
 	ID3DBlob* pErrorBlob = nullptr;
-	Defer( { if (pErrorBlob) { pErrorBlob->Release(); pErrorBlob = nullptr; } } );
+	Defer( { dx11_Release(pErrorBlob); } );
 
 	// Note on compiler macros:
 	//   Macros should match exactly what's being used to precompile shaders via the makefile.
@@ -267,19 +275,23 @@ void dx11_CleanupDevice()
 	for(auto& stateA : g_RasterState) {
 		for(auto& stateB : stateA) {
 			for(auto& stateC : stateB) {
-				stateC->Release();
-				stateC = nullptr;
+				dx11_Release(stateC);
 			}
 		}
 	}
 
+	//ID3D11Debug* m_d3dDebug = nullptr;
+	//g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
+	//if (m_d3dDebug) {
+	//	m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	//}
 
-	if (g_pSwapChain1)			{ g_pSwapChain1			->Release();	g_pSwapChain1			= nullptr;	}
-	if (g_pSwapChain)			{ g_pSwapChain			->Release();	g_pSwapChain			= nullptr;	}
-	if (g_pImmediateContext1)	{ g_pImmediateContext1	->Release();	g_pImmediateContext1	= nullptr;	}
-	if (g_pImmediateContext)	{ g_pImmediateContext	->Release();	g_pImmediateContext		= nullptr;	}
-	if (g_pd3dDevice1)			{ g_pd3dDevice1			->Release();	g_pd3dDevice1			= nullptr;	}
-	if (g_pd3dDevice)			{ g_pd3dDevice			->Release();	g_pd3dDevice			= nullptr;	}
+	dx11_Release(g_pSwapChain1			);
+	dx11_Release(g_pSwapChain			);
+	dx11_Release(g_pImmediateContext1	);
+	dx11_Release(g_pImmediateContext	);
+	dx11_Release(g_pd3dDevice1			);
+	dx11_Release(g_pd3dDevice			);
 }
 
 __ai const	InputLayoutSlot&	GPU_InputDesc::GetSlot	(int idx)	const	{ bug_on(idx >= m_numSlots); return m_slots[idx]; }
@@ -456,9 +468,9 @@ void dx11_InitDevice()
 			if (SUCCEEDED(hr))
 			{
 				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
-				adapter->Release();
+				dx11_Release(adapter);
 			}
-			dxgiDevice->Release();
+			dx11_Release(dxgiDevice);
 		}
 	}
 	x_abort_on (hr);
@@ -490,7 +502,7 @@ void dx11_InitDevice()
 			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&g_pSwapChain));
 		}
 
-		dxgiFactory2->Release();
+		dx11_Release(dxgiFactory2);
 	} else
 	{
 		// DirectX 11.0 systems
@@ -513,7 +525,7 @@ void dx11_InitDevice()
 
 	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
 	dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
-	dxgiFactory->Release();
+	dx11_Release(dxgiFactory);
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
@@ -521,11 +533,10 @@ void dx11_InitDevice()
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
-	pBackBuffer->Release();
+	dx11_Release(pBackBuffer);
 	x_abort_on(FAILED(hr));
 
 	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
-	rtView->Release();
 
 	//dx11_CreateDepthStencil();
 
@@ -539,10 +550,7 @@ struct dx11_ShaderInfo
 	u32				hash	= 0;
 
 	void Dispose() {
-		if (blob) {
-			blob->Release();
-		}
-		blob = nullptr;
+		dx11_Release(blob);
 		hash = 0;
 	}
 };
@@ -575,7 +583,7 @@ static InputLayoutCache_t		s_dx11_InputLayoutCache;
 void dx11_InputLayoutCache_DisposeAll()
 {
 	for (auto& item : s_dx11_InputLayoutCache) {
-		if (item.second.dx) { item.second.dx->Release(); item.second.dx = nullptr; }
+		dx11_Release(item.second.dx);
 	}
 
 	s_dx11_InputLayoutCache.clear();
@@ -730,8 +738,8 @@ bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char
 	auto& shader	= ptr_cast<ID3D11VertexShader* &>	(dest.m_driverBinary);
 	auto& info		= ptr_cast<dx11_ShaderInfo* &>		(dest.m_driverBlob);
 
-	if (shader) { shader->Release(); shader	= nullptr; }
-	if (info)	{ info	->Dispose(); }
+	dx11_Release(shader);
+	if (info)	{ info->Dispose(); }
 
 	xMallocNew(info);
 
@@ -771,8 +779,8 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	auto& shader	= ptr_cast<ID3D11PixelShader* &>	(dest.m_driverBinary);
 	auto& info		= ptr_cast<dx11_ShaderInfo* &>		(dest.m_driverBlob);
 
-	if (shader) { shader->Release(); shader = nullptr; }
-	if (info)	{ info	->Dispose(); }
+	dx11_Release(shader);
+	if (info)	{ info->Dispose(); }
 
 	xMallocNew(info);
 
@@ -783,8 +791,7 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	hr = g_pd3dDevice->CreatePixelShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	x_abort_on(FAILED(hr));
 
-	info->blob->Release();
-	info->blob = nullptr;
+	dx11_Release(info->blob);
 	return true;
 }
 
@@ -921,10 +928,7 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 		bd.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
 
 		auto& buffer = g_DynVertBuffers[i][bufferIdx];
-		if (buffer.m_dx11_buffer) {
-			buffer.m_dx11_buffer->Release();
-			buffer.m_dx11_buffer = nullptr;
-		}
+		dx11_Release(buffer.m_dx11_buffer);
 		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer.m_dx11_buffer);
 		bug_on (FAILED(hr));
 		buffer.m_type = DynBuffer_Vertex;
@@ -935,9 +939,7 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 
 void GPU_VertexBuffer::Dispose()
 {
-	if (auto& buffer = ptr_cast<ID3D11Buffer*&>(m_driverData)) {
-		buffer->Release(); buffer = nullptr;
-	}
+	dx11_Release(ptr_cast<ID3D11Buffer*&>(m_driverData));
 }
 
 void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSizeInBytes, int vertexCount)
@@ -962,7 +964,7 @@ void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSiz
 void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int bufferSize)
 {
 	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData );
-	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+	dx11_Release(buffer);
 
 	D3D11_SUBRESOURCE_DATA	InitData	= {};
 	D3D11_BUFFER_DESC		bd			= {};
@@ -980,7 +982,7 @@ void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int buffer
 void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
 {
 	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData);
-	if (dest.m_driverData) { buffer	->Release(); buffer	= nullptr; }
+	dx11_Release(buffer);
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage			= D3D11_USAGE_DEFAULT;
@@ -1084,8 +1086,8 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 	auto&	texture		= ptr_cast<ID3D11Texture2D*&>			(dest.m_driverData_tex );
 	auto&	textureView	= ptr_cast<ID3D11ShaderResourceView*&>	(dest.m_driverData_view);
 
-	if (dest.m_driverData_view) { textureView	->Release(); textureView	= nullptr; }
-	if (dest.m_driverData_tex)	{ texture		->Release(); texture		= nullptr; }
+	dx11_Release(texture		);
+	dx11_Release(textureView	);
 
 	// See if format is supported for auto-gen mipmaps (varies by feature level)
 	// (Must have context and shader-view to auto generate mipmaps)
