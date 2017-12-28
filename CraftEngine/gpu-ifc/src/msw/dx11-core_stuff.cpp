@@ -20,13 +20,13 @@
 
 #include <wincodec.h>
 #include <unordered_map>
+#include <unordered_set>
 
 DECLARE_MODULE_NAME("dx11");
 
 #include "x-MemCopy.inl"
 
 DECLARE_MODULE_THROW(xThrowModule_GPU);		// enables use of throw_abort() macro
-
 
 #define ptr_cast		reinterpret_cast
 
@@ -53,13 +53,33 @@ static IDXGISwapChain*			g_pSwapChain			= nullptr;
 static IDXGISwapChain1*			g_pSwapChain1			= nullptr;
 
 
-XMMATRIX                g_Projection;
-
 GPU_RenderTarget		g_gpu_BackBuffer;
 int						g_curBufferIdx = 0;
 
-extern void dx11_CreateDepthStencil();
+// -----------------------------------------------------------------------------------------------
+// DX11_DEBUG_FLAG_SUPPORT
+//
+// The debug flag for DX11 enables a lot of useful features, like telling us when we have mismatched InputLayouts
+// and oddball rendering state stuff.  But it also enables an incredibly annoying spam dumped directly to the
+// Visual Studio console whenever a single DX11 object is not cleaned up.  The CraftEngine doesn't really care
+// about cleaning stuff up on process exit normally, but in order to ditch that spam we _have_ to clean up.
+// Therefore, when DX11 Debug Flag support is enabled, the engine does process-wide loose object tracking of its
+// own so that it can just wipe everything that's been allocated, and thus suppress the annoying error.
+//
+#if !defined(DX11_DEBUG_FLAG_SUPPORT)
+#	define DX11_DEBUG_FLAG_SUPPORT		1
+#endif
 
+#if DX11_DEBUG_FLAG_SUPPORT
+	using  DX11_ObjectPointerSet = std::unordered_multiset<void*, FunctHashAlignedPtr>;
+	static DX11_ObjectPointerSet s_dx11_managed_objects;
+	static bool s_dx11_ObjectReporting	 = 0;
+	static __ai bool dx11_ObjectReportEnabled() { return s_dx11_ObjectReporting; }
+#else
+	static __ai bool dx11_ObjectReportEnabled() { return false; }
+#endif
+
+// -----------------------------------------------------------------------------------------------
 // * Vertex Buffers are Mostly Dynamic.
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
 // * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
@@ -171,11 +191,21 @@ DXGI_FORMAT get_DXGI_Format(GPU_ResourceFmt bitmapFmt)
 	return DXGI_FORMAT_R8G8B8A8_UNORM;
 }
 
+
 template<int TNameLength>
 inline void SetDebugObjectName(ID3D11DeviceChild* resource, const char (&name)[TNameLength])
 {
-#if TARGET_DEBUG
+#if DX11_DEBUG_FLAG_SUPPORT
 	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
+#endif
+}
+
+template<typename T>
+__ai void dx11_ManageObject(T* resource)
+{
+#if DX11_DEBUG_FLAG_SUPPORT
+	if (!resource) return;
+	s_dx11_managed_objects.insert(resource);
 #endif
 }
 
@@ -183,14 +213,37 @@ template<typename T>
 void dx11_Release(T*& resource)
 {
 	if (!resource) return;
+
+	if (dx11_ObjectReportEnabled()) {
+		log_host("(runtime) Releasing managed object @ %s", cPtrStr(resource));
+	}
+
+#if DX11_DEBUG_FLAG_SUPPORT
+	auto it = s_dx11_managed_objects.find(resource);
+	if (it != s_dx11_managed_objects.end()) {
+		s_dx11_managed_objects.erase(it);
+	}
+	else {
+		bug("Unmanaged DirectX Object!");
+	}
+#endif
+
 	resource->Release();
 	resource = nullptr;
 }
 
 template<typename T>
-void dx11_ReleaseLocal(T*& resource)
+__ai void dx11_ReleaseLocal(T*& resource)
 {
 	if (!resource) return;
+
+#if DX11_DEBUG_FLAG_SUPPORT
+	auto it = s_dx11_managed_objects.find(resource);
+	if (it != s_dx11_managed_objects.end()) {
+		bug("Releasing managed DirectX Object via ReleaseLocal");
+	}
+#endif
+
 	resource->Release();
 	resource = nullptr;
 }
@@ -288,21 +341,33 @@ void dx11_CleanupDevice()
 	}
 
 	ID3D11Debug* m_d3dDebug = nullptr;
-	g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
+	if (dx11_ObjectReportEnabled()) {
+		auto hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
+		x_abort_on(FAILED(hr));
+	}
+
+#if DX11_DEBUG_FLAG_SUPPORT
+	for(auto& ref : s_dx11_managed_objects) {
+		if (dx11_ObjectReportEnabled()) {
+			log_host("(Cleanup) Releasing managed object @ %s", cPtrStr(ref));
+		}
+		((IUnknown*)ref)->Release();
+	}
+	s_dx11_managed_objects.clear();
+#endif
 
 	ImGui_ImplDX11_Shutdown();
 
-	dx11_ReleaseLocal(g_pSwapChain1			);
 	dx11_ReleaseLocal(g_pSwapChain			);
+	dx11_ReleaseLocal(g_pSwapChain1			);
 	dx11_ReleaseLocal(g_pImmediateContext1	);
 	dx11_ReleaseLocal(g_pImmediateContext	);
-	dx11_ReleaseLocal(g_pd3dDevice1			);
-	dx11_ReleaseLocal(g_pd3dDevice			);
-
 	if (m_d3dDebug) {
 		m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 	}
-	dx11_ReleaseLocal(m_d3dDebug);
+	dx11_ReleaseLocal(m_d3dDebug			);
+	dx11_ReleaseLocal(g_pd3dDevice			);
+	dx11_ReleaseLocal(g_pd3dDevice1			);
 }
 
 __ai const	InputLayoutSlot&	GPU_InputDesc::GetSlot	(int idx)	const	{ bug_on(idx >= m_numSlots); return m_slots[idx]; }
@@ -384,7 +449,7 @@ void dx11_InitDevice()
 	g_client_aspect_ratio = float(g_client_size_pix.x) / float(g_client_size_pix.y);
 
 	UINT createDeviceFlags = 0;
-#ifdef _DEBUG
+#if DX11_DEBUG_FLAG_SUPPORT
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -463,6 +528,7 @@ void dx11_InitDevice()
 				drd.ScissorEnable = (scissor == GPU_Scissor_Enable) ? 1 : 0;
 				hr = g_pd3dDevice->CreateRasterizerState(&drd, &g_RasterState[fill][cull][scissor]);
 				bug_on( FAILED( hr ));
+				dx11_ManageObject(g_RasterState[fill][cull][scissor]);
 			}
 		}
 	}
@@ -542,8 +608,10 @@ void dx11_InitDevice()
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	x_abort_on(FAILED(hr));
 
+	pragma_todo("Implement and expose render target API.");
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
+	dx11_ManageObject(rtView);		// rtView is managed due to OMSetRenderTargets
 	dx11_ReleaseLocal(pBackBuffer);
 	x_abort_on(FAILED(hr));
 
@@ -570,6 +638,7 @@ void dx11_InitDevice()
 	// Create the sampler
 	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
 	x_abort_on(FAILED(hr));
+	dx11_ManageObject(m_pTextureSampler);
 
 	//dx11_CreateDepthStencil();
 
@@ -704,6 +773,7 @@ ID3D11InputLayout* do_prep_inputLayout()
 		&newCacheItem.dx
 	);
 
+	dx11_ManageObject(newCacheItem.dx);
 	s_dx11_InputLayoutCache.insert( { fullhash_vs, newCacheItem } );
 	return newCacheItem.dx;
 }
@@ -777,8 +847,11 @@ bool dx11_TryLoadShaderVS(GPU_ShaderVS& dest, const xString& srcfile, const char
 	hr = g_pd3dDevice->CreateVertexShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	x_abort_on(FAILED(hr));
 
+	dx11_ManageObject(info->blob);
+	dx11_ManageObject(shader);
 	return true;
 }
+
 
 bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char* entryPointFn)
 {
@@ -799,6 +872,7 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	hr = g_pd3dDevice->CreatePixelShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	x_abort_on(FAILED(hr));
 
+	dx11_ManageObject(shader);
 	dx11_ReleaseLocal(info->blob);
 	return true;
 }
@@ -940,6 +1014,7 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
 		auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer.m_dx11_buffer);
 		bug_on (FAILED(hr));
 		buffer.m_type = DynBuffer_Vertex;
+		dx11_ManageObject(buffer.m_dx11_buffer);
 	}
 
 	dest.m_buffer_idx = bufferIdx;
@@ -966,12 +1041,13 @@ void dx11_CreateStaticMesh(GPU_VertexBuffer& dest, void* vertexData, int itemSiz
 
 	GPU_VertexBuffer result;
 	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &buffer );
+	dx11_ManageObject(buffer);
 	bug_on(FAILED(hr));
 }
 
 void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int bufferSize)
 {
-	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData );
+	auto&	buffer	= ptr_cast<ID3D11Buffer*&>(dest.m_driverData);
 	dx11_Release(buffer);
 
 	D3D11_SUBRESOURCE_DATA	InitData	= {};
@@ -983,7 +1059,8 @@ void dx11_CreateIndexBuffer(GPU_IndexBuffer& dest, void* indexBuffer, int buffer
 	bd.CPUAccessFlags	= 0;
 	InitData.pSysMem	= indexBuffer;
 
-	auto hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &buffer );
+	auto hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &buffer);
+	dx11_ManageObject(buffer);
 	bug_on (FAILED(hr));
 }
 
@@ -997,7 +1074,8 @@ void dx11_CreateConstantBuffer(GPU_ConstantBuffer& dest, int bufferSize)
 	bd.ByteWidth		= (bufferSize + 15) & ~15;
 	bd.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags	= 0;
-	auto hr = g_pd3dDevice->CreateBuffer( &bd, nullptr, &buffer );
+	auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer);
+	dx11_ManageObject(buffer);
 	bug_on (FAILED(hr));
 }
 
@@ -1160,6 +1238,9 @@ void dx11_CreateTexture2D(GPU_TextureResource2D& dest, const void* src_bitmap_da
 
 	hr = g_pd3dDevice->CreateShaderResourceView(texture, &SRVDesc, &textureView);
 	x_abort_on (FAILED(hr));
+
+	dx11_ManageObject(texture		);
+	dx11_ManageObject(textureView	);
 
 	if (autogen_mipmaps)
 	{

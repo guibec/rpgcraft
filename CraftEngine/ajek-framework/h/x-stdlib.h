@@ -43,6 +43,15 @@ public:
 	}
 };
 
+class FunctHashAlignedPtr {
+public:
+	__xi size_t operator()(const void* const& input) const {
+		static_assert(sizeof(input) <= sizeof(size_t), "Unsupported pointer hashing situation. A _real_ hash will be required here!");
+		return (size_t)(sptr(input) >> 4);
+	}
+};
+
+
 
 // ======================================================================================
 //  xCustomAllocator  (interface)
