@@ -540,19 +540,19 @@ xString xPosixErrorStr()
 // xPtrStr
 //   use cPtrToStr() macro for passing parameters into printf/varadic functions.
 //
-__eai xString xPtrStr( const void* src )
+__eai xString xPtrStr(const void* src, const char* sep)
 {
 #if TARGET_x32
 	return xFmtStr( "0x%08X", src );
 #else
 	IntPack64 parts = IntPack64::fromPtr( src );
-	return xFmtStr( "0x%08X:%08X", parts.hi, parts.lo );
+	return xFmtStr( "0x%08X%s%08X", parts.hi, sep ? sep : "", parts.lo );
 #endif
 }
 
-__eai xString xPtrStr( VoidFunc* src )
+__eai xString xPtrStr(VoidFunc* src, const char* sep)
 {
-	return xPtrStr( (void*)src );
+	return xPtrStr( (void*)src, sep );
 }
 
 // ----------------------------------------------------------------------------

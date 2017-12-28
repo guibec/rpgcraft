@@ -99,14 +99,14 @@ inline int sprintf_s(  char (*&dest)[size], const char* fmt, ... )
 typedef char			tChar;
 typedef std::string		tString;
 
-#define xFmtStr( ... )			(xString().Format( __VA_ARGS__ ))
-#define cFmtStr( ... )			(xString().Format( __VA_ARGS__ ).c_str())
-#define cPtrStr( value )		(xPtrStr		( value )				.c_str())
-#define cHexStr( value )		(xHexStr		( value )				.c_str())
-#define cDataStr( value )		(xDataStr		( value )				.c_str())
-#define cDataAsciiStr( value )	(xDataAsciiStr	( value )				.c_str())
-#define cDecStr( value )		(xDecStr		( value )				.c_str())
-#define cPosixErrorStr()		(xPosixErrorStr	()						.c_str())
+#define xFmtStr(...)			(xString().Format( __VA_ARGS__ ))
+#define cFmtStr(...)			(xString().Format( __VA_ARGS__ ).c_str())
+#define cPtrStr(value, ...)		(xPtrStr		( value, ## __VA_ARGS__ )	.c_str())
+#define cHexStr(value, ...)		(xHexStr		( value, ## __VA_ARGS__ )	.c_str())
+#define cDataStr(value)			(xDataStr		( value )					.c_str())
+#define cDataAsciiStr(value)	(xDataAsciiStr	( value )					.c_str())
+#define cDecStr(value)			(xDecStr		( value )					.c_str())
+#define cPosixErrorStr()		(xPosixErrorStr	()							.c_str())
 
 // semi-internal-use struct for efficiently accepting either xString or `const char*` as input
 // parameters to a function.
@@ -459,6 +459,6 @@ extern  xString xDecStr		( const long long& src );
 
 //extern xString xDecStr	( const u128& src,	const char* sep );
 
-extern  char*	sbinary	( u32 val );
-extern  xString	xPtrStr	( const void* src );
-extern  xString	xPtrStr	( VoidFunc* src );
+extern  char*	sbinary	(u32 val);
+extern  xString	xPtrStr	(const void*	src, const char* sep=":");
+extern  xString	xPtrStr	(VoidFunc*		src, const char* sep=":");
