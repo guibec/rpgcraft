@@ -187,6 +187,13 @@ void dx11_Release(T*& resource)
 	resource = nullptr;
 }
 
+template<typename T>
+void dx11_ReleaseLocal(T*& resource)
+{
+	if (!resource) return;
+	resource->Release();
+	resource = nullptr;
+}
 
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
@@ -280,18 +287,22 @@ void dx11_CleanupDevice()
 		}
 	}
 
-	//ID3D11Debug* m_d3dDebug = nullptr;
-	//g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
-	//if (m_d3dDebug) {
-	//	m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	//}
+	ID3D11Debug* m_d3dDebug = nullptr;
+	g_pd3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
 
-	dx11_Release(g_pSwapChain1			);
-	dx11_Release(g_pSwapChain			);
-	dx11_Release(g_pImmediateContext1	);
-	dx11_Release(g_pImmediateContext	);
-	dx11_Release(g_pd3dDevice1			);
-	dx11_Release(g_pd3dDevice			);
+	ImGui_ImplDX11_Shutdown();
+
+	dx11_ReleaseLocal(g_pSwapChain1			);
+	dx11_ReleaseLocal(g_pSwapChain			);
+	dx11_ReleaseLocal(g_pImmediateContext1	);
+	dx11_ReleaseLocal(g_pImmediateContext	);
+	dx11_ReleaseLocal(g_pd3dDevice1			);
+	dx11_ReleaseLocal(g_pd3dDevice			);
+
+	if (m_d3dDebug) {
+		m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	}
+	dx11_ReleaseLocal(m_d3dDebug);
 }
 
 __ai const	InputLayoutSlot&	GPU_InputDesc::GetSlot	(int idx)	const	{ bug_on(idx >= m_numSlots); return m_slots[idx]; }
@@ -468,9 +479,9 @@ void dx11_InitDevice()
 			if (SUCCEEDED(hr))
 			{
 				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
-				dx11_Release(adapter);
+				dx11_ReleaseLocal(adapter);
 			}
-			dx11_Release(dxgiDevice);
+			dx11_ReleaseLocal(dxgiDevice);
 		}
 	}
 	x_abort_on (hr);
@@ -502,7 +513,7 @@ void dx11_InitDevice()
 			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&g_pSwapChain));
 		}
 
-		dx11_Release(dxgiFactory2);
+		dx11_ReleaseLocal(dxgiFactory2);
 	} else
 	{
 		// DirectX 11.0 systems
@@ -525,7 +536,7 @@ void dx11_InitDevice()
 
 	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
 	dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
-	dx11_Release(dxgiFactory);
+	dx11_ReleaseLocal(dxgiFactory);
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
@@ -533,10 +544,32 @@ void dx11_InitDevice()
 
 	auto&	rtView	= ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
 	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
-	dx11_Release(pBackBuffer);
+	dx11_ReleaseLocal(pBackBuffer);
 	x_abort_on(FAILED(hr));
 
 	g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
+
+	// TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
+	//        and texture WRAP vs. CLAMP.  Point sampling and wrapping might be useful for some
+	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
+	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
+
+	pragma_todo("Implement Sampler Binding API - GPU_SamplerState and dx11_SetSampler.")
+
+	D3D11_SAMPLER_DESC samplerDesc = {};
+
+//	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD			= 0;
+	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
+
+	// Create the sampler
+	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
+	x_abort_on(FAILED(hr));
 
 	//dx11_CreateDepthStencil();
 
@@ -572,7 +605,7 @@ struct InputLayoutCacheItem {
 using InputLayoutCache_t	= std::unordered_map<u32,					InputLayoutCacheItem,	FunctHashIdentity>;
 using InputDescCache_t		= std::unordered_map<GPU_InputDescHash_t,	GPU_InputDesc,			FunctHashIdentity>;
 
-static bool		s_NeedsPreDrawPrep = 0;
+static		 bool				s_NeedsPreDrawPrep	= 0;
 static const GPU_InputDesc*		s_CurrentInputDesc	= nullptr;
 static const GPU_ShaderVS*		s_CurrentShaderVS	= nullptr;
 static const GPU_ShaderFS*		s_CurrentShaderFS	= nullptr;
@@ -604,7 +637,6 @@ ID3D11InputLayout* do_prep_inputLayout()
 {
 	throw_abort_on(!s_CurrentInputDesc,		"No input layout has been bound to the pipeline.");
 	throw_abort_on(!s_CurrentShaderVS,		"No vertex shader has been bound to the pipeline.");
-
 
 	const auto& shader	= ptr_cast<ID3D11VertexShader* const &>	(s_CurrentShaderVS->m_driverBinary);
 	const auto& info	= ptr_cast<dx11_ShaderInfo* const &>	(s_CurrentShaderVS->m_driverBlob);
@@ -679,8 +711,6 @@ ID3D11InputLayout* do_prep_inputLayout()
 // to be called after logic step and before issuing any draw commands through the pipeline.
 void dx11_BeginFrameDrawing()
 {
-	HRESULT hr;
-
 	// Setup the viewport
 	D3D11_VIEWPORT vp = {};
 	vp.Width	= (float)g_client_size_pix.x;
@@ -690,28 +720,6 @@ void dx11_BeginFrameDrawing()
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
-
-	// TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
-	//        and texture WRAP vs. CLAMP.  Point sampling and wrapping might be useful for some
-	//        types of special effects.  Most other aspects of sampling can be simulated in shaders.
-	//        (note: 2D game engine should not care about anisotropic or mip-mapped effects)
-
-	pragma_todo("Implement Sampler Binding API - GPU_SamplerState and dx11_SetSampler.")
-
-	D3D11_SAMPLER_DESC samplerDesc = {};
-
-//	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.ComparisonFunc	= D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD			= 0;
-	samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
-
-	// Create the sampler
-	hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
-	x_abort_on(FAILED(hr));
 }
 
 void dx11_PreDrawPrep()
@@ -791,7 +799,7 @@ bool dx11_TryLoadShaderFS(GPU_ShaderFS& dest, const xString& srcfile, const char
 	hr = g_pd3dDevice->CreatePixelShader(info->blob->GetBufferPointer(), info->blob->GetBufferSize(), nullptr, &shader);
 	x_abort_on(FAILED(hr));
 
-	dx11_Release(info->blob);
+	dx11_ReleaseLocal(info->blob);
 	return true;
 }
 
