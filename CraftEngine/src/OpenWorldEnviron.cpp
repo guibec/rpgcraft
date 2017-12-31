@@ -63,6 +63,13 @@ static const int TerrainTileConstruct_Count = (int)TerrainTileConstructId::LAST;
 
 static const int2 RipSrcTilePos[TerrainTileConstruct_Count];
 
+enum class TileClass
+{
+	Water,
+	Sandy,
+	Grassy,
+};
+
 namespace StdTileOffset
 {
 	static const int Empty			= 0;
@@ -71,9 +78,39 @@ namespace StdTileOffset
 	static const int Grassy			= 1 + (2 * TerrainTileConstruct_Count);
 }
 
-void PlaceTileWithRules()
+// tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up" ...
+void PlaceTileWithRules(int tileClass, int tileDecorType, int2 pos)
 {
+	auto  thisIdx		= (pos.y * WorldSizeX) + pos.x;
+	int4  edgesIdx		= {
+		((pos.y + -1) * WorldSizeX) + pos.x +  0,
+		((pos.y +  0) * WorldSizeX) + pos.x +  1,
+		((pos.y +  1) * WorldSizeX) + pos.x +  0,
+		((pos.y +  0) * WorldSizeX) + pos.x + -1,
+	};
 
+	int4  cornersIdx	= {
+		edgesIdx.x - 1,
+		edgesIdx.x + 1,
+		edgesIdx.z - 1,
+		edgesIdx.z + 1,
+	};
+
+	auto& thisTile		= g_WorldMap[thisIdx];
+
+	pragma_todo("select the correct TerrainTileConstructId according to surrounding tile classes and constructId's");
+	//  TODO details:
+	//   * This probably requires modifying neighboring tiles as well.
+	//   * bounds checking on edgesIdx and cornersIdx is needed!  (for now can assume out-of-bounds edges are "water")
+
+}
+
+void DigThroughTile(int2 pos)
+{
+	auto  digSpotIndex  = (pos.y * WorldSizeX) + pos.x;
+	auto& digSpot		= g_WorldMap[digSpotIndex];
+
+	//
 }
 
 void WorldMap_Procgen()
@@ -84,8 +121,8 @@ void WorldMap_Procgen()
 
 	for (int y=0; y<WorldSizeY; ++y) {
 		for (int x=0; x<WorldSizeX; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].tile_below = StdTileOffset::Water;
-			g_WorldMap		[(y * WorldSizeX) + x].tile_above  = StdTileOffset::Sandy;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_below	= StdTileOffset::Water;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_above	= StdTileOffset::Sandy;
 		}
 	}
 
