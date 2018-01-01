@@ -202,16 +202,16 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 	matched.S  = (edgeS.class_below == tileClass) || (edgeS.class_above == tileClass);
 	matched.W  = (edgeW.class_below == tileClass) || (edgeW.class_above == tileClass);
 
-	matched.NW = (cornerNW.class_below == tileClass) || (edgeN.class_above == tileClass);
-	matched.NE = (cornerNE.class_below == tileClass) || (edgeE.class_above == tileClass);
-	matched.SE = (cornerSE.class_below == tileClass) || (edgeS.class_above == tileClass);
-	matched.SW = (cornerSW.class_below == tileClass) || (edgeW.class_above == tileClass);
+	matched.NW = (cornerNW.class_below == tileClass) || (cornerNW.class_above == tileClass);
+	matched.NE = (cornerNE.class_below == tileClass) || (cornerNE.class_above == tileClass);
+	matched.SE = (cornerSE.class_below == tileClass) || (cornerSE.class_above == tileClass);
+	matched.SW = (cornerSW.class_below == tileClass) || (cornerSW.class_above == tileClass);
 
 	if (!matched.CheckAll()) {
 		// some unmatched neighboring tiles.  Nearby tiles will need to be given class_above
 		// assignment in order to maintain visual consistency...
 
-		// TODO ---
+
 	}
 }
 
