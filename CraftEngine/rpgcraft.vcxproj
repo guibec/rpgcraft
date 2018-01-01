@@ -71,6 +71,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Box2D.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="src\fmod-ifc.cpp" />
     <ClCompile Include="src\imgui-console.cpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Box2D.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="src\appConfig.h" />
     <ClInclude Include="src\Bezier2D.h" />
