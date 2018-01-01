@@ -6,20 +6,20 @@
 -- to the target platform.  
 
 ScriptConfig = {}
-ScriptConfig.ModulePath			= "./lua_modules"
-ScriptConfig.UseProtectedCall	= true
+ScriptConfig.ModulePath         = "./lua_modules"
+ScriptConfig.UseProtectedCall   = true
 ScriptConfig.ScriptDebugging    = true
-ScriptConfig.LuaPrintEnable		= true
+ScriptConfig.LuaPrintEnable     = true
 
 --[[
 -- TODO : switch to a functional method of applying settings, rather than data-driven?
 SetScriptParams({
-	-- IncludePaths		= { "./", 	"./lua_req"		},
-	-- DebugIncludePaths   = { "./", 	"./lua_dbg_req"	},
-	ModulePath			= "./lua_modules",
-	UseProtectedCall	= true,
-	ScriptDebugging     = true,
-	LuaPrintEnable		= true
+    -- IncludePaths     = { "./",   "./lua_req"     },
+    -- DebugIncludePaths   = { "./",    "./lua_dbg_req" },
+    ModulePath          = "./lua_modules",
+    UseProtectedCall    = true,
+    ScriptDebugging     = true,
+    LuaPrintEnable      = true
 })
 -- ]]
 

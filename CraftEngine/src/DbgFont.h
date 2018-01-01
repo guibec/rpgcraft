@@ -6,14 +6,14 @@
 
 #include "x-ForwardDefs.h"
 
-/*{*/ BEGIN_GPU_DATA_STRUCTS	// ---------------------------------------------------
+/*{*/ BEGIN_GPU_DATA_STRUCTS    // ---------------------------------------------------
 
 struct GPU_DbgFontConstants
 {
-	vFloat2		SrcTexTileSizeUV;
-	vInt2		SrcTexSizeInTiles;
-	vInt2		CharMapSize;
-	vFloat2		TileSize;
+    vFloat2     SrcTexTileSizeUV;
+    vInt2       SrcTexSizeInTiles;
+    vInt2       CharMapSize;
+    vFloat2     TileSize;
 };
 
 // Notes:
@@ -22,55 +22,55 @@ struct GPU_DbgFontConstants
 //    stride and alignment limitations.  I've had issues getting texture.Load() to work correctly,
 //    so for now using space-inefficient 32-bit vertex buffer formats.
 
-typedef u32	DbgChar;
+typedef u32 DbgChar;
 
 union DbgColor
 {
-	struct {
-		float		a,b,g,r;
-	};
+    struct {
+        float       a,b,g,r;
+    };
 
-	u128		rgba;
+    u128        rgba;
 
-	// rgba - could be changed to a u8 clut into a color table, if performance of dbgfont
-	// is a problem later on.  (seems unlikely)
+    // rgba - could be changed to a u8 clut into a color table, if performance of dbgfont
+    // is a problem later on.  (seems unlikely)
 } __packed;
 
-/*}*/ END_GPU_DATA_STRUCTS		// ---------------------------------------------------
+/*}*/ END_GPU_DATA_STRUCTS      // ---------------------------------------------------
 
 struct DbgFontSheet
 {
-	int2	size;
+    int2    size;
 
-	DbgChar*	charmap;
-	DbgColor*	colormap;
+    DbgChar*    charmap;
+    DbgColor*   colormap;
 
-	struct {
-		GPU_DbgFontConstants	consts;
-		GPU_DynVsBuffer			mesh_charmap;
-		GPU_DynVsBuffer			mesh_rgbamap;
-	} gpu;
+    struct {
+        GPU_DbgFontConstants    consts;
+        GPU_DynVsBuffer         mesh_charmap;
+        GPU_DynVsBuffer         mesh_rgbamap;
+    } gpu;
 
-	struct {
-		int2	size;
-		const GPU_TextureResource2D*	texture;
-	} font;
+    struct {
+        int2    size;
+        const GPU_TextureResource2D*    texture;
+    } font;
 
-	void		AllocSheet		(int2 sizeInPix);
-	void		SceneLogic		();
-	void		Write			(int x, int y, const xString& msg);
+    void        AllocSheet      (int2 sizeInPix);
+    void        SceneLogic      ();
+    void        Write           (int x, int y, const xString& msg);
 };
 
 struct DbgFontDrawItem
 {
-	int		ppx;		// pixel position x and y
-	int		ppy;		// pixel position x and y
-	vFloat4	rgba;
-	u8		chr;		// character to display
+    int     ppx;        // pixel position x and y
+    int     ppy;        // pixel position x and y
+    vFloat4 rgba;
+    u8      chr;        // character to display
 };
 
-extern void DbgFont_LoadInit		();
-extern void DbgFont_NewFrame		();
-extern void DbgFont_SceneRender		();
+extern void DbgFont_LoadInit        ();
+extern void DbgFont_NewFrame        ();
+extern void DbgFont_SceneRender     ();
 
 extern DbgFontSheet g_DbgFontOverlay;

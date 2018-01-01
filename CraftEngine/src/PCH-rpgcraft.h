@@ -1,6 +1,6 @@
 
 #if !defined(USE_PRECOMPILED_HEADER)
-#	error USE_PRECOMPILED_HEADER has not been defined.
+#   error USE_PRECOMPILED_HEADER has not been defined.
 #endif
 
 #if USE_PRECOMPILED_HEADER

@@ -13,52 +13,52 @@
 // use with code which is 32/64 bit dependant but not operating system dependent.
 //
 #if defined(_MSC_VER)
-#	if defined(_M_X64) || defined(_M_AMD64) || defined(_WIN64)
-#		define TARGET_x64	1
-#		define TARGET_x32	0
-#		undef _M_IX86		// why is it insisting on being defined by the compiler?
-#	elif defined(_M_IX86)
-#		define TARGET_x64	0
-#		define TARGET_x32	1
-#	endif
+#   if defined(_M_X64) || defined(_M_AMD64) || defined(_WIN64)
+#       define TARGET_x64   1
+#       define TARGET_x32   0
+#       undef _M_IX86       // why is it insisting on being defined by the compiler?
+#   elif defined(_M_IX86)
+#       define TARGET_x64   0
+#       define TARGET_x32   1
+#   endif
 
 #elif defined(__ORBIS__)
-#		define TARGET_x64	1
-#		define TARGET_x32	0
+#       define TARGET_x64   1
+#       define TARGET_x32   0
 
-#elif	defined(__GNUC__)
-#	if defined(__amd64__) || defined(__x86_64__)
-#		define TARGET_x64	1
-#		define TARGET_x32	0
-#	elif defined(__i386__)
-#		define TARGET_x64	0
-#		define TARGET_x32	1
-#	endif
+#elif   defined(__GNUC__)
+#   if defined(__amd64__) || defined(__x86_64__)
+#       define TARGET_x64   1
+#       define TARGET_x32   0
+#   elif defined(__i386__)
+#       define TARGET_x64   0
+#       define TARGET_x32   1
+#   endif
 #endif
 
 // --------------------------------------------------------------------------------------
 // Console Targets - XBOX, PS4, Wii, etc.
 
 #if !defined(TARGET_ORBIS)
-#	if defined(__ORBIS__)
-#		define TARGET_ORBIS		1
-#	else
-#		define TARGET_ORBIS		0
-#	endif
+#   if defined(__ORBIS__)
+#       define TARGET_ORBIS     1
+#   else
+#       define TARGET_ORBIS     0
+#   endif
 #endif
 
 #if !defined(TARGET_XBONE)
-#	if defined(__XBONE__)
-#		define TARGET_XBONE		1
-#	else
-#		define TARGET_XBONE		0
-#	endif
+#   if defined(__XBONE__)
+#       define TARGET_XBONE     1
+#   else
+#       define TARGET_XBONE     0
+#   endif
 #endif
 
 #if TARGET_ORBIS || TARGET_XBONE
-#	define TARGET_CONSOLE		1
-#	else
-#	define TARGET_CONSOLE		0
+#   define TARGET_CONSOLE       1
+#   else
+#   define TARGET_CONSOLE       0
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -69,11 +69,11 @@
 // 64 bit varieties of Windows)
 //
 #if !defined(TARGET_MSW)
-#	if defined(_WIN32) || defined(_WIN64)
-#		define TARGET_MSW	1
-#	else
-#		define TARGET_MSW	0
-#	endif
+#   if defined(_WIN32) || defined(_WIN64)
+#       define TARGET_MSW   1
+#   else
+#       define TARGET_MSW   0
+#   endif
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -84,7 +84,7 @@
 // performed since there's hardly any standard define present to identify linux systems
 //
 #if !defined(TARGET_LINUX)
-#	define TARGET_LINUX		0
+#   define TARGET_LINUX     0
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -95,36 +95,36 @@
 // such as SEH and the ABI differ greatly between 32 and 64 bit varieties.
 //
 #if !defined(TARGET_WIN64)
-#	if TARGET_MSW && TARGET_x64
-#		define TARGET_WIN64	1
-#	else
-#		define TARGET_WIN64	0
-#	endif
+#   if TARGET_MSW && TARGET_x64
+#       define TARGET_WIN64 1
+#   else
+#       define TARGET_WIN64 0
+#   endif
 #endif
 // --------------------------------------------------------------------------------------
 
 
 #if !defined(TARGET_LINUX) && !defined(TARGET_MSW) && !defined(TARGET_ORBIS)
-#	error Unsupported or undefined target platform.
+#   error Unsupported or undefined target platform.
 #endif
 
 // ======================================================================================
 //  Debug, Benchmark, QA, and Final Target configurations
 
 #if !defined(TARGET_DEBUG)
-#	define TARGET_DEBUG		0
+#   define TARGET_DEBUG     0
 #endif
 
 #if !defined(TARGET_QA)
-#	define TARGET_QA		0
+#   define TARGET_QA        0
 #endif
 
 #if !defined(TARGET_RELEASE)
-#	define TARGET_RELEASE	0
+#   define TARGET_RELEASE   0
 #endif
 
 #if !TARGET_DEBUG && !TARGET_QA && !TARGET_RELEASE
-#	error A valid target type has not been set.  TARGET_DEBUG, TARGET_BENCHMARK, TARGET_QA, and TARGET_RELEASE are all zero (0).
+#   error A valid target type has not been set.  TARGET_DEBUG, TARGET_BENCHMARK, TARGET_QA, and TARGET_RELEASE are all zero (0).
 #endif
 // ======================================================================================
 
@@ -140,37 +140,37 @@
 //
 
 #if !defined(ABI_SYSTEMV) && !defined(ABI_WIN64)
-#	if TARGET_MSW
-#		define ABI_SYSTEMV			0
-#	else
-#		define ABI_SYSTEMV			1
-#	endif
+#   if TARGET_MSW
+#       define ABI_SYSTEMV          0
+#   else
+#       define ABI_SYSTEMV          1
+#   endif
 #endif
 
 #if !defined(ABI_WIN64)
-#	if ABI_SYSTEMV
-#		define ABI_WIN64			0
-#	else
-#		define ABI_WIN64			1
-#	endif
+#   if ABI_SYSTEMV
+#       define ABI_WIN64            0
+#   else
+#       define ABI_WIN64            1
+#   endif
 #else
-	// engineering has specified ABI_WIN64={0,1} on the makefile.  Honor it by also
-	// mirroring !value to ABI_SYSTEMV if it hasn't already been defined.
-#	if !defined(ABI_SYSTEMV)
-#		if ABI_WIN64
-#			define ABI_SYSTEMV		0
-#		else
-#			define ABI_SYSTEMV		1
-#		endif
-#	endif
+    // engineering has specified ABI_WIN64={0,1} on the makefile.  Honor it by also
+    // mirroring !value to ABI_SYSTEMV if it hasn't already been defined.
+#   if !defined(ABI_SYSTEMV)
+#       if ABI_WIN64
+#           define ABI_SYSTEMV      0
+#       else
+#           define ABI_SYSTEMV      1
+#       endif
+#   endif
 #endif
 
 #if !ABI_WIN64 && !ABI_SYSTEMV
-#	error A valid ABI has not been set.  TARGET_SYSTEMV and TARGET_WIN64 are both zero (0).
+#   error A valid ABI has not been set.  TARGET_SYSTEMV and TARGET_WIN64 are both zero (0).
 #endif
 
 #if ABI_WIN64 && ABI_SYSTEMV
-#	error A valid ABI has not been set.  TARGET_SYSTEMV and TARGET_WIN64 are both one (1).
+#   error A valid ABI has not been set.  TARGET_SYSTEMV and TARGET_WIN64 are both one (1).
 #endif
 
 // ======================================================================================
@@ -183,11 +183,11 @@
 // (MSW/MSVC only) Enables use of the debugger's "output" window for warn and devel_log statements.
 //
 #if !defined(MSW_ENABLE_DEBUG_OUTPUT)
-#	if TARGET_FINAL
-#		define MSW_ENABLE_DEBUG_OUTPUT		0
-#	else
-#		define MSW_ENABLE_DEBUG_OUTPUT		1
-#	endif
+#   if TARGET_FINAL
+#       define MSW_ENABLE_DEBUG_OUTPUT      0
+#   else
+#       define MSW_ENABLE_DEBUG_OUTPUT      1
+#   endif
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -214,11 +214,11 @@
 // asinine compiler toolchain. --jstine
 //
 #if !defined(MASK_SMALLER_TYPE_CASTS)
-#	define MASK_SMALLER_TYPE_CASTS			0
+#   define MASK_SMALLER_TYPE_CASTS          0
 #endif
 
 #if !defined(UNSIGNED_OVERFLOW_CHECK)
-#	define UNSIGNED_OVERFLOW_CHECK			0
+#   define UNSIGNED_OVERFLOW_CHECK          0
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -236,11 +236,11 @@
 // manually specify USE_GLIBC_MACRO_FIXUP=1 in the makefile.
 //
 #if !defined(USE_GLIBC_MACRO_FIXUP)
-#	if TARGET_LINUX
-#		define USE_GLIBC_MACRO_FIXUP		1
-#	else
-#		define USE_GLIBC_MACRO_FIXUP		0
-#	endif
+#   if TARGET_LINUX
+#       define USE_GLIBC_MACRO_FIXUP        1
+#   else
+#       define USE_GLIBC_MACRO_FIXUP        0
+#   endif
 #endif
 // --------------------------------------------------------------------------------------
 
@@ -252,5 +252,5 @@
 // certain high-performance or high-redundancy modules.
 //
 #if !defined(TOOLCHAIN_LTO_ENABLED)
-#	define TOOLCHAIN_LTO_ENABLED	0
+#   define TOOLCHAIN_LTO_ENABLED    0
 #endif

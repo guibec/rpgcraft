@@ -26,13 +26,13 @@
 //       --jstine
 
 #if USE_GLIBC_MACRO_FIXUP
-#	undef __unused
-#	undef __xi
-#	undef __ti
+#   undef __unused
+#   undef __xi
+#   undef __ti
 #endif
 
 #if defined(_MSC_VER) && (_DLL == 1) && (_HAS_EXCEPTIONS == 0)
-#	pragma warning(disable: 4275)
+#   pragma warning(disable: 4275)
 #endif
 
 // Bare minimum of necessary STLs are included here, due to long compilation times.  STLs should be
@@ -47,12 +47,12 @@
 
 template< typename T >
 inline __ai T xClampValue(const T& src, const T& lower, const T& upper) {
-	return std::min( std::max(src, lower), upper);
+    return std::min( std::max(src, lower), upper);
 }
 
 template< typename T >
 inline __ai bool xClampCheck(const T& src, const T& lower, const T& upper) {
-	return (src < lower) || (src > upper);
+    return (src < lower) || (src > upper);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -65,30 +65,30 @@ inline __ai bool xClampCheck(const T& src, const T& lower, const T& upper) {
 //    - Our C++ Defer executes at the end of current lexical scope.
 //
 struct Defer_t {
-	std::function<void()>   m_func;
+    std::function<void()>   m_func;
 
-	Defer_t() throw() { }
-	Defer_t(std::function<void()> func) throw() {
-		m_func = func;
-	}
+    Defer_t() throw() { }
+    Defer_t(std::function<void()> func) throw() {
+        m_func = func;
+    }
 
-	~Defer_t() {
-		m_func();
-	}
+    ~Defer_t() {
+        m_func();
+    }
 
-	void Bind(std::function<void()> func) {
-		m_func = func;
-	}
+    void Bind(std::function<void()> func) {
+        m_func = func;
+    }
 };
 
 #define Defer(func)   Defer_t defer_anon_##__COUNTER__( [&]() { func; } )
 
 #ifdef _MSC_VER
-#	pragma warning(default: 4275)
+#   pragma warning(default: 4275)
 #endif
 
 #if USE_GLIBC_MACRO_FIXUP
-#	define __unused		__UNUSED
-#	define __xi			__ALWAYS_INLINE_FUNCTION
-#	define __ti			__ALWAYS_INLINE_FUNCTION
+#   define __unused     __UNUSED
+#   define __xi         __ALWAYS_INLINE_FUNCTION
+#   define __ti         __ALWAYS_INLINE_FUNCTION
 #endif

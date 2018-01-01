@@ -11,73 +11,73 @@
 //
 namespace VirtKey
 {
-	enum _enum_t {
-		Unmapped		= 0,
+    enum _enum_t {
+        Unmapped        = 0,
 
-		Escape			= 0x1,
-		Enter,
-		Backspace,
-		Tab,
-		Slash,
-		BackQuote,
-		Separator,		// backslash or pipe (\|)  [not available on JP keyboards]
+        Escape          = 0x1,
+        Enter,
+        Backspace,
+        Tab,
+        Slash,
+        BackQuote,
+        Separator,      // backslash or pipe (\|)  [not available on JP keyboards]
 
-		PageDown,
-		PageUp,
-		Delete,
-		Home,
-		End,
-		ArrowUp,
-		ArrowLeft,
-		ArrowDown,
-		ArrowRight,
+        PageDown,
+        PageUp,
+        Delete,
+        Home,
+        End,
+        ArrowUp,
+        ArrowLeft,
+        ArrowDown,
+        ArrowRight,
 
 
-		KeyPad_1,
-		KeyPad_2,
-		KeyPad_3,
-		KeyPad_4,
-		KeyPad_5,
-		KeyPad_6,
-		KeyPad_7,
-		KeyPad_8,
-		KeyPad_9,
-		KeyPad_0,
+        KeyPad_1,
+        KeyPad_2,
+        KeyPad_3,
+        KeyPad_4,
+        KeyPad_5,
+        KeyPad_6,
+        KeyPad_7,
+        KeyPad_8,
+        KeyPad_9,
+        KeyPad_0,
 
-		F1,
-		F2,
-		F3,
-		F4,
-		F5,
-		F6,
-		F7,
-		F8,
-		F9,
-		F10,
-		F11,
-		F12,
+        F1,
+        F2,
+        F3,
+        F4,
+        F5,
+        F6,
+        F7,
+        F8,
+        F9,
+        F10,
+        F11,
+        F12,
 
-		LShift,
-		LCtrl,
-		LAlt,
-		LWin,
+        LShift,
+        LCtrl,
+        LAlt,
+        LWin,
 
-		RShift,
-		RCtrl,
-		RAlt,
-		RWin,
+        RShift,
+        RCtrl,
+        RAlt,
+        RWin,
 
-		MouseLeft		= 0x100,
-		MouseRight,
-		MouseMiddle,
-	};
+        MouseLeft       = 0x100,
+        MouseRight,
+        MouseMiddle,
+    };
 };
 
 typedef u32 VirtKey_t;
 
 struct VirtKeyBindingPair {
-	VirtKey_t		primary;
-	VirtKey_t		secondary;
+    VirtKey_t       primary;
+    VirtKey_t       secondary;
 };
 
 // --------------------------------------------------------------------------------------
@@ -90,35 +90,35 @@ struct VirtKeyBindingPair {
 //
 struct VirtKeyModifier
 {
-	static const u32 MSK_CTRL		= (1ULL<<0);
-	static const u32 MSK_SHIFT		= (1ULL<<1);
-	static const u32 MSK_ALT		= (1ULL<<2);
-	static const u32 MSK_WIN		= (1ULL<<3);
+    static const u32 MSK_CTRL       = (1ULL<<0);
+    static const u32 MSK_SHIFT      = (1ULL<<1);
+    static const u32 MSK_ALT        = (1ULL<<2);
+    static const u32 MSK_WIN        = (1ULL<<3);
 
-	union {
-		struct {
-			u8		ctrl			: 1;
-			u8		shift			: 1;
-			u8		alt				: 1;
-			u8		windows			: 1;
-		};
+    union {
+        struct {
+            u8      ctrl            : 1;
+            u8      shift           : 1;
+            u8      alt             : 1;
+            u8      windows         : 1;
+        };
 
-		u8		b;
-	};
+        u8      b;
+    };
 
-	VirtKeyModifier		(u32 src=0)			{ b = src; }
+    VirtKeyModifier     (u32 src=0)         { b = src; }
 
-	bool Is				(u32 mask)	const	{ return b == mask;			}
+    bool Is             (u32 mask)  const   { return b == mask;         }
 
-	bool None			()			const	{ return !b;				}
-	bool Ctrl			()			const	{ return Is(MSK_CTRL	);	}
-	bool Shift			()			const	{ return Is(MSK_SHIFT	);	}
-	bool Alt			()			const	{ return Is(MSK_ALT		);	}
-	bool Win			()			const	{ return Is(MSK_WIN		);	}
+    bool None           ()          const   { return !b;                }
+    bool Ctrl           ()          const   { return Is(MSK_CTRL    );  }
+    bool Shift          ()          const   { return Is(MSK_SHIFT   );  }
+    bool Alt            ()          const   { return Is(MSK_ALT     );  }
+    bool Win            ()          const   { return Is(MSK_WIN     );  }
 
-	bool CtrlShift		()			const	{ return Is(MSK_CTRL	| MSK_SHIFT);	}
-	bool CtrlWin		()			const	{ return Is(MSK_CTRL	| MSK_WIN	);	}
-	bool ShiftWin		()			const	{ return Is(MSK_SHIFT	| MSK_WIN	);	}
-	bool CtrlAlt		()			const	{ return Is(MSK_CTRL	| MSK_ALT	);	}
-	bool ShiftAlt		()			const	{ return Is(MSK_SHIFT	| MSK_ALT	);	}
+    bool CtrlShift      ()          const   { return Is(MSK_CTRL    | MSK_SHIFT);   }
+    bool CtrlWin        ()          const   { return Is(MSK_CTRL    | MSK_WIN   );  }
+    bool ShiftWin       ()          const   { return Is(MSK_SHIFT   | MSK_WIN   );  }
+    bool CtrlAlt        ()          const   { return Is(MSK_CTRL    | MSK_ALT   );  }
+    bool ShiftAlt       ()          const   { return Is(MSK_SHIFT   | MSK_ALT   );  }
 };

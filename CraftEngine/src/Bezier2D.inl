@@ -22,8 +22,8 @@
 //    3 * (t^2) * (d + 3*(b - c) - a)  +  6t*(a - 2*b + c) + 3*(b - a) 
 //
 // To convert angle into a line:
-//     x = start_x + len * cos(angle);		// startx == pn.x
-//	   y = start_y + len * sin(angle);		// starty == pn.y
+//     x = start_x + len * cos(angle);      // startx == pn.x
+//     y = start_y + len * sin(angle);      // starty == pn.y
 //
 // Long-tail TODO:  Try implementing this as a geometry shader?
 //     Pro: Can determine correct # of verticies based on length within actual scene orientation.
@@ -34,28 +34,28 @@
 template<typename VertexType>
 void SubDiv_BezierFan(VertexBufferState<VertexType>& dest, int numSubdivs, const vFloat2& center, const vFloat2(&xy)[4])
 {
-	const auto& x1 = xy[0].x;
-	const auto& x2 = xy[1].x;
-	const auto& x3 = xy[2].x;
-	const auto& x4 = xy[3].x;
+    const auto& x1 = xy[0].x;
+    const auto& x2 = xy[1].x;
+    const auto& x3 = xy[2].x;
+    const auto& x4 = xy[3].x;
 
-	const auto& y1 = xy[0].y;
-	const auto& y2 = xy[1].y;
-	const auto& y3 = xy[2].y;
-	const auto& y4 = xy[3].y;
+    const auto& y1 = xy[0].y;
+    const auto& y2 = xy[1].y;
+    const auto& y3 = xy[2].y;
+    const auto& y4 = xy[3].y;
 
-	float stepIncr = 1.0f / numSubdivs;
+    float stepIncr = 1.0f / numSubdivs;
 
-	for (int idx = 0; idx < numSubdivs; ++idx)
-	{
-		float i = idx * stepIncr;
+    for (int idx = 0; idx < numSubdivs; ++idx)
+    {
+        float i = idx * stepIncr;
 
-		float x = CalculateBezierPoint(i, x1, x2, x3, x4);
-		float y = CalculateBezierPoint(i, y1, y2, y3, y4);
+        float x = CalculateBezierPoint(i, x1, x2, x3, x4);
+        float y = CalculateBezierPoint(i, y1, y2, y3, y4);
 
-		dest.vertices[dest.m_vidx].Pos = vFloat3(x, y, 0.5f);
-		dest.m_vidx += 1;
-	}
+        dest.vertices[dest.m_vidx].Pos = vFloat3(x, y, 0.5f);
+        dest.m_vidx += 1;
+    }
 }
 
 // StripTool_FromLine
@@ -73,7 +73,7 @@ void StripTool_FromLine(VertexBufferState<VertexType>& dest, const vFloat2 *xy, 
 {
 
 //    ATAN2((pn+1).y - (pn-1).y, (pn+1).x - (pn-1).x) +/- Math.Pi/2
-	
+    
 }
 
 template<typename VertexType>
@@ -81,5 +81,5 @@ void StripTool_FromPatch(VertexBufferState<VertexType>& dest, const vFloat2 *xy,
 {
 
 //    ATAN2((pn+1).y - (pn-1).y, (pn+1).x - (pn-1).x) +/- Math.Pi/2
-	
+    
 }

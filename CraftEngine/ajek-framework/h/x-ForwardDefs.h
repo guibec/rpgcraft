@@ -12,25 +12,25 @@
 //  x-simd.h
 // --------------------------------------------------------
 
-union	u128;
+union   u128;
 
 // --------------------------------------------------------
 //  x-string.h
 // --------------------------------------------------------
 
-class	xString;
-class	xStringTokenizer;
-class	toUTF16;
-class	toUTF8;
+class   xString;
+class   xStringTokenizer;
+class   toUTF16;
+class   toUTF8;
 
 // --------------------------------------------------------
 //  x-thread.h
 // --------------------------------------------------------
 
-class	xSemaphore;
-class	xMutex;
-class	xCondVar;
-class	xScopedMutex;
+class   xSemaphore;
+class   xMutex;
+class   xCondVar;
+class   xScopedMutex;
 
 // --------------------------------------------------------
 //  ajek-script.h
