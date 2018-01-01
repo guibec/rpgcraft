@@ -75,6 +75,17 @@ namespace StdTileOffset
 	static const int Grassy			= 1 + (2 * TerrainTileConstruct_Count);
 }
 
+static const int s_StdTileOffset[] = {
+	StdTileOffset::Empty,
+	StdTileOffset::Water,
+	StdTileOffset::Sandy,
+	StdTileOffset::Grassy
+};
+
+int getStdTileImageId(TileClass tileClass, TerrainTileConstructId construct) {
+	return s_StdTileOffset[int(tileClass)] + int(construct);
+}
+
 template< typename T, typename T2 >
 inline __ai bool xClampCheck(const T& src, const T2& boundsXY) {
 	return (src < boundsXY.x) || (src > boundsXY.y);
@@ -95,9 +106,8 @@ union TileMatchBits {
 
 	u8		b;
 
-	bool CheckAll() const {
-		return b == 0xff;
-	}
+	bool	isAll	()			const { return b == 0xff; }
+	bool	isNone	()			const { return b == 0; }
 };
 
 enum TileMatchType
@@ -180,15 +190,15 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 	// Anything out of bounds becomes a water tile for matching purposes.
 	// NESW - north, east, south, west.
 
-	auto& edgeN		= xClampCheck(edgesIdx.x,	worldBounds) ? g_WorldMap[edgesIdx.x]	: outofboundsTile;
-	auto& edgeE		= xClampCheck(edgesIdx.y,	worldBounds) ? g_WorldMap[edgesIdx.y]	: outofboundsTile;
-	auto& edgeS		= xClampCheck(edgesIdx.z,	worldBounds) ? g_WorldMap[edgesIdx.z]	: outofboundsTile;
-	auto& edgeW		= xClampCheck(edgesIdx.w,	worldBounds) ? g_WorldMap[edgesIdx.w]	: outofboundsTile;
+	auto& edgeN		= xClampCheck(edgesIdx.x,	worldBounds) ? outofboundsTile	: g_WorldMap[edgesIdx.x];
+	auto& edgeE		= xClampCheck(edgesIdx.y,	worldBounds) ? outofboundsTile	: g_WorldMap[edgesIdx.y];
+	auto& edgeS		= xClampCheck(edgesIdx.z,	worldBounds) ? outofboundsTile	: g_WorldMap[edgesIdx.z];
+	auto& edgeW		= xClampCheck(edgesIdx.w,	worldBounds) ? outofboundsTile	: g_WorldMap[edgesIdx.w];
 
-	auto& cornerNW	= xClampCheck(cornersIdx.x, worldBounds) ? g_WorldMap[cornersIdx.x] : outofboundsTile;
-	auto& cornerNE	= xClampCheck(cornersIdx.y, worldBounds) ? g_WorldMap[cornersIdx.y] : outofboundsTile;
-	auto& cornerSE	= xClampCheck(cornersIdx.w, worldBounds) ? g_WorldMap[cornersIdx.z] : outofboundsTile;
-	auto& cornerSW	= xClampCheck(cornersIdx.z, worldBounds) ? g_WorldMap[cornersIdx.w] : outofboundsTile;
+	auto& cornerNW	= xClampCheck(cornersIdx.x, worldBounds) ? outofboundsTile	: g_WorldMap[cornersIdx.x];
+	auto& cornerNE	= xClampCheck(cornersIdx.y, worldBounds) ? outofboundsTile	: g_WorldMap[cornersIdx.y];
+	auto& cornerSE	= xClampCheck(cornersIdx.w, worldBounds) ? outofboundsTile	: g_WorldMap[cornersIdx.z];
+	auto& cornerSW	= xClampCheck(cornersIdx.z, worldBounds) ? outofboundsTile	: g_WorldMap[cornersIdx.w];
 
 	// edge matching algo is probably going to _pretty_ complicated.  Just sayin'.  --jstine
 
@@ -207,8 +217,12 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 	matched.SE = (cornerSE.class_below == tileClass) || (cornerSE.class_above == tileClass);
 	matched.SW = (cornerSW.class_below == tileClass) || (cornerSW.class_above == tileClass);
 
-	if (!matched.CheckAll()) {
-		// some unmatched neighboring tiles.  Nearby tiles will need to be given class_above
+	if (matched.isNone()) {
+		thisTile.tile_above = getStdTileImageId(tileClass, TerrainTileConstructId::Single_Light);
+	}
+
+	if (!matched.isAll()) {
+		// some unmatched neighboring tiles.  Current and nearby tiles will need to be given class_above
 		// assignment in order to maintain visual consistency...
 
 
@@ -231,15 +245,15 @@ void WorldMap_Procgen()
 
 	for (int y=0; y<WorldSizeY; ++y) {
 		for (int x=0; x<WorldSizeX; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].tile_below	= StdTileOffset::Water;
-			g_WorldMap		[(y * WorldSizeX) + x].tile_above	= StdTileOffset::Sandy;
+			g_WorldMap		[(y * WorldSizeX) + x].tile_below	= StdTileOffset::Sandy;
 		}
 	}
 
-	// carve a watering hole...
-	for (int y=4; y<4+8; ++y) {
-		for (int x=4; x<4+8; ++x) {
-			g_WorldMap		[(y * WorldSizeX) + x].tile_above  = StdTileOffset::Empty;
+	// carve a bunch of tiny watering holes...
+	for (int y=3; y<3+12; y+=3) {
+		for (int x=3; x<3+12; x+=3) {
+			//g_WorldMap		[(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
+			PlaceTileWithRules(TileClass::Water, 0, {x,y});
 		}
 	}
 
@@ -247,6 +261,10 @@ void WorldMap_Procgen()
 
 static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
 	{ 1, 3 },	// Solid,
+
+	{ 0, 1 },	// Singles_Light
+	{ 0, 0 },	// Singles_Heavy
+
 	{ 1, 0 },	// Obtuse_NW
 	{ 2, 0 },	// Obtuse_NE
 	{ 1, 1 },	// Obtuse_SW
