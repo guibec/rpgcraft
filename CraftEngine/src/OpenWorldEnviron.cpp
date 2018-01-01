@@ -19,23 +19,27 @@ enum class TerrainTileConstructId
 	FIRST = 0,
 	Solid = 0,
 
+	Singles,
+	Single_Light	= Singles,				// single tile surrounded by unfriendlies
+	Single_Heavy,							// single tile surrounded by unfriendlies
+
 	ObtuseCorners,
-	Obtuse_HiL		= ObtuseCorners,
-	Obtuse_HiR,
-	Obtuse_LoL,
-	Obtuse_LoR,
+	Obtuse_NW		= ObtuseCorners,		// north-west
+	Obtuse_NE,								// north-east
+	Obtuse_SW,								// south-west
+	Obtuse_SE,								// south-east
 
 	AcuteCorners,
-	Acute_HiL		= AcuteCorners,
-	Acute_HiR,
-	Acute_LoL,
-	Acute_LoR,
+	Acute_NW		= AcuteCorners,			// north-west
+	Acute_NE,								// north-east
+	Acute_SW,								// south-west
+	Acute_SE,								// south-east
 
 	Spans,
-	Span_HorizHi	= Spans,
-	Span_HorizLo,
-	Span_VertL,
-	Span_VertR,
+	Span_N			= Spans,				// north
+	Span_S,									// south
+	Span_W,									// west
+	Span_E,									// east
 
 	LAST
 };
@@ -63,13 +67,6 @@ static const int TerrainTileConstruct_Count = (int)TerrainTileConstructId::LAST;
 
 static const int2 RipSrcTilePos[TerrainTileConstruct_Count];
 
-enum class TileClass
-{
-	Water,
-	Sandy,
-	Grassy,
-};
-
 namespace StdTileOffset
 {
 	static const int Empty			= 0;
@@ -78,8 +75,76 @@ namespace StdTileOffset
 	static const int Grassy			= 1 + (2 * TerrainTileConstruct_Count);
 }
 
+template< typename T, typename T2 >
+inline __ai bool xClampCheck(const T& src, const T2& boundsXY) {
+	return (src < boundsXY.x) || (src > boundsXY.y);
+}
+
+union TileMatchBits {
+	struct {
+		u8		N	: 1;
+		u8		E	: 1;
+		u8		S	: 1;
+		u8		W	: 1;
+
+		u8		NW	: 1;
+		u8		NE	: 1;
+		u8		SE	: 1;
+		u8		SW	: 1;
+	};
+
+	u8		b;
+
+	bool CheckAll() const {
+		return b == 0xff;
+	}
+};
+
+enum TileMatchType
+{
+	None	= 0,
+	N		= 1,
+	E		= 2,
+	NE		= 3,
+	S		= 4,
+	NS		= 5,
+	ES		= 6,
+	NES		= 7,
+	W		= 8,
+	NW		= 9,
+	EW		= 10,
+	NEW		= 11,
+	SW		= 12,
+	NSW		= 13,
+	ESW		= 14,
+	NESW	= 15,
+};
+
+#if 0
+// WIP - meh, not sure about this one yet.
+static const TerrainTileConstructId g_TileMatchAssoc[] =
+{
+	// None
+	,	// N
+	, // E
+	// NE
+	, // S
+	// NS
+	// ES
+	Span_E, // NES
+	// W
+	// NW
+	// EW
+	Span_N, // NEW
+	// SW
+	Span_E, // NSW
+	Span_S, // ESW
+	Singles, // NESW
+};
+#endif
+
 // tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up" ...
-void PlaceTileWithRules(int tileClass, int tileDecorType, int2 pos)
+void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 {
 	auto  thisIdx		= (pos.y * WorldSizeX) + pos.x;
 	int4  edgesIdx		= {
@@ -98,11 +163,56 @@ void PlaceTileWithRules(int tileClass, int tileDecorType, int2 pos)
 
 	auto& thisTile		= g_WorldMap[thisIdx];
 
-	pragma_todo("select the correct TerrainTileConstructId according to surrounding tile classes and constructId's");
 	//  TODO details:
 	//   * This probably requires modifying neighboring tiles as well.
 	//   * bounds checking on edgesIdx and cornersIdx is needed!  (for now can assume out-of-bounds edges are "water")
 
+	int2 worldBounds = { 0, (WorldSizeX * WorldSizeY) - 1 };
+
+	TerrainMapItem outofboundsTile;
+
+	outofboundsTile.tile_below	= StdTileOffset::Water;
+	outofboundsTile.tile_above	= StdTileOffset::Empty;
+	outofboundsTile.class_below = TileClass::Water;
+	outofboundsTile.class_above = TileClass::Empty;
+
+	// Gloriously inefficient and entirely effective world bounds checking.
+	// Anything out of bounds becomes a water tile for matching purposes.
+	// NESW - north, east, south, west.
+
+	auto& edgeN		= xClampCheck(edgesIdx.x,	worldBounds) ? g_WorldMap[edgesIdx.x]	: outofboundsTile;
+	auto& edgeE		= xClampCheck(edgesIdx.y,	worldBounds) ? g_WorldMap[edgesIdx.y]	: outofboundsTile;
+	auto& edgeS		= xClampCheck(edgesIdx.z,	worldBounds) ? g_WorldMap[edgesIdx.z]	: outofboundsTile;
+	auto& edgeW		= xClampCheck(edgesIdx.w,	worldBounds) ? g_WorldMap[edgesIdx.w]	: outofboundsTile;
+
+	auto& cornerNW	= xClampCheck(cornersIdx.x, worldBounds) ? g_WorldMap[cornersIdx.x] : outofboundsTile;
+	auto& cornerNE	= xClampCheck(cornersIdx.y, worldBounds) ? g_WorldMap[cornersIdx.y] : outofboundsTile;
+	auto& cornerSE	= xClampCheck(cornersIdx.w, worldBounds) ? g_WorldMap[cornersIdx.z] : outofboundsTile;
+	auto& cornerSW	= xClampCheck(cornersIdx.z, worldBounds) ? g_WorldMap[cornersIdx.w] : outofboundsTile;
+
+	// edge matching algo is probably going to _pretty_ complicated.  Just sayin'.  --jstine
+
+	TileClass				a_class		= TileClass::Empty;
+	TerrainTileConstructId	a_construct	= TerrainTileConstructId::Solid;
+
+	TileMatchBits	matched;
+
+	matched.N  = (edgeN.class_below == tileClass) || (edgeN.class_above == tileClass);
+	matched.E  = (edgeE.class_below == tileClass) || (edgeE.class_above == tileClass);
+	matched.S  = (edgeS.class_below == tileClass) || (edgeS.class_above == tileClass);
+	matched.W  = (edgeW.class_below == tileClass) || (edgeW.class_above == tileClass);
+
+	matched.NW = (cornerNW.class_below == tileClass) || (edgeN.class_above == tileClass);
+	matched.NE = (cornerNE.class_below == tileClass) || (edgeE.class_above == tileClass);
+	matched.SE = (cornerSE.class_below == tileClass) || (edgeS.class_above == tileClass);
+	matched.SW = (cornerSW.class_below == tileClass) || (edgeW.class_above == tileClass);
+
+	if (!matched.CheckAll()) {
+		// some unmatched neighboring tiles.  Nearby tiles will need to be given class_above
+		// assignment in order to maintain visual consistency...
+
+		// TODO ---
+	}
 }
 
 void DigThroughTile(int2 pos)
@@ -137,18 +247,18 @@ void WorldMap_Procgen()
 
 static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
 	{ 1, 3 },	// Solid,
-	{ 1, 0 },	// Obtuse_HiL
-	{ 2, 0 },	// Obtuse_HiR
-	{ 1, 1 },	// Obtuse_LoL
-	{ 2, 1 },	// Obtuse_LoR
-	{ 0, 2 },	// Acute_HiL,
-	{ 2, 2 },	// Acute_HiR
-	{ 0, 4 },	// Acute_LoL
-	{ 2, 4 },	// Acute_LoR
-	{ 1, 2 },	// Span_HorizHi
-	{ 1, 2 },	// Span_HorizLo
-	{ 0, 3 },	// Span_VertL
-	{ 2, 3 },	// Span_VertR
+	{ 1, 0 },	// Obtuse_NW
+	{ 2, 0 },	// Obtuse_NE
+	{ 1, 1 },	// Obtuse_SW
+	{ 2, 1 },	// Obtuse_SE
+	{ 0, 2 },	// Acute_NW,
+	{ 2, 2 },	// Acute_NE
+	{ 0, 4 },	// Acute_SW
+	{ 2, 4 },	// Acute_SE
+	{ 1, 2 },	// Span_N
+	{ 1, 2 },	// Span_S
+	{ 0, 3 },	// Span_W
+	{ 2, 3 },	// Span_E
 };
 
 

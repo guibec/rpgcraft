@@ -46,8 +46,13 @@
 #include <functional>
 
 template< typename T >
-inline __ai T xBoundsCheck(const T& src, const T& lower, const T& upper) {
+inline __ai T xClampValue(const T& src, const T& lower, const T& upper) {
 	return std::min( std::max(src, lower), upper);
+}
+
+template< typename T >
+inline __ai bool xClampCheck(const T& src, const T& lower, const T& upper) {
+	return (src < lower) || (src > upper);
 }
 
 // -----------------------------------------------------------------------------------------------

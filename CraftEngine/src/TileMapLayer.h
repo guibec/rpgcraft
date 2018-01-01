@@ -30,12 +30,20 @@ public:
 
 };
 
-struct TerrainMapItem {
-	int		tile_below;			// should always be a Solid (no edge/cornering tiles allowed)
-	int		tile_above;			// can be edges, corners, etc.  No Solids allowed.
+enum class TileClass
+{
+	Empty,
+	Water,
+	Sandy,
+	Grassy,
+};
 
-	int		biome_below;		// biome classification below-ground
-	int		biome_above;		// biome classification above-ground
+struct TerrainMapItem {
+	int			tile_below;			// should always be a Solid (no edge/cornering tiles allowed)
+	int			tile_above;			// can be edges, corners, etc.  No Solids allowed.
+
+	TileClass	class_below;		// tile classification below-ground
+	TileClass	class_above;		// tile classification above-ground
 };
 
 class OpenWorldEnviron
