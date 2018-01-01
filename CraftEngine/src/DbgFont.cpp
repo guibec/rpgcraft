@@ -1295,7 +1295,7 @@ void DbgFont_SceneRender()
 
 	int overlayMeshSize = g_DbgFontOverlay.size.x * g_DbgFontOverlay.size.y;
 
-	g_DbgFontOverlay.Write(0,0, "TESTING");
+	g_DbgFontOverlay.Write(0,0, "RPGCraft Version 2018-01-01.BuildNumber");
 
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_charmap, g_DbgFontOverlay.charmap,  overlayMeshSize * sizeof(DbgChar ));
 	dx11_UploadDynamicBufferData(g_DbgFontOverlay.gpu.mesh_rgbamap, g_DbgFontOverlay.colormap, overlayMeshSize * sizeof(DbgColor));
