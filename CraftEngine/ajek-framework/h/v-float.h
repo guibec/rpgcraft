@@ -11,182 +11,182 @@
 
 BEGIN_GPU_DATA_STRUCTS
 
-struct 	vFloat4;
-struct	vFloat3;
-struct	vFloat2;
+struct  vFloat4;
+struct  vFloat3;
+struct  vFloat2;
 
 
 struct vFloat4
 {
-	float	x;
-	float	y;
-	float	z;
-	float	w;
+    float   x;
+    float   y;
+    float   z;
+    float   w;
 
-	vFloat4() {}
-	vFloat4(float _x, float _y,  float _z, float _w);
-	vFloat4(float _x, float _y,  vFloat2 _zw);
-	vFloat4(vFloat3 _xyz, float _w);
-	vFloat4(vFloat2 _xy,  float _z, float _w);
-	vFloat4(vFloat2 _xy,  vFloat2 _zw);
+    vFloat4() {}
+    vFloat4(float _x, float _y,  float _z, float _w);
+    vFloat4(float _x, float _y,  vFloat2 _zw);
+    vFloat4(vFloat3 _xyz, float _w);
+    vFloat4(vFloat2 _xy,  float _z, float _w);
+    vFloat4(vFloat2 _xy,  vFloat2 _zw);
 
-	operator u128() const;
+    operator u128() const;
 };
 
-inline vFloat4::operator u128()	const { return *(u128*)this; }
+inline vFloat4::operator u128() const { return *(u128*)this; }
 
 struct vFloat3
 {
-	float		x;
-	float		y;
-	float		z;
+    float       x;
+    float       y;
+    float       z;
 
-	vFloat3() {}
+    vFloat3() {}
 
-	vFloat3(float _x, float _y, float _z);
-	vFloat3(vFloat2 _xy, float _z);
+    vFloat3(float _x, float _y, float _z);
+    vFloat3(vFloat2 _xy, float _z);
 };
 
 struct vFloat2
 {
-	float	x;
-	float	y;
+    float   x;
+    float   y;
 
-	vFloat2() {}
-	vFloat2(float _x, float _y);
-	vFloat2(const float2& src);
-	vFloat2(const int2& src);
+    vFloat2() {}
+    vFloat2(float _x, float _y);
+    vFloat2(const float2& src);
+    vFloat2(const int2& src);
 
-	explicit operator int2() const;
-	explicit operator float2() const;
+    explicit operator int2() const;
+    explicit operator float2() const;
 
-	vFloat2& operator+=(const vFloat2& right) {
-		x += right.x;
-		y += right.y;
-		return *this;
-	}
+    vFloat2& operator+=(const vFloat2& right) {
+        x += right.x;
+        y += right.y;
+        return *this;
+    }
 
-	vFloat2 operator+(const vFloat2& right) const {
-		return vFloat2(x + right.x, y + right.y);
-	}
+    vFloat2 operator+(const vFloat2& right) const {
+        return vFloat2(x + right.x, y + right.y);
+    }
 
-	vFloat2 operator/(const vFloat2& right) const {
-		return vFloat2(x / right.x, y / right.y);
-	}
+    vFloat2 operator/(const vFloat2& right) const {
+        return vFloat2(x / right.x, y / right.y);
+    }
 
-	vFloat2 operator*(const vFloat2& right) const {
-		return vFloat2(x * right.x, y * right.y);
-	}
+    vFloat2 operator*(const vFloat2& right) const {
+        return vFloat2(x * right.x, y * right.y);
+    }
 };
 
 inline vFloat2::operator int2()   const { return int2   { (int)  x, (int)  y }; }
-inline vFloat2::operator float2() const { return float2 {		 x,		   y }; }
+inline vFloat2::operator float2() const { return float2 {        x,        y }; }
 
 struct vInt2
 {
-	int	x;
-	int	y;
+    int x;
+    int y;
 
-	vInt2() {}
-	vInt2(int _x, int _y);
-	vInt2(const int2& src);
+    vInt2() {}
+    vInt2(int _x, int _y);
+    vInt2(const int2& src);
 
-	vInt2& operator+=(const vInt2& right) {
-		x += right.x;
-		y += right.y;
-		return *this;
-	}
+    vInt2& operator+=(const vInt2& right) {
+        x += right.x;
+        y += right.y;
+        return *this;
+    }
 
-	vInt2 operator+(const vInt2& right) const {
-		return vInt2(x + right.x, y + right.y);
-	}
+    vInt2 operator+(const vInt2& right) const {
+        return vInt2(x + right.x, y + right.y);
+    }
 
-	vInt2 operator/(const vInt2& right) const {
-		return vInt2(x / right.x, y / right.y);
-	}
+    vInt2 operator/(const vInt2& right) const {
+        return vInt2(x / right.x, y / right.y);
+    }
 
-	vInt2 operator*(const vInt2& right) const {
-		return vInt2(x * right.x, y * right.y);
-	}
+    vInt2 operator*(const vInt2& right) const {
+        return vInt2(x * right.x, y * right.y);
+    }
 };
 
 inline vFloat4::vFloat4(float _x, float _y, float _z, float _w) {
-	x = _x;
-	y = _y;
-	z = _z;
-	w = _w;
+    x = _x;
+    y = _y;
+    z = _z;
+    w = _w;
 }
 
 inline vFloat4::vFloat4(vFloat2 _xy,  float _z, float _w) {
-	x = _xy.x;
-	y = _xy.y;
-	z = _z;
-	w = _w;
+    x = _xy.x;
+    y = _xy.y;
+    z = _z;
+    w = _w;
 }
 
 inline vFloat4::vFloat4(vFloat2 _xy,  vFloat2 _zw) {
-	x = _xy.x;
-	y = _xy.y;
-	z = _zw.x;
-	w = _zw.y;
+    x = _xy.x;
+    y = _xy.y;
+    z = _zw.x;
+    w = _zw.y;
 }
 
 inline vFloat4::vFloat4(float _x, float _y,  vFloat2 _zw) {
-	x = _x;
-	y = _y;
-	z = _zw.x;
-	w = _zw.y;
+    x = _x;
+    y = _y;
+    z = _zw.x;
+    w = _zw.y;
 }
 
 inline vFloat4::vFloat4(vFloat3 _xyz, float _w) {
-	x = _xyz.x;
-	y = _xyz.y;
-	z = _xyz.z;
-	w = _w;
+    x = _xyz.x;
+    y = _xyz.y;
+    z = _xyz.z;
+    w = _w;
 }
 
 inline vFloat3::vFloat3(float _x, float _y, float _z) {
-	x = _x;
-	y = _y;
-	z = _z;
+    x = _x;
+    y = _y;
+    z = _z;
 }
 
 inline vFloat3::vFloat3(vFloat2 _xy, float _z) {
-	x = _xy.x;
-	y = _xy.y;
-	z = _z;
+    x = _xy.x;
+    y = _xy.y;
+    z = _z;
 }
 
 inline vFloat2::vFloat2(float _x, float _y) {
-	x = _x;
-	y = _y;
+    x = _x;
+    y = _y;
 }
 
 inline vFloat2::vFloat2(const float2& src) {
-	x = src.x;
-	y = src.y;
+    x = src.x;
+    y = src.y;
 }
 
 inline vFloat2::vFloat2(const int2& src) {
-	x = src.x;
-	y = src.y;
+    x = src.x;
+    y = src.y;
 }
 
 inline vInt2::vInt2(int _x, int _y) {
-	x = _x;
-	y = _y;
+    x = _x;
+    y = _y;
 }
 
 inline vInt2::vInt2(const int2& src) {
-	x = src.x;
-	y = src.y;
+    x = src.x;
+    y = src.y;
 }
 
 
 struct SimpleVertex
 {
-	vFloat3 Pos;
-	vFloat4 Color;
+    vFloat3 Pos;
+    vFloat4 Color;
 } __packed;
 
 

@@ -5,15 +5,15 @@
 
 struct UniformMeshVertex
 {
-	vFloat2		xy;
-	vFloat2		uv;
+    vFloat2     xy;
+    vFloat2     uv;
 };
 
-extern UniformMeshVertex	g_mesh_UniformQuad		[4];
-extern UniformMeshVertex	g_mesh_UniformQuadHalf	[4];
-extern s16					g_ind_UniformQuad		[6];
+extern UniformMeshVertex    g_mesh_UniformQuad      [4];
+extern UniformMeshVertex    g_mesh_UniformQuadHalf  [4];
+extern s16                  g_ind_UniformQuad       [6];
 
-extern GPU_IndexBuffer		g_idx_box2D;
+extern GPU_IndexBuffer      g_idx_box2D;
 
 extern void UniformMeshes_InitGlobalResources();
 
@@ -27,7 +27,7 @@ using DirectX::XMMatrixOrthographicOffCenterLH;
 
 struct GPU_ViewCameraConsts
 {
-	XMMATRIX View;
-	XMMATRIX Projection;
+    XMMATRIX View;
+    XMMATRIX Projection;
 };
 

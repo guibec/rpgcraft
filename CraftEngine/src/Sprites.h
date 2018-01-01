@@ -20,8 +20,8 @@
 //       for now... --jstine
 
 struct TileMapVertex {
-	vFloat3		xyz;
-	vFloat2		uv;
+    vFloat3     xyz;
+    vFloat2     uv;
 };
 
 // xyz should probably fixed.  Only the camera and the UVs need to change.
@@ -29,39 +29,39 @@ struct TileMapVertex {
 //    * 30fps for UV, 10fps for lighting, etc.
 
 struct TileMapVertexLit {
-	vFloat3		xyz;
-	vFloat2		uv;
-	//vFloat4     rgba;		// current light intensity
+    vFloat3     xyz;
+    vFloat2     uv;
+    //vFloat4     rgba;     // current light intensity
 };
 
 class PlayerSprite
 {
 private:
-	NONCOPYABLE_OBJECT(PlayerSprite);
+    NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-	GPU_InputDesc			gpu_layout_sprite;
+    GPU_InputDesc           gpu_layout_sprite;
 
 public:
-	EntityGid_t			m_gid;
-	float2				m_position;
-	float				m_frame_timeout;
-	int					m_frame_id;
-	int					m_anim_dir;
-	int					m_char_type;
+    EntityGid_t         m_gid;
+    float2              m_position;
+    float               m_frame_timeout;
+    int                 m_frame_id;
+    int                 m_anim_dir;
+    int                 m_char_type;
 
 public:
-	static void LoadStaticAssets();
+    static void LoadStaticAssets();
 
 public:
-	PlayerSprite();
+    PlayerSprite();
 
 public:
-	void Tick(u32 order, float deltaTime);
-	void Draw(float zorder) const;
+    void Tick(u32 order, float deltaTime);
+    void Draw(float zorder) const;
 };
 
-extern GPU_ShaderVS				g_ShaderVS_Spriter;
-extern GPU_ShaderFS				g_ShaderFS_Spriter;
-extern GPU_TextureResource2D	tex_chars;
+extern GPU_ShaderVS             g_ShaderVS_Spriter;
+extern GPU_ShaderFS             g_ShaderFS_Spriter;
+extern GPU_TextureResource2D    tex_chars;
 
