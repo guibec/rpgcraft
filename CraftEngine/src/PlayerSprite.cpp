@@ -108,7 +108,7 @@ void PlayerSprite::Tick(u32 order, float dt)
     PadState state;
     KPad_GetState(state);
 
-    g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f };
+    g_ViewCamera.m_At += { state.axis.RStick_X * 0.05f, state.axis.RStick_Y * 0.05f, 0.0f, 0.0f };
 
     const float playerSpeed = 3.f;  // tiles per second
 

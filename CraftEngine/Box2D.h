@@ -8,6 +8,19 @@ public:
     {
         normalize();
     }
+
+	Box2D(float2 origin, float halfWidth, float halfHeight)
+	{
+		buildFrom(origin, halfWidth, halfHeight);
+		normalize();
+	}
+
+	Box2D(float left, float top, float right, float bottom)
+		: m_topLeft(left, top), m_bottomRight(right, bottom)
+	{
+		normalize();
+	}
+
     ~Box2D();
 
     float left() const { return m_topLeft.x; }
@@ -54,6 +67,7 @@ public:
 
 private:
 
+	void buildFrom(float2 origin, float halfWidth, float halfHeight);
     void normalize();
 
     float2 m_topLeft, m_bottomRight;

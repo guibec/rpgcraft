@@ -521,6 +521,14 @@ union float2 {
 
     u64         _i64val;
 
+	float2() :
+		x(0), y(0)
+	{}
+
+	float2(float x, float y)
+		: x(x), y(y)
+	{}
+
     explicit operator int2() const;
 
     __ai const float2_cmp_all& cmp_all()                const       { return (float2_cmp_all&)*this; }
@@ -586,6 +594,27 @@ union float4 {
     };
 
     __m128  q;
+
+	float4()
+		: x(0), y(0), z(0), w(0)
+	{}
+
+	float4(float x, float y, float z, float w)
+		: x(x), y(y), z(z), w(w)
+	{}
+
+	float4(float x, float y, float z)
+		: x(x), y(y), z(z), w(0)
+	{}
+
+	float4(float x, float y)
+		: x(x), y(y), z(0), w(0)
+	{}
+
+	float4(float x)
+		: x(x), y(0), z(0), w(0)
+	{}
+
 
     bool isEmpty() const {
         return i_ptestz(q);
