@@ -30,7 +30,7 @@ public:
 
 };
 
-enum class TileClass
+enum class TerrainClass
 {
     Empty,
     Water,
@@ -38,12 +38,15 @@ enum class TileClass
     Grassy,
 };
 
-struct TerrainMapItem {
+struct TileMapItem {
     int         tile_below;         // should always be a Solid (no edge/cornering tiles allowed)
     int         tile_above;         // can be edges, corners, etc.  No Solids allowed.
+};
 
-    TileClass   class_below;        // tile classification below-ground
-    TileClass   class_above;        // tile classification above-ground
+struct TerrainMapItem
+{
+    TerrainClass   class_below;        // tile classification below-ground
+    TerrainClass   class_above;        // tile classification above-ground
 };
 
 class OpenWorldEnviron

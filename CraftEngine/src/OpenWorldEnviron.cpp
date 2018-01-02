@@ -9,7 +9,8 @@
 
 #include "imgui.h"
 
-TerrainMapItem*     g_WorldMap      = nullptr;
+TileMapItem*        g_TileMap       = nullptr;
+TerrainMapItem*     g_TerrainMap    = nullptr;
 
 static FmodMusic    s_music_world;
 static float        s_bgm_volume =  1.0f;
@@ -82,8 +83,8 @@ static const int s_StdTileOffset[] = {
     StdTileOffset::Grassy
 };
 
-int getStdTileImageId(TileClass tileClass, TerrainTileConstructId construct) {
-    return s_StdTileOffset[int(tileClass)] + int(construct);
+int getStdTileImageId(TerrainClass terrain, TerrainTileConstructId construct) {
+    return s_StdTileOffset[int(terrain)] + int(construct);
 }
 
 template< typename T, typename T2 >
@@ -153,8 +154,9 @@ static const TerrainTileConstructId g_TileMatchAssoc[] =
 };
 #endif
 
-// tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up" ...
-void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
+// Parameters:
+//     tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up"
+void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
 {
     auto  thisIdx       = (pos.y * WorldSizeX) + pos.x;
     int4  edgesIdx      = {
@@ -171,7 +173,8 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
         edgesIdx.z + 1,
     };
 
-    auto& thisTile      = g_WorldMap[thisIdx];
+    auto& thisTile      = g_TileMap[thisIdx];
+    auto& thisTerrain   = g_TerrainMap[thisIdx];
 
     //  TODO details:
     //   * This probably requires modifying neighboring tiles as well.
@@ -179,46 +182,47 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 
     int2 worldBounds = { 0, (WorldSizeX * WorldSizeY) - 1 };
 
-    TerrainMapItem outofboundsTile;
+    TileMapItem     outofboundsTile;
+    TerrainMapItem  outofboundsTerrain;
 
     outofboundsTile.tile_below  = StdTileOffset::Water;
     outofboundsTile.tile_above  = StdTileOffset::Empty;
-    outofboundsTile.class_below = TileClass::Water;
-    outofboundsTile.class_above = TileClass::Empty;
+    outofboundsTerrain.class_below = TerrainClass::Water;
+    outofboundsTerrain.class_above = TerrainClass::Empty;
 
     // Gloriously inefficient and entirely effective world bounds checking.
     // Anything out of bounds becomes a water tile for matching purposes.
     // NESW - north, east, south, west.
 
-    auto& edgeN     = xClampCheck(edgesIdx.x,   worldBounds) ? outofboundsTile  : g_WorldMap[edgesIdx.x];
-    auto& edgeE     = xClampCheck(edgesIdx.y,   worldBounds) ? outofboundsTile  : g_WorldMap[edgesIdx.y];
-    auto& edgeS     = xClampCheck(edgesIdx.z,   worldBounds) ? outofboundsTile  : g_WorldMap[edgesIdx.z];
-    auto& edgeW     = xClampCheck(edgesIdx.w,   worldBounds) ? outofboundsTile  : g_WorldMap[edgesIdx.w];
+    auto& edgeN     = xClampCheck(edgesIdx.x,   worldBounds) ? outofboundsTerrain  : g_TerrainMap[edgesIdx.x];
+    auto& edgeE     = xClampCheck(edgesIdx.y,   worldBounds) ? outofboundsTerrain  : g_TerrainMap[edgesIdx.y];
+    auto& edgeS     = xClampCheck(edgesIdx.z,   worldBounds) ? outofboundsTerrain  : g_TerrainMap[edgesIdx.z];
+    auto& edgeW     = xClampCheck(edgesIdx.w,   worldBounds) ? outofboundsTerrain  : g_TerrainMap[edgesIdx.w];
 
-    auto& cornerNW  = xClampCheck(cornersIdx.x, worldBounds) ? outofboundsTile  : g_WorldMap[cornersIdx.x];
-    auto& cornerNE  = xClampCheck(cornersIdx.y, worldBounds) ? outofboundsTile  : g_WorldMap[cornersIdx.y];
-    auto& cornerSE  = xClampCheck(cornersIdx.w, worldBounds) ? outofboundsTile  : g_WorldMap[cornersIdx.z];
-    auto& cornerSW  = xClampCheck(cornersIdx.z, worldBounds) ? outofboundsTile  : g_WorldMap[cornersIdx.w];
+    auto& cornerNW  = xClampCheck(cornersIdx.x, worldBounds) ? outofboundsTerrain  : g_TerrainMap[cornersIdx.x];
+    auto& cornerNE  = xClampCheck(cornersIdx.y, worldBounds) ? outofboundsTerrain  : g_TerrainMap[cornersIdx.y];
+    auto& cornerSE  = xClampCheck(cornersIdx.w, worldBounds) ? outofboundsTerrain  : g_TerrainMap[cornersIdx.z];
+    auto& cornerSW  = xClampCheck(cornersIdx.z, worldBounds) ? outofboundsTerrain  : g_TerrainMap[cornersIdx.w];
 
     // edge matching algo is probably going to _pretty_ complicated.  Just sayin'.  --jstine
 
-    TileClass               a_class     = TileClass::Empty;
+    TerrainClass               a_class     = TerrainClass::Empty;
     TerrainTileConstructId  a_construct = TerrainTileConstructId::Solid;
 
     TileMatchBits   matched;
 
-    matched.N  = (edgeN.class_below == tileClass) || (edgeN.class_above == tileClass);
-    matched.E  = (edgeE.class_below == tileClass) || (edgeE.class_above == tileClass);
-    matched.S  = (edgeS.class_below == tileClass) || (edgeS.class_above == tileClass);
-    matched.W  = (edgeW.class_below == tileClass) || (edgeW.class_above == tileClass);
+    matched.N  = (edgeN.class_below == terrain) || (edgeN.class_above == terrain);
+    matched.E  = (edgeE.class_below == terrain) || (edgeE.class_above == terrain);
+    matched.S  = (edgeS.class_below == terrain) || (edgeS.class_above == terrain);
+    matched.W  = (edgeW.class_below == terrain) || (edgeW.class_above == terrain);
 
-    matched.NW = (cornerNW.class_below == tileClass) || (cornerNW.class_above == tileClass);
-    matched.NE = (cornerNE.class_below == tileClass) || (cornerNE.class_above == tileClass);
-    matched.SE = (cornerSE.class_below == tileClass) || (cornerSE.class_above == tileClass);
-    matched.SW = (cornerSW.class_below == tileClass) || (cornerSW.class_above == tileClass);
+    matched.NW = (cornerNW.class_below == terrain) || (cornerNW.class_above == terrain);
+    matched.NE = (cornerNE.class_below == terrain) || (cornerNE.class_above == terrain);
+    matched.SE = (cornerSE.class_below == terrain) || (cornerSE.class_above == terrain);
+    matched.SW = (cornerSW.class_below == terrain) || (cornerSW.class_above == terrain);
 
     if (matched.isNone()) {
-        thisTile.tile_above = getStdTileImageId(tileClass, TerrainTileConstructId::Single_Light);
+        thisTile.tile_above = getStdTileImageId(terrain, TerrainTileConstructId::Single_Light);
     }
 
     if (!matched.isAll()) {
@@ -232,28 +236,30 @@ void PlaceTileWithRules(TileClass tileClass, int tileDecorType, int2 pos)
 void DigThroughTile(int2 pos)
 {
     auto  digSpotIndex  = (pos.y * WorldSizeX) + pos.x;
-    auto& digSpot       = g_WorldMap[digSpotIndex];
+    auto& digSpot       = g_TileMap[digSpotIndex];
 
     //
 }
 
 void WorldMap_Procgen()
 {
-    g_WorldMap      = (TerrainMapItem*) xRealloc(g_WorldMap,    WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
+    g_TileMap      = (TileMapItem*)    xRealloc(g_TileMap,     WorldSizeX    * WorldSizeY    * sizeof(TileMapItem));
+    g_TerrainMap   = (TerrainMapItem*) xRealloc(g_TerrainMap,  WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
 
     // Fill map with boring grass.  or sand.
 
     for (int y=0; y<WorldSizeY; ++y) {
         for (int x=0; x<WorldSizeX; ++x) {
-            g_WorldMap      [(y * WorldSizeX) + x].tile_below   = StdTileOffset::Sandy;
+            g_TileMap[(y * WorldSizeX) + x].tile_below   = StdTileOffset::Sandy;
+            g_TerrainMap[(y * WorldSizeX) + x].class_below   = TerrainClass::Sandy;
         }
     }
 
     // carve a bunch of tiny watering holes...
     for (int y=3; y<3+12; y+=3) {
         for (int x=3; x<3+12; x+=3) {
-            //g_WorldMap        [(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
-            PlaceTileWithRules(TileClass::Water, 0, {x,y});
+            //g_TileMap        [(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
+            PlaceTileWithRules(TerrainClass::Water, 0, {x,y});
         }
     }
 
@@ -379,11 +385,11 @@ void OpenWorldEnviron::InitScene()
 
     WorldMap_Procgen();
 
-    g_GroundLayerBelow.SetDataOffsetUV(offsetof(TerrainMapItem, tile_below) / 4);
-    g_GroundLayerAbove.SetDataOffsetUV(offsetof(TerrainMapItem, tile_above) / 4);
+    g_GroundLayerBelow.SetDataOffsetUV(offsetof(TileMapItem, tile_below) / 4);
+    g_GroundLayerAbove.SetDataOffsetUV(offsetof(TileMapItem, tile_above) / 4);
 
-    g_GroundLayerBelow.PopulateUVs(g_WorldMap, {0,0});
-    g_GroundLayerAbove.PopulateUVs(g_WorldMap, {0,0});
+    g_GroundLayerBelow.PopulateUVs(g_TileMap, {0,0});
+    g_GroundLayerAbove.PopulateUVs(g_TileMap, {0,0});
 
     fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
 }
@@ -399,8 +405,8 @@ void OpenWorldEnviron::Tick()
     g_GroundLayerBelow.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
     g_GroundLayerAbove.CenterViewOn({ g_ViewCamera.m_Eye.x, g_ViewCamera.m_Eye.y });
 
-    g_GroundLayerBelow.PopulateUVs(g_WorldMap);
-    g_GroundLayerAbove.PopulateUVs(g_WorldMap);
+    g_GroundLayerBelow.PopulateUVs(g_TileMap);
+    g_GroundLayerAbove.PopulateUVs(g_TileMap);
 
     g_GroundLayerAbove.m_enableDraw = s_showLayer_above;
     g_GroundLayerBelow.m_enableDraw = s_showLayer_below;
