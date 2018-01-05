@@ -28,3 +28,4 @@ void Box2D::normalize()
         setTop(temp);
     }
 }
+
