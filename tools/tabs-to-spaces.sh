@@ -8,4 +8,19 @@ if [[ -z "$1" || "$1" == "--help" ]]; then
     exit -1
 fi
 
-find . -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.inl' -o -name '*.lua' -o -name "*.sh" -o -name "*.fx" \) -not -path '*imports/*' -exec bash -c 'expand -t 4 "$0" > /tmp/e && mv  /tmp/e "$0"' {} \;
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+filetypes=(
+    "-name '*.cpp' "
+    "-name '*.h'   "
+    "-name '*.inl' "
+    "-name '*.lua' "
+    "-name '*.sh'  "
+    "-name '*.fx'  "
+)
+
+excludes=(
+    "-path '*imports/*'"
+)
+
+find . -type f \( $(join_by "-o " ${filetypes[@]} \) -not \( $(join_by "-o " ${excludes[@]} \) -exec bash -c 'expand -t 4 "$0" > /tmp/e && mv   /tmp/e "$0"' {} \;
