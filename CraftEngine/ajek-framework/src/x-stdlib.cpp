@@ -280,7 +280,7 @@ bool _createDirectory( const xString& dir )
         bug("_stat() failed - %s", cPosixErrorStr(code));
     }
 
-    return (info.st_mode == _S_IFDIR);
+    return ((info.st_mode & _S_IFDIR) == _S_IFDIR);
 }
 
 // --------------------------------------------------------------------------------------

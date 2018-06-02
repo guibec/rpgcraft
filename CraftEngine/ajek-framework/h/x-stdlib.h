@@ -204,7 +204,6 @@ extern void     xFree_Aligned       (void* ptr);
 extern void     xMalloc_Report      ();
 extern void     xMalloc_ReportDelta ();
 
-
 #define placement_new(T)        new (xMalloc(sizeof(T))) T
 
 template<typename T>
@@ -231,6 +230,11 @@ extern bool     xFileSystematicRename   (const xString& srcFullPathname, const x
 extern bool     xFgets                  (xString& dest, FILE* stream);
 extern bool     xCreateDirectory        (const xString& dir);
 extern FILE*    xFopen                  (const xString& fullpath, const char* mode);
+
+extern bool     xEnvironExists          (const xString& varname);
+extern xString  xEnvironGet             (const xString& varname);
+extern void     xEnvironSet             (const xString& varname, const xString& value, bool overwrite=1);
+
 
 // Performs cleanup of existing object pointer (if non-null) and creates a new object in its place.
 // Memory is allocated if the provided pointer is null.

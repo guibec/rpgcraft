@@ -29,6 +29,9 @@
     <ClCompile Include="..\src\x-png-encode.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\x-environ.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">

@@ -82,6 +82,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\imgtools.cpp" />
+    <ClCompile Include="..\src\x-environ.cpp" />
     <ClCompile Include="..\src\x-png-decode.cpp" />
     <ClCompile Include="..\src\x-png-encode.cpp" />
     <ClCompile Include="..\src\x-stdlib.cpp" />
