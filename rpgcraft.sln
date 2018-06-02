@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-framework", "CraftEngi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "CraftEngine\imports\imgui\imgui.vcxproj", "{47396539-D8B1-4B13-93E7-40800CE6152E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ext-Libs", "Ext-Libs", "{E48D01BB-4B15-400C-B17B-31BA26784E18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -64,6 +66,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D6973076-9317-4EF2-A0B8-B7A18AC0713E} = {E48D01BB-4B15-400C-B17B-31BA26784E18}
+		{60F89955-91C6-3A36-8000-13C592FEC2DF} = {E48D01BB-4B15-400C-B17B-31BA26784E18}
+		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0} = {E48D01BB-4B15-400C-B17B-31BA26784E18}
+		{47396539-D8B1-4B13-93E7-40800CE6152E} = {E48D01BB-4B15-400C-B17B-31BA26784E18}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27EC0020-280A-4F29-9371-D715B0AEEC55}
