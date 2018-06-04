@@ -100,7 +100,7 @@ inline __xi void xMemCopyConst32( void* dest, const void* src, uint len32 )
         // (this is especially important to VIF/VU UNPACK processing on the EE thread)
 
         u64 tmp;
-        __asm__("movq %[src], %[tmp];" 
+        __asm__("movq %[src], %[tmp];"
             :   [tmp] "=r" (tmp)
             :   [src] "m" (src64[0])
             :

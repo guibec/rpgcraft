@@ -267,50 +267,75 @@ bool _createDirectory( const xString& dir )
     // entity is a file then its bad.  Too much work to differentiate tho (need to use
     // stat). --jstine
 
-    int result = _mkdir( dir );
+    struct _stat64i32 info;
+    if (_stat(dir.c_str(), &info) == -1) {
+        auto code = errno;
+        if (code == ENOENT) {
+            int result = _mkdir( dir );
+            if (!result) return true;
+            bug_on (errno == EEXIST);
+            return false;
+        }
 
-    if (!result)            return true;
-    if (errno == EEXIST)    return true;
-    return false;
+        bug("_stat() failed - %s", cPosixErrorStr(code));
+    }
+
+    return (info.st_mode == _S_IFDIR);
 }
 
 // --------------------------------------------------------------------------------------
-// Creates entire hierarchy of requested directory trees, if the path is:
-//   A. relative to the CWD (subdir)
-//   B. located under /tmp/ or /download*  (PS4)
+// Creates entire hierarchy of requested directory trees.
 //
 bool xCreateDirectory( const xString& origDir )
 {
     if (origDir.IsEmpty()) return true;
 
     xString dir = xFixFilenameForPlatform(origDir);
-    bool allowNestedCreation = !xPathIsAbsolute(dir);
+    bool isAbsolute = xPathIsAbsolute(dir);
 
-    if (!allowNestedCreation) {
-        return _createDirectory(dir);
+    static const char* dirseps  = TARGET_LINUX ? "/" : "\\/";
+    static const char* sepChar  = TARGET_MSW   ? "\\" : "/";
+    static const char* uriCheck = TARGET_MSW   ? "\\" : "/";
+
+    int tokenSkip = 0;
+    int pos = 0;
+
+#if TARGET_MSW
+    if (dir.StartsWith("\\\\")) {
+        tokenSkip = 2;
+        pos = 2;
     }
+    elif (dir.GetLength() >= 2 && (dir[1] == ':')) {
+        if (dir.GetLength() < 3) return true;
+        pos = 3;
+    }
+#else
+    if (dir.StartsWith("//")) {
+        tokenSkip = 2;
+        pos = 2;
+    }
+#endif
 
-    static const char* dirseps = TARGET_LINUX ? "/" : "\\/";
+    xString dirdup = dir;
+    bool firstToken = 1;
 
-    xStringTokenizer split(dirseps, dir);
-    xString totalConcat;
-
-    const char* sepChar = TARGET_MSW ? "\\" : "/";
-    while(split.HasMoreTokens()) {
-        xString thisToken = split.GetNextToken();
-        if (thisToken.IsEmpty())
-        {
-            if(totalConcat.IsEmpty()) {
-                totalConcat = sepChar;
+    for(; pos < dir.GetLength() && dir[pos]; ++pos) {
+        if (xIsPathSeparator(dir[pos])) {
+            if (!pos) {
+                continue;
             }
-            continue;
+
+            if (tokenSkip) {
+                --tokenSkip;
+                continue;
+            }
+            dirdup[pos] = 0;
+            auto success = _createDirectory(dirdup);
+            dirdup[pos] = dir[pos];
+            if (!success) return false;
         }
-        if (thisToken == ".") continue;
-        totalConcat = xPath_Combine(totalConcat, thisToken);
-        bool result = _createDirectory(totalConcat);
-        if (!result) return false;
     }
-    return true;
+    return _createDirectory(dir);
 }
 
 FILE* xFopen( const xString& fullpath, const char* mode )
