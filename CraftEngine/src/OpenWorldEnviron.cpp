@@ -298,6 +298,8 @@ static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, cons
     }
 }
 
+xString xGetTempDir();
+
 void OpenWorldEnviron::InitScene()
 {
     if (0) {
@@ -335,16 +337,15 @@ void OpenWorldEnviron::InitScene()
         x_png_enc pngenc;
         pngenc.WriteImage(atlas);
 
-        pragma_todo("Create a global temp dir mount and dump things to subdirs in there...");
-        xCreateDirectory("..\\tempout\\");
-        pngenc.SaveImage(xFmtStr("..\\tempout\\atlas.png"));
+        auto tempdir = xGetTempDir();
+        pngenc.SaveImage(xFmtStr("%s/atlas.png", tempdir.c_str()));
 
         g_GroundLayerAbove.SetSourceTexture(atlas);
     }
 
     if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, ".\\sheets\\tiles\\terrain_2.png");
+        png_LoadFromFile(pngtex, "./sheets/tiles/terrain_2.png");
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
@@ -376,8 +377,8 @@ void OpenWorldEnviron::InitScene()
         x_png_enc pngenc;
         pngenc.WriteImage(atlas);
 
-        xCreateDirectory("..\\tempout\\");
-        pngenc.SaveImage(xFmtStr("..\\tempout\\atlas2.png"));
+        auto tempdir = xGetTempDir();
+        pngenc.SaveImage(xFmtStr("%s/atlas2.png", tempdir.c_str()));
 
         g_GroundLayerAbove.SetSourceTexture(atlas);
         g_GroundLayerBelow.SetSourceTexture(atlas);
@@ -391,7 +392,7 @@ void OpenWorldEnviron::InitScene()
     g_GroundLayerBelow.PopulateUVs(g_TileMap, {0,0});
     g_GroundLayerAbove.PopulateUVs(g_TileMap, {0,0});
 
-    fmod_CreateMusic(s_music_world, "..\\unity\\Assets\\Audio\\Music\\ff2over.s3m");
+    fmod_CreateMusic(s_music_world, "../unity/Assets/Audio/Music/ff2over.s3m");
 }
 
 bool s_showLayer_above = 1;

@@ -94,6 +94,7 @@
     <ClCompile Include="src\test-spline.cpp" />
     <ClCompile Include="src\TileMapLayer.cpp" />
     <ClCompile Include="src\UniformMeshes.cpp" />
+    <ClCompile Include="src\x-DebugUtil.cpp" />
     <ClCompile Include="src\x-log_host.cpp" />
   </ItemGroup>
   <ItemGroup>
