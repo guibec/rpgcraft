@@ -19,7 +19,9 @@ enum class TerrainTileConstructId
 {
     FIRST = 0,
     Solid = 0,
+    Solid4 = 3,
 
+    #if 0
     Singles,
     Single_Light    = Singles,              // single tile surrounded by unfriendlies
     Single_Heavy,                           // single tile surrounded by unfriendlies
@@ -41,7 +43,7 @@ enum class TerrainTileConstructId
     Span_S,                                 // south
     Span_W,                                 // west
     Span_E,                                 // east
-
+    #endif
     LAST
 };
 
@@ -222,7 +224,7 @@ void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
     matched.SW = (cornerSW.class_below == terrain) || (cornerSW.class_above == terrain);
 
     if (matched.isNone()) {
-        thisTile.tile_above = getStdTileImageId(terrain, TerrainTileConstructId::Single_Light);
+        //thisTile.tile_above = getStdTileImageId(terrain, TerrainTileConstructId::Single_Light);
     }
 
     if (!matched.isAll()) {
@@ -258,17 +260,25 @@ void WorldMap_Procgen()
     // carve a bunch of tiny watering holes...
     for (int y=3; y<3+12; y+=3) {
         for (int x=3; x<3+12; x+=3) {
-            //g_TileMap        [(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
-            PlaceTileWithRules(TerrainClass::Water, 0, {x,y});
+            g_TileMap        [(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
+            //PlaceTileWithRules(TerrainClass::Water, 0, {x,y});
         }
     }
 
 }
 
+static const int2 T1_GrabCoords[TerrainTileConstruct_Count] = {
+    { 1, 3 },   // Solid TL
+    { 2, 3 },   // Solid TR
+    { 1, 4 },   // Solid BL
+    { 2, 4 },   // Solid BR
+};
+
 static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
     { 1, 3 },   // Solid,
 
-    { 0, 1 },   // Singles_Light
+#if 0
+{ 0, 1 },   // Singles_Light
     { 0, 0 },   // Singles_Heavy
 
     { 1, 0 },   // Obtuse_NW
@@ -283,8 +293,21 @@ static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
     { 1, 2 },   // Span_S
     { 0, 3 },   // Span_W
     { 2, 3 },   // Span_E
+#endif
 };
 
+
+static void GrabTerrainSet1(TextureAtlas& atlas, const xBitmapData& pngtex, const int2& setSize, const int2& setToGrab)
+{
+    auto topLeft = setToGrab * setSize;
+    const auto& tileSize = atlas.m_tileSizePix;
+
+    x_png_enc pngenc;
+    for(const auto& coord : T1_GrabCoords) {
+        auto tl = topLeft + (coord * tileSize);
+        imgtool::AddTileToAtlas(atlas, pngtex, tl);
+    }
+}
 
 static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, const int2& setSize, const int2& setToGrab)
 {
@@ -302,9 +325,9 @@ xString xGetTempDir();
 
 void OpenWorldEnviron::InitScene()
 {
-    if (0) {
+    if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+        png_LoadFromFile(pngtex, "./sheets/tiles/Outside_A1.png");
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
@@ -317,20 +340,11 @@ void OpenWorldEnviron::InitScene()
         auto sizeInSets = pngtex.size / setSize;
 
         TextureAtlas atlas;
-
         atlas.Init(tileSize);
 
-        int2 setToGrab  = {5, 2};
-        auto topLeft = setToGrab * setSize;
-        topLeft.y += 32;    // grab the area set.
-
-
-        for (int y=0; y<4; ++y, topLeft.y += 16) {
-            auto tl = topLeft;
-            for (int x=0; x<4; ++x, tl.x += 16) {
-                imgtool::AddTileToAtlas(atlas, pngtex, tl);
-            }
-        }
+        GrabTerrainSet1(atlas, pngtex, setSize, {0, 4});        // snow
+        GrabTerrainSet1(atlas, pngtex, setSize, {0, 2});        // sand
+        GrabTerrainSet1(atlas, pngtex, setSize, {0, 0});        // grassy
 
         atlas.Solidify();
 
@@ -343,13 +357,13 @@ void OpenWorldEnviron::InitScene()
         g_GroundLayerAbove.SetSourceTexture(atlas);
     }
 
-    if (1) {
+    if (0) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, "./sheets/tiles/terrain_2.png");
+        png_LoadFromFile(pngtex, "./sheets/tiles/FancyLarge/terrain_2.png");
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
-        // terrain2 is designed a bit differently than the painhurt set:
+        // terrain2 is designed a bit differently than the RPG Maker VX sets:
         //   * Each tile is 32x32 pix
         //   * Each terrain set is 96x192 pixels
         //   * Sets are subdivided into four smaller sets:
