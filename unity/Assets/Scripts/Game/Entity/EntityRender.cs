@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AdvancedInspector;
 
 [System.Serializable]
 public class FrameInfo
@@ -25,16 +24,16 @@ public class FrameGroup
         m_name = name;
     }
 
-    [Inspect]
+    //[Inspect]
     public string m_name;
 
-    [Inspect]
+    //[Inspect]
     public List<FrameInfo> m_frames = new List<FrameInfo>(3);
 }
 
 [System.Serializable]
-public class FrameGroupDictionary : UDictionary<string, FrameGroup>
-//public class FrameGroupDictionary : Dictionary<string, FrameGroup>
+//public class FrameGroupDictionary : UDictionary<string, FrameGroup>
+public class FrameGroupDictionary : Dictionary<string, FrameGroup>
 {
 }
 
@@ -42,7 +41,7 @@ public class EntityRender : MonoBehaviour
 {
     public Texture m_texture;
 
-    [Inspect]
+    //[Inspect]
     public FrameGroupDictionary m_frameGroups = new FrameGroupDictionary();
     //public FrameGroupDictionary m_frameGroups = new Dictionary<string, FrameGroup>();
 

@@ -1,4 +1,6 @@
-﻿Shader "dig" 
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "dig" 
 { 
 	Properties
 	{
@@ -36,7 +38,7 @@
          v2f vert(a2v In)
          {
             v2f Out;
-			Out.position = mul(UNITY_MATRIX_MVP, In.vertex);
+			Out.position = UnityObjectToClipPos(In.vertex);
 			Out.texcoord = In.texcoord;
 			Out.normal = In.normal;
 			Out.color = In.color;
