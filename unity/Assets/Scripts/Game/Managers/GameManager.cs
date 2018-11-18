@@ -89,6 +89,16 @@ public class GameManager : MonoSingleton<GameManager>
         Stopwatch sw = Stopwatch.StartNew();
         GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
 
+		//var prefabMeshRenderer = m_worldMapChunkPrefab.GetComponent<MeshRenderer>();
+		//if (prefabMeshRenderer) {
+		//	var prefabTexture = prefabMeshRenderer.materials[0].GetTexture("_MainTex");
+
+		//	if (prefabTexture) {
+		//		var meshRenderer = chunkObj.GetComponent<MeshRenderer>();
+		//		meshRenderer.materials[0].SetTexture("_MainTex", prefabTexture);
+		//	}
+		//}
+
         //Material material = new Material(shader);
         //material.SetTexture("_MainTex", material.mainTexture);
         //material.SetTextureOffset("_MainTex", material.mainTextureOffset);
