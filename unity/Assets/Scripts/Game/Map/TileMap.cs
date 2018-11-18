@@ -66,10 +66,6 @@ public class TileMap : MonoBehaviour
 
     private void UpdateUVs()
     {
-        //MeshRenderer mr = GetComponent<MeshRenderer>();
-        //int texWidth = mr.material.mainTexture.width;
-        //int texHeight = mr.material.mainTexture.height;
-
         int numVertices = (m_width) * (m_height) * 4;
         Vector2[] uvs = new Vector2[numVertices];
 

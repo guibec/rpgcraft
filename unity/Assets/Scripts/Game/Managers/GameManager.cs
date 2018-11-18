@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Net;
 using UnityEngine.Profiling;
 
-using AdvancedInspector;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoSingleton<GameManager>
@@ -35,7 +34,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public Player MainPlayer { get; private set; }
 
-    [Inspect, SerializeField]
+    [/*Inspect,*/ SerializeField]
     private float m_playerDeathTime = 5.0f;
 
     public float PlayerDeathTime
