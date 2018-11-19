@@ -38,6 +38,7 @@ Shader "dig"
          v2f vert(a2v In)
          {
             v2f Out;
+
             Out.position = UnityObjectToClipPos(In.vertex);
             Out.texcoord = In.texcoord;
             Out.normal = In.normal;
