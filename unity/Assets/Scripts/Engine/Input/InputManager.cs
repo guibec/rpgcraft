@@ -11,7 +11,7 @@ public class InputManager : MonoSingleton<InputManager>
     {
         base.OnUpdate();
 
-	    Vector3 direction = Vector3.zero;
+        Vector3 direction = Vector3.zero;
 
         if (Input.GetKey(KeyCode.UpArrow))
             direction.y = m_speed;

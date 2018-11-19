@@ -96,18 +96,18 @@ public class ChunkInfo
         sw.Stop();
         Debug.Log(string.Format("ChunkInfo::Generate took {0}ms", sw.ElapsedMilliseconds));
 
-		string fullDump = "";
-		for (int j = 0; j < DefaultChunkWidth; ++j)
-		{
-			for (int i = 0; i < DefaultChunkWidth; ++i)
-			{
-				fullDump += m_data[i, j].Tile.ToString().Substring(0,1);
-			}
-			fullDump += "\n";
-		}
-		Debug.Log(fullDump);
+        string fullDump = "";
+        for (int j = 0; j < DefaultChunkWidth; ++j)
+        {
+            for (int i = 0; i < DefaultChunkWidth; ++i)
+            {
+                fullDump += m_data[i, j].Tile.ToString().Substring(0,1);
+            }
+            fullDump += "\n";
+        }
+        Debug.Log(fullDump);
 
-		return true;
+        return true;
     }
 
     public bool GenerateArena()

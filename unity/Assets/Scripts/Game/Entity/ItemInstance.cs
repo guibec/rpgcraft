@@ -8,12 +8,12 @@ public class ItemInstance : Entity
 {
     public EItem Item { get; private set; }
 
-	// Use this for initialization
-	protected override void OnStart ()
-	{
+    // Use this for initialization
+    protected override void OnStart ()
+    {
         base.OnStart();
-	    ItemManager.Instance.Register(this);
-	}
+        ItemManager.Instance.Register(this);
+    }
 
     public override void OnTouch(Entity other)
     {

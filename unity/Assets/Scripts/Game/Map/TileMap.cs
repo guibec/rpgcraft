@@ -19,11 +19,11 @@ public class TileMap : MonoBehaviour
 
     private bool m_dirty = false;
 
-	// Use this for initialization
-	void Start () 
+    // Use this for initialization
+    void Start () 
     {
         Regenerate();
-	}
+    }
 
     public Vector3? SelectedTile
     {
@@ -205,6 +205,6 @@ public class TileMap : MonoBehaviour
         //if (m_autoSize)
         UpdateUVs();
     }
-	
+    
 }
 

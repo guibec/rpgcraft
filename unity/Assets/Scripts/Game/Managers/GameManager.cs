@@ -87,24 +87,7 @@ public class GameManager : MonoSingleton<GameManager>
         Quaternion spawnRot = m_worldAnchorRoot.transform.rotation;
 
         Stopwatch sw = Stopwatch.StartNew();
-        GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
-
-		//var prefabMeshRenderer = m_worldMapChunkPrefab.GetComponent<MeshRenderer>();
-		//if (prefabMeshRenderer) {
-		//	var prefabTexture = prefabMeshRenderer.materials[0].GetTexture("_MainTex");
-
-		//	if (prefabTexture) {
-		//		var meshRenderer = chunkObj.GetComponent<MeshRenderer>();
-		//		meshRenderer.materials[0].SetTexture("_MainTex", prefabTexture);
-		//	}
-		//}
-
-        //Material material = new Material(shader);
-        //material.SetTexture("_MainTex", material.mainTexture);
-        //material.SetTextureOffset("_MainTex", material.mainTextureOffset);
-        //material.SetTextureScale("_MainTex", material.mainTextureScale);
-        //mr.material = material;
-        
+        GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);        
         chunkObj.GetComponent<Renderer>().material.mainTexture = m_tileTextureMap;
         chunkObj.name = string.Format("WorldMapChunk({0},{1})", (int)chunkPos.x, (int)chunkPos.y);
         sw.Stop();
@@ -297,9 +280,9 @@ public class GameManager : MonoSingleton<GameManager>
         return afterColPosition;
     }
 
-	// Update is called once per frame
+    // Update is called once per frame
     protected override void OnUpdate()
-	{
+    {
         base.OnUpdate();
 
         m_fsm.Update();
@@ -331,9 +314,9 @@ public class GameManager : MonoSingleton<GameManager>
         }
         Profiler.EndSample();
 
-	    UpdateInput();
-	    UpdateChunks();
-	}
+        UpdateInput();
+        UpdateChunks();
+    }
 
     protected override void OnLateUpdate()
     {

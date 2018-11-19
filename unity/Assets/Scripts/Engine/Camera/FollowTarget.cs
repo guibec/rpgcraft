@@ -9,16 +9,16 @@ public class FollowTarget : MonoBehaviour {
 
     private Camera m_camera;
 
-	// Use this for initialization
+    // Use this for initialization
     public void Start ()
-	{
-	    m_camera = GetComponent<Camera>();
-	}
-	
-	// Update is called once per frame
+    {
+        m_camera = GetComponent<Camera>();
+    }
+    
+    // Update is called once per frame
     public void Update () {
 
-	}
+    }
 
     public void LateUpdate()
     {

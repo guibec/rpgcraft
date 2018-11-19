@@ -6,11 +6,13 @@ public enum E_Music
 {
     None,
     WorldMap,
+    Battle,
 }
 
 public class AudioManager : MonoSingleton<AudioManager>
 {
     public AudioSource m_worldMapMusic;
+    public AudioSource m_battleMusic;
 
     // Like this for now, data driven later on
     public List<AudioClip> m_digAudio;
@@ -49,25 +51,29 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void PlayMusic(E_Music requestedMusic)
     {
         if (m_currentMusic == requestedMusic)
+        {
             return;
+        }
 
         m_currentMusic = requestedMusic;
 
+        StopMusic();
         if (m_currentMusic == E_Music.None)
         {
-            StopMusic();
+            return;
         }
-        else
+
+        switch (m_currentMusic)
         {
-            switch (m_currentMusic)
-            {
-                case E_Music.WorldMap:
-                    m_worldMapMusic.Play();
-                    break;
-                default:
-                    Debug.Break();
-                    break;
-            }
+            case E_Music.WorldMap:
+                m_worldMapMusic.Play();
+                break;
+            case E_Music.Battle:
+                m_battleMusic.Play();
+                break;
+            default:
+                Debug.Break();
+                break;
         }
     }
 

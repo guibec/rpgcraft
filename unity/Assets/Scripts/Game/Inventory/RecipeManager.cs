@@ -25,10 +25,10 @@ using System.Xml;
         /************************************************************************/
         /*  <?xml version="1.0" ?> 
             <recipes>
-	            <recipe>
-		            <source item="Wood" count="4"/>
-		            <dest item="Stick" count="1"/>
-	            </recipe>
+                <recipe>
+                    <source item="Wood" count="4"/>
+                    <dest item="Stick" count="1"/>
+                </recipe>
             </recipes>                                                                     
         /************************************************************************/
         public bool Load(string file="./data/items/recipes.xml")
