@@ -69,7 +69,7 @@ public class EntityManager : MonoSingleton<EntityManager>
         return count;
     }
 
-    public IEnumerable<Entity> Entities
+	public IEnumerable<Entity> Entities
     {
         get { return m_entities.AsReadOnly(); }
     }

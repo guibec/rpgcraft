@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameManagerState_Playing : State
+public class GameManagerState_Battle : State
 {
-    public GameManagerState_Playing(StateMachine sm) : base(sm) { }
+    public GameManagerState_Battle(StateMachine sm) : base(sm) { }
 
     public override void Constructor()
     {
         base.Constructor();
+
+		AudioManager.Instance.PlayMusic(E_Music.Battle);
     }
 
     public override void Destructor()
@@ -17,11 +19,6 @@ public class GameManagerState_Playing : State
 
     public override void Update()
     {
-		if (CollisionManager.Instance.EnemyWithinPlayerRadius(5))
-		{
-			SwitchState<GameManagerState_Battle>();
-		}
-
         base.Update();
     }
 }

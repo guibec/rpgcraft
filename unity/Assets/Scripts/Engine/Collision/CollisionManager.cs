@@ -17,4 +17,25 @@ public class CollisionManager : MonoSingleton<CollisionManager>
 
         return CollisionCode.TestBox2DBox2D(worldBox, playerBox);
     }
+
+	public bool EnemyWithinPlayerRadius(float radius)
+	{
+		var playerPos = EntityManager.Instance.Player.transform.position;
+
+		foreach (var entity in EntityManager.Instance.Entities)
+		{
+			if (!(entity is Enemy))
+			{
+				continue;
+			}
+
+			var entityPos = entity.transform.position;
+			if ((entityPos - playerPos).sqrMagnitude <= radius * radius)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
