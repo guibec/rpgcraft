@@ -14,63 +14,11 @@
 
 TileMapItem*        g_TileMap       = nullptr;
 TerrainMapItem*     g_TerrainMap    = nullptr;
+AudioSettings       g_settings_audio;
 
 static FmodMusic    s_music_world;
 
-AudioSettings       g_settings_audio;
-
-enum class TerrainTileConstructId
-{
-    FIRST = 0,
-    Solid = 0,
-
-    Singles,
-    Single_Light    = Singles,              // single tile surrounded by unfriendlies
-    Single_Heavy,                           // single tile surrounded by unfriendlies
-
-    ObtuseCorners,
-    Obtuse_NW       = ObtuseCorners,        // north-west
-    Obtuse_NE,                              // north-east
-    Obtuse_SW,                              // south-west
-    Obtuse_SE,                              // south-east
-
-    AcuteCorners,
-    Acute_NW        = AcuteCorners,         // north-west
-    Acute_NE,                               // north-east
-    Acute_SW,                               // south-west
-    Acute_SE,                               // south-east
-
-    Spans,
-    Span_N          = Spans,                // north
-    Span_S,                                 // south
-    Span_W,                                 // west
-    Span_E,                                 // east
-
-    LAST
-};
-
-TerrainTileConstructId _TerrainTileSet_incr(const TerrainTileConstructId& src) {
-    TerrainTileConstructId result = src;
-    (int&)result += 1;
-    bug_on(int(result) >= int(TerrainTileConstructId::LAST));
-    return result;
-}
-
-TerrainTileConstructId _TerrainTileSet_decr(const TerrainTileConstructId& src) {
-    TerrainTileConstructId result = src;
-    (int&)result += 1;
-    bug_on(int(result) >= int(TerrainTileConstructId::LAST));
-    return result;
-}
-
-TerrainTileConstructId& operator++(TerrainTileConstructId& left)      { return left = _TerrainTileSet_incr(left); }
-TerrainTileConstructId  operator++(TerrainTileConstructId& left, int) { return        _TerrainTileSet_incr(left); }
-TerrainTileConstructId& operator--(TerrainTileConstructId& left)      { return left = _TerrainTileSet_decr(left); }
-TerrainTileConstructId  operator--(TerrainTileConstructId& left, int) { return        _TerrainTileSet_decr(left); }
-
-static const int TerrainTileConstruct_Count = (int)TerrainTileConstructId::LAST;
-
-static const int2 RipSrcTilePos[TerrainTileConstruct_Count];
+static const int TerrainTileConstruct_Count = 1;
 
 namespace StdTileOffset
 {
@@ -87,8 +35,8 @@ static const int s_StdTileOffset[] = {
     StdTileOffset::Grassy
 };
 
-int getStdTileImageId(TerrainClass terrain, TerrainTileConstructId construct) {
-    return s_StdTileOffset[int(terrain)] + int(construct);
+int getStdTileImageId(TerrainClass terrain) {
+    return s_StdTileOffset[int(terrain)];
 }
 
 template< typename T, typename T2 >
@@ -134,29 +82,6 @@ enum TileMatchType
     ESW     = 14,
     NESW    = 15,
 };
-
-#if 0
-// WIP - meh, not sure about this one yet.
-static const TerrainTileConstructId g_TileMatchAssoc[] =
-{
-    // None
-    ,   // N
-    , // E
-    // NE
-    , // S
-    // NS
-    // ES
-    Span_E, // NES
-    // W
-    // NW
-    // EW
-    Span_N, // NEW
-    // SW
-    Span_E, // NSW
-    Span_S, // ESW
-    Singles, // NESW
-};
-#endif
 
 // Parameters:
 //     tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up"
@@ -211,7 +136,6 @@ void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
     // edge matching algo is probably going to _pretty_ complicated.  Just sayin'.  --jstine
 
     TerrainClass            a_class     = TerrainClass::Empty;
-    TerrainTileConstructId  a_construct = TerrainTileConstructId::Solid;
 
     TileMatchBits   matched;
 
@@ -226,7 +150,7 @@ void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
     matched.SW = (cornerSW.class_below == terrain) || (cornerSW.class_above == terrain);
 
     if (matched.isNone()) {
-        thisTile.tile_above = getStdTileImageId(terrain, TerrainTileConstructId::Single_Light);
+        thisTile.tile_above = getStdTileImageId(terrain);
     }
 
     if (!matched.isAll()) {
@@ -254,7 +178,7 @@ void WorldMap_Procgen()
 
     for (int y=0; y<WorldSizeY; ++y) {
         for (int x=0; x<WorldSizeX; ++x) {
-            g_TileMap[(y * WorldSizeX) + x].tile_below   = StdTileOffset::Sandy;
+            g_TileMap   [(y * WorldSizeX) + x].tile_below    = StdTileOffset::Sandy;
             g_TerrainMap[(y * WorldSizeX) + x].class_below   = TerrainClass::Sandy;
         }
     }
@@ -269,38 +193,6 @@ void WorldMap_Procgen()
 
 }
 
-static const int2 T2_GrabCoords[TerrainTileConstruct_Count] = {
-    { 1, 3 },   // Solid,
-
-    { 0, 1 },   // Singles_Light
-    { 0, 0 },   // Singles_Heavy
-
-    { 1, 0 },   // Obtuse_NW
-    { 2, 0 },   // Obtuse_NE
-    { 1, 1 },   // Obtuse_SW
-    { 2, 1 },   // Obtuse_SE
-    { 0, 2 },   // Acute_NW,
-    { 2, 2 },   // Acute_NE
-    { 0, 4 },   // Acute_SW
-    { 2, 4 },   // Acute_SE
-    { 1, 2 },   // Span_N
-    { 1, 2 },   // Span_S
-    { 0, 3 },   // Span_W
-    { 2, 3 },   // Span_E
-};
-
-
-static void GrabTerrainSet2(TextureAtlas& atlas, const xBitmapData& pngtex, const int2& setSize, const int2& setToGrab)
-{
-    auto topLeft = setToGrab * setSize;
-    const auto& tileSize = atlas.m_tileSizePix;
-
-    x_png_enc pngenc;
-    for(const auto& coord : T2_GrabCoords) {
-        auto tl = topLeft + (coord * tileSize);
-        imgtool::AddTileToAtlas(atlas, pngtex, tl);
-    }
-}
 
 xString xGetTempDir();
 
@@ -356,6 +248,7 @@ void OpenWorldEnviron::InitScene()
         pngenc.SaveImage(tempdir + "/atlas.png");
 
         g_GroundLayerAbove.SetSourceTexture(atlas);
+        g_GroundLayerBelow.SetSourceTexture(atlas);
     }
 
     WorldMap_Procgen();
