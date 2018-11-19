@@ -64,12 +64,12 @@ public class EntityRender : MonoBehaviour
     private int m_currentFrameIndex;
     private FrameInfo m_currentFrame;
 
-	// Use this for initialization
-	void Awake () 
+    // Use this for initialization
+    void Awake () 
     {
-	    m_mr = gameObject.GetComponent<MeshRenderer>();
+        m_mr = gameObject.GetComponent<MeshRenderer>();
         m_mesh = GetComponent<MeshFilter>().mesh;
-	}
+    }
 
     void Start()
     {
@@ -79,14 +79,14 @@ public class EntityRender : MonoBehaviour
             m_mr.material.mainTexture = m_texture;
         }
     }
-	
-	// Update is called once per frame
-	void Update ()
-	{
-	    m_consumedDt += TimeManager.Dt;
+    
+    // Update is called once per frame
+    void Update ()
+    {
+        m_consumedDt += TimeManager.Dt;
 
-	    if (m_currentFrameGroup != null)
-	    {
+        if (m_currentFrameGroup != null)
+        {
             while (m_consumedDt >= m_globalFrameDelay)
             {
                 if (m_currentFrame.m_nextFrame != null)
@@ -100,8 +100,8 @@ public class EntityRender : MonoBehaviour
                     break;
                 }
             }
-	    }
-	}
+        }
+    }
 
     public void SetFrameInfo(string groupName, int px, int py, int width, int height)
     {

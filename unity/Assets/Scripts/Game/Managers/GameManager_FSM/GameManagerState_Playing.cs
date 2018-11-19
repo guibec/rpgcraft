@@ -17,10 +17,10 @@ public class GameManagerState_Playing : State
 
     public override void Update()
     {
-		if (CollisionManager.Instance.EnemyWithinPlayerRadius(5))
-		{
-			SwitchState<GameManagerState_Battle>();
-		}
+        if (CollisionManager.Instance.EnemyWithinPlayerRadius(5))
+        {
+            SwitchState<GameManagerState_Battle>();
+        }
 
         base.Update();
     }

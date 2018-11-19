@@ -123,7 +123,7 @@ public class Player : Entity
     {
         base.OnUpdate();
 
-	    if (HasAction)
+        if (HasAction)
         {
             EntityAction currentAction = CurrentAction;
             currentAction.m_durationLeft -= TimeManager.Dt;

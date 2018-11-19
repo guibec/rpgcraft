@@ -26,7 +26,7 @@ public class ScreenFollowWorld : MonoBehaviour
     public Vector2 Offset { get; set; }
 
     // Update is called once per frame
-	void Update () 
+    void Update () 
     {
         if (Target != null)
         {
@@ -34,5 +34,5 @@ public class ScreenFollowWorld : MonoBehaviour
             pos2d += Offset;
             transform.position = pos2d;
         }
-	}
+    }
 }

@@ -9,7 +9,7 @@ public class GameManagerState_Battle : State
     {
         base.Constructor();
 
-		AudioManager.Instance.PlayMusic(E_Music.Battle);
+        AudioManager.Instance.PlayMusic(E_Music.Battle);
     }
 
     public override void Destructor()
