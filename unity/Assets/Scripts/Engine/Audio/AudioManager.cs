@@ -66,38 +66,43 @@ public class AudioManager : MonoSingleton<AudioManager>
             return;
         }
 
-        m_currentMusic = requestedMusic;
-
-        StopMusic();
-        if (m_currentMusic == E_Music.None)
+        AudioSource fadeOutMusic = null;
+        switch (m_currentMusic)
         {
-            return;
+            case E_Music.WorldMap:
+                m_lastWorldMapMusicTime = m_worldMapMusic.time; // technically incorrect due to the fadeout
+                fadeOutMusic = m_worldMapMusic;
+                break;
+            case E_Music.Battle:
+                fadeOutMusic  = m_battleMusic;
+                break;
+            default:
+                break;
         }
 
+        m_currentMusic = requestedMusic;
+
+        AudioSource fadeInMusic = null;
         switch (m_currentMusic)
         {
             case E_Music.WorldMap:
                 m_worldMapMusic.time = m_lastWorldMapMusicTime;
-                m_worldMapMusic.Play();
+                fadeInMusic = m_worldMapMusic;
                 break;
             case E_Music.Battle:
-                m_battleMusic.Play();
+                fadeInMusic = m_battleMusic;
                 break;
             default:
                 Debug.Break();
                 break;
         }
+
+        ChangeMusic(fadeOutMusic, fadeInMusic);
     }
 
-    public void StopMusic() 
+    public void ChangeMusic(AudioSource fadeOut, AudioSource fadeIn) 
     {
-        if (m_worldMapMusic.isPlaying)
-        {
-            m_lastWorldMapMusicTime = m_worldMapMusic.time;
-            m_audioFadeInOut.StartFadeInOut(m_worldMapMusic, 0.5f, null, 0);
-        }
-
-        m_battleMusic.Stop();
+        m_audioFadeInOut.StartFadeOutIn(fadeOut, 0.5f, fadeIn, 0.5f);
     }
 
     public E_Music CurrentMusic
