@@ -392,7 +392,7 @@ MeshFilter:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 331056181}
-  m_Mesh: {fileID: 647653380}
+  m_Mesh: {fileID: 339872633}
 --- !u!4 &331056185
 Transform:
   m_ObjectHideFlags: 0
@@ -406,7 +406,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!43 &647653380
+--- !u!43 &339872633
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1679,6 +1679,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2092272535}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96e63a9fefaf04e4eb449d489072edc3, type: 3}
+  m_Script: {fileID: 11500000, guid: 7f503110703b7c449aa952255ac5f56f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
