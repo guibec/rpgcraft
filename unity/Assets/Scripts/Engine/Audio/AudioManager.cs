@@ -9,6 +9,7 @@ public enum E_Music
     Battle,
 }
 
+[RequireComponent(typeof(AudioFadeInOut))]
 public class AudioManager : MonoSingleton<AudioManager>
 {
     public AudioSource m_worldMapMusic;
@@ -22,6 +23,15 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private E_Music m_currentMusic = E_Music.None;
     private float m_lastWorldMapMusicTime = 0;
+
+    private AudioFadeInOut m_audioFadeInOut;
+    protected override void Awake()
+    {
+        m_audioFadeInOut = gameObject.GetComponent<AudioFadeInOut>();
+        DebugUtils.Assert(m_audioFadeInOut != null);
+
+        base.Awake();
+    }
 
     public void PlayDig()
     {
@@ -84,9 +94,9 @@ public class AudioManager : MonoSingleton<AudioManager>
         if (m_worldMapMusic.isPlaying)
         {
             m_lastWorldMapMusicTime = m_worldMapMusic.time;
+            m_audioFadeInOut.StartFadeInOut(m_worldMapMusic, 0.5f, null, 0);
         }
 
-        m_worldMapMusic.Stop();
         m_battleMusic.Stop();
     }
 
