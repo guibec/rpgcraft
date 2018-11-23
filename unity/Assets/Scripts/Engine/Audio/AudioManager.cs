@@ -9,6 +9,7 @@ public enum E_Music
     Battle,
 }
 
+[RequireComponent(typeof(AudioFadeInOut))]
 public class AudioManager : MonoSingleton<AudioManager>
 {
     public AudioSource m_worldMapMusic;
@@ -22,6 +23,15 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private E_Music m_currentMusic = E_Music.None;
     private float m_lastWorldMapMusicTime = 0;
+
+    private AudioFadeInOut m_audioFadeInOut;
+    protected override void Awake()
+    {
+        m_audioFadeInOut = gameObject.GetComponent<AudioFadeInOut>();
+        DebugUtils.Assert(m_audioFadeInOut != null);
+
+        base.Awake();
+    }
 
     public void PlayDig()
     {
@@ -56,38 +66,43 @@ public class AudioManager : MonoSingleton<AudioManager>
             return;
         }
 
-        m_currentMusic = requestedMusic;
-
-        StopMusic();
-        if (m_currentMusic == E_Music.None)
+        AudioSource fadeOutMusic = null;
+        switch (m_currentMusic)
         {
-            return;
+            case E_Music.WorldMap:
+                m_lastWorldMapMusicTime = m_worldMapMusic.time; // technically incorrect due to the fadeout
+                fadeOutMusic = m_worldMapMusic;
+                break;
+            case E_Music.Battle:
+                fadeOutMusic  = m_battleMusic;
+                break;
+            default:
+                break;
         }
 
+        m_currentMusic = requestedMusic;
+
+        AudioSource fadeInMusic = null;
         switch (m_currentMusic)
         {
             case E_Music.WorldMap:
                 m_worldMapMusic.time = m_lastWorldMapMusicTime;
-                m_worldMapMusic.Play();
+                fadeInMusic = m_worldMapMusic;
                 break;
             case E_Music.Battle:
-                m_battleMusic.Play();
+                fadeInMusic = m_battleMusic;
                 break;
             default:
                 Debug.Break();
                 break;
         }
+
+        ChangeMusic(fadeOutMusic, fadeInMusic);
     }
 
-    public void StopMusic() 
+    public void ChangeMusic(AudioSource fadeOut, AudioSource fadeIn) 
     {
-        if (m_worldMapMusic.isPlaying)
-        {
-            m_lastWorldMapMusicTime = m_worldMapMusic.time;
-        }
-
-        m_worldMapMusic.Stop();
-        m_battleMusic.Stop();
+        m_audioFadeInOut.StartFadeOutIn(fadeOut, 0.5f, fadeIn, 0.5f);
     }
 
     public E_Music CurrentMusic
