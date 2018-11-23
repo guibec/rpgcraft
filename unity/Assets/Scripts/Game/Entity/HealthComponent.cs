@@ -74,6 +74,18 @@ public class HealthComponent : MonoBehaviour
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
 
+    public void ReceiveHeal(int heal)
+    {
+        Health += heal;
+
+        Vector2 screenPos = Camera.main.WorldToScreenPoint(transform.position);
+        screenPos.y += 32;
+
+        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration("+" + heal.ToString(), screenPos, 2f);
+        dynamicText.ParentToWorld(gameObject);
+        dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
+    }
+
     public bool CanReceiveDamage()
     {
         return Health > 0 && m_damageTimer <= 0f;
