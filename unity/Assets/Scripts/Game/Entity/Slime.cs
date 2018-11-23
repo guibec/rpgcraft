@@ -9,6 +9,8 @@ public class Slime : Enemy
 
     private float m_time = 0;
 
+    public float m_heartSpawnChance = 0.10f;
+
     public Slime()
     {
 
@@ -94,10 +96,17 @@ public class Slime : Enemy
 
     protected override void OnEntityDestroy()
     {
-        // spawn loot
-        for (int i = 0; i < 2; ++i)
+        if (RandomManager.Probability(m_heartSpawnChance))
         {
-            SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
+        }
+        else
+        {
+            // spawn loot
+            for (int i = 0; i < 2; ++i)
+            {
+                SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+            }
         }
 
         base.OnEntityDestroy();

@@ -36,7 +36,7 @@ public class SwordAttack : Entity
                 int damage = GameManager.Instance.MainPlayer.Experience.Level;
 
                 // check if critical hit !
-                if (RandomManager.Instance.Probability(0.10f))
+                if (RandomManager.Probability(0.10f))
                 {
                     damage *= 3;
                 }
