@@ -21,6 +21,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public List<AudioClip> m_hitAudio;
 
     private E_Music m_currentMusic = E_Music.None;
+    private float m_lastWorldMapMusicTime = 0;
 
     public void PlayDig()
     {
@@ -66,6 +67,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         switch (m_currentMusic)
         {
             case E_Music.WorldMap:
+                m_worldMapMusic.time = m_lastWorldMapMusicTime;
                 m_worldMapMusic.Play();
                 break;
             case E_Music.Battle:
@@ -79,7 +81,13 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     public void StopMusic() 
     {
+        if (m_worldMapMusic.isPlaying)
+        {
+            m_lastWorldMapMusicTime = m_worldMapMusic.time;
+        }
+
         m_worldMapMusic.Stop();
+        m_battleMusic.Stop();
     }
 
     public E_Music CurrentMusic

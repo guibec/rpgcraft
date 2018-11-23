@@ -7,6 +7,8 @@ public class GameManagerState_Playing : State
 
     public override void Constructor()
     {
+        AudioManager.Instance.PlayMusic(E_Music.WorldMap);
+
         base.Constructor();
     }
 
