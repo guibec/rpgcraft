@@ -114,7 +114,16 @@ public class Player : Entity
         ItemInstance ii = other as ItemInstance;
         if (ii != null)
         {
-            Inventory.Carry(ii.Item);
+            // Quick hack for Hearth
+            if (ii.Item == EItem.Heart)
+            {
+                // Hard-coded for now
+                ReceiveHeal(RandomManager.Next(4,8));
+            }
+            else
+            {
+                Inventory.Carry(ii.Item);
+            }
         }
     }
 
@@ -198,6 +207,11 @@ public class Player : Entity
     public void ReceiveDamage(int damage)
     {
         HealthComponent.ReceiveDamage(damage);
+    }
+
+    public void ReceiveHeal(int heal)
+    {
+        HealthComponent.ReceiveHeal(heal);
     }
 
     private void StartAction(EAction action_, float duration_, Vector3 position_, ActionCompletedDelegate callback_)

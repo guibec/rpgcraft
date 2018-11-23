@@ -5,22 +5,19 @@ using System.Runtime.InteropServices;
 
 public class RandomManager : MonoSingleton<RandomManager> 
 {
-    private RandomManager()
-    {
-        m_random = new System.Random(); // No deterministic seed for now
-    }
+    private static System.Random m_random = new System.Random();
 
-    public bool Boolean()
+    public static bool Boolean()
     {
         return Next(0, 2) == 0;
     }
 
-    public int Next(int minValue, int maxValue)
+    public static int Next(int minValue, int maxValue)
     {
         return m_random.Next(minValue, maxValue);
     }
 
-    public bool Probability(float perc)
+    public static bool Probability(float perc)
     {
         if (perc >= 1.0f)
             return true;
@@ -33,18 +30,18 @@ public class RandomManager : MonoSingleton<RandomManager>
 
     }
 
-    public Vector2 Vector()
+    public static Vector2 Vector()
     {
         double angle = m_random.NextDouble()*Math.PI*2;
         return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
     }
 
-    public float Next(float minValue, float maxValue)
+    public static float Next(float minValue, float maxValue)
     {
         float range = maxValue - minValue;
 
         return (float)(m_random.NextDouble()) * range + minValue;
     }
 
-    private System.Random m_random;
+
 }
