@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
 public class Entity : MonoBehaviour 
 {
     private bool m_destroying = false;
@@ -42,6 +43,7 @@ public class Entity : MonoBehaviour
 
     public void RequestDestroy()
     {
+        SpawnManager.Instance.OnKilled(this);
         m_destroying = true;
     }
 
@@ -89,7 +91,7 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnEntityDestroy()
     {
-        DestroyObject(gameObject);        
+        DestroyObject(gameObject);
         EntityManager.Instance.Unregister(this);
     }
 
@@ -111,8 +113,27 @@ public class Entity : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    private bool m_canBeKnockedBack = true;
+    public bool CanBeKnockedBack
+    {   get
+        {
+            return m_canBeKnockedBack;
+        }
+
+        set
+        {
+            m_canBeKnockedBack = value;
+        }
+    }
+
     public void KnockBack(Vector2 dir, float force, float time)
     {
+        if (!CanBeKnockedBack)
+        {
+            return;
+        }
+
         if (m_fsm.IsInState<EntityState_Live>())
         {
             EntityState_Live psl = m_fsm.FindStateByType<EntityState_Live>();

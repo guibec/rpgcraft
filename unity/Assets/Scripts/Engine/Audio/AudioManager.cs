@@ -7,6 +7,7 @@ public enum E_Music
     None,
     WorldMap,
     Battle,
+    BossBattle,
 }
 
 [RequireComponent(typeof(AudioFadeInOut))]
@@ -14,6 +15,8 @@ public class AudioManager : MonoSingleton<AudioManager>
 {
     public AudioSource m_worldMapMusic;
     public AudioSource m_battleMusic;
+    public AudioSource m_bossBattleMusic;
+    // Next person to add a music here makes a generic system!
 
     // Like this for now, data driven later on
     public List<AudioClip> m_digAudio;
@@ -52,9 +55,13 @@ public class AudioManager : MonoSingleton<AudioManager>
     {
         int indexToPlay = 0;
         if (possibilities == null || possibilities.Count == 0)
+        {
             return;
+        }
         else if (possibilities.Count > 1)
+        {
             indexToPlay = Random.Range(0, possibilities.Count);
+        }
 
         AudioSource.PlayClipAtPoint(possibilities[indexToPlay], GameManager.Instance.m_mainCamera.transform.position);
     }
@@ -74,7 +81,10 @@ public class AudioManager : MonoSingleton<AudioManager>
                 fadeOutMusic = m_worldMapMusic;
                 break;
             case E_Music.Battle:
-                fadeOutMusic  = m_battleMusic;
+                fadeOutMusic = m_battleMusic;
+                break;
+            case E_Music.BossBattle:
+                fadeOutMusic = m_bossBattleMusic;
                 break;
             default:
                 break;
@@ -91,6 +101,9 @@ public class AudioManager : MonoSingleton<AudioManager>
                 break;
             case E_Music.Battle:
                 fadeInMusic = m_battleMusic;
+                break;
+            case E_Music.BossBattle:
+                fadeInMusic = m_bossBattleMusic;
                 break;
             default:
                 Debug.Break();
