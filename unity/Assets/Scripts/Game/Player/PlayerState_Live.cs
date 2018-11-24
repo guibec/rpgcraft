@@ -32,17 +32,27 @@ public class PlayerState_Live : EntityState_Live
             return;
         }
 
-        Vector3 direction = Vector3.zero;
+        // Compute actual Player speed
+        float speed = m_player.PlayerSpeed;
 
+        TileInfo tileInfo = GameManager.Instance.GetTileFromWorldPos(m_player.transform.position);
+        TileProperties tileProperties = TileMapping.GetTileProperties(tileInfo.Tile);
+
+        if (tileProperties != null)
+        {
+            speed *= tileProperties.SpeedFactor;
+        }
+
+        Vector3 direction = Vector3.zero;
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-            direction.y = m_player.m_playerSpeed;
+            direction.y = speed;
         else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-            direction.y = -m_player.m_playerSpeed;
+            direction.y = -speed;
 
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-            direction.x = -m_player.m_playerSpeed;
+            direction.x = -speed;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-            direction.x = m_player.m_playerSpeed;
+            direction.x = speed;
 
         direction *= TimeManager.Dt;
 

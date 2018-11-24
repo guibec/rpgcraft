@@ -308,7 +308,9 @@ public class GameManager : MonoSingleton<GameManager>
         foreach (var entity in EntityManager.Instance.Entities)
         {
             if (entity is Player)
+            {
                 continue;
+            }
 
             // Recalage on all Entity
             newPosition = entity.transform.position;

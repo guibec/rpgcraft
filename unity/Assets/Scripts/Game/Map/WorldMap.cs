@@ -9,6 +9,6 @@ public static class WorldTile
     */ 
     public static bool IsCollision(ETile tile)
     {
-        return tile == ETile.Mountain || tile == ETile.Water || tile == ETile.Invalid;
+        return tile == ETile.Mountain || tile == ETile.Invalid;
     }
 }

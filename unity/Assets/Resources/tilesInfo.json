@@ -84,7 +84,9 @@
                 "w": 16,
                 "h": 16
             },
-            "world": {}
+            "properties": {
+                "speedfactor" : 0.5
+            }
         },
         {
             "id": 256,

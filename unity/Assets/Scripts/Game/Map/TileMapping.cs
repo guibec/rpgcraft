@@ -5,16 +5,19 @@ using SimpleJSON;
 
 public class TileDef
 {
-    public TileDef(ETile id, string name, TileResourceDef tileResourceDef)
+    public TileDef(ETile id, string name, TileResourceDef tileResourceDef, TileProperties tileProperties)
     {
         Id = id;
         Name = name;
         Resource = tileResourceDef;
+        Properties = tileProperties;
     }
 
     public ETile Id { private set; get; }
     public string Name { private set; get; }
     public TileResourceDef Resource { private set; get; }
+
+    public TileProperties Properties { private set; get; }
 }
 
 public class TileResourceDef
@@ -44,6 +47,17 @@ public static class TileMapping
         else
         {
             return tileDef.Resource;
+        }
+    }
+
+    static public TileProperties GetTileProperties(ETile tile)
+    {
+        TileDef tileDef;
+        if (!m_tilesDef.TryGetValue(tile, out tileDef))
+            return null;
+        else
+        {
+            return tileDef.Properties;
         }
     }
 
@@ -85,15 +99,15 @@ public static class TileMapping
             ETile id = (ETile)tileNode["id"].AsInt;
             string name = tileNode["name"];
 
-            TileDef td = new TileDef(id, name, trd);
+            TileProperties tileProperties = new TileProperties(tileNode["properties"]);
+
+            TileDef td = new TileDef(id, name, trd, tileProperties);
 
             if (m_tilesDef.ContainsKey(id))
             {
                 Debug.Log(string.Format("Ignoring duplicate id {0}", id));
                 continue;
             }
-
-            
 
             m_tilesDef.Add(id, td);
         }
