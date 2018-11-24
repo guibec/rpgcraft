@@ -5,6 +5,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 {
     public GameObject m_itemInstancePrefab;
     public GameObject m_slimePrefab;
+    public GameObject m_bossSlimePrefab;
 
     private ItemInstance SpawnItem(EItem item)
     {
@@ -96,9 +97,27 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         }
     }
 
-    private GameObject SpawnEnemy()
+    public void OnKilled(Entity killed)
     {
-        if (m_slimePrefab == null)
+        if (killed is Enemy)
+        {
+            m_numEnemiesKilled++;
+        }
+    }
+
+    private GameObject SpawnSlime()
+    {
+        return SpawnEnemy(m_slimePrefab);
+    }
+
+    private GameObject SpawnBoss()
+    {
+        return SpawnEnemy(m_bossSlimePrefab);
+    }
+
+    private GameObject SpawnEnemy(GameObject enemyPrefab)
+    {
+        if (enemyPrefab == null)
         {
             return null;
         }
@@ -120,7 +139,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
                                 new Vector2(xSign ? m_spawnMinDistance + xDistance : -m_spawnMinDistance - xDistance,
                                     ySign ? m_spawnMinDistance + yDistance : -m_spawnMinDistance - yDistance);
 
-        GameObject obj = Instantiate(m_slimePrefab);
+        GameObject obj = Instantiate(enemyPrefab);
 
         if (obj == null)
         {
@@ -144,7 +163,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
     {
         base.OnUpdate();
 
-        //// Look at the state of the world, and decide if we should spawn enemies !
+        // Look at the state of the world, and decide if we should spawn enemies !
         int enemyCount = EntityManager.Instance.Count<Enemy>();
 
         if (enemyCount < MaxEnemies)
@@ -157,7 +176,16 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             m_spawnTime += TimeManager.Dt;
             if (m_spawnTime >= m_nextSpawn)
             {
-                SpawnEnemy();
+                if (m_numEnemiesKilled >= m_numEnemiesBeforeBoss)
+                {
+                    m_numEnemiesKilled = 0;
+                    SpawnBoss();
+                }
+                else
+                {
+                    SpawnSlime();
+                }
+
                 m_spawnTime = 0.0f;
                 m_nextSpawn = 0.0f;
             }
@@ -181,6 +209,10 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
     [Tooltip("Minimum distance for enemy spawning")]
     public float m_spawnMinDistance = 20.0f;
+
+    [Tooltip("How many enemies must be killed before boss is spawned")]
+    public int m_numEnemiesBeforeBoss = 30;
+    private int m_numEnemiesKilled = 0;
 
     float m_spawnTime = 0.0f;
     float m_nextSpawn = 0.0f;

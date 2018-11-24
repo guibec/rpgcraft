@@ -42,6 +42,7 @@ public class Entity : MonoBehaviour
 
     public void RequestDestroy()
     {
+        SpawnManager.Instance.OnKilled(this);
         m_destroying = true;
     }
 
@@ -89,7 +90,7 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnEntityDestroy()
     {
-        DestroyObject(gameObject);        
+        DestroyObject(gameObject);
         EntityManager.Instance.Unregister(this);
     }
 
