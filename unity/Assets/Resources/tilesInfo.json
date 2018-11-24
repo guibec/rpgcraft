@@ -78,9 +78,9 @@
             "id": 7,
             "name": "Water",
             "resource": {
-                "file": "dw1",
-                "x": 0,
-                "y": 34,
+                "file": "terrain",
+                "x": 208,
+                "y": 192,
                 "w": 16,
                 "h": 16
             },

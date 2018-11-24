@@ -101,11 +101,14 @@ public class GameManager : MonoSingleton<GameManager>
 
         float percMountain = distFromOrigin/10f;
         if (percMountain > 1.0f)
+        {
             percMountain = 1.0f;
+        }
 
         template.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.30f, 0.2f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.20f, 1.0f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Tree, 0.20f, 0.1f));
+        template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.10f, 1.0f));
         template.patchTemplate.Add(new PatchTemplate(ETile.Mountain, percMountain, 0.3f));
         //template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
 

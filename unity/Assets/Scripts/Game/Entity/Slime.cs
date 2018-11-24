@@ -9,6 +9,7 @@ public class Slime : Enemy
 
     private float m_time = 0;
 
+    public float m_doubleHeartSpawnChance = 0.05f;
     public float m_heartSpawnChance = 0.10f;
 
     public Slime()
@@ -96,7 +97,14 @@ public class Slime : Enemy
 
     protected override void OnEntityDestroy()
     {
-        if (RandomManager.Probability(m_heartSpawnChance))
+        if (RandomManager.Probability(m_doubleHeartSpawnChance))
+        {
+            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
+            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
+        }
+        // it is actually incorrect to call Probability twice since it actually increases the chance of getting it
+        // TODO: fix me by changing Probability method
+        else if (RandomManager.Probability(m_heartSpawnChance))
         {
             SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
         }
