@@ -11,13 +11,38 @@ public class GameManagerState_Battle : State
     {
         base.Constructor();
 
-        AudioManager.Instance.PlayMusic(E_Music.Battle);
+        ChangeBattleMusic();
         m_lastTimeWithEnemyNearby = TimeManager.Now;
     }
 
     public override void Destructor()
     {
         base.Destructor();
+    }
+
+    private void ChangeBattleMusic()
+    {
+        if (IsBossBattle())
+        {
+            AudioManager.Instance.PlayMusic(E_Music.BossBattle);
+        }
+        else
+        {
+            AudioManager.Instance.PlayMusic(E_Music.Battle);
+        }
+    }
+
+    private bool IsBossBattle()
+    {
+        foreach (Enemy e in EntityManager.Instance.Enemies)
+        {
+            if (e.IsBoss)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public override void Update()
@@ -27,6 +52,7 @@ public class GameManagerState_Battle : State
         if (CollisionManager.Instance.EnemyWithinPlayerRadius(10))
         {
             m_lastTimeWithEnemyNearby = TimeManager.Now;
+            ChangeBattleMusic();
         }
         // To avoid hysteresis of switching between battle and non battle mode
         else if (TimeManager.Now >= m_lastTimeWithEnemyNearby + 5)

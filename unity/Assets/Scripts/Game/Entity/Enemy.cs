@@ -65,6 +65,8 @@ public class Enemy : Entity
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
 
+    public bool IsBoss = false;
+
     //public Interval<int> GoldValue
     //{
     //    get

@@ -186,7 +186,7 @@ public class UIManager : MonoSingleton<UIManager>
             textObject.DisplayTime -= TimeManager.Dt;
             if (textObject.DisplayTime <= 0)
             {
-                DestroyObject(textObject.Object);
+                UnityEngine.Object.Destroy(textObject.Object);
                 m_dynamicTexts.RemoveAt(i);
             }
         }

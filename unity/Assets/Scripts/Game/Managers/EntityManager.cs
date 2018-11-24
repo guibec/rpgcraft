@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class EntityManager : MonoSingleton<EntityManager>
 {
@@ -73,4 +74,11 @@ public class EntityManager : MonoSingleton<EntityManager>
     {
         get { return m_entities.AsReadOnly(); }
     }
+
+    public IEnumerable<Enemy> Enemies
+    {
+        get { return m_entities.Where(x => x is Enemy).Cast<Enemy>(); }
+    }
+
+
 }
