@@ -13,4 +13,5 @@ public enum EItem
     Copper_Axe = 260,
     Wood = 261,
     Heart = 262,
+    Bomb = 263,
 }

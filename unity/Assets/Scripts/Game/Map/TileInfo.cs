@@ -13,7 +13,7 @@ public enum ETile
     Desert,
     Tree,
     Forest,
-    Water
+    Water,
 }
 
 // describe a specific tile

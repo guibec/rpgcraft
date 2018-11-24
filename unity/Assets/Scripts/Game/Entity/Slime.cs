@@ -97,7 +97,20 @@ public class Slime : Enemy
 
     protected override void OnEntityDestroy()
     {
-        if (RandomManager.Probability(m_doubleHeartSpawnChance))
+        // TODO: Add loot properties for enemies instead of hard-coding
+        /* "Loot" : [ { "Probability" : 0.10,
+                        "Item" : Heart,
+                        "Count" : 1,
+                      },
+                      ...
+                      }]
+                      */
+
+        if (RandomManager.Probability(0.10f))
+        {
+            SpawnManager.Instance.SpawnLoot(EItem.Bomb, transform.position);
+        }
+        else if (RandomManager.Probability(m_doubleHeartSpawnChance))
         {
             SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
             SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
