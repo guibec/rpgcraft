@@ -17,6 +17,24 @@ public class Enemy : Entity
         HealthComponent = GetComponent<HealthComponent>();
     }
 
+    [SerializeField]
+    private string m_name;
+
+    public string Name
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(m_name))
+            {
+                return m_name;
+            }
+            else
+            {
+                return this.GetType().Name;
+            }
+        }
+    }
+
     public override void OnTouch(Entity other)
     {
         base.OnTouch(other);

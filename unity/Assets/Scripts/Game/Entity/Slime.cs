@@ -100,7 +100,7 @@ public class Slime : Enemy
     // when it is destroyed, we may not want to, since there could be other reasons (level ended, some cutscene removed all enemies, etc.)
     protected override void OnEntityDestroy()
     {
-        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(this.GetType().Name);
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(Name);
 
         if (enemyInfo != null)
         {
