@@ -110,44 +110,6 @@ public class Slime : Enemy
             }
         }
 
-        //if (RandomManager.Probability(0.10f))
-        //{
-        //    SpawnManager.Instance.SpawnLoot(EItem.bomb, transform.position);
-        //}
-        //else if (RandomManager.Probability(m_doubleHeartSpawnChance))
-        //{
-        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
-        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
-        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
-        //}
-        //// it is actually incorrect to call Probability twice since it actually increases the chance of getting it
-        //// TODO: fix me by changing Probability method
-        //else if (RandomManager.Probability(m_heartSpawnChance))
-        //{
-        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
-        //}
-        //else
-        //{
-        //    // spawn loot
-        //    for (int i = 0; i < 2; ++i)
-        //    {
-        //        SpawnManager.Instance.SpawnLoot(EItem.gel, transform.position);
-        //    }
-        //}
-
-        //if (IsBoss)
-        //{
-        //    for (int i = 0; i < 20; ++i)
-        //    {
-        //        SpawnManager.Instance.SpawnLoot(EItem.gel, transform.position);
-        //    }
-
-        //    for (int i = 0; i < 20; ++i)
-        //    {
-        //        SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
-        //    }
-        //}
-
         base.OnEntityDestroy();
     }
 
