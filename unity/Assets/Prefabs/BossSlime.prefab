@@ -88,9 +88,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_canBeKnockedBack: 0
   IsBoss: 1
+  m_name: BossSlime
   m_speed: 6
   m_idleTime: 2
   m_seekTime: 3
+  m_doubleHeartSpawnChance: 0.05
   m_heartSpawnChance: 1
 --- !u!114 &11435560
 MonoBehaviour:

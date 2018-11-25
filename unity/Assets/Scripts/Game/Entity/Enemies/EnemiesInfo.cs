@@ -164,7 +164,7 @@ public class Item
     {
         string itemString = itemNode["item"];
 
-        m_item = EItem.gel;
+        m_item = EItem.Gel;
         EItem.TryParse(itemString, true, out m_item);
 
         if (itemNode["count"] == null)
