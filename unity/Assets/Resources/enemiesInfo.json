@@ -16,6 +16,11 @@
 				"probability": 0.75,
 				"item": "gel",
 				"count": 2
+			}, {
+				"probability": 0.15,
+				"item": "stone",
+				"countmin": 2,
+				"countmax": 10
 			}]
 		},
 		{

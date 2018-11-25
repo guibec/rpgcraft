@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using SimpleJSON;
 
+using IronExtension;
+
 public static class EnemiesInfo
 {
     public static string version { get; set; }
@@ -95,7 +97,9 @@ public class EnemyInfo
         // Not super optimal, but does the job
         foreach (var item in givenLoot.item)
         {
-            for (int i = 0; i < item.count; ++i)
+            int count = item.m_range.RandomValue();
+
+            for (int i = 0; i < count; ++i)
             {
                 for (int j = 0; j < givenLoot.count; j++)
                 {
@@ -156,7 +160,7 @@ public class Item
 {
     public EItem m_item;
 
-    public int count { get; set; }
+    public Range<int> m_range = new Range<int>();
 
     public Item(JSONNode itemNode)
     {
@@ -165,13 +169,18 @@ public class Item
         m_item = EItem.Gel;
         EItem.TryParse(itemString, true, out m_item);
 
-        if (itemNode["count"] == null)
+        if (itemNode["countmin"] != null && itemNode["countmax"] != null)
         {
-            count = 1;
+            m_range.Minimum = itemNode["countmin"].AsInt;
+            m_range.Maximum = itemNode["countmax"].AsInt;
+        }
+        else if (itemNode["count"] != null)
+        {
+            m_range.Minimum = m_range.Maximum = itemNode["count"].AsInt;
         }
         else
         {
-            count = itemNode["count"].AsInt;
+            m_range.Minimum = m_range.Maximum = 1;
         }
     }
 }

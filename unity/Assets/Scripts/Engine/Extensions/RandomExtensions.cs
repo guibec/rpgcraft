@@ -35,5 +35,14 @@ namespace IronExtension
                 array[dest] = prev;
             }
         }
+        public static int RandomValue(this Range<int> range)
+        {
+            return RandomManager.Next(range.Minimum, range.Maximum);
+        }
+
+        public static float RandomValue(this Range<float> range)
+        {
+            return RandomManager.Next(range.Minimum, range.Maximum);
+        }
     }
 }
