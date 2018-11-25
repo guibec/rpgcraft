@@ -1,7 +1,6 @@
 {
 	"version": "1.0",
 	"enemiesInfo": [{
-			"id": 1,
 			"name": "Slime",
 			"loot": [{
 				"probability": 0.10,
@@ -20,7 +19,6 @@
 			}]
 		},
 		{
-			"id": 2,
 			"name": "BossSlime",
 			"loot": [{
 				"probability": 1.0,

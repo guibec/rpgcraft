@@ -40,7 +40,6 @@ public static class EnemiesInfo
 
 public class EnemyInfo
 {
-    public int m_id { get; set; }
     public string m_name { get; set; }
     public List<Loot> m_loots { get; set; }
 
@@ -48,7 +47,6 @@ public class EnemyInfo
     {
         m_loots = new List<Loot>();
 
-        m_id = node["id"].AsInt;
         m_name = node["name"].Value;
 
         JSONNode lootNodeRoot = node["loot"];
