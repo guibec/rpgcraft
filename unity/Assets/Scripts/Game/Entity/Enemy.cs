@@ -9,11 +9,30 @@ public class Enemy : Entity
     }
 
     public HealthComponent HealthComponent { get; private set; }
+    public bool IsBoss = false;
 
     protected override void OnAwake()
     {
         base.OnAwake();
         HealthComponent = GetComponent<HealthComponent>();
+    }
+
+    [SerializeField]
+    private string m_name;
+
+    public string Name
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(m_name))
+            {
+                return m_name;
+            }
+            else
+            {
+                return this.GetType().Name;
+            }
+        }
     }
 
     public override void OnTouch(Entity other)
@@ -51,7 +70,7 @@ public class Enemy : Entity
 
     private void RewardWithXP()
     {
-        int xp = 5;
+        int xp = 10;
         GameManager.Instance.MainPlayer.Experience.AddXP(xp);
 
         GameObject anchor = GameManager.Instance.MainPlayer.gameObject;
@@ -64,71 +83,4 @@ public class Enemy : Entity
         dynamicText.ParentToWorld(anchor);
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
-
-    public bool IsBoss = false;
-
-    //public Interval<int> GoldValue
-    //{
-    //    get
-    //    {
-    //        return m_goldValue;
-    //    }
-    //    set
-    //    {
-    //        m_goldValue = value;
-    //    }
-    //}
-    //private Interval<int> m_goldValue = new Interval<int>(5, 10);
-
-    //public void Attack(Damage damage_)
-    //{
-    //    SoundManager.PlaySound("LTTP_Enemy_Hit");
-
-    //    LoseHp(damage_.Amount);
-    //    DisplayDamage(damage_.Amount);
-    //    KnockBack(damage_);
-    //    CheckDeath();
-    //}
-
-    //private void DisplayDamage(int amount_)
-    //{
-    //    int x; int y;
-    //    Position.ToPixel(out x, out y);
-
-    //    var text = new DynamicText(String.Format("{0}", -amount_), this, x, y, 0.8f, Color.Red);
-    //    text.Velocity = new Unit(0.0f, -1.0f);
-    //    text.FontName = "damage";
-    //    text.Visible = true;
-    //}
-
-    //private void KnockBack(Damage damage_)
-    //{
-    //    // TODO - If the collision was detected after the object moved through the entity, the knock back will go in the wrong direction
-    //    // Entity should keep velocity information which should be automatically computed from the last frame
-    //    Unit dir = this.Position - damage_.Source.Position;
-    //    dir.Normalize();
-
-    //    // Knock-Back for now, ignore all collision
-    //    float knockX = dir.X * 5.0f;
-    //    float knockY = dir.Y * 5.0f;
-
-    //    Unit newPos = Position;
-    //    newPos.X += knockX;
-    //    newPos.Y += knockY;
-
-    //    Position = newPos;
-    //}
-
-    //protected override void OnDestroy()
-    //{
-    //    base.OnDestroy();
-
-    //    SoundManager.PlaySound("LTTP_Enemy_Kill");
-
-    //    int goldGiven = GoldValue.AtRandom();
-    //    if (goldGiven > 0)
-    //    {
-    //        Collectable.GoldCollectable.Spawn(Position, goldGiven);
-    //    }
-    //}
 }

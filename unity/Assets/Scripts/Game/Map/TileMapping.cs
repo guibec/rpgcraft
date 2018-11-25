@@ -63,10 +63,9 @@ public static class TileMapping
 
     public static bool BuildFromJSON(string filename)
     {
-        TextAsset tileInfo = Resources.Load(filename) as TextAsset;
-        if (tileInfo != null)
-        {
-            JSONNode rootNode = JSON.Parse(tileInfo.text);
+        JSONNode rootNode = JSONUtils.ParseJSON(filename);
+        if (rootNode != null)
+        { 
             return TileMapping.BuildFromJSON(rootNode);
         }
 

@@ -95,38 +95,18 @@ public class Slime : Enemy
         }
     }
 
+    // TODO: We will want a some point to distinguish when an Entity is killed a "gameplay" event
+    // and when an Entity is destroyed. When it is killed, we want to give rewards.
+    // when it is destroyed, we may not want to, since there could be other reasons (level ended, some cutscene removed all enemies, etc.)
     protected override void OnEntityDestroy()
     {
-        // TODO: Add loot properties for enemies instead of hard-coding
-        /* "Loot" : [ { "Probability" : 0.10,
-                        "Item" : Heart,
-                        "Count" : 1,
-                      },
-                      ...
-                      }]
-                      */
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(Name);
 
-        if (RandomManager.Probability(0.10f))
+        if (enemyInfo != null)
         {
-            SpawnManager.Instance.SpawnLoot(EItem.Bomb, transform.position);
-        }
-        else if (RandomManager.Probability(m_doubleHeartSpawnChance))
-        {
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-        }
-        // it is actually incorrect to call Probability twice since it actually increases the chance of getting it
-        // TODO: fix me by changing Probability method
-        else if (RandomManager.Probability(m_heartSpawnChance))
-        {
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-        }
-        else
-        {
-            // spawn loot
-            for (int i = 0; i < 2; ++i)
+            foreach (EItem item in enemyInfo.RandomLoot())
             {
-                SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+                SpawnManager.Instance.SpawnLoot(item, transform.position);
             }
         }
 
@@ -157,7 +137,9 @@ public class Slime : Enemy
         }
 
         if (CurrentState == State.E_Idle)
+        {
             return;
+        }
 
         // just go toward the main player
         Vector2 playerPos = GameManager.Instance.MainPlayer.transform.position;
