@@ -11,7 +11,7 @@ public static class EnemiesInfo
 
     static EnemiesInfo()
     {
-        string filename = "enemiesInfo.json";
+        string filename = "enemiesInfo";
 
         JSONNode rootNode = JSONUtils.ParseJSON(filename);
 
@@ -26,7 +26,7 @@ public static class EnemiesInfo
         foreach (JSONNode node in enemiesInfoJSON.Childs)
         { 
             EnemyInfo enemyInfo = new EnemyInfo(node);
-            m_enemiesInfo[enemyInfo.name] = enemyInfo;
+            m_enemiesInfo[enemyInfo.m_name] = enemyInfo;
         }
     }
 
@@ -40,23 +40,74 @@ public static class EnemiesInfo
 
 public class EnemyInfo
 {
-    public int id { get; set; }
-    public string name { get; set; }
-    public List<Loot> loots { get; set; }
+    public int m_id { get; set; }
+    public string m_name { get; set; }
+    public List<Loot> m_loots { get; set; }
 
     public EnemyInfo(JSONNode node)
     {
-        loots = new List<Loot>();
+        m_loots = new List<Loot>();
 
-        id = node["id"].AsInt;
-        name = node["name"].Value;
+        m_id = node["id"].AsInt;
+        m_name = node["name"].Value;
 
         JSONNode lootNodeRoot = node["loot"];
 
         foreach (JSONNode lootNode in lootNodeRoot.Childs)
         {
-            loots.Add(new Loot(lootNode));
+            m_loots.Add(new Loot(lootNode));
         }
+    }
+
+    public List<EItem> RandomLoot()
+    {
+        // First, add all probability
+        List<EItem> outputLoots = new List<EItem>();
+
+        float totalProbability = 0;
+        foreach (var loot in m_loots)
+        {
+            totalProbability += loot.probability;
+        }
+
+        float dice = RandomManager.Next(0, totalProbability);
+
+        // 0.3, 0.2, 0.4 --> 0.9
+        // [0, 0.3] --> First Item
+        // ]0.3, 0.5] --> Second Item
+        // ]0.5, 0.9] --> Third Item
+        Loot givenLoot = null;
+        float cursor = 0;
+        foreach (var loot in m_loots)
+        {
+            givenLoot = loot;
+            cursor += loot.probability;
+            if (cursor > dice)
+            {
+                break;
+            }
+        }
+
+        // Retrieve the items of the loot
+        if (givenLoot == null)
+        {
+            return outputLoots;
+        }
+
+        // Not super optimal, but does the job
+        foreach (var item in givenLoot.item)
+        {
+            for (int i = 0; i < item.count; ++i)
+            {
+                for (int j = 0; j < givenLoot.count; j++)
+                {
+                    outputLoots.Add(item.m_item);
+                }
+            }
+        }
+
+        return outputLoots;
+
     }
 }
 
@@ -72,7 +123,7 @@ public class Loot
     {
         item = new List<Item>();
 
-        probability = node["probability"].AsInt;
+        probability = node["probability"].AsFloat;
         if (node["count"] == null)
         {
             count = 1;
@@ -90,6 +141,7 @@ public class Loot
 
         if (node["item"].Count == 0)
         {
+            count = 1;
             item.Add(new Item(node));
         }
         else
@@ -104,12 +156,16 @@ public class Loot
 
 public class Item
 {
-    public string item { get; set; }
+    public EItem m_item;
+
     public int count { get; set; }
 
     public Item(JSONNode itemNode)
     {
-        item = itemNode["item"]; // TODO: Get the actual Item reference here
+        string itemString = itemNode["item"];
+
+        m_item = EItem.gel;
+        EItem.TryParse(itemString, true, out m_item);
 
         if (itemNode["count"] == null)
         {

@@ -9,9 +9,9 @@ public enum EItem
     Stone = 256,
     PickAxe = 257,
     Sword = 258,
-    Gel = 259,
+    gel = 259,
     Copper_Axe = 260,
     Wood = 261,
-    Heart = 262,
-    Bomb = 263,
+    heart = 262,
+    bomb = 263,
 }

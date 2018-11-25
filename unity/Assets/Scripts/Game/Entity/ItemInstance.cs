@@ -37,7 +37,7 @@ public class ItemInstance : Entity
 
     public static Color32 GetColor32ForItem(EItem item)
     {
-        if (item == EItem.Gel)
+        if (item == EItem.gel)
             return new Color32(9, 129, 248, 255);
         else
             return new Color32(255, 255, 255, 255);

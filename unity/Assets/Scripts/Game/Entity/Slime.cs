@@ -100,55 +100,53 @@ public class Slime : Enemy
     // when it is destroyed, we may not want to, since there could be other reasons (level ended, some cutscene removed all enemies, etc.)
     protected override void OnEntityDestroy()
     {
-        // TODO: Add loot properties for enemies instead of hard-coding
-        /* "Loot" : [ { "Probability" : 0.10,
-                        "Item" : Heart,
-                        "Count" : 1,
-                      },
-                      ...
-                      }]
-                      */
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(this.GetType().Name);
 
-        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName("slime");
-
-
-        if (RandomManager.Probability(0.10f))
+        if (enemyInfo != null)
         {
-            SpawnManager.Instance.SpawnLoot(EItem.Bomb, transform.position);
-        }
-        else if (RandomManager.Probability(m_doubleHeartSpawnChance))
-        {
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-        }
-        // it is actually incorrect to call Probability twice since it actually increases the chance of getting it
-        // TODO: fix me by changing Probability method
-        else if (RandomManager.Probability(m_heartSpawnChance))
-        {
-            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-        }
-        else
-        {
-            // spawn loot
-            for (int i = 0; i < 2; ++i)
+            foreach (EItem item in enemyInfo.RandomLoot())
             {
-                SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+                SpawnManager.Instance.SpawnLoot(item, transform.position);
             }
         }
 
-        if (IsBoss)
-        {
-            for (int i = 0; i < 20; ++i)
-            {
-                SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
-            }
+        //if (RandomManager.Probability(0.10f))
+        //{
+        //    SpawnManager.Instance.SpawnLoot(EItem.bomb, transform.position);
+        //}
+        //else if (RandomManager.Probability(m_doubleHeartSpawnChance))
+        //{
+        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
+        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
+        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
+        //}
+        //// it is actually incorrect to call Probability twice since it actually increases the chance of getting it
+        //// TODO: fix me by changing Probability method
+        //else if (RandomManager.Probability(m_heartSpawnChance))
+        //{
+        //    SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
+        //}
+        //else
+        //{
+        //    // spawn loot
+        //    for (int i = 0; i < 2; ++i)
+        //    {
+        //        SpawnManager.Instance.SpawnLoot(EItem.gel, transform.position);
+        //    }
+        //}
 
-            for (int i = 0; i < 20; ++i)
-            {
-                SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
-            }
-        }
+        //if (IsBoss)
+        //{
+        //    for (int i = 0; i < 20; ++i)
+        //    {
+        //        SpawnManager.Instance.SpawnLoot(EItem.gel, transform.position);
+        //    }
+
+        //    for (int i = 0; i < 20; ++i)
+        //    {
+        //        SpawnManager.Instance.SpawnLoot(EItem.heart, transform.position);
+        //    }
+        //}
 
         base.OnEntityDestroy();
     }

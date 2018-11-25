@@ -114,7 +114,7 @@ public class Player : Entity
         if (ii != null)
         {
             // Quick hack for Hearth
-            if (ii.Item == EItem.Heart)
+            if (ii.Item == EItem.heart)
             {
                 // Hard-coded for now
                 ReceiveHeal(RandomManager.Next(4,8));
