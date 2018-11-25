@@ -95,6 +95,9 @@ public class Slime : Enemy
         }
     }
 
+    // TODO: We will want a some point to distinguish when an Entity is killed a "gameplay" event
+    // and when an Entity is destroyed. When it is killed, we want to give rewards.
+    // when it is destroyed, we may not want to, since there could be other reasons (level ended, some cutscene removed all enemies, etc.)
     protected override void OnEntityDestroy()
     {
         // TODO: Add loot properties for enemies instead of hard-coding
@@ -106,12 +109,16 @@ public class Slime : Enemy
                       }]
                       */
 
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName("slime");
+
+
         if (RandomManager.Probability(0.10f))
         {
             SpawnManager.Instance.SpawnLoot(EItem.Bomb, transform.position);
         }
         else if (RandomManager.Probability(m_doubleHeartSpawnChance))
         {
+            SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
             SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
             SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
         }
@@ -127,6 +134,19 @@ public class Slime : Enemy
             for (int i = 0; i < 2; ++i)
             {
                 SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+            }
+        }
+
+        if (IsBoss)
+        {
+            for (int i = 0; i < 20; ++i)
+            {
+                SpawnManager.Instance.SpawnLoot(EItem.Gel, transform.position);
+            }
+
+            for (int i = 0; i < 20; ++i)
+            {
+                SpawnManager.Instance.SpawnLoot(EItem.Heart, transform.position);
             }
         }
 
@@ -157,7 +177,9 @@ public class Slime : Enemy
         }
 
         if (CurrentState == State.E_Idle)
+        {
             return;
+        }
 
         // just go toward the main player
         Vector2 playerPos = GameManager.Instance.MainPlayer.transform.position;
