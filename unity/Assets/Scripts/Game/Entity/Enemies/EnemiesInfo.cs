@@ -169,10 +169,18 @@ public class Item
         m_item = EItem.Gel;
         EItem.TryParse(itemString, true, out m_item);
 
-        if (itemNode["countmin"] != null && itemNode["countmax"] != null)
+        if (itemNode["count"].AsObject != null)
         {
-            m_range.Minimum = itemNode["countmin"].AsInt;
-            m_range.Maximum = itemNode["countmax"].AsInt;
+            JSONNode countNode = itemNode["count"].AsObject;
+            if (countNode["min"] != null && countNode["max"] != null)
+            {
+                m_range.Minimum = countNode["min"].AsInt;
+                m_range.Maximum = countNode["max"].AsInt;
+            }
+            else
+            {
+                m_range.Minimum = m_range.Maximum = 1;
+            }
         }
         else if (itemNode["count"] != null)
         {

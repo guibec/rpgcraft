@@ -3,38 +3,42 @@
 	"enemiesInfo": [{
 			"name": "Slime",
 			"loot": [{
-				"probability": 0.10,
-				"item": "bomb"
-			}, {
-				"probability": 0.05,
-				"item": "heart",
-				"count": 1
-			}, {
-				"probability": 0.10,
-				"item": "heart"
-			}, {
-				"probability": 0.75,
-				"item": "gel",
-				"count": 2
-			}, {
-				"probability": 0.15,
-				"item": "stone",
-				"countmin": 2,
-				"countmax": 10
-			}]
-		},
-		{
+					"probability": 0.10,
+					"item": "bomb"
+				}, {
+					"probability": 0.05,
+					"item": "heart",
+					"count": 1
+				}, {
+					"probability": 0.10,
+					"item": "heart"
+				}, {
+					"probability": 0.75,
+					"item": "gel",
+					"count": 2
+				}, {
+					"probability": 0.15,
+					"item": "stone",
+					"count": {
+						"min": 2,
+						"max": 10
+					}
+				}
+			]
+		}, {
 			"name": "BossSlime",
 			"loot": [{
-				"probability": 1.0,
-				"item": [{
-					"item": "heart",
-					"count": 8
-				}, {
-					"item": "gel",
-					"count": 20
-				}]
-			}]
+					"probability": 1.0,
+					"item": [{
+							"item": "heart",
+							"count": 8
+						}, {
+							"item": "gel",
+							"count": 20
+						}
+					]
+				}
+			]
 		}
 	]
 }
