@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// High-level class for collision system
@@ -37,5 +38,34 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Return iterator for all entities within a certain radius of another entity.
+    /// Doesn't return itself
+    /// </summary>
+    /// <param name="source">Source entity</param>
+    /// <param name="radius">Radius for checking</param>
+    /// <returns></returns>
+    public IEnumerator<Entity> EntitiesWithinEntityRadius(Entity source, float radius)
+    {
+        if (source == null || radius <= 0)
+        {
+            yield break;
+        }
+        
+        foreach (var entity in EntityManager.Instance.Entities)
+        {
+            if (entity == source)
+            {
+                continue;
+            }
+
+            var entityPos = entity.transform.position;
+            if ((entityPos - source.transform.position).sqrMagnitude <= radius * radius)
+            {
+                yield return entity;
+            }
+        }
     }
 }

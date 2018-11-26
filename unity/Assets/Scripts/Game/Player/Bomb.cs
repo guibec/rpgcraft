@@ -2,18 +2,25 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SwordAttack : Entity
+public class Bomb : Entity
 {
     /// <summary>
-    /// The weapon can only hit an enemy once
+    /// Explode after a few seconds
     /// </summary>
     public bool m_singleHitPerEnemy = true;
+    public float m_numSecondsBeforeExploding = 3.0f;
+    public float m_explosionRadius = 10.f;
 
     private readonly Hashtable m_hitEntities = new Hashtable();
 
-    protected override void OnUpdate()
+
+    public void Explode()
     {
-        base.OnUpdate();
+        // Find all entities near the bomb within a certain radius
+        foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
+        {
+
+        }
     }
 
     public override void OnTouch(Entity other)
