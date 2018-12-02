@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using UnityEngine.Profiling;
 
@@ -604,7 +605,23 @@ public class GameManager : MonoSingleton<GameManager>
             return info.ReadSlotValue(x, y);
         }
         else
+        {
             return TileInfo.GetInvalid();
+        }
+    }
+
+    public List<Entity> GetEntitiesFromWorldPos(Vector2 worldPos)
+    {
+        ChunkInfo info;
+        int x, y;
+        if (GetTileDataFromWorldPos(worldPos, out info, out x, out y))
+        {
+            return info.GetEntities(x, y);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public ItemInstance GetItemInstanceFromWorldPos(Vector2 worldPos)

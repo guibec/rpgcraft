@@ -99,6 +99,16 @@ public class ChunkInfo
         m_entities[x, y].Add(entity);
     }
 
+    public List<Entity> GetEntities(int x, int y)
+    {
+        if (m_entities[x,y] == null)
+        {
+            return null;
+        }
+
+        return m_entities[x, y];
+    }
+
     public bool Generate(GenerationTemplate template)
     {
         Stopwatch sw = Stopwatch.StartNew();

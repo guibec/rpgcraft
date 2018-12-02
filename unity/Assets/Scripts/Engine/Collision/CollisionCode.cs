@@ -48,33 +48,42 @@ public static class CollisionCode
                     DebugUtils.DrawRect(new Vector2(i, j), new Vector2(i + 1.0f, j + 1.0f), Color.blue);
                 }
 
-                TileInfo ti = GameManager.Instance.GetTileFromWorldPos(new Vector2(i + 0.5f, j + 0.5f));
+                Vector2 checkVector = new Vector2(i + 0.5f, j + 0.5f);
+
+                TileInfo ti = GameManager.Instance.GetTileFromWorldPos(checkVector);
                 ETile tile = ti.Tile;
                 if (WorldTile.IsCollision(tile))
                 {
                     Box2D box2d = new Box2D(i, j+1.0f, i + 1.0f, j);
                     m_cachedList.Add(new CollisionInfo(null, box2d, CollisionFlags.Wall));
                 }
-            }
-        }
 
-        // check against other entities
-        foreach (Entity entity in EntityManager.Instance.Entities)
-        {
-            // pair-wise check must be done once only to avoid obtaining multiple collisions
-            if (entity.Id <= owner.Id)
-            {
-                continue;
-            }
+                // check entity as well
+                // TODO: This does a double lookup from above
+                List<Entity> entities = GameManager.Instance.GetEntitiesFromWorldPos(checkVector);
+                if (entities == null)
+                {
+                    continue;
+                }
 
-            Box2D box2d = entity.Box;
-            if (entity is ItemInstance)
-            {
-                m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.Item));
-            }
-            else
-            {
-                m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.None));
+                foreach (Entity entity in entities)
+                {
+                    // pair-wise check must be done once only to avoid obtaining multiple collisions
+                    if (entity.Id <= owner.Id)
+                    {
+                        continue;
+                    }
+
+                    Box2D box2d = entity.Box;
+                    if (entity is ItemInstance)
+                    {
+                        m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.Item));
+                    }
+                    else
+                    {
+                        m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.None));
+                    }
+                }
             }
         }
 
