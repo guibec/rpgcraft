@@ -15,10 +15,12 @@ public static class CollisionCode
         DrawCollision = false;
     }
 
+    private static List<CollisionInfo> m_cachedList = new List<CollisionInfo>();
+
     // return a list of all potential collision you may be going through
     public static CollisionInfo[] BroadPhase(Entity owner, Box2D sweep)
     {
-        List<CollisionInfo> list = new List<CollisionInfo>();
+        m_cachedList.Clear();
 
         // first, increase the sweep box so that it covers all the tile it is touching
         Box2D fullCover = sweep;
@@ -53,7 +55,7 @@ public static class CollisionCode
                 if (WorldTile.IsCollision(tile))
                 {
                     Box2D box2d = new Box2D(i, j+1.0f, i + 1.0f, j);
-                    list.Add(new CollisionInfo(null, box2d, CollisionFlags.Wall));
+                    m_cachedList.Add(new CollisionInfo(null, box2d, CollisionFlags.Wall));
                 }
             }
         }
@@ -70,24 +72,24 @@ public static class CollisionCode
             Box2D box2d = entity.Box;
             if (entity is ItemInstance)
             {
-                list.Add(new CollisionInfo(entity.gameObject, box2d, CollisionFlags.Item));
+                m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.Item));
             }
             else
             {
-                list.Add(new CollisionInfo(entity.gameObject, box2d, CollisionFlags.None));
+                m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.None));
             }
         }
 
         // let's draw all collisions
         if (DrawCollision)
         {
-            foreach (var ci in list)
+            foreach (var ci in m_cachedList)
             {
                 ci.Box.Draw(Color.white);
             }
         }
 
-        return list.ToArray();
+        return m_cachedList.ToArray();
     }
 
     public static bool TestPointBox2D(Vector2 p, Box2D b)

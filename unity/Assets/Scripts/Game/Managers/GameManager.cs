@@ -430,7 +430,7 @@ public class GameManager : MonoSingleton<GameManager>
                 {
                     // send OnTouchEvent on Entity
                     // Note: This will probably send multiple Touch events to the same pair. We should accumulate these TouchEvent and then sweep them if we get the bug.
-                    Entity entity2 = ci.GameObject.GetComponent<Entity>();
+                    Entity entity2 = ci.Entity;
 
                     // TODO - Since UpdateCollisionInternal is called multiple times per frame, also when checking potential collision detection, we need a way to turn it on and off
                     // to avoid sending false positive, also to avoid sending multiple touches on the same frame
@@ -460,7 +460,8 @@ public class GameManager : MonoSingleton<GameManager>
 
             // if displacement was on a single-axis, forget it, there's nothing we do can
             Vector3 wantedDisplacement = newPosition - oldPosition;
-            if (Mathf.Abs(wantedDisplacement.x) <= 0.001 || Mathf.Abs(wantedDisplacement.y) <= 0.001)
+            //if (Mathf.Abs(wantedDisplacement.x) <= 0.001 || Mathf.Abs(wantedDisplacement.y) <= 0.001)
+            if (true)
             {
                 newPosition.x = newPosition2D.x;
                 newPosition.y = newPosition2D.y;

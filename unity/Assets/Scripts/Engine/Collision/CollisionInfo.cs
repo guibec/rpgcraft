@@ -6,14 +6,14 @@ using System.Collections;
 /// </summary>
 public struct CollisionInfo
 {
-    public CollisionInfo(GameObject object_, Box2D box_, CollisionFlags flags_) : this()
+    public CollisionInfo(Entity entity_, Box2D box_, CollisionFlags flags_) : this()
     {
-        GameObject = object_;
+        Entity = entity_;
         Box = box_;
         Flags = flags_;
     }
 
-    public GameObject GameObject { get; private set; }
+    public Entity Entity { get; private set; }
     public Box2D Box { get; private set; }
     public CollisionFlags Flags { get; private set; }
 }

@@ -43,7 +43,6 @@ public class EntityRender : MonoBehaviour
 
     //[Inspect]
     public FrameGroupDictionary m_frameGroups = new FrameGroupDictionary();
-    //public FrameGroupDictionary m_frameGroups = new Dictionary<string, FrameGroup>();
 
     private MeshRenderer m_mr;
     private Mesh m_mesh;
