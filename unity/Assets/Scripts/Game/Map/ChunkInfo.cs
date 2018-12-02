@@ -78,11 +78,24 @@ public class ChunkInfo
 
     public void RemoveEntity(Entity entity, int x, int y)
     {
-        m_entities[x, y].Remove(entity);
+        List<Entity> list = m_entities[x, y];
+        if (list != null)
+        {
+            list.Remove(entity);
+            if (list.Count == 0)
+            {
+                m_entities[x, y] = null;
+            }
+        }
     }
 
     public void AddEntity(Entity entity, int x, int y)
     {
+        if (m_entities[x,y] == null)
+        {
+            m_entities[x, y] = new List<Entity>();
+        }
+
         m_entities[x, y].Add(entity);
     }
 

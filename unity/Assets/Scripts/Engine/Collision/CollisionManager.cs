@@ -61,7 +61,7 @@ public class CollisionManager : MonoSingleton<CollisionManager>
             return;
         }
 
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 9; i++)
         {
             ChunkInfo chunkInfo;
             int x, y;
@@ -73,17 +73,17 @@ public class CollisionManager : MonoSingleton<CollisionManager>
             }
         }
 
-        //for (int i = 0; i < 9; i++)
-        //{
-        //    ChunkInfo chunkInfo;
-        //    int x, y;
-        //    GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out chunkInfo, out x, out y);
+        for (int i = 0; i < 9; i++)
+        {
+            ChunkInfo chunkInfo;
+            int x, y;
+            GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out chunkInfo, out x, out y);
 
-        //    if (chunkInfo != null)
-        //    {
-        //        chunkInfo.AddEntity(entity, x, y);
-        //    }
-        //}
+            if (chunkInfo != null)
+            {
+                chunkInfo.AddEntity(entity, x, y);
+            }
+        }
     }
 
     /// <summary>

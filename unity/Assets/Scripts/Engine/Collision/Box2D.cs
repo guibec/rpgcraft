@@ -1,25 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Diagnostics;
 
 public struct Box2D 
 {
     public Box2D(Vector2 origin, float halfWidth, float halfHeight) : this()
     {
         BuildFrom(origin, halfWidth, halfHeight);
-        Normalize();
     }
 
     public Box2D(Vector2 topLeft, Vector2 bottomRight)
     {
         m_topLeft = topLeft;
         m_bottomRight = bottomRight;
-        Normalize();
+        AssertNormalize();
     }
 
     public Box2D(float left, float top, float right, float bottom)
         : this(new Vector2(left, top), new Vector2(right, bottom))
     {
-        Normalize();
+        AssertNormalize();
     }
 
     private void BuildFrom(Vector2 origin, float halfWidth, float halfHeight)
@@ -28,21 +28,25 @@ public struct Box2D
         m_bottomRight   = new Vector2(origin.x + halfWidth, origin.y - halfHeight);
     }
 
-    private void Normalize()
+    [Conditional("DEBUG")]
+    private void AssertNormalize()
     {
-        if (Left > Right)
-        {
-            float temp = Left;
-            Left = Right;
-            Right = temp;
-        }
+        UnityEngine.Debug.Assert(Right >= Left);
+        UnityEngine.Debug.Assert(Top >= Bottom);
 
-        if (Bottom > Top)
-        {
-            float temp = Bottom;
-            Bottom = Top;
-            Top = temp;
-        }
+        //if (Left > Right)
+        //{
+        //    float temp = Left;
+        //    Left = Right;
+        //    Right = temp;
+        //}
+
+        //if (Bottom > Top)
+        //{
+        //    float temp = Bottom;
+        //    Bottom = Top;
+        //    Top = temp;
+        //}
     }
 
     public Vector2 Center

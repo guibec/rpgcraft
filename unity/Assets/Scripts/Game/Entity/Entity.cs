@@ -79,11 +79,11 @@ public class Entity : MonoBehaviour
     protected virtual void OnLateUpdate()
     {
         // We moved from LastPosition to transform.position
-        Vector2 newPosition = LastPosition;
+        Vector2 newPosition = transform.position;
 
         CollisionManager.Instance.OnLateUpdate(this, LastPosition, newPosition);
 
-        LastPosition = transform.position;
+        LastPosition = newPosition;
     }
 
     // This is Unity destroy method.

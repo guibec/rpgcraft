@@ -314,6 +314,14 @@ public class GameManager : MonoSingleton<GameManager>
 
             // Recalage on all Entity
             newPosition = entity.transform.position;
+
+            // Early optimization, take care of moving objects only
+            // if you haven't moved, and you're still touching someone, you probably touched them last frame
+            //if (entity.LastPosition == newPosition)
+            //{
+            //    continue;
+            //}
+
             Profiler.BeginSample("UpdateCollison " + entity.name);
             afterColPosition = UpdateCollision(entity, entity.LastPosition, newPosition);
             Profiler.EndSample();
