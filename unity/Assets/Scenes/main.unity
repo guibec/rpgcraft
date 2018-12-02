@@ -392,7 +392,7 @@ MeshFilter:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 331056181}
-  m_Mesh: {fileID: 1013238767}
+  m_Mesh: {fileID: 968389834}
 --- !u!4 &331056185
 Transform:
   m_ObjectHideFlags: 0
@@ -516,54 +516,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5756ef6195335e48b12b041a3a80ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1002647765
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1002647767}
-  - component: {fileID: 1002647766}
-  m_Layer: 0
-  m_Name: __GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1002647766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1002647765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1bddfca3dad133644acf8575a3b5cd39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_mainCharacter: {fileID: 1606451965}
-  m_mainCamera: {fileID: 1176102368}
-  m_tileTextureMap: {fileID: 2800000, guid: beef97dc542c86d46b86041735b900a0, type: 3}
-  m_worldMapChunkPrefab: {fileID: 118880, guid: 6c20bc0f88bc2924a90970f4077ff385,
-    type: 2}
-  m_worldAnchorRoot: {fileID: 737129372}
-  m_playerDeathTime: 5
---- !u!4 &1002647767
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1002647765}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!43 &1013238767
+--- !u!43 &968389834
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -718,6 +671,53 @@ Mesh:
   m_MeshMetrics[0]: 1
   m_MeshMetrics[1]: 1
   m_MeshOptimized: 0
+--- !u!1 &1002647765
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1002647767}
+  - component: {fileID: 1002647766}
+  m_Layer: 0
+  m_Name: __GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1002647766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1002647765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bddfca3dad133644acf8575a3b5cd39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mainCharacter: {fileID: 1606451965}
+  m_mainCamera: {fileID: 1176102368}
+  m_tileTextureMap: {fileID: 2800000, guid: beef97dc542c86d46b86041735b900a0, type: 3}
+  m_worldMapChunkPrefab: {fileID: 118880, guid: 6c20bc0f88bc2924a90970f4077ff385,
+    type: 2}
+  m_worldAnchorRoot: {fileID: 737129372}
+  m_playerDeathTime: 5
+--- !u!4 &1002647767
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1002647765}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1176102364
 GameObject:
   m_ObjectHideFlags: 0
@@ -872,8 +872,8 @@ MonoBehaviour:
   m_slimePrefab: {fileID: 122272, guid: f4d43d569709bca4fa4064e67a64d256, type: 2}
   m_bossSlimePrefab: {fileID: 122272, guid: 422fd6b6089c9b04d8b450fb63364277, type: 2}
   MaxEnemies: 100
-  SpawnRateMin: 0.5
-  SpawnRateMax: 1
+  SpawnRateMin: 0.01
+  SpawnRateMax: 0.02
   m_initialSpawnTime: 1
   m_spawnVariableDistance: 10
   m_spawnMinDistance: 5
@@ -1635,7 +1635,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: e417e6e95795ebe409e6a624346e373b, type: 3}
   - {fileID: 8300000, guid: 9b6beb4a1036e8240a76424541f8cc99, type: 3}
   - {fileID: 8300000, guid: 2e88af629b6241f49aa2c66f467531ed, type: 3}
-  - {fileID: 8300000, guid: 399bdc03f8166ca4da494a0e6800d2d7, type: 3}
+  - {fileID: 0}
   - {fileID: 8300000, guid: 792d1cbb0bd21d042aeca6c6ab5533fb, type: 3}
   - {fileID: 8300000, guid: 376cd4bc9670bb5468b3856ad01f37f3, type: 3}
   - {fileID: 8300000, guid: 1651b1560aeca084cbeaf355235acab3, type: 3}

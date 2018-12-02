@@ -314,7 +314,9 @@ public class GameManager : MonoSingleton<GameManager>
 
             // Recalage on all Entity
             newPosition = entity.transform.position;
+            Profiler.BeginSample("UpdateCollison " + entity.name);
             afterColPosition = UpdateCollision(entity, entity.LastPosition, newPosition);
+            Profiler.EndSample();
             entity.transform.position = afterColPosition;
         }
         Profiler.EndSample();

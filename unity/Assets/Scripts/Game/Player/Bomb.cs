@@ -9,18 +9,17 @@ public class Bomb : Entity
     /// </summary>
     public bool m_singleHitPerEnemy = true;
     public float m_numSecondsBeforeExploding = 3.0f;
-    public float m_explosionRadius = 10.f;
+    public float m_explosionRadius = 10.0f;
 
     private readonly Hashtable m_hitEntities = new Hashtable();
-
 
     public void Explode()
     {
         // Find all entities near the bomb within a certain radius
-        foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
-        {
+        //foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
+        //{
 
-        }
+        //}
     }
 
     public override void OnTouch(Entity other)

@@ -9,3 +9,4 @@ public static class EntityExtensions
     {
         return CollisionManager.Instance.EntitiesWithinEntityRadius(source, radius);
     }
+}
