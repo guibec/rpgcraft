@@ -40,10 +40,8 @@ public static class CollisionCode
 
         // check against world
         for (float i = fullCover.Left; i + 0.9f < fullCover.Right; i += 1.0f )
-        //for (float i = fullCover.Left-5.0f; i + 0.9f < fullCover.Right + 5.0f; i += 1.0f)
         {
             for (float j = fullCover.Bottom; j + 0.9f < fullCover.Top; j += 1.0f )
-            //for (float j = fullCover.Top-5.0f; j + 0.9f < fullCover.Bottom + 5.0f; j += 1.0f)
             {
                 if (DrawCollision)
                 {

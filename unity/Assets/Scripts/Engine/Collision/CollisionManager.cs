@@ -51,9 +51,16 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         new Vector2(0, -1),
         new Vector2(1, -1),
     };
-
-    public void OnLateUpdate(Entity entity, Vector2 lastPosition, Vector2 newPosition)
+    
+    public void OnDestroy(Entity entity)
     {
+        RemoveFromChunk(entity, entity.LastPosition);
+    }
+
+    public void OnLateUpdate(Entity entity, Vector2 newPosition)
+    {
+        Vector2 lastPosition = entity.LastPosition;
+
         // Need to check all 8 neighbors, including yourself.
         // TODO: This assumes the entity is not bigger than a single cell
         if (lastPosition == newPosition)
@@ -61,6 +68,12 @@ public class CollisionManager : MonoSingleton<CollisionManager>
             return;
         }
 
+        RemoveFromChunk(entity, lastPosition);
+        AddToChunk(entity, newPosition);
+    }
+
+    private void RemoveFromChunk(Entity entity, Vector2 lastPosition)
+    {
         for (int i = 0; i < 9; i++)
         {
             ChunkInfo chunkInfo;
@@ -72,7 +85,10 @@ public class CollisionManager : MonoSingleton<CollisionManager>
                 chunkInfo.RemoveEntity(entity, x, y);
             }
         }
+    }
 
+    private void AddToChunk(Entity entity, Vector2 newPosition)
+    {
         for (int i = 0; i < 9; i++)
         {
             ChunkInfo chunkInfo;

@@ -81,7 +81,7 @@ public class Entity : MonoBehaviour
         // We moved from LastPosition to transform.position
         Vector2 newPosition = transform.position;
 
-        CollisionManager.Instance.OnLateUpdate(this, LastPosition, newPosition);
+        CollisionManager.Instance.OnLateUpdate(this, newPosition);
 
         LastPosition = newPosition;
     }
@@ -96,6 +96,8 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnEntityDestroy()
     {
+        CollisionManager.Instance.OnDestroy(this);
+
         UnityEngine.Object.Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }
