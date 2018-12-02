@@ -40,6 +40,52 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         return false;
     }
 
+    static Vector2[] neighbors = {
+        new Vector2(0, 0),
+        new Vector2(-1, 1),
+        new Vector2(0, 1),
+        new Vector2(1, 1),
+        new Vector2(-1, 0),
+        new Vector2(1, 0),
+        new Vector2(-1, -1),
+        new Vector2(0, -1),
+        new Vector2(1, -1),
+    };
+
+    public void OnLateUpdate(Entity entity, Vector2 lastPosition, Vector2 newPosition)
+    {
+        // Need to check all 8 neighbors, including yourself.
+        // TODO: This assumes the entity is not bigger than a single cell
+        if (lastPosition == newPosition)
+        {
+            return;
+        }
+
+        for (int i = 0; i < 1; i++)
+        {
+            ChunkInfo chunkInfo;
+            int x, y;
+            GameManager.Instance.GetTileDataFromWorldPos(lastPosition + neighbors[i], out chunkInfo, out x, out y);
+
+            if (chunkInfo != null)
+            {
+                chunkInfo.RemoveEntity(entity, x, y);
+            }
+        }
+
+        //for (int i = 0; i < 9; i++)
+        //{
+        //    ChunkInfo chunkInfo;
+        //    int x, y;
+        //    GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out chunkInfo, out x, out y);
+
+        //    if (chunkInfo != null)
+        //    {
+        //        chunkInfo.AddEntity(entity, x, y);
+        //    }
+        //}
+    }
+
     /// <summary>
     /// Return iterator for all entities within a certain radius of another entity.
     /// Doesn't return itself

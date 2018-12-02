@@ -59,7 +59,7 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnAwake()
     {
-        m_lastPosition = transform.position;
+        LastPosition = transform.position;
     }
 
     protected virtual void OnUpdate()
@@ -78,6 +78,11 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnLateUpdate()
     {
+        // We moved from LastPosition to transform.position
+        Vector2 newPosition = LastPosition;
+
+        CollisionManager.Instance.OnLateUpdate(this, LastPosition, newPosition);
+
         LastPosition = transform.position;
     }
 
