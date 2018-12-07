@@ -461,8 +461,8 @@ public class GameManager : MonoSingleton<GameManager>
 
             // if displacement was on a single-axis, forget it, there's nothing we do can
             Vector3 wantedDisplacement = newPosition - oldPosition;
-            //if (Mathf.Abs(wantedDisplacement.x) <= 0.001 || Mathf.Abs(wantedDisplacement.y) <= 0.001)
-            if (true)
+            if (Mathf.Abs(wantedDisplacement.x) <= 0.001 || Mathf.Abs(wantedDisplacement.y) <= 0.001)
+            //if (true)
             {
                 newPosition.x = newPosition2D.x;
                 newPosition.y = newPosition2D.y;
