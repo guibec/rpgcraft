@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using UnityEngine.Profiling;
 
@@ -314,7 +315,17 @@ public class GameManager : MonoSingleton<GameManager>
 
             // Recalage on all Entity
             newPosition = entity.transform.position;
+
+            // Early optimization, take care of moving objects only
+            // if you haven't moved, and you're still touching someone, you probably touched them last frame
+            //if (entity.LastPosition == newPosition)
+            //{
+            //    continue;
+            //}
+
+            Profiler.BeginSample("UpdateCollison " + entity.name);
             afterColPosition = UpdateCollision(entity, entity.LastPosition, newPosition);
+            Profiler.EndSample();
             entity.transform.position = afterColPosition;
         }
         Profiler.EndSample();
@@ -420,7 +431,7 @@ public class GameManager : MonoSingleton<GameManager>
                 {
                     // send OnTouchEvent on Entity
                     // Note: This will probably send multiple Touch events to the same pair. We should accumulate these TouchEvent and then sweep them if we get the bug.
-                    Entity entity2 = ci.GameObject.GetComponent<Entity>();
+                    Entity entity2 = ci.Entity;
 
                     // TODO - Since UpdateCollisionInternal is called multiple times per frame, also when checking potential collision detection, we need a way to turn it on and off
                     // to avoid sending false positive, also to avoid sending multiple touches on the same frame
@@ -451,6 +462,7 @@ public class GameManager : MonoSingleton<GameManager>
             // if displacement was on a single-axis, forget it, there's nothing we do can
             Vector3 wantedDisplacement = newPosition - oldPosition;
             if (Mathf.Abs(wantedDisplacement.x) <= 0.001 || Mathf.Abs(wantedDisplacement.y) <= 0.001)
+            //if (true)
             {
                 newPosition.x = newPosition2D.x;
                 newPosition.y = newPosition2D.y;
@@ -593,7 +605,23 @@ public class GameManager : MonoSingleton<GameManager>
             return info.ReadSlotValue(x, y);
         }
         else
+        {
             return TileInfo.GetInvalid();
+        }
+    }
+
+    public List<Entity> GetEntitiesFromWorldPos(Vector2 worldPos)
+    {
+        ChunkInfo info;
+        int x, y;
+        if (GetTileDataFromWorldPos(worldPos, out info, out x, out y))
+        {
+            return info.GetEntities(x, y);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public ItemInstance GetItemInstanceFromWorldPos(Vector2 worldPos)

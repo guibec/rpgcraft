@@ -39,12 +39,17 @@ public class ChunkInfo
 
     private TileInfo[,] m_data;
 
+    // Linked list of potentially occupying entities
+    // TODO: See Real Time Collision Detection Chapter 7.1.6 for optimization using a static array instead
+    private List<Entity>[,] m_entities;
+
     public Vector2 ChunkPos { get; private set; }
 
     public ChunkInfo(Vector2 chunkPos)
     {
         ChunkPos = chunkPos;
         m_data = new TileInfo[DefaultChunkHeight, DefaultChunkWidth];
+        m_entities = new List<Entity>[DefaultChunkHeight, DefaultChunkWidth];
     }
 
     private TileInfo[,] Data { get { return m_data; } }
@@ -69,6 +74,39 @@ public class ChunkInfo
     public TileInfo ReadSlotValue(int x, int y)
     {
         return m_data[y, x];
+    }
+
+    public void RemoveEntity(Entity entity, int x, int y)
+    {
+        List<Entity> list = m_entities[x, y];
+        if (list != null)
+        {
+            list.Remove(entity);
+            if (list.Count == 0)
+            {
+                m_entities[x, y] = null;
+            }
+        }
+    }
+
+    public void AddEntity(Entity entity, int x, int y)
+    {
+        if (m_entities[x,y] == null)
+        {
+            m_entities[x, y] = new List<Entity>();
+        }
+
+        m_entities[x, y].Add(entity);
+    }
+
+    public List<Entity> GetEntities(int x, int y)
+    {
+        if (m_entities[x,y] == null)
+        {
+            return null;
+        }
+
+        return m_entities[x, y];
     }
 
     public bool Generate(GenerationTemplate template)

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// High-level class for collision system
@@ -37,5 +38,96 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         }
 
         return false;
+    }
+
+    static Vector2[] neighbors = {
+        new Vector2(0, 0),
+        new Vector2(-1, 1),
+        new Vector2(0, 1),
+        new Vector2(1, 1),
+        new Vector2(-1, 0),
+        new Vector2(1, 0),
+        new Vector2(-1, -1),
+        new Vector2(0, -1),
+        new Vector2(1, -1),
+    };
+    
+    public void OnDestroy(Entity entity)
+    {
+        RemoveFromChunk(entity, entity.LastPosition);
+    }
+
+    public void OnLateUpdate(Entity entity, Vector2 newPosition)
+    {
+        Vector2 lastPosition = entity.LastPosition;
+
+        // Need to check all 8 neighbors, including yourself.
+        // TODO: This assumes the entity is not bigger than a single cell
+        if (lastPosition == newPosition)
+        {
+            return;
+        }
+
+        RemoveFromChunk(entity, lastPosition);
+        AddToChunk(entity, newPosition);
+    }
+
+    private void RemoveFromChunk(Entity entity, Vector2 lastPosition)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            ChunkInfo chunkInfo;
+            int x, y;
+            GameManager.Instance.GetTileDataFromWorldPos(lastPosition + neighbors[i], out chunkInfo, out x, out y);
+
+            if (chunkInfo != null)
+            {
+                chunkInfo.RemoveEntity(entity, x, y);
+            }
+        }
+    }
+
+    private void AddToChunk(Entity entity, Vector2 newPosition)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            ChunkInfo chunkInfo;
+            int x, y;
+            GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out chunkInfo, out x, out y);
+
+            if (chunkInfo != null)
+            {
+                chunkInfo.AddEntity(entity, x, y);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return iterator for all entities within a certain radius of another entity.
+    /// Doesn't return itself
+    /// </summary>
+    /// <param name="source">Source entity</param>
+    /// <param name="radius">Radius for checking</param>
+    /// <returns></returns>
+    public IEnumerator<Entity> EntitiesWithinEntityRadius(Entity source, float radius)
+    {
+        if (source == null || radius <= 0)
+        {
+            yield break;
+        }
+        
+        foreach (var entity in EntityManager.Instance.Entities)
+        {
+            if (entity == source)
+            {
+                continue;
+            }
+
+            var entityPos = entity.transform.position;
+            if ((entityPos - source.transform.position).sqrMagnitude <= radius * radius)
+            {
+                yield return entity;
+            }
+        }
     }
 }

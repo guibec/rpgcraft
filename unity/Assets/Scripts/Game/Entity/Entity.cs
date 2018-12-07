@@ -59,7 +59,7 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnAwake()
     {
-        m_lastPosition = transform.position;
+        LastPosition = transform.position;
     }
 
     protected virtual void OnUpdate()
@@ -78,7 +78,12 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnLateUpdate()
     {
-        LastPosition = transform.position;
+        // We moved from LastPosition to transform.position
+        Vector2 newPosition = transform.position;
+
+        CollisionManager.Instance.OnLateUpdate(this, newPosition);
+
+        LastPosition = newPosition;
     }
 
     // This is Unity destroy method.
@@ -91,6 +96,8 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnEntityDestroy()
     {
+        CollisionManager.Instance.OnDestroy(this);
+
         UnityEngine.Object.Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }
@@ -160,3 +167,5 @@ public class Entity : MonoBehaviour
         }
     }
 }
+
+

@@ -15,10 +15,12 @@ public static class CollisionCode
         DrawCollision = false;
     }
 
+    private static List<CollisionInfo> m_cachedList = new List<CollisionInfo>();
+
     // return a list of all potential collision you may be going through
     public static CollisionInfo[] BroadPhase(Entity owner, Box2D sweep)
     {
-        List<CollisionInfo> list = new List<CollisionInfo>();
+        m_cachedList.Clear();
 
         // first, increase the sweep box so that it covers all the tile it is touching
         Box2D fullCover = sweep;
@@ -30,59 +32,71 @@ public static class CollisionCode
         // 0.9 is not a typo, it's just using a large epsilon which is currently fine because our sweep box is currently always at least one tile large
         DebugUtils.Assert(fullCover.Width >= 0.99);
         DebugUtils.Assert(fullCover.Height >= 0.99);
-        
-        // check against world
-        for (float i = fullCover.Left; i + 0.9f < fullCover.Right; i += 1.0f )
-        //for (float i = fullCover.Left-5.0f; i + 0.9f < fullCover.Right + 5.0f; i += 1.0f)
-        {
-            for (float j = fullCover.Bottom; j + 0.9f < fullCover.Top; j += 1.0f )
-            //for (float j = fullCover.Top-5.0f; j + 0.9f < fullCover.Bottom + 5.0f; j += 1.0f)
-            {
-                DebugUtils.DrawRect(new Vector2(i, j), new Vector2(i + 1.0f, j + 1.0f), Color.blue);
-
-                TileInfo ti = GameManager.Instance.GetTileFromWorldPos(new Vector2(i + 0.5f, j + 0.5f));
-                ETile tile = ti.Tile;
-                if (WorldTile.IsCollision(tile))
-                {
-                    Box2D box2d = new Box2D(i, j+1.0f, i + 1.0f, j);
-                    list.Add(new CollisionInfo(null, box2d, CollisionFlags.Wall));
-                }
-            }
-        }
-
-        // check against other entities
-        foreach (Entity entity in EntityManager.Instance.Entities)
-        {
-            // pair-wise check must be done once only to avoid obtaining multiple collisions
-            if (entity.Id <= owner.Id)
-                continue;
-
-            Box2D box2d = entity.Box;
-            if (entity is ItemInstance)
-            {
-                list.Add(new CollisionInfo(entity.gameObject, box2d, CollisionFlags.Item));
-            }
-            else
-            {
-                list.Add(new CollisionInfo(entity.gameObject, box2d, CollisionFlags.None));
-            }
-        }
 
         if (Input.GetKeyDown(KeyCode.F10))
         {
             DrawCollision = !DrawCollision;
         }
 
-        // let's draw all collisions
-        //if (DrawCollision)
+        // check against world
+        for (float i = fullCover.Left; i + 0.9f < fullCover.Right; i += 1.0f )
         {
-            foreach (var ci in list)
+            for (float j = fullCover.Bottom; j + 0.9f < fullCover.Top; j += 1.0f )
+            {
+                if (DrawCollision)
+                {
+                    DebugUtils.DrawRect(new Vector2(i, j), new Vector2(i + 1.0f, j + 1.0f), Color.blue);
+                }
+
+                Vector2 checkVector = new Vector2(i + 0.5f, j + 0.5f);
+
+                TileInfo ti = GameManager.Instance.GetTileFromWorldPos(checkVector);
+                ETile tile = ti.Tile;
+                if (WorldTile.IsCollision(tile))
+                {
+                    Box2D box2d = new Box2D(i, j+1.0f, i + 1.0f, j);
+                    m_cachedList.Add(new CollisionInfo(null, box2d, CollisionFlags.Wall));
+                }
+
+                // check entity as well
+                // TODO: This does a double lookup from above
+                List<Entity> entities = GameManager.Instance.GetEntitiesFromWorldPos(checkVector);
+                if (entities == null)
+                {
+                    continue;
+                }
+
+                foreach (Entity entity in entities)
+                {
+                    // pair-wise check must be done once only to avoid obtaining multiple collisions
+                    if (entity.Id <= owner.Id)
+                    {
+                        continue;
+                    }
+
+                    Box2D box2d = entity.Box;
+                    if (entity is ItemInstance)
+                    {
+                        m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.Item));
+                    }
+                    else
+                    {
+                        m_cachedList.Add(new CollisionInfo(entity, box2d, CollisionFlags.None));
+                    }
+                }
+            }
+        }
+
+        // let's draw all collisions
+        if (DrawCollision)
+        {
+            foreach (var ci in m_cachedList)
             {
                 ci.Box.Draw(Color.white);
             }
         }
 
-        return list.ToArray();
+        return m_cachedList.ToArray();
     }
 
     public static bool TestPointBox2D(Vector2 p, Box2D b)
@@ -147,7 +161,10 @@ public static class CollisionCode
             if (velocity < 0.0f)
             {
                 if (b.Max(i) < a.Min(i))
+                {
                     return false; // Non intersecting and moving apart
+                }
+
                 if (a.Max(i) < b.Min(i))
                 {
                     tFirst[i] = (a.Max(i) - b.Min(i)) / velocity;
@@ -163,7 +180,10 @@ public static class CollisionCode
             else if (velocity > 0.0f)
             {
                 if (b.Min(i) > a.Max(i))
+                {
                     return false; // Non intersecting and moving apart
+                }
+
                 if (b.Max(i) < a.Min(i))
                 {
                     tFirst[i] = (a.Min(i) - b.Max(i))/velocity;
@@ -178,7 +198,9 @@ public static class CollisionCode
 
 
             if (!tContact[i])
+            {
                 return false;
+            }
         }
 
         tIn = Mathf.Max(tFirst[0], tFirst[1]);
@@ -187,7 +209,9 @@ public static class CollisionCode
         // No overlap possible if time of first contact occurs after time of last contact
         // also, we don't consider overlap if they occur in the future of this frame, or before this frame
         if (tIn > tOut || tIn > 1.0f || tIn < 0f)
+        {
             return false;
+        }
 
         //UnityEngine.Debug.Log(string.Format("Dynamic collision on tFirst={0} and tLast={0}", tIn, tOut));
         return true;
