@@ -226,33 +226,40 @@ public class Player : Entity
         CurrentAction = newAction;
     }
 
-    // not sure if this should be using the action system
-    // need to use object pooling here
-    private void SpawnAttackToward(Vector2 origin, Vector2 target)
+    private GameObject SpawnGameObjectAt(Vector2 origin, GameObject prefab)
     {
-        Vector2 dir = (target - origin).normalized;
-        if (dir == Vector2.zero)
-        {
-            dir = Vector2.up; // Maybe use last movement direction...
-        }
-
-        GameObject prefab = EntityManager.Instance.m_attackPrefab;
-
         if (prefab == null)
         {
             UnityEngine.Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
-            return;
+            return null;
         }
 
         GameObject obj = Instantiate(prefab);
 
         if (obj == null)
-            return;
+        {
+            return null;
+        }
 
         obj.transform.position = origin;
 
         EntityRender entityRender = obj.GetComponent<EntityRender>();
         entityRender.SetCurrentGroup("Main");
+
+        return obj;
+    }
+
+    // not sure if this should be using the action system
+    // need to use object pooling here
+    private void SpawnAttackToward(Vector2 origin, Vector2 target)
+    {
+        GameObject obj = SpawnGameObjectAt(origin, EntityManager.Instance.m_attackPrefab);
+
+        Vector2 dir = (target - origin).normalized;
+        if (dir == Vector2.zero)
+        {
+            dir = Vector2.up; // Maybe use last movement direction...
+        }
 
         Mover mover = obj.GetComponent<Mover>();
         Entity entity = obj.GetComponent<Entity>();
@@ -264,26 +271,51 @@ public class Player : Entity
             }
         );    
         }
-        
     }
 
-    // perform action at a given point, return true if done
-    public bool ActionAt(Vector3 worldPos)
+    private void SpawnBombAt(Vector2 origin)
     {
-        if (HasAction)
-            return false;
+        GameObject obj = SpawnGameObjectAt(origin, EntityManager.Instance.m_bombPrefab);
+    }
 
+    public bool SkillActionAt(Vector3 worldPos)
+    {
         int selectedIndex = UIManager.Instance.SelectedInventorySlot;
         EItem selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
 
         if (selectedItem == EItem.Sword)
         {
             if (EntityManager.Instance.Count<SwordAttack>() > 0)
+            {
                 return false;
+            }
 
             SpawnAttackToward(gameObject.transform.position, worldPos);
             return true;
         }
+        else if (selectedItem == EItem.Bomb)
+        {
+            worldPos.z = gameObject.transform.position.z;
+            float sqrDistance = (worldPos - gameObject.transform.position).sqrMagnitude;
+            if (sqrDistance <= 6.0f * 6.0f)
+            {
+                SpawnBombAt(worldPos);
+                Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // perform action at a given point, return true if done
+    public bool ActionAt(Vector3 worldPos)
+    {
+        int selectedIndex = UIManager.Instance.SelectedInventorySlot;
+        EItem selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
+
+        if (HasAction)
+            return false;
 
         // always compare against middle of tile
         worldPos.x = Mathf.Floor(worldPos.x) + 0.5f;
@@ -367,6 +399,7 @@ public class Player : Entity
 
                     return true;
                 }
+
 
                 return false;
             }

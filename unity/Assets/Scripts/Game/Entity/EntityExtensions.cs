@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 public static class EntityExtensions
 {
-    public static IEnumerator<Entity> EntitiesWithinRadius(this Entity source, float radius)
+    public static EntitiesWithinEntityRadiusEnumerator EntitiesWithinRadius(this Entity source, float radius)
     {
         return CollisionManager.Instance.EntitiesWithinEntityRadius(source, radius);
     }
