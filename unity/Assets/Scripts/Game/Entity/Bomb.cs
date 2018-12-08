@@ -10,10 +10,21 @@ public class Bomb : Entity
     public bool m_singleHitPerEnemy = true;
     public float m_numSecondsBeforeExploding = 3.0f;
     public float m_explosionRadius = 10.0f;
+    public float m_throwSpeed = 25.0f;
+
+    public AudioClip m_explodeSfx;
 
     private readonly Hashtable m_hitEntities = new Hashtable();
 
-    public void Explode()
+    public float ThrowSpeed
+    {
+        get
+        {
+            return m_throwSpeed;
+        }
+    }
+
+    public IEnumerator Explode()
     {
         // Find all entities near the bomb within a certain radius
         foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
@@ -39,11 +50,12 @@ public class Bomb : Entity
 
                     Vector2 relativeDir = enemy.transform.position - this.transform.position;
                     enemy.KnockBack(relativeDir.normalized, 3f, 0.05f);
-
-                    AudioManager.Instance.PlayHit();
                 }
             }
         }
+
+        AudioManager.PlaySfx(m_explodeSfx);
+        yield return new WaitForSeconds(m_explodeSfx.length);
     }
 
     protected override void OnStart()
@@ -56,7 +68,7 @@ public class Bomb : Entity
     private IEnumerator WaitAndExplode()
     {
         yield return new WaitForSeconds(m_numSecondsBeforeExploding);
-        Explode();
+        yield return Explode();
         RequestDestroy();
     }
 

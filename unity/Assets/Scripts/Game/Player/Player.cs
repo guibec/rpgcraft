@@ -273,9 +273,19 @@ public class Player : Entity
         }
     }
 
-    private void SpawnBombAt(Vector2 origin)
+    private void SpawnBombToward(Vector2 origin, Vector2 target)
     {
+        // Reduce target by the maximum throw distance
+        Vector2 throwVector = Vector2.ClampMagnitude(target - origin, 10.0f);
+        target = origin + throwVector;
+
         GameObject obj = SpawnGameObjectAt(origin, EntityManager.Instance.m_bombPrefab);
+        Mover mover = obj.GetComponent<Mover>();
+        Bomb bomb = obj.GetComponent<Bomb>();
+        if (mover && bomb)
+        {
+            mover.StartInterpolationConstantSpeed(target, bomb.ThrowSpeed);
+        }
     }
 
     public bool SkillActionAt(Vector3 worldPos)
@@ -296,13 +306,9 @@ public class Player : Entity
         else if (selectedItem == EItem.Bomb)
         {
             worldPos.z = gameObject.transform.position.z;
-            float sqrDistance = (worldPos - gameObject.transform.position).sqrMagnitude;
-            if (sqrDistance <= 6.0f * 6.0f)
-            {
-                SpawnBombAt(worldPos);
-                Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
-                return true;
-            }
+            SpawnBombToward(gameObject.transform.position, worldPos);
+            Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
+            return true;
         }
 
         return false;
