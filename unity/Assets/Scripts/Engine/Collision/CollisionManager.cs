@@ -109,25 +109,48 @@ public class CollisionManager : MonoSingleton<CollisionManager>
     /// <param name="source">Source entity</param>
     /// <param name="radius">Radius for checking</param>
     /// <returns></returns>
-    public IEnumerator<Entity> EntitiesWithinEntityRadius(Entity source, float radius)
+    public EntitiesWithinEntityRadiusEnumerator EntitiesWithinEntityRadius(Entity source, float radius)
     {
-        if (source == null || radius <= 0)
+        return new EntitiesWithinEntityRadiusEnumerator(source, radius);
+    }
+}
+
+public class EntitiesWithinEntityRadiusEnumerator : IEnumerable<Entity>
+{
+    public EntitiesWithinEntityRadiusEnumerator(Entity source, float radius)
+    {
+        m_source = source;
+        m_radius = radius;
+    }
+
+    private Entity m_source;
+    private float m_radius;
+
+    public IEnumerator<Entity> GetEnumerator()
+    {
+        if (m_source == null || m_radius <= 0)
         {
             yield break;
         }
-        
+
         foreach (var entity in EntityManager.Instance.Entities)
         {
-            if (entity == source)
+            if (entity == m_source)
             {
                 continue;
             }
 
             var entityPos = entity.transform.position;
-            if ((entityPos - source.transform.position).sqrMagnitude <= radius * radius)
+            if ((entityPos - m_source.transform.position).sqrMagnitude <= m_radius * m_radius)
             {
                 yield return entity;
             }
         }
     }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }
+
