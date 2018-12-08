@@ -9,7 +9,7 @@ public class Bomb : Entity
     /// </summary>
     public bool m_singleHitPerEnemy = true;
     public float m_numSecondsBeforeExploding = 3.0f;
-    public float m_explosionRadius = 10.0f;
+    public float m_explosionRadius = 5.0f;
     public float m_throwSpeed = 25.0f;
 
     public AudioClip m_explodeSfx;
@@ -26,6 +26,8 @@ public class Bomb : Entity
 
     public IEnumerator Explode()
     {
+        gameObject.transform.localScale *= m_explosionRadius;
+
         // Find all entities near the bomb within a certain radius
         foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
         {
@@ -54,13 +56,61 @@ public class Bomb : Entity
             }
         }
 
+        EntityRender tickingRenderer = GetTickingRenderer();
+        tickingRenderer.enabled = false;
+
+        EntityRender explodeRenderer = GetExplodeRenderer();
+        explodeRenderer.SetCurrentGroup("Explode");
+
         AudioManager.PlaySfx(m_explodeSfx);
         yield return new WaitForSeconds(m_explodeSfx.length);
+    }
+
+    private EntityRender GetTickingRenderer()
+    {
+        return GetComponent<EntityRender>();
+    }
+
+    private EntityRender GetExplodeRenderer()
+    {
+        EntityRender[] entityRenders = GetComponents<EntityRender>();
+
+        if (entityRenders.Length >= 2)
+        {
+            return entityRenders[1];
+        }
+        else
+        {
+            return null;
+        }
     }
 
     protected override void OnStart()
     {
         base.OnStart();
+
+        EntityRender tickingRender = GetTickingRenderer();
+        if (tickingRender != null)
+        {
+            tickingRender.SetFrameInfo("Main", 0, 0, 32, 32);
+            tickingRender.SetCurrentGroup("Main");
+        }
+
+        EntityRender explosionRender = GetExplodeRenderer();
+        if (explosionRender != null)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                explosionRender.SetFrameInfo("Explode", i * 96, 0, 96, 96);
+            }
+
+            for (int i = 0; i < 11; i++)
+            {
+                explosionRender.LinkNextFrame("Explode", i, i + 1);
+            }
+
+            explosionRender.SetGlobalFrameDelay(0.15f);
+        }
 
         StartCoroutine(WaitAndExplode());
     }

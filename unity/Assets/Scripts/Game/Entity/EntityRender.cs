@@ -74,7 +74,6 @@ public class EntityRender : MonoBehaviour
     {
         if (m_mr)
         {
-           //m_mr.material.SetTexture(0, m_texture);
             m_mr.material.mainTexture = m_texture;
         }
     }
@@ -86,6 +85,12 @@ public class EntityRender : MonoBehaviour
 
         if (m_currentFrameGroup != null)
         {
+            // If there are multiple Entity renderers, the last one win.
+            if (m_mr)
+            {
+                m_mr.material.mainTexture = m_texture;
+            }
+
             while (m_consumedDt >= m_globalFrameDelay)
             {
                 if (m_currentFrame != null && m_currentFrame.m_nextFrame != null)
