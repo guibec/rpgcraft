@@ -3,7 +3,7 @@
 	"enemiesInfo": [{
 			"name": "Slime",
 			"loot": [{
-					"probability": 0.10,
+					"probability": 1.00,
 					"item": "bomb"
 				}, {
 					"probability": 0.05,
@@ -21,7 +21,14 @@
 					"item": "stone",
 					"count": {
 						"min": 2,
-						"max": 10
+                        "max": 4
+					}
+				}, {
+					"probability": 0.15,
+					"item": "stone",
+					"count": {
+						"min": 2,
+                        "max": 4
 					}
 				}
 			]

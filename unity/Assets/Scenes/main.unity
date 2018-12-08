@@ -194,6 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_attackPrefab: {fileID: 125320, guid: 9788c19798c439c41a233b1b99b02982, type: 2}
+  m_bombPrefab: {fileID: 122272, guid: b321e2bb3e3ab034c8c2fb05ec094608, type: 2}
 --- !u!1 &294451893
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,7 +393,7 @@ MeshFilter:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 331056181}
-  m_Mesh: {fileID: 2049934190}
+  m_Mesh: {fileID: 1994045720}
 --- !u!4 &331056185
 Transform:
   m_ObjectHideFlags: 0
@@ -1387,7 +1388,7 @@ Mesh:
   m_MeshMetrics[0]: 1
   m_MeshMetrics[1]: 1
   m_MeshOptimized: 1
---- !u!43 &2049934190
+--- !u!43 &1994045720
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

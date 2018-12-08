@@ -16,7 +16,7 @@ public class Bomb : Entity
     public void Explode()
     {
         // Find all entities near the bomb within a certain radius
-        foreach (var entity in CollisionManager.Instance.EntitiesWithinEntityRadius(this, m_explosionRadius))
+        foreach (var entity in this.EntitiesWithinRadius(m_explosionRadius))
         {
             // TODO: Shameless copied from SwordAttack - Need to be merged into generic code
             Enemy enemy = entity as Enemy;
