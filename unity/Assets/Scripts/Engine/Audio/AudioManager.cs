@@ -51,6 +51,11 @@ public class AudioManager : MonoSingleton<AudioManager>
         PlayAudioClip(m_hitAudio);
     }
 
+    static public void PlaySfx(AudioClip audioClip)
+    {
+        AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position);
+    }
+
     static private void PlayAudioClip(List<AudioClip> possibilities)
     {
         int indexToPlay = 0;
@@ -63,7 +68,7 @@ public class AudioManager : MonoSingleton<AudioManager>
             indexToPlay = Random.Range(0, possibilities.Count);
         }
 
-        AudioSource.PlayClipAtPoint(possibilities[indexToPlay], GameManager.Instance.m_mainCamera.transform.position);
+        PlaySfx(possibilities[indexToPlay]);
     }
 
     public void PlayMusic(E_Music requestedMusic)

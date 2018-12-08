@@ -34,7 +34,8 @@ public class Mover : MonoBehaviour
 
     public delegate void InterpolationCompletedDelegate();
 
-    public void StartInterpolation( Vector2 target, float duration, InterpolationCompletedDelegate callback )
+    // Speed will depend on distance and duration
+    public void StartInterpolation( Vector2 target, float duration, InterpolationCompletedDelegate callback=null )
     {
         m_currentTime = 0;
         TimeToTarget = duration;
@@ -43,6 +44,25 @@ public class Mover : MonoBehaviour
         TargetType = E_TargetType.Absolute;
         m_onCompleted = callback;
         Enabled = true;
+    }
+
+    // Duration will depend on speed and distance
+    public void StartInterpolationConstantSpeed( Vector2 target, float speed, InterpolationCompletedDelegate callback=null)
+    {
+        Vector2 origin = new Vector2(gameObject.transform.position.x, gameObject.transform.position.y);
+        float distance = (origin - target).magnitude;
+
+        // distance is too small, just go directly!
+        if (distance <= 0.01)
+        {
+            StartInterpolation(target, 0.0f, callback);
+        }
+        else
+        {
+            float duration = distance / speed;
+            StartInterpolation(target, duration, callback);
+        }
+        
     }
     
     // Update is called once per frame
