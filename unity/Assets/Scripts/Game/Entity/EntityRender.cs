@@ -148,6 +148,11 @@ public class EntityRender : MonoBehaviour
         m_globalFrameDelay = delay;
     }
 
+    public string GetCurrentGroup()
+    {
+        return m_currentFrameGroup != null ? m_currentFrameGroup.m_name : "";
+    }
+
     public bool SetCurrentGroup(string group)
     {
         if (m_currentFrameGroup == null || m_currentFrameGroup.m_name != group)

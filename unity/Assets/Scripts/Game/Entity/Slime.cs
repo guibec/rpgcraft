@@ -90,7 +90,7 @@ public class Slime : Enemy
 
             m_er.SetGlobalFrameDelay(0.2f);
 
-            m_er.SetCurrentGroup(frameGroups[0]);
+            m_er.SetCurrentGroup(frameGroups[RandomManager.Next(0, frameGroups.Length)]);
 
         }
     }
@@ -144,45 +144,104 @@ public class Slime : Enemy
         // just go toward the main player
         Vector2 playerPos = GameManager.Instance.MainPlayer.transform.position;
 
+        string currentGroup = m_er ? m_er.GetCurrentGroup() : "";
+
         string newFrameGroup = "Up";
         bool setFrame = false;
         Vector2 wantedNewPos = transform.position;
 
-        if (playerPos.x < transform.position.x)
+        // we prefer to continue in direction we are going if possible
+        // there are 4 possible directions, but basically horizontal vs vertical
+        bool preferVertical;
+        if (currentGroup == "Up" || currentGroup == "Down")
+            preferVertical = true;
+        else if (currentGroup == "Left" || currentGroup == "Right")
+            preferVertical = false;
+        else
         {
-            wantedNewPos.x = transform.position.x - (TimeManager.Dt*m_speed);
-            if (wantedNewPos.x < playerPos.x)
-                wantedNewPos.x = playerPos.x;
-
-            newFrameGroup = "Left";
-            setFrame = true;
+            preferVertical = RandomManager.Boolean();
+            Debug.Log("Slime perfer vertical is " + preferVertical.ToString());
         }
-        else if (playerPos.x > transform.position.x)
-        {
-            wantedNewPos.x = transform.position.x + (TimeManager.Dt * m_speed);
-            if (wantedNewPos.x > playerPos.x)
-                wantedNewPos.x = playerPos.x;
 
-            newFrameGroup = "Right";
-            setFrame = true;
+        // TODO: Extract into functions to avoid this copy pasta between preferVertical and non perferVertical
+        if (preferVertical)
+        {
+            if (playerPos.y > transform.position.y)
+            {
+                wantedNewPos.y = transform.position.y + (TimeManager.Dt * m_speed);
+                if (wantedNewPos.y > playerPos.y)
+                    wantedNewPos.y = playerPos.y;
+
+                newFrameGroup = "Up";
+                setFrame = true;
+            }
+            else if (playerPos.y < transform.position.y)
+            {
+                wantedNewPos.y = transform.position.y - (TimeManager.Dt * m_speed);
+                if (wantedNewPos.y < playerPos.y)
+                    wantedNewPos.y = playerPos.y;
+
+                newFrameGroup = "Down";
+                setFrame = true;
+            }
+            else if (playerPos.x < transform.position.x)
+            {
+                wantedNewPos.x = transform.position.x - (TimeManager.Dt * m_speed);
+                if (wantedNewPos.x < playerPos.x)
+                    wantedNewPos.x = playerPos.x;
+
+                newFrameGroup = "Left";
+                setFrame = true;
+            }
+            else if (playerPos.x > transform.position.x)
+            {
+                wantedNewPos.x = transform.position.x + (TimeManager.Dt * m_speed);
+                if (wantedNewPos.x > playerPos.x)
+                    wantedNewPos.x = playerPos.x;
+
+                newFrameGroup = "Right";
+                setFrame = true;
+            }
         }
-        else if (playerPos.y > transform.position.y)
+        else
         {
-            wantedNewPos.y = transform.position.y + (TimeManager.Dt * m_speed);
-            if (wantedNewPos.y > playerPos.y)
-                wantedNewPos.y = playerPos.y;
+            if (playerPos.x < transform.position.x)
+            {
+                wantedNewPos.x = transform.position.x - (TimeManager.Dt * m_speed);
+                if (wantedNewPos.x < playerPos.x)
+                    wantedNewPos.x = playerPos.x;
 
-            newFrameGroup = "Up";
-            setFrame = true;
-        }
-        else if (playerPos.y < transform.position.y)
-        {
-            wantedNewPos.y = transform.position.y - (TimeManager.Dt * m_speed);
-            if (wantedNewPos.y < playerPos.y)
-                wantedNewPos.y = playerPos.y;
+                newFrameGroup = "Left";
+                setFrame = true;
+            }
+            else if (playerPos.x > transform.position.x)
+            {
+                wantedNewPos.x = transform.position.x + (TimeManager.Dt * m_speed);
+                if (wantedNewPos.x > playerPos.x)
+                    wantedNewPos.x = playerPos.x;
 
-            newFrameGroup = "Down";
-            setFrame = true;
+                newFrameGroup = "Right";
+                setFrame = true;
+            }
+            else if (playerPos.y > transform.position.y)
+            {
+                wantedNewPos.y = transform.position.y + (TimeManager.Dt * m_speed);
+                if (wantedNewPos.y > playerPos.y)
+                    wantedNewPos.y = playerPos.y;
+
+                newFrameGroup = "Up";
+                setFrame = true;
+            }
+            else if (playerPos.y < transform.position.y)
+            {
+                wantedNewPos.y = transform.position.y - (TimeManager.Dt * m_speed);
+                if (wantedNewPos.y < playerPos.y)
+                    wantedNewPos.y = playerPos.y;
+
+                newFrameGroup = "Down";
+                setFrame = true;
+            }
+
         }
 
         transform.position = wantedNewPos;
