@@ -23,6 +23,8 @@ public class AudioFadeInOut : MonoBehaviour {
 
     private IEnumerator FadeOut(AudioSource audioSource, float fadeTime)
     {
+        Debug.Log("Start Fading out " + audioSource.ToString());
+
         float startVolume = audioSource.volume;
 
         while (audioSource.volume > 0)
@@ -32,6 +34,7 @@ public class AudioFadeInOut : MonoBehaviour {
             yield return null;
         }
 
+        Debug.Log("Finished Fading out " + audioSource.ToString());
         audioSource.Stop();
         audioSource.volume = startVolume;
     }
@@ -42,11 +45,15 @@ public class AudioFadeInOut : MonoBehaviour {
         audioSource.volume = 0;
         audioSource.Play();
 
+        Debug.Log("Starting Fading in " + audioSource.ToString());
+
         while (audioSource.volume < originalVolume)
         {
             audioSource.volume += TimeManager.Dt / fadeTime;
             audioSource.volume = Mathf.Min(audioSource.volume, originalVolume);
             yield return null;
         }
+
+        Debug.Log("Finished Fading in " + audioSource.ToString());
     }
 }
