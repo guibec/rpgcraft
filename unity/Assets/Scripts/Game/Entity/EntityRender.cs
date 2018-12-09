@@ -88,7 +88,7 @@ public class EntityRender : MonoBehaviour
         {
             while (m_consumedDt >= m_globalFrameDelay)
             {
-                if (m_currentFrame.m_nextFrame != null)
+                if (m_currentFrame != null && m_currentFrame.m_nextFrame != null)
                 {
                     int newIndex = m_currentFrame.m_nextFrame.m_frameIndex;
                     ChangeFrame(newIndex);
