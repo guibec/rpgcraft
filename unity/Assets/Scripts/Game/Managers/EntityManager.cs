@@ -7,6 +7,8 @@ public class EntityManager : MonoSingleton<EntityManager>
 {
     public GameObject m_attackPrefab;
     public GameObject m_bombPrefab;
+    public GameObject m_arrowPrefab;
+
     private static int m_nextId = 0;
 
     List<Entity> m_entities = new List<Entity>();

@@ -10,12 +10,12 @@ GameObject:
   - component: {fileID: 456880}
   - component: {fileID: 3360910}
   - component: {fileID: 2353246}
-  - component: {fileID: 114397782272714768}
   - component: {fileID: 11437406}
-  - component: {fileID: 114332956256920078}
   - component: {fileID: 114124824813593106}
+  - component: {fileID: 114375269900733346}
+  - component: {fileID: 114729623447771998}
   m_Layer: 0
-  m_Name: Bomb
+  m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -87,7 +87,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0556dca2297964d8fbf24755bae2ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_texture: {fileID: 2800000, guid: ca7a8cbe9f88cd24483b45e5a3f58e1e, type: 3}
+  m_texture: {fileID: 2800000, guid: 273aa32be07b61c4db0bdf2eddfc87ca, type: 3}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
@@ -113,7 +113,7 @@ MonoBehaviour:
   TargetType: 0
   Target: {x: 0, y: 0}
   TimeToTarget: 0
---- !u!114 &114332956256920078
+--- !u!114 &114375269900733346
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -121,24 +121,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 122272}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae0556dca2297964d8fbf24755bae2ed, type: 3}
+  m_Script: {fileID: 11500000, guid: 8760181f6312f9345b8310f18eb22cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_texture: {fileID: 2800000, guid: b51b18226ab0119469e7461943d957de, type: 3}
---- !u!114 &114397782272714768
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 122272}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5894e1ec2ff40934f9b11fd9061a2c0b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_canBeKnockedBack: 1
   m_singleHitPerEnemy: 1
-  m_numSecondsBeforeExploding: 3
-  m_explosionRadius: 1e+15
-  m_throwSpeed: 987654340
-  m_explodeSfx: {fileID: 8300000, guid: 00b10377366064649a8e8baa8d667305, type: 3}
+--- !u!114 &114729623447771998
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 122272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 099e52c73c79f2647859b145b7b3b029, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_canBeKnockedBack: 0
+  m_throwSpeed: 25
