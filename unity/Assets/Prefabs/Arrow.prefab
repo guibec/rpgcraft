@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 114124824813593106}
   - component: {fileID: 114375269900733346}
   - component: {fileID: 114729623447771998}
+  - component: {fileID: 114335741325629978}
   m_Layer: 0
   m_Name: Arrow
   m_TagString: Untagged
@@ -113,6 +114,18 @@ MonoBehaviour:
   TargetType: 0
   Target: {x: 0, y: 0}
   TimeToTarget: 0
+--- !u!114 &114335741325629978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 122272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8760181f6312f9345b8310f18eb22cfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_singleHitPerEnemy: 1
 --- !u!114 &114375269900733346
 MonoBehaviour:
   m_ObjectHideFlags: 1

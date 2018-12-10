@@ -39,10 +39,10 @@ public class Entity : MonoBehaviour
     public virtual void OnTouch(Entity other)
     {
         // Also pass the information to the hurt touch component if there is one
-        HurtTouchComponent hurtTouchComponent = GetComponent<HurtTouchComponent>();
-        if (hurtTouchComponent)
+        TouchComponent touchComponent = GetComponent<TouchComponent>();
+        if (touchComponent)
         {
-            hurtTouchComponent.OnTouch(other);
+            touchComponent.OnTouch(other);
         }
     }
 
