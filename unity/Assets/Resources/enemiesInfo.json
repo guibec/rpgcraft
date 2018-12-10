@@ -3,7 +3,7 @@
 	"enemiesInfo": [{
 			"name": "Slime",
 			"loot": [{
-					"probability": 1.00,
+					"probability": 0.30,
 					"item": "bomb"
 				}, {
 					"probability": 0.05,
@@ -30,6 +30,9 @@
 						"min": 2,
                         "max": 4
 					}
+				}, {
+					"probability": 0.30,
+					"item": "arrow"
 				}
 			]
 		}, {

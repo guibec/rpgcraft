@@ -30,6 +30,9 @@ public class Inventory
 
         m_itemSlots[3].Count = 10;
         m_itemSlots[3].Item = EItem.Bomb;
+
+        m_itemSlots[4].Count = 10;
+        m_itemSlots[4].Item = EItem.Arrow;
     }
 
     public void Start()

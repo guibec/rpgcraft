@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 114397782272714768}
   - component: {fileID: 11437406}
   - component: {fileID: 114332956256920078}
-  - component: {fileID: 11435560}
   - component: {fileID: 114124824813593106}
   m_Layer: 0
   m_Name: Bomb
@@ -77,19 +76,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 122272}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &11435560
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 122272}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab4c2073cc60d804bb2c0412997b5cfd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_defaultHealth: 2
-  m_interdamageTime: 0
 --- !u!114 &11437406
 MonoBehaviour:
   m_ObjectHideFlags: 1

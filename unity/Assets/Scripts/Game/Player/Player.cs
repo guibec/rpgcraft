@@ -288,6 +288,20 @@ public class Player : Entity
         }
     }
 
+    private void SpawnArrowToward(Vector2 origin, Vector2 target)
+    {
+        // Reduce target by the maximum throw distance
+        target = origin + (target - origin).normalized * 100;
+
+        GameObject obj = SpawnGameObjectAt(origin, EntityManager.Instance.m_arrowPrefab);
+        Mover mover = obj.GetComponent<Mover>();
+        Arrow arrow = obj.GetComponent<Arrow>();
+        if (mover && arrow)
+        {
+            mover.StartInterpolationConstantSpeed(target, arrow.ThrowSpeed);
+        }
+    }
+
     public bool SkillActionAt(Vector3 worldPos)
     {
         int selectedIndex = UIManager.Instance.SelectedInventorySlot;
@@ -307,6 +321,13 @@ public class Player : Entity
         {
             worldPos.z = gameObject.transform.position.z;
             SpawnBombToward(gameObject.transform.position, worldPos);
+            Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
+            return true;
+        }
+        else if (selectedItem == EItem.Arrow)
+        {
+            worldPos.z = gameObject.transform.position.z;
+            SpawnArrowToward(gameObject.transform.position, worldPos);
             Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
             return true;
         }

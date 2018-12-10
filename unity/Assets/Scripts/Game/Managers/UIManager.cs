@@ -303,8 +303,8 @@ public class UIManager : MonoSingleton<UIManager>
                         Sprite sprite = Sprite.Create(tex, tileResourceDef.Rect, Vector2.zero);
                         isu.m_icon.sprite = sprite;
                         isu.m_icon.color = ItemInstance.GetColorForItem(ic.Item);
-                        isu.m_icon.rectTransform.SetWidth(tileResourceDef.Rect.width);
-                        isu.m_icon.rectTransform.SetHeight(tileResourceDef.Rect.height);
+                        isu.m_icon.rectTransform.SetWidth(Mathf.Min(tileResourceDef.Rect.width, 32));
+                        isu.m_icon.rectTransform.SetHeight(Mathf.Min(tileResourceDef.Rect.height, 32));
                     }
                 }
             }

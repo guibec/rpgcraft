@@ -189,6 +189,19 @@
             },
             "item": {},
             "weapon": {}
+        },
+        {
+            "id": 264,
+            "name": "Arrow",
+            "resource": {
+                "file": "arrow",
+                "x": 0,
+                "y": 0,
+                "w": 256,
+                "h": 256
+            },
+            "item": {},
+            "weapon": {}
         }
     ]
 }
