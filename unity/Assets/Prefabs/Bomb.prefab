@@ -139,6 +139,6 @@ MonoBehaviour:
   m_canBeKnockedBack: 1
   m_singleHitPerEnemy: 1
   m_numSecondsBeforeExploding: 3
-  m_explosionRadius: 10
+  m_explosionRadius: 5
   m_throwSpeed: 25
   m_explodeSfx: {fileID: 8300000, guid: 00b10377366064649a8e8baa8d667305, type: 3}
