@@ -40,7 +40,8 @@ public class SpawnManager : MonoSingleton<SpawnManager>
                 mr.material.color = ItemInstance.GetColor32ForItem(item);
 
                 float scale = (float) (Screen.height / 2.0) / Camera.main.orthographicSize;
-                tr.localScale = new Vector3((float)tex.width / scale, (float)tex.height / scale, tr.localScale.z);
+                //tr.localScale = new Vector3((float)tex.width / scale, (float)tex.height / scale, tr.localScale.z);
+                tr.localScale = new Vector3(1.0f, 1.0f, tr.localScale.z);
             }
 
             ii.SetType(item);
