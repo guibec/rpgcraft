@@ -41,11 +41,34 @@ public class Player : Entity
 
     private EntityRender m_entityRender;
 
+    public enum CharacterClass
+    {
+        Mage,
+        Thief,
+        Soldier,
+        Knight,
+    }
+
     public HealthComponent HealthComponent { get; private set; }
 
     public Player()
     {
         m_fsm = new PlayerStateMachine(this);
+    }
+
+    [SerializeField]
+    private CharacterClass m_characterClass = CharacterClass.Knight;
+    public CharacterClass Class
+    {
+        private set
+        {
+            m_characterClass = value;
+            SetRenderInfo();
+        }
+        get
+        {
+            return m_characterClass;
+        }
     }
 
     protected override void OnAwake()
@@ -78,12 +101,18 @@ public class Player : Entity
     protected override void OnStart() 
     {
         base.OnStart();
+        SetRenderInfo();
+    }
 
+    void SetRenderInfo()
+    {
         if (m_entityRender)
         {
             for (int i = 0; i < 8; ++i)
             {
-                m_entityRender.SetFrameInfo(frameGroups[i / 2], i * 16, 48, 16, 16);
+                int yOffset = (int)m_characterClass * 16;
+
+                m_entityRender.SetFrameInfo(frameGroups[i / 2], i * 16, yOffset, 16, 16);
             }
 
             // now link frames together
