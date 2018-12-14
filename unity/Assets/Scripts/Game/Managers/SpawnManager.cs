@@ -156,9 +156,15 @@ public class SpawnManager : MonoSingleton<SpawnManager>
     protected override void OnInit()
     {
         base.OnInit();
+        Reset();
 
+    }
+
+    public void Reset()
+    {
         m_nextSpawn = m_initialSpawnTime;
     }
+    
 
     protected override void OnUpdate()
     {
