@@ -59,8 +59,38 @@ public class PlayerState_Live : EntityState_Live
 
         m_player.transform.position = m_player.BeforeInputPos + (Vector2) direction;
 
+        HandleAutoAttack();
+
         base.Update();
 
         m_player.AfterInputPos = m_player.transform.position;
+    }
+
+    private void HandleAutoAttack()
+    {
+        // Enable auto-attack
+        if (EntityManager.Instance.Count<SwordAttack>() == 0)
+        {
+            Enemy closest = null;
+            float closestSqrDistance = float.MaxValue;
+            foreach (Entity e in EntityManager.Instance.Entities)
+            {
+                Enemy candidate = e as Enemy;
+                if (candidate == null)
+                    continue;
+
+                float sqrDistance = (candidate.transform.position - m_player.transform.position).sqrMagnitude;
+                if (sqrDistance < closestSqrDistance)
+                {
+                    closest = candidate;
+                    closestSqrDistance = sqrDistance;
+                }
+            }
+
+            if (closest != null && closestSqrDistance <= 4.0f * 4.0f)
+            {
+                m_player.SpawnAttackToward(m_player.transform.position, closest.transform.position);
+            }
+        }
     }
 }

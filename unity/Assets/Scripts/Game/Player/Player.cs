@@ -187,29 +187,6 @@ public class Player : Entity
 
             CurrentAction = currentAction;
         }
-
-        // Enable auto-attack
-        if (EntityManager.Instance.Count<SwordAttack>() == 0)
-        {
-            Enemy closest = null;
-            float closestSqrDistance = float.MaxValue;
-            foreach (Entity e in EntityManager.Instance.Entities)
-            {
-                Enemy candidate = e as Enemy;
-                if (candidate == null)
-                    continue;
-
-                float sqrDistance = (candidate.transform.position - transform.position).sqrMagnitude;
-                if (sqrDistance < closestSqrDistance)
-                {
-                    closest = candidate;
-                    closestSqrDistance = sqrDistance;
-                }
-            }
-
-            if (closest != null && closestSqrDistance <= 4.0f * 4.0f)
-                SpawnAttackToward(gameObject.transform.position, closest.transform.position);
-        }
     }
 
     protected override void OnLateUpdate()
@@ -307,7 +284,7 @@ public class Player : Entity
 
     // not sure if this should be using the action system
     // need to use object pooling here
-    private void SpawnAttackToward(Vector2 origin, Vector2 target)
+    public void SpawnAttackToward(Vector2 origin, Vector2 target)
     {
         GameObject obj = SpawnGameObjectAt(origin, EntityManager.Instance.m_attackPrefab);
 
