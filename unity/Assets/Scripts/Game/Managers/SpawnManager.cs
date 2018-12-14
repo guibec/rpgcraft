@@ -163,8 +163,10 @@ public class SpawnManager : MonoSingleton<SpawnManager>
     public void Reset()
     {
         m_nextSpawn = m_initialSpawnTime;
+        m_numEnemiesKilled = 0;
+        m_spawnTime = 0.0f;
+        m_nextSpawn = 0.0f;
     }
-    
 
     protected override void OnUpdate()
     {
