@@ -16,6 +16,8 @@ public class GameManagerState_Init : State
 
         // remove all entities on the screen
         EntityManager.Instance.RemoveAll<Enemy>();
+        EntityManager.Instance.RemoveAll<ItemInstance>();
+
         SwitchState<GameManagerState_Playing>();
     }
 
