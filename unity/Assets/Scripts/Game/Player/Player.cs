@@ -139,6 +139,11 @@ public class Player : Entity
     {
         base.OnTouch(other);
 
+        if (m_fsm.IsInState<PlayerState_Dead>())
+        {
+            return;
+        }
+
         ItemInstance ii = other as ItemInstance;
         if (ii != null)
         {
@@ -152,6 +157,8 @@ public class Player : Entity
             {
                 Inventory.Carry(ii.Item);
             }
+
+            ii.PickedUp(this);
         }
     }
 
@@ -159,6 +166,11 @@ public class Player : Entity
     protected override void OnUpdate () 
     {
         base.OnUpdate();
+
+        if (m_fsm.IsInState<PlayerState_Dead>())
+        {
+            return;
+        }
 
         if (HasAction)
         {
@@ -229,16 +241,31 @@ public class Player : Entity
 
     public bool CanReceiveDamage()
     {
+        if (m_fsm.IsInState<PlayerState_Dead>())
+        {
+            return false;
+        }
+
         return HealthComponent.CanReceiveDamage();
     }
 
     public void ReceiveDamage(int damage)
     {
+        if (m_fsm.IsInState<PlayerState_Dead>())
+        {
+            return;
+        }
+
         HealthComponent.ReceiveDamage(damage);
     }
 
     public void ReceiveHeal(int heal)
     {
+        if (m_fsm.IsInState<PlayerState_Dead>())
+        {
+            return;
+        }
+
         HealthComponent.ReceiveHeal(heal);
     }
 
