@@ -77,6 +77,14 @@ public class EntityManager : MonoSingleton<EntityManager>
     {
         // TODO: This doesn't work, I need to actually destroy the GameObject as well
         // To be continued
+        foreach (var entity in m_entities)
+        {
+            if (entity is T)
+            {
+                entity.RequestDestroy();
+            }
+        }
+
         m_entities.RemoveAll(entity => entity is T);
     }
 

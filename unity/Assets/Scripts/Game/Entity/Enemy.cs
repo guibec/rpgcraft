@@ -83,4 +83,19 @@ public class Enemy : Entity
         dynamicText.ParentToWorld(anchor);
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
+
+    protected override void OnEntityDestroy()
+    {
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(Name);
+
+        if (enemyInfo != null)
+        {
+            foreach (EItem item in enemyInfo.RandomLoot())
+            {
+                SpawnManager.Instance.SpawnLoot(item, transform.position);
+            }
+        }
+
+        base.OnEntityDestroy();
+    }
 }
