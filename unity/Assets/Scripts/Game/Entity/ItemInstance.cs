@@ -18,11 +18,11 @@ public class ItemInstance : Entity
     public override void OnTouch(Entity other)
     {
         base.OnTouch(other);
+    }
 
-        if (other is Player)
-        {
-            RequestDestroy();    
-        }
+    public void PickedUp(Entity source)
+    {
+        RequestDestroy();
     }
 
     public void SetType(EItem itemType)

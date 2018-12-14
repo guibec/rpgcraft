@@ -74,6 +74,16 @@ public class GameManager : MonoSingleton<GameManager>
         SceneManager.LoadScene("ui", LoadSceneMode.Additive);
     }
 
+    public void OnMainPlayerSpawn()
+    {
+        m_fsm.SwitchState<GameManagerState_Init>();
+    }
+
+    public void OnMainPlayerDead()
+    {
+        m_fsm.SwitchState<GameManagerState_Dead>();
+    }
+
     void SpawnChunkAt(int x, int y)
     {
         SpawnChunkAt(new Vector2(x, y));

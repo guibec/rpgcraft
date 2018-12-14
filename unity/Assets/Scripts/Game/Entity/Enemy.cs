@@ -63,9 +63,27 @@ public class Enemy : Entity
             {
                 // give XP to main player
                 RewardWithXP();
-                RequestDestroy();
+
+                // OnKilled mean the enemy was killed as part of the gameplay, this is different from calling
+                // RequestDestroy which just means we want the enemy go to go away and disapear
+                OnKilled();
             }
         }
+    }
+
+    private void OnKilled()
+    {
+        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(Name);
+
+        if (enemyInfo != null)
+        {
+            foreach (EItem item in enemyInfo.RandomLoot())
+            {
+                SpawnManager.Instance.SpawnLoot(item, transform.position);
+            }
+        }
+
+        RequestDestroy();
     }
 
     private void RewardWithXP()
@@ -82,5 +100,12 @@ public class Enemy : Entity
 
         dynamicText.ParentToWorld(anchor);
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
+    }
+
+    protected override void OnEntityDestroy()
+    {
+
+
+        base.OnEntityDestroy();
     }
 }

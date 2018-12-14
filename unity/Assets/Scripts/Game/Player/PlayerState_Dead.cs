@@ -31,6 +31,7 @@ public class PlayerState_Dead : State
         if (m_playerDeathTime <= 0f)
         {
             SwitchState<PlayerState_Spawn>();
+            GameManager.Instance.OnMainPlayerSpawn();
         }
     }
 }

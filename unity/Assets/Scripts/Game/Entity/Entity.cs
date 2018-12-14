@@ -102,7 +102,6 @@ public class Entity : MonoBehaviour
     protected virtual void OnEntityDestroy()
     {
         CollisionManager.Instance.OnDestroy(this);
-
         UnityEngine.Object.Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }

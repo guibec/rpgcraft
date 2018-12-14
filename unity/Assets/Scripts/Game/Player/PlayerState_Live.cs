@@ -29,6 +29,7 @@ public class PlayerState_Live : EntityState_Live
         if (m_player.HealthComponent.Health <= 0)
         {
             SwitchState<PlayerState_Dead>();
+            GameManager.Instance.OnMainPlayerDead();
             return;
         }
 

@@ -98,6 +98,7 @@ public class UIManager : MonoSingleton<UIManager>
     private Text m_txtLevel;
 
     public Text m_mouseTileInfo;
+    public Text m_gameOverMessage;
 
     private GameObject m_canvas;
 
@@ -127,8 +128,10 @@ public class UIManager : MonoSingleton<UIManager>
             SetupEvents(m_inventorySlot[0]);
         }
 
+        // TODO - Automate all of this using reflection
         m_healthText = GameObject.Find("Canvas/txt_Health").GetComponent<Text>();
         m_mouseTileInfo = GameObject.Find("Canvas/txt_MouseCursorHover").GetComponent<Text>();
+        m_gameOverMessage = GameObject.Find("Canvas/txt_DeadMessage").GetComponent<Text>();
         m_xpSlider = GameObject.Find("Canvas/sld_XP").GetComponent<Slider>();
         m_txtLevel = GameObject.Find("Canvas/txt_Level").GetComponent<Text>();
     }
@@ -229,6 +232,19 @@ public class UIManager : MonoSingleton<UIManager>
     {
         m_mouseTileInfo.transform.position = screenPos;
         m_mouseTileInfo.text = text;
+    }
+
+    public void DisplayGameOverMessage(Vector2 screenPos, string text)
+    {
+        // Currently hard-coded to the gameover message, but should be changed to a dynamic display system for any messages
+        m_gameOverMessage.transform.position = screenPos;
+        m_gameOverMessage.text = text;
+        m_gameOverMessage.enabled = true;
+    }
+
+    public void HideGameOverMessage()
+    {
+        m_gameOverMessage.enabled = false;
     }
 
     private void UpdateHealth()
