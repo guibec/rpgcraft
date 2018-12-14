@@ -76,7 +76,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void OnMainPlayerSpawn()
     {
-        m_fsm.SwitchState<GameManagerState_Playing>();
+        m_fsm.SwitchState<GameManagerState_Init>();
     }
 
     public void OnMainPlayerDead()

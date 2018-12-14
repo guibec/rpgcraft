@@ -12,6 +12,10 @@ public class GameManagerState_Init : State
     {
         base.Constructor();
 
+        UIManager.Instance.HideGameOverMessage();
+
+        // remove all entities on the screen
+        EntityManager.Instance.RemoveAll<Enemy>();
         SwitchState<GameManagerState_Playing>();
     }
 
