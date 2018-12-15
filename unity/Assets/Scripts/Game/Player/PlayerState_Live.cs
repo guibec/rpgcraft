@@ -5,6 +5,9 @@ public class PlayerState_Live : EntityState_Live
 {
     private Player m_player;
 
+    private float m_timeBetweenAttack = 1.0f;
+    private float m_timeRemainingForNextAttack = 0.0f;
+
     public PlayerState_Live(StateMachine psm)
         : base(psm)
     {
@@ -32,6 +35,8 @@ public class PlayerState_Live : EntityState_Live
             GameManager.Instance.OnMainPlayerDead();
             return;
         }
+
+        m_timeRemainingForNextAttack -= TimeManager.Dt;
 
         // Compute actual Player speed
         float speed = m_player.PlayerSpeed;
@@ -69,7 +74,7 @@ public class PlayerState_Live : EntityState_Live
     private void HandleAutoAttack()
     {
         // Enable auto-attack
-        if (EntityManager.Instance.Count<SwordAttack>() == 0)
+        if (m_timeRemainingForNextAttack <= 0.0f && EntityManager.Instance.Count<SwordAttack>() == 0)
         {
             Enemy closest = null;
             float closestSqrDistance = float.MaxValue;
@@ -90,6 +95,7 @@ public class PlayerState_Live : EntityState_Live
             if (closest != null && closestSqrDistance <= 4.0f * 4.0f)
             {
                 m_player.SpawnAttackToward(m_player.transform.position, closest.transform.position);
+                m_timeRemainingForNextAttack = m_timeBetweenAttack;
             }
         }
     }
