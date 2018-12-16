@@ -22,6 +22,8 @@ public class WorldMap : MonoBehaviour
     public GameObject m_worldMapChunkPrefab;
     public Texture m_tileTextureMap;
 
+    private BiomeMap m_biomeMap;
+
     public void Awake()
     {
         m_worldAnchorRoot = GameObject.Find("ChunkRootAnchorPoint").transform;

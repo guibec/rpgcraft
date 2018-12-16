@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BiomeManager : MonoBehaviour
+public class BiomeMap
 {
-
-
-    public BiomeManager()
+    public BiomeMap()
     {
 
     }
