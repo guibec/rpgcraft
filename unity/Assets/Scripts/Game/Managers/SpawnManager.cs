@@ -39,7 +39,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
                 mr.material.mainTexture = tex;
                 mr.material.color = ItemInstance.GetColor32ForItem(item);
 
-                float scale = (float) (Screen.height / 2.0) / Camera.main.orthographicSize;
+                //float scale = (float) (Screen.height / 2.0) / Camera.main.orthographicSize;
                 //tr.localScale = new Vector3((float)tex.width / scale, (float)tex.height / scale, tr.localScale.z);
                 tr.localScale = new Vector3(1.0f, 1.0f, tr.localScale.z);
             }
@@ -69,7 +69,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return null;
         }
 
-        Vector2 worldPos = GameManager.Chunk2World(info_, x_, y_);
+        Vector2 worldPos = WorldMap.Chunk2World(info_, x_, y_);
         ii.gameObject.transform.position = new Vector3(worldPos.x, worldPos.y, -0.06f);
 
         return ii.gameObject;
