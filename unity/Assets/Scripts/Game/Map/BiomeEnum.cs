@@ -14,4 +14,5 @@ public enum EBiome
     Mountain,
     Snow,
     Jungle,
+    Farland,
 }

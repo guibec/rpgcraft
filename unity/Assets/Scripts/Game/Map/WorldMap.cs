@@ -19,6 +19,8 @@ public class WorldMap : MonoBehaviour
     private readonly Dictionary<Vector2, ChunkInfo> m_posToChunks = new Dictionary<Vector2, ChunkInfo>();
 
     public Transform m_worldAnchorRoot;
+    public GameObject m_worldMapChunkPrefab;
+    public Texture m_tileTextureMap;
 
     public void Awake()
     {
@@ -36,7 +38,7 @@ public class WorldMap : MonoBehaviour
         }
     }
 
-    public void Update(Vector2 playerPos)
+    public void OnUpdate(Vector2 playerPos)
     {
         // figure out the position of the main character in (x, y) chunk,
         Vector2 chunkPos = World2Chunk(playerPos);

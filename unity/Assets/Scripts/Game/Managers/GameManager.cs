@@ -11,14 +11,9 @@ public class GameManager : MonoSingleton<GameManager>
     public GameObject m_mainCharacter;
     public Camera m_mainCamera;
     
-    public Texture m_tileTextureMap;
-
-    private WorldMap m_worldMap = new WorldMap();
+    private WorldMap m_worldMap;
 
     // the data component of the player
-
-    public GameObject m_worldMapChunkPrefab;
-
     public Player MainPlayer { get; private set; }
 
     [/*Inspect,*/ SerializeField]
@@ -38,13 +33,14 @@ public class GameManager : MonoSingleton<GameManager>
     protected override void Awake() 
     {
         base.Awake();
+
+        m_worldMap = GetComponent<WorldMap>();
         TileMapping.BuildFromJSON("tilesInfo");
     }
 
     public void Start()
     {
         MainPlayer = m_mainCharacter.GetComponent<Player>();
-
         m_worldMap.Generate();
     }
 
@@ -281,7 +277,7 @@ public class GameManager : MonoSingleton<GameManager>
         Profiler.EndSample();
 
         UpdateInput();
-        m_worldMap.Update(m_mainCharacter.transform.position);
+        m_worldMap.OnUpdate(m_mainCharacter.transform.position);
     }
 
     protected override void OnLateUpdate()
