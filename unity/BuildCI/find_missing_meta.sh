@@ -1,5 +1,5 @@
 #!/bin/bash
- 
+  
 mydir=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 assets_dir=${1:-.}/Assets
 
