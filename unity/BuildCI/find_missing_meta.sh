@@ -1,8 +1,8 @@
 #!/bin/bash
-  
+ 
 mydir=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 assets_dir=${1:-.}/Assets
-  
+
 if [[ ! -d "$assets_dir" ]]; then
 	>&2 echo "The directory '$assets_dir' does not exist."
 	>&2 echo "Please run this script from your unity project dir, or specify the dir"
