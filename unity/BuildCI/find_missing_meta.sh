@@ -1,7 +1,7 @@
 #!/bin/bash
   
 mydir=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
-assets_dir=${1:-.}/unity/Assets
+assets_dir=${1:-.}/Assets
   
 if [[ ! -d "$assets_dir" ]]; then
 	>&2 echo "The directory '$assets_dir' does not exist."
