@@ -8,8 +8,8 @@ using Debug = UnityEngine.Debug;
 
 public class BiomeManager
 {
-    private const int Width = 64;
-    private const int Height = 64;
+    private const int Width = 256;
+    private const int Height = 256;
     private const int NumPoints = 32;
 
     private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
@@ -122,9 +122,9 @@ public class BiomeManager
         }
 
         // For now just map all region back to EBiome
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < Height; j++)
         {
-            for (int i = 0; i < 64; i++)
+            for (int i = 0; i < Width; i++)
             {
                 int value = regions[i, j];
                 value %= Enum.GetNames(typeof(EBiome)).Length;
@@ -140,11 +140,11 @@ public class BiomeManager
     private void GenerateDebugTexture()
     {
         // Create a new 2x2 texture ARGB32 (32 bit with alpha) and no mipmaps
-        var texture = new Texture2D(64, 64, TextureFormat.ARGB32, false);
+        var texture = new Texture2D(Width, Height, TextureFormat.ARGB32, false);
 
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < Height; j++)
         {
-            for (int i = 0; i < 64; i++)
+            for (int i = 0; i < Width; i++)
             {
                 Color pixelColor;
 

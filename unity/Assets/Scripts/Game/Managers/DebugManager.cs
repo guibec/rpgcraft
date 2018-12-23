@@ -34,7 +34,7 @@ public class DebugManager : MonoSingleton<DebugManager>
 
         if (m_biomeTexture != null)
         {
-            GUI.DrawTexture(new Rect(250, 50, 256, 256), m_biomeTexture, ScaleMode.ScaleToFit, true);
+            GUI.DrawTexture(new Rect(250, 50, 256, 256), m_biomeTexture, ScaleMode.ScaleToFit, true, 0.0f);
         }
     }
 
