@@ -49,15 +49,6 @@ public class WorldMap : MonoBehaviour
         m_biomeManager = new BiomeManager();
     }
 
-    public void Start()
-    {
-        //// For debugging biomes render them
-        //MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        //MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
-
-        //meshFilter.mesh = m_biomeManager.GetDebugMesh(); ;
-    }
-
     public void Generate()
     {
         for (int i = -1; i <= 1; ++i)
@@ -71,8 +62,6 @@ public class WorldMap : MonoBehaviour
 
     public void OnUpdate(Vector2 playerPos)
     {
-        m_biomeManager.Update();
-
         // figure out the position of the main character in (x, y) chunk,
         Vector2 chunkPos = World2Chunk(playerPos);
         UpdateChunks(chunkPos);

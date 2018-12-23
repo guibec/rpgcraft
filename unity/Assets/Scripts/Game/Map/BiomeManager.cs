@@ -15,9 +15,6 @@ public class BiomeManager
     private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
 
     List<Vector2> m_points;
-
-    Mesh m_debugMesh;
-    Material m_debugMaterial;
     Texture m_debugTexture;
 
     public EBiome[,] BiomeMap
@@ -45,14 +42,11 @@ public class BiomeManager
     {
         m_points = new List<Vector2>(Width * Height);
 
-        for (int i = 0; i < numPoints; i++)
+        for (int i = 0; i < NumPoints; i++)
         {
             Vector2 point = new Vector2(RandomManager.Next(0, 1.0f), RandomManager.Next(0, 1.0f));
             m_points.Add(point);
         }
-
-        m_debugMesh = CreatePointMesh(m_points.ToArray().ToVector3Array());
-        m_debugMaterial = new Material(Shader.Find("Sprites/Default"));
 
         voronoiTesselate();
     }
@@ -143,32 +137,6 @@ public class BiomeManager
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
     }
 
-    private Mesh CreatePointMesh(Vector3[] points)
-    {
-        Mesh mesh = new Mesh();
-        mesh.vertices = points;
-        // You can also apply UVs or vertex colors here.
-
-        int[] indices = new int[points.Length];
-        for (int i = 0; i < points.Length; i++)
-            indices[i] = i;
-
-        mesh.SetIndices(indices, MeshTopology.Points, 0);
-
-        return mesh;
-    }
-
-    public void Update()
-    {
-        Transform playerTransform = GameManager.Instance.MainPlayer.transform;
-
-        Vector3 scale = new Vector3(128.0f, 128.0f, 1.0f);
-        Vector3 pos = new Vector3(-64.0f, -64.0f, 0.0f);
-        Matrix4x4 matrix = Matrix4x4.TRS(pos, Quaternion.identity, scale);
-
-        Graphics.DrawMesh(m_debugMesh, matrix, m_debugMaterial, 0);
-    }
-
     private void GenerateDebugTexture()
     {
         // Create a new 2x2 texture ARGB32 (32 bit with alpha) and no mipmaps
@@ -218,8 +186,4 @@ public class BiomeManager
         m_debugTexture = texture;
     }
 
-    public Mesh GetDebugMesh()
-    {
-        return m_debugMesh;
-    }
-}
+ }
