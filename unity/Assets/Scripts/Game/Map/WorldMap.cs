@@ -27,6 +27,22 @@ public class WorldMap : MonoBehaviour
     /// </summary>
     private BiomeManager m_biomeManager;
 
+    public EBiome[,] BiomeMap
+    {
+        get
+        {
+            return m_biomeManager.BiomeMap;
+        }
+    }
+
+    public Texture BiomeTexture
+    {
+        get
+        {
+            return m_biomeManager.DebugTexture;
+        }
+    }
+
     public void Awake()
     {
         m_worldAnchorRoot = GameObject.Find("ChunkRootAnchorPoint").transform;

@@ -25,6 +25,14 @@ public class GameManager : MonoSingleton<GameManager>
         set { m_playerDeathTime = value; }
     }
 
+    public WorldMap WorldMap
+    {
+        get
+        {
+            return m_worldMap;
+        }
+    }
+
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);

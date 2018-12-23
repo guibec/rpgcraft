@@ -7,13 +7,11 @@ using UnityEngine;
 // https://minecraft.gamepedia.com/Biome
 public enum EBiome
 {
-    Invalid,
     Plain,
     Ocean,
     Forest,
     Desert,
     Mountain,
     Snow,
-    Jungle,
-    Farland,
+    Jungle
 }

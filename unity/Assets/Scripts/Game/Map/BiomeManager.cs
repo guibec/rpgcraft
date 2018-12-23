@@ -10,6 +10,7 @@ public class BiomeManager
 {
     private const int Width = 64;
     private const int Height = 64;
+    private const int NumPoints = 32;
 
     private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
 
@@ -17,12 +18,31 @@ public class BiomeManager
 
     Mesh m_debugMesh;
     Material m_debugMaterial;
+    Texture m_debugTexture;
+
+    public EBiome[,] BiomeMap
+    {
+        get
+        {
+            return m_biomes;
+        }
+    }
+
+    public Texture DebugTexture
+    {
+        get
+        {
+            if (m_debugTexture == null)
+            {
+                GenerateDebugTexture();
+            }
+
+            return m_debugTexture;
+        }
+    }
 
     public BiomeManager()
     {
-        // 32 biome types
-        const int numPoints = 32;
-
         m_points = new List<Vector2>(Width * Height);
 
         for (int i = 0; i < numPoints; i++)
@@ -44,7 +64,13 @@ public class BiomeManager
         Stopwatch sw = Stopwatch.StartNew();
 
         int[,] regions = new int[Width, Height];
-        Array.Clear(regions, 0, regions.Length);
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                regions[i, j] = -1;
+            }
+        }
 
         // Remap each of the point into the biome. It's possible some will overwrite each other, that's fine, shouldn't happen too much.
 
@@ -60,7 +86,7 @@ public class BiomeManager
             Debug.Assert(x >= 0 && x < Width);
             Debug.Assert(y >= 0 && y < Height);
 
-            closePoints.Add(new Tuple<int, int>(x, y), counter);
+            closePoints[new Tuple<int, int>(x, y)] = counter;
             regions[x, y] = counter;
             counter++;
         }
@@ -76,7 +102,7 @@ public class BiomeManager
         {
             for (int i = 0; i < Width; i++)
             {
-                if (regions[i,j] != 0) // already done
+                if (regions[i,j] != -1) // already done
                 {
                     continue;
                 }
@@ -101,6 +127,18 @@ public class BiomeManager
             }
         }
 
+        // For now just map all region back to EBiome
+        for (int j = 0; j < 64; j++)
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                int value = regions[i, j];
+                value %= Enum.GetNames(typeof(EBiome)).Length;
+                m_biomes[i, j] = (EBiome)value;
+            }
+        }
+
+        GenerateDebugTexture();
         sw.Stop();
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
     }
@@ -129,6 +167,55 @@ public class BiomeManager
         Matrix4x4 matrix = Matrix4x4.TRS(pos, Quaternion.identity, scale);
 
         Graphics.DrawMesh(m_debugMesh, matrix, m_debugMaterial, 0);
+    }
+
+    private void GenerateDebugTexture()
+    {
+        // Create a new 2x2 texture ARGB32 (32 bit with alpha) and no mipmaps
+        var texture = new Texture2D(64, 64, TextureFormat.ARGB32, false);
+
+        for (int j = 0; j < 64; j++)
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                Color pixelColor;
+
+                switch (m_biomes[i,j])
+                {
+                    case EBiome.Plain:
+                        pixelColor = Color.green;
+                        break;
+                    case EBiome.Ocean:
+                        pixelColor = Color.blue;
+                        break;
+                    case EBiome.Forest:
+                        pixelColor = Color.grey;
+                        break;
+                    case EBiome.Desert:
+                        pixelColor = Color.red;
+                        break;
+                    case EBiome.Mountain:
+                        pixelColor = Color.black;
+                        break;
+                    case EBiome.Snow:
+                        pixelColor = Color.white;
+                        break;
+                    case EBiome.Jungle:
+                        pixelColor = Color.magenta;
+                        break;
+                    default:
+                        pixelColor = Color.cyan;
+                        break;
+                }
+
+                texture.SetPixel(i, j, pixelColor);
+            }
+        }
+
+        // Apply all SetPixel calls
+        texture.Apply();
+
+        m_debugTexture = texture;
     }
 
     public Mesh GetDebugMesh()
