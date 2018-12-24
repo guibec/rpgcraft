@@ -5,7 +5,7 @@ using System.Collections;
 /// Used to make a UIObject follow a worldObject projected into UI space
 /// The same distance is always kept relative to the parent
 /// </summary>
-public class ScreenFollowWorld : MonoBehaviour 
+public class ScreenFollowWorld : MonoBehaviourEx 
 {
     private GameObject m_target;
 

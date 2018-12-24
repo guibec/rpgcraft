@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class FollowTarget : MonoBehaviour {
+public class FollowTarget : MonoBehaviourEx {
 
     // target to follow
     public GameObject m_target;

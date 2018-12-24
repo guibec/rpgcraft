@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class HealthComponent : MonoBehaviour 
+public class HealthComponent : MonoBehaviourEx 
 {
     public delegate void HealthChangedEventHandler(object sender, System.EventArgs e);
     public event HealthChangedEventHandler HealthChanged;

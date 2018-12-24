@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System;
 
-public class WorldMap : MonoBehaviour
+public class WorldMap : MonoBehaviourEx
 {
     /// <summary>
     /// This contains the list of all spawned chunks

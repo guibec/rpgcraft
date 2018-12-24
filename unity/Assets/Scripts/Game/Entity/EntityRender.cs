@@ -37,7 +37,7 @@ public class FrameGroupDictionary : Dictionary<string, FrameGroup>
 {
 }
 
-public class EntityRender : MonoBehaviour 
+public class EntityRender : MonoBehaviourEx 
 {
     public Texture m_texture;
 

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
 [ExecuteInEditMode]
-public class TileMap : MonoBehaviour
+public class TileMap : MonoBehaviourEx
 {
     // if true, m_width and m_height are set automatically
     public bool m_autoSize = false; 

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class TouchComponent : MonoBehaviour
+public class TouchComponent : MonoBehaviourEx
 {
     /// <summary>
     /// The weapon can only hit an enemy once

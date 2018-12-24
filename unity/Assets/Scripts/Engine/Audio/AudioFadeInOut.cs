@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioFadeInOut : MonoBehaviour {
+public class AudioFadeInOut : MonoBehaviourEx {
     public void StartFadeOutIn(AudioSource fadeOut, float timeFadeOut, AudioSource fadeIn, float timeFadeIn)
     {
         StartCoroutine(FadeOutIn(fadeOut, timeFadeOut, fadeIn, timeFadeIn));

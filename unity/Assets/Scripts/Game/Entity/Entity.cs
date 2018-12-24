@@ -2,7 +2,7 @@
 using System.Collections;
 
 [System.Serializable]
-public class Entity : MonoBehaviour 
+public class Entity : MonoBehaviourEx 
 {
     private bool m_destroying = false;
     private Vector3 m_lastPosition = Vector3.zero;

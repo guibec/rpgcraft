@@ -6,7 +6,7 @@ using System.Collections;
 /// Move toward a definitive 2d position
 /// Move toward a relative 2d position (given a target)
 /// </summary>
-public class Mover : MonoBehaviour
+public class Mover : MonoBehaviourEx
 {
     public enum E_TargetType
     {
