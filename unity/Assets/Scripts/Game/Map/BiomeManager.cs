@@ -8,31 +8,45 @@ using Debug = UnityEngine.Debug;
 
 public class BiomeManager
 {
-    private const int Width = 64;
-    private const int Height = 64;
+    private const int Width = 256;
+    private const int Height = 256;
+    private const int NumPoints = 64;
 
     private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
 
     List<Vector2> m_points;
+    Texture m_debugTexture;
 
-    Mesh m_debugMesh;
-    Material m_debugMaterial;
+    public EBiome[,] BiomeMap
+    {
+        get
+        {
+            return m_biomes;
+        }
+    }
+
+    public Texture DebugTexture
+    {
+        get
+        {
+            if (m_debugTexture == null)
+            {
+                GenerateDebugTexture();
+            }
+
+            return m_debugTexture;
+        }
+    }
 
     public BiomeManager()
     {
-        // 32 biome types
-        const int numPoints = 32;
-
         m_points = new List<Vector2>(Width * Height);
 
-        for (int i = 0; i < numPoints; i++)
+        for (int i = 0; i < NumPoints; i++)
         {
             Vector2 point = new Vector2(RandomManager.Next(0, 1.0f), RandomManager.Next(0, 1.0f));
             m_points.Add(point);
         }
-
-        m_debugMesh = CreatePointMesh(m_points.ToArray().ToVector3Array());
-        m_debugMaterial = new Material(Shader.Find("Sprites/Default"));
 
         voronoiTesselate();
     }
@@ -44,7 +58,13 @@ public class BiomeManager
         Stopwatch sw = Stopwatch.StartNew();
 
         int[,] regions = new int[Width, Height];
-        Array.Clear(regions, 0, regions.Length);
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                regions[i, j] = -1;
+            }
+        }
 
         // Remap each of the point into the biome. It's possible some will overwrite each other, that's fine, shouldn't happen too much.
 
@@ -60,7 +80,7 @@ public class BiomeManager
             Debug.Assert(x >= 0 && x < Width);
             Debug.Assert(y >= 0 && y < Height);
 
-            closePoints.Add(new Tuple<int, int>(x, y), counter);
+            closePoints[new Tuple<int, int>(x, y)] = counter;
             regions[x, y] = counter;
             counter++;
         }
@@ -76,7 +96,7 @@ public class BiomeManager
         {
             for (int i = 0; i < Width; i++)
             {
-                if (regions[i,j] != 0) // already done
+                if (regions[i,j] != -1) // already done
                 {
                     continue;
                 }
@@ -101,38 +121,69 @@ public class BiomeManager
             }
         }
 
+        // For now just map all region back to EBiome
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                int value = regions[i, j];
+                value %= Enum.GetNames(typeof(EBiome)).Length;
+                m_biomes[i, j] = (EBiome)value;
+            }
+        }
+
+        GenerateDebugTexture();
         sw.Stop();
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
     }
 
-    private Mesh CreatePointMesh(Vector3[] points)
+    private void GenerateDebugTexture()
     {
-        Mesh mesh = new Mesh();
-        mesh.vertices = points;
-        // You can also apply UVs or vertex colors here.
+        // Create a new 2x2 texture ARGB32 (32 bit with alpha) and no mipmaps
+        var texture = new Texture2D(Width, Height, TextureFormat.ARGB32, false);
 
-        int[] indices = new int[points.Length];
-        for (int i = 0; i < points.Length; i++)
-            indices[i] = i;
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                Color pixelColor;
 
-        mesh.SetIndices(indices, MeshTopology.Points, 0);
+                switch (m_biomes[i,j])
+                {
+                    case EBiome.Plain:
+                        pixelColor = Color.green;
+                        break;
+                    case EBiome.Ocean:
+                        pixelColor = Color.blue;
+                        break;
+                    case EBiome.Forest:
+                        pixelColor = Color.grey;
+                        break;
+                    case EBiome.Desert:
+                        pixelColor = Color.red;
+                        break;
+                    case EBiome.Mountain:
+                        pixelColor = Color.black;
+                        break;
+                    case EBiome.Snow:
+                        pixelColor = Color.white;
+                        break;
+                    case EBiome.Jungle:
+                        pixelColor = Color.magenta;
+                        break;
+                    default:
+                        pixelColor = Color.cyan;
+                        break;
+                }
 
-        return mesh;
+                texture.SetPixel(i, j, pixelColor);
+            }
+        }
+
+        // Apply all SetPixel calls
+        texture.Apply();
+
+        m_debugTexture = texture;
     }
 
-    public void Update()
-    {
-        Transform playerTransform = GameManager.Instance.MainPlayer.transform;
-
-        Vector3 scale = new Vector3(128.0f, 128.0f, 1.0f);
-        Vector3 pos = new Vector3(-64.0f, -64.0f, 0.0f);
-        Matrix4x4 matrix = Matrix4x4.TRS(pos, Quaternion.identity, scale);
-
-        Graphics.DrawMesh(m_debugMesh, matrix, m_debugMaterial, 0);
-    }
-
-    public Mesh GetDebugMesh()
-    {
-        return m_debugMesh;
-    }
-}
+ }
