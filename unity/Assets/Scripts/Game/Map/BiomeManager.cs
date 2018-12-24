@@ -10,7 +10,7 @@ public class BiomeManager
 {
     private const int Width = 256;
     private const int Height = 256;
-    private const int NumPoints = 32;
+    private const int NumPoints = 64;
 
     private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
 
