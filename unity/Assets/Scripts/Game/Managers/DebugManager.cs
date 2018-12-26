@@ -24,11 +24,19 @@ public class DebugManager : MonoSingleton<DebugManager>
     {
         // TODO: button layout / placement should be automated
         GUI.Button(new Rect(10, 30, 140, 20), "Options...");
-        GUI.Button(new Rect(10, 60, 140, 20), "Generate new level...");
+
+        if (GUI.Button(new Rect(10, 60, 140, 20), "Generate new level..."))
+        {
+            RegenerateLevel();
+        }
+
         GUI.Button(new Rect(10, 90, 140, 20), "Save level...");
         GUI.Button(new Rect(10, 120, 140, 20), "Load level...");
 
-        GUI.Button(new Rect(10, 180, 140, 20), "Back to game");
+        if (GUI.Button(new Rect(10, 180, 140, 20), "Back to game"))
+        {
+            m_displayDebug = false;
+        }
 
         m_biomeTexture = GameManager.Instance.WorldMap.BiomeTexture;
 
@@ -51,5 +59,10 @@ public class DebugManager : MonoSingleton<DebugManager>
 
         // Next step, draw the biome map here:
         // using possibly: https://docs.unity3d.com/ScriptReference/GUI.DrawTexture.html
+    }
+
+    private void RegenerateLevel()
+    {
+        GameManager.Instance.RegenerateWorld();
     }
 }

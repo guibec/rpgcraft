@@ -38,7 +38,7 @@ public class BiomeManager
         }
     }
 
-    public BiomeManager()
+    public void Generate()
     {
         m_points = new List<Vector2>(Width * Height);
 
@@ -49,6 +49,16 @@ public class BiomeManager
         }
 
         voronoiTesselate();
+    }
+
+    public void Clear()
+    {
+        Array.Clear(m_biomes, 0, m_biomes.Length);
+        if (m_points != null)
+        {
+            m_points.Clear();
+        }
+        m_debugTexture = null;
     }
 
     // Implement Voronoi tessellation 
