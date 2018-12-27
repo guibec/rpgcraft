@@ -8,8 +8,8 @@ using Debug = UnityEngine.Debug;
 
 public class BiomeMap
 {
-    private const int m_width = 128;
-    private const int m_height = 128;
+    private const int m_width = 32;
+    private const int m_height = 32;
     private readonly EBiome[,] m_biomes = new EBiome[m_width, m_height];
 
     public int Width
@@ -32,6 +32,8 @@ public class BiomeMap
     {
         get
         {
+            Debug.Assert(x >= 0 && x < Width);
+            Debug.Assert(y >= 0 && y < Height);
             return m_biomes[x, y];
         }
         set
@@ -48,7 +50,7 @@ public class BiomeMap
 
 public class BiomeManager
 {
-    private const int NumPoints = 512;
+    private const int NumPoints = 32;
 
     List<Vector2> m_points;
     Texture m_debugTexture;
@@ -125,6 +127,11 @@ public class BiomeManager
         mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.85f, 0.80f));
         mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.12f, 0.80f));
         m_biomeToGeneration[EBiome.Mountain] = mountainTemplate;
+    }
+
+    public GenerationTemplate GetTemplateFromBiome(EBiome biome)
+    {
+        return m_biomeToGeneration[biome];
     }
 
     public void Generate()

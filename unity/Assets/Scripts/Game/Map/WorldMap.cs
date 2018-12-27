@@ -88,30 +88,25 @@ public class WorldMap : MonoBehaviourEx
         Quaternion spawnRot = m_worldAnchorRoot.transform.rotation;
 
         Stopwatch sw = Stopwatch.StartNew();
+
+        int x = (int)chunkPos.x;
+        int y = (int)chunkPos.y;
+
         GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
         chunkObj.GetComponent<Renderer>().material.mainTexture = m_tileTextureMap;
-        chunkObj.name = string.Format("Chunk({0},{1})", (int)chunkPos.x, (int)chunkPos.y);
+        chunkObj.name = string.Format("Chunk({0},{1})", x, y);
         sw.Stop();
         UnityEngine.Debug.Log(string.Format("Mesh Instanciation in {0}ms", sw.ElapsedMilliseconds));
 
-        GenerationTemplate template = new GenerationTemplate();
+        // Chunk goes from -Inf to + Inf
+        // But biomeMap goes from 0 to Width / 2
+        // So, this won't work for boundary, but temporary remap by adding half-size
+        // TODO: fix me
+        int biomeX = x + m_biomeManager.Width / 2;
+        int biomeY = y + m_biomeManager.Height / 2;
 
-        // Let's have mountains go from 0.1 to 1.0 depending on the distance from origin
-
-        float distFromOrigin = (float)Math.Sqrt((double)chunkPos.SqrMagnitude());
-
-        float percMountain = distFromOrigin / 10f;
-        if (percMountain > 1.0f)
-        {
-            percMountain = 1.0f;
-        }
-
-        template.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.30f, 0.2f));
-        template.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.20f, 1.0f));
-        template.patchTemplate.Add(new PatchTemplate(ETile.Tree, 0.20f, 0.1f));
-        template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.10f, 1.0f));
-        template.patchTemplate.Add(new PatchTemplate(ETile.Mountain, percMountain, 0.3f));
-        //template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
+        EBiome biome = m_biomeManager.Map[biomeX, biomeY];
+        GenerationTemplate template = m_biomeManager.GetTemplateFromBiome(biome);
 
         ChunkInfo chunkInfo = new ChunkInfo(chunkPos, chunkObj);
         chunkInfo.Generate(template);

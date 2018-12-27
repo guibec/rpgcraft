@@ -134,7 +134,7 @@ public class ChunkInfo
         int yCenter = DefaultChunkHeight / 2;
 
         // or set them through a circle
-        AddCircle(ETile.Grass, xCenter, yCenter, 12);
+        //AddCircle(ETile.Grass, xCenter, yCenter, 12);
         sw.Stop();
         Debug.Log(string.Format("ChunkInfo::Generate took {0}ms", sw.ElapsedMilliseconds));
 
