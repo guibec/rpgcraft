@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Random = UnityEngine.Random;
 
 using IronExtension;
@@ -33,8 +34,8 @@ public delegate void ChunkChangedEventHandler(object sender, EventArgs e);
 /// </summary>
 public class ChunkInfo
 {
-    public const int DefaultChunkWidth = 64;
-    public const int DefaultChunkHeight = 64;
+    public const int ChunkWidth = 64;
+    public const int ChunkHeight = 64;
     public event ChunkChangedEventHandler Changed;
 
     private TileInfo[,] m_data;
@@ -42,6 +43,98 @@ public class ChunkInfo
     // Linked list of potentially occupying entities
     // TODO: See Real Time Collision Detection Chapter 7.1.6 for optimization using a static array instead
     private List<Entity>[,] m_entities;
+
+    enum Direction
+    {
+        North,
+        NorthEast,
+        East,
+        SouthEast,
+        South,
+        SouthWest,
+        West,
+        NortWest,
+    }
+
+    private Vector2[] m_directionVectors = 
+        {
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(1, -1),
+            new Vector2(0, -1),
+            new Vector2(-1, -1),
+            new Vector2(-1, 0),
+            new Vector2(-1, 1),
+    };
+
+    // Each ChunkInfo will keep a list of its neighbors as it makes it easier to navigate between them and
+    // have contiguous regions
+    private List<ChunkInfo> m_neighbors = new List<ChunkInfo>(Enum.GetNames(typeof(Direction)).Length);
+
+    public ChunkInfo NorthNeighbor
+    {
+        get
+        {
+            return m_neighbors[0];
+        }
+    }
+
+    public ChunkInfo NorthEastNeighbor
+    {
+        get
+        {
+            return m_neighbors[1];
+        }
+    }
+
+    public ChunkInfo EastNeighbor
+    {
+        get
+        {
+            return m_neighbors[2];
+        }
+    }
+
+    public ChunkInfo SouthEastNeighbor
+    {
+        get
+        {
+            return m_neighbors[3];
+        }
+    }
+
+    public ChunkInfo SouthNeighbor
+    {
+        get
+        {
+            return m_neighbors[4];
+        }
+    }
+
+    public ChunkInfo SouthWestNeighbor
+    {
+        get
+        {
+            return m_neighbors[5];
+        }
+    }
+
+    public ChunkInfo WestNeighbor
+    {
+        get
+        {
+            return m_neighbors[6];
+        }
+    }
+
+    public ChunkInfo NorthWestNeighbor
+    {
+        get
+        {
+            return m_neighbors[7];
+        }
+    }
 
     public Vector2 ChunkPos { get; private set; }
 
@@ -52,8 +145,13 @@ public class ChunkInfo
         ChunkPos = chunkPos;
         ChunkObject = chunkObj;
 
-        m_data = new TileInfo[DefaultChunkHeight, DefaultChunkWidth];
-        m_entities = new List<Entity>[DefaultChunkHeight, DefaultChunkWidth];
+        m_data = new TileInfo[ChunkHeight, ChunkWidth];
+        m_entities = new List<Entity>[ChunkHeight, ChunkWidth];
+
+        for (int i = 0; i < Enum.GetNames(typeof(Direction)).Length; i++)
+        {
+            m_neighbors.Add(null);
+        }
     }
 
     private TileInfo[,] Data { get { return m_data; } }
@@ -62,6 +160,21 @@ public class ChunkInfo
     {
         if (Changed != null)
             Changed(this, e);
+    }
+
+    public void PostInitialize()
+    {
+        for (int i = 0; i < Enum.GetNames(typeof(Direction)).Length; i++)
+        {
+            Vector2 dir = m_directionVectors[i];
+            Vector2 neighborPos = ChunkPos + dir;
+            ChunkInfo neighbor = GameManager.Instance.WorldMap.GetChunkFromChunkPos(neighborPos);
+            if (neighbor != null)
+            {
+                m_neighbors[i] = neighbor;
+                neighbor.m_neighbors[(i + 4) % 8] = this;
+            }
+        }
     }
 
     public void WriteSlotValue(int x, int y, TileInfo tileInfo)
@@ -129,19 +242,13 @@ public class ChunkInfo
             AddPatches(patch.tile, patch.percent, patch.tightness);    
         }
 
-        // Finally, set the area around the player to be grass
-        int xCenter = DefaultChunkWidth / 2;
-        int yCenter = DefaultChunkHeight / 2;
-
-        // or set them through a circle
-        //AddCircle(ETile.Grass, xCenter, yCenter, 12);
         sw.Stop();
         Debug.Log(string.Format("ChunkInfo::Generate took {0}ms", sw.ElapsedMilliseconds));
 
         string fullDump = "";
-        for (int j = 0; j < DefaultChunkWidth; ++j)
+        for (int j = 0; j < ChunkWidth; ++j)
         {
-            for (int i = 0; i < DefaultChunkWidth; ++i)
+            for (int i = 0; i < ChunkWidth; ++i)
             {
                 fullDump += m_data[i, j].Tile.ToString().Substring(0,1);
             }
@@ -155,9 +262,9 @@ public class ChunkInfo
     public bool GenerateArena()
     {
         //Stopwatch sw = Stopwatch.StartNew();
-        for (int i = 0; i < DefaultChunkWidth; ++i)
+        for (int i = 0; i < ChunkWidth; ++i)
         {
-            for (int j = 0; j < DefaultChunkHeight; ++j)
+            for (int j = 0; j < ChunkHeight; ++j)
             {
                 int numTiles = System.Enum.GetNames(typeof(ETile)).Length;
 
@@ -180,9 +287,9 @@ public class ChunkInfo
     private void FillWorldWith(ETile tt)
     {
         //Stopwatch sw = Stopwatch.StartNew();
-        for (int i = 0; i < DefaultChunkWidth; ++i)
+        for (int i = 0; i < ChunkWidth; ++i)
         {
-            for (int j = 0; j < DefaultChunkHeight; ++j)
+            for (int j = 0; j < ChunkHeight; ++j)
             {
                 WriteSlotValue(i, j, new TileInfo(tt, 0.0f));
             }
@@ -207,11 +314,59 @@ public class ChunkInfo
     private void AddOnePatch(ETile tt, int howMany)
     {
         HashSet<Vector2> current = new HashSet<Vector2>(new Vector2Comparer());
-        List<Vector2> potential = new List<Vector2>(howMany * 2);
+        HashSet<Vector2> potential = new HashSet<Vector2>();
 
-        int i = Random.Range(0, DefaultChunkWidth);
-        int j = Random.Range(0, DefaultChunkHeight);
-        potential.Add(new Vector2(i, j));
+        // Look if there are exiting neighbors first, and start from them if they have the right tiles
+        // Look at all directions
+        // TODO: This algorithm can be generalized
+        if (NorthNeighbor != null)
+        {
+            for (int x = 0; x < ChunkWidth; x++)
+            {
+                if (NorthNeighbor.m_data[x,0].Tile == tt)
+                {
+                    potential.Add(new Vector2(x, ChunkHeight-1));
+                }
+            }
+        }
+        if (EastNeighbor != null)
+        {
+            for (int y = 0; y < ChunkHeight; y++)
+            {
+                if (EastNeighbor.m_data[0, y].Tile == tt)
+                {
+                    potential.Add(new Vector2(ChunkWidth - 1, y));
+                }
+            }
+        }
+        if (SouthNeighbor != null)
+        {
+            for (int x = 0; x < ChunkWidth; x++)
+            {
+                if (SouthNeighbor.m_data[x, ChunkHeight-1].Tile == tt)
+                {
+                    potential.Add(new Vector2(x, 0));
+                }
+            }
+        }
+        if (WestNeighbor != null)
+        {
+            for (int y = 0; y < ChunkHeight; y++)
+            {
+                if (WestNeighbor.m_data[ChunkWidth-1, y].Tile == tt)
+                {
+                    potential.Add(new Vector2(0, y));
+                }
+            }
+        }
+
+        // If we had no neighbor with potential, just pick one point at random
+        if (potential.Count == 0)
+        {
+            int i = Random.Range(0, ChunkWidth);
+            int j = Random.Range(0, ChunkHeight);
+            potential.Add(new Vector2(i, j));
+        }
 
         Vector2[] dirs = new Vector2[4];
         dirs[0] = new Vector2(1, 0);
@@ -227,12 +382,11 @@ public class ChunkInfo
 
             // Pick one guy at random in potential
             int pick = Random.Range(0, potential.Count);
-
-            Vector2 picked = potential[pick];
+            Vector2 picked = Enumerable.ElementAt(potential, pick);
 
             // remove from potential, add to current
             current.Add(picked);
-            potential.RemoveAt(pick);
+            potential.Remove(picked);
 
             WriteSlotValue(picked, new TileInfo(tt));
 
@@ -248,12 +402,9 @@ public class ChunkInfo
                 }
             }
 
-            if (found > 0)
+            for (int dir = 0; dir < found; ++dir)
             {
-                for (int dir = 0; dir < found; ++dir)
-                {
-                    potential.Add(newPotential[dir]);
-                }
+                potential.Add(newPotential[dir]);
             }
         }
     }
@@ -319,7 +470,7 @@ public class ChunkInfo
         //Debug.Log(string.Format("Creating {0} patch for {1}% at {2} tightness", tt, percent, tightness));
 
         Stopwatch sw = Stopwatch.StartNew();
-        int howMany = (int)(percent * (float)DefaultChunkWidth * (float)DefaultChunkHeight);
+        int howMany = (int)(percent * (float)ChunkWidth * (float)ChunkHeight);
 
         if (howMany == 0)
         {
@@ -359,7 +510,7 @@ public class ChunkInfo
 
     public bool IsValid(Vector2 pos)
     {
-        return pos[0] >= 0 && pos[0] < DefaultChunkWidth && pos[1] >= 0 && pos[1] < DefaultChunkHeight;
+        return pos[0] >= 0 && pos[0] < ChunkWidth && pos[1] >= 0 && pos[1] < ChunkHeight;
     }
 }
 
