@@ -6,22 +6,80 @@ using UnityEngine;
 using IronExtension;
 using Debug = UnityEngine.Debug;
 
-public class BiomeManager
+public class BiomeMap
 {
-    private const int Width = 256;
-    private const int Height = 256;
-    private const int NumPoints = 64;
+    private const int m_width = 128;
+    private const int m_height = 128;
+    private readonly EBiome[,] m_biomes = new EBiome[m_width, m_height];
 
-    private readonly EBiome[,] m_biomes = new EBiome[Width, Height];
-
-    List<Vector2> m_points;
-    Texture m_debugTexture;
-
-    public EBiome[,] BiomeMap
+    public int Width
     {
         get
         {
-            return m_biomes;
+            return m_width;
+        }
+    }
+
+    public int Height
+    {
+        get
+        {
+            return m_height;
+        }
+    }
+
+    public EBiome this[int x, int y]
+    {
+        get
+        {
+            return m_biomes[x, y];
+        }
+        set
+        {
+            m_biomes[x, y] = value;
+        }
+    }
+
+    public void Clear()
+    {
+        Array.Clear(m_biomes, 0, m_biomes.Length);
+    }
+}
+
+public class BiomeManager
+{
+    private const int NumPoints = 512;
+
+    List<Vector2> m_points;
+    Texture m_debugTexture;
+    BiomeMap m_biomeMap = new BiomeMap();
+
+    /// <summary>
+    /// How each Biome map to a generation template tells us how this area will be generated
+    /// </summary>
+    private Dictionary<EBiome, GenerationTemplate> m_biomeToGeneration = new Dictionary<EBiome, GenerationTemplate>(10);
+
+    public BiomeMap Map
+    {
+        get
+        {
+            return m_biomeMap;
+        }
+    }
+
+    public int Width
+    {
+        get
+        {
+            return Map.Width;
+        }
+    }
+
+    public int Height
+    {
+        get
+        {
+            return Map.Height;
         }
     }
 
@@ -36,6 +94,37 @@ public class BiomeManager
 
             return m_debugTexture;
         }
+    }
+
+    public BiomeManager()
+    {
+        InitializeGenerationTemplates();
+    }
+
+    private void InitializeGenerationTemplates()
+    {
+        // TODO: Could be data driven
+        GenerationTemplate plainTemplate = new GenerationTemplate();
+        plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.02f, 0.0f));
+        plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.02f, 0.0f));
+        m_biomeToGeneration[EBiome.Plain] = plainTemplate;
+
+        GenerationTemplate oceanTemplate = new GenerationTemplate();
+        oceanTemplate.patchTemplate.Add(new PatchTemplate(ETile.Water, 1.0f, 1.0f));
+        m_biomeToGeneration[EBiome.Ocean] = oceanTemplate;
+
+        GenerationTemplate forestTemplate = new GenerationTemplate();
+        forestTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.8f, 0.5f));
+        m_biomeToGeneration[EBiome.Forest] = forestTemplate;
+
+        GenerationTemplate desertTemplate = new GenerationTemplate();
+        desertTemplate.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.95f, 0.80f));
+        m_biomeToGeneration[EBiome.Desert] = desertTemplate;
+
+        GenerationTemplate mountainTemplate = new GenerationTemplate();
+        mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.85f, 0.80f));
+        mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.12f, 0.80f));
+        m_biomeToGeneration[EBiome.Mountain] = mountainTemplate;
     }
 
     public void Generate()
@@ -53,7 +142,7 @@ public class BiomeManager
 
     public void Clear()
     {
-        Array.Clear(m_biomes, 0, m_biomes.Length);
+        Map.Clear();
         if (m_points != null)
         {
             m_points.Clear();
@@ -138,7 +227,7 @@ public class BiomeManager
             {
                 int value = regions[i, j];
                 value %= Enum.GetNames(typeof(EBiome)).Length;
-                m_biomes[i, j] = (EBiome)value;
+                Map[i, j] = (EBiome)value;
             }
         }
 
@@ -158,7 +247,7 @@ public class BiomeManager
             {
                 Color pixelColor;
 
-                switch (m_biomes[i,j])
+                switch (Map[i,j])
                 {
                     case EBiome.Plain:
                         pixelColor = Color.green;
@@ -175,12 +264,12 @@ public class BiomeManager
                     case EBiome.Mountain:
                         pixelColor = Color.black;
                         break;
-                    case EBiome.Snow:
-                        pixelColor = Color.white;
-                        break;
-                    case EBiome.Jungle:
-                        pixelColor = Color.magenta;
-                        break;
+                    //case EBiome.Snow:
+                    //    pixelColor = Color.white;
+                    //    break;
+                    //case EBiome.Jungle:
+                    //    pixelColor = Color.magenta;
+                    //    break;
                     default:
                         pixelColor = Color.cyan;
                         break;

@@ -12,6 +12,6 @@ public enum EBiome
     Forest,
     Desert,
     Mountain,
-    Snow,
-    Jungle
+    //Snow,
+    //Jungle
 }
