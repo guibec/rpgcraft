@@ -139,9 +139,9 @@ public class TileMap : MonoBehaviourEx
 
         Shader shader = Shader.Find("dig");
         if (shader == null)
+        {
             UnityEngine.Debug.Log("Could not find shader");
-        else
-            UnityEngine.Debug.Log("Found shader: " + shader.name);
+        }
 
         int numVertices = m_width*m_height*4;
         int numQuad = m_width * m_height;

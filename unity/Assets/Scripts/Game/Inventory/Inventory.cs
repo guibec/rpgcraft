@@ -50,7 +50,7 @@ public class Inventory
         m_itemSlots[index].Item = item;
         m_itemSlots[index].Count++;
 
-        UnityEngine.Debug.Log("Adding item " + item + " to slot " + index + " with count of " + m_itemSlots[index].Count);
+        //UnityEngine.Debug.Log("Adding item " + item + " to slot " + index + " with count of " + m_itemSlots[index].Count);
         OnChanged();
 
         return true;
