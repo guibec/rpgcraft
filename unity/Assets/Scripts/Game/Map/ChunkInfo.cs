@@ -45,9 +45,13 @@ public class ChunkInfo
 
     public Vector2 ChunkPos { get; private set; }
 
-    public ChunkInfo(Vector2 chunkPos)
+    public GameObject ChunkObject { get; private set; }
+
+    public ChunkInfo(Vector2 chunkPos, GameObject chunkObj)
     {
         ChunkPos = chunkPos;
+        ChunkObject = chunkObj;
+
         m_data = new TileInfo[DefaultChunkHeight, DefaultChunkWidth];
         m_entities = new List<Entity>[DefaultChunkHeight, DefaultChunkWidth];
     }

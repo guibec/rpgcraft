@@ -51,6 +51,9 @@ public class WorldMap : MonoBehaviourEx
 
     public void Generate()
     {
+        ClearMap();
+        m_biomeManager.Generate();
+
         for (int i = -1; i <= 1; ++i)
         {
             for (int j = -1; j <= 1; ++j)
@@ -58,6 +61,18 @@ public class WorldMap : MonoBehaviourEx
                 SpawnChunkAt(i, j);
             }
         }
+    }
+
+    private void ClearMap()
+    {
+        m_posToChunks.Clear();
+        m_biomeManager.Clear();
+
+        foreach (var chunk in m_chunks)
+        {
+            Destroy(chunk.ChunkObject);
+        }
+        m_chunks.Clear();
     }
 
     public void OnUpdate(Vector2 playerPos)
@@ -106,7 +121,7 @@ public class WorldMap : MonoBehaviourEx
         template.patchTemplate.Add(new PatchTemplate(ETile.Mountain, percMountain, 0.3f));
         //template.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.20f, 1.0f)); // create Lakes
 
-        ChunkInfo chunkInfo = new ChunkInfo(chunkPos);
+        ChunkInfo chunkInfo = new ChunkInfo(chunkPos, chunkObj);
         chunkInfo.Generate(template);
 
         TileMap anotherTileMap = chunkObj.GetComponent<TileMap>();

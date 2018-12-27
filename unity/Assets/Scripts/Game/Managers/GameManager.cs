@@ -68,6 +68,12 @@ public class GameManager : MonoSingleton<GameManager>
         m_fsm.SwitchState<GameManagerState_Dead>();
     }
 
+    public void RegenerateWorld()
+    {
+        m_worldMap.Generate();
+        m_fsm.SwitchState<GameManagerState_Init>();
+    }
+
     public TileInfo GetTileFromWorldPos(Vector2 worldPos)
     {
         return m_worldMap.GetTileFromWorldPos(worldPos);
