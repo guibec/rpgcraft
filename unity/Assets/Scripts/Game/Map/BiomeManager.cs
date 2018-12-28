@@ -8,8 +8,8 @@ using Debug = UnityEngine.Debug;
 
 public class BiomeMap
 {
-    private const int m_width = 32;
-    private const int m_height = 32;
+    private const int m_width = 1024;
+    private const int m_height = 1024;
     private readonly EBiome[,] m_biomes = new EBiome[m_width, m_height];
 
     public int Width
@@ -50,7 +50,7 @@ public class BiomeMap
 
 public class BiomeManager
 {
-    private const int NumPoints = 32;
+    private const int NumPoints = 256;
 
     List<Vector2> m_points;
     Texture m_debugTexture;
@@ -173,9 +173,8 @@ public class BiomeManager
         }
 
         // Remap each of the point into the biome. It's possible some will overwrite each other, that's fine, shouldn't happen too much.
-
+        Stopwatch swMapPoints = Stopwatch.StartNew();
         Dictionary<Tuple<int, int>, int> closePoints = new Dictionary<Tuple<int, int>, int>();
-
         int counter = 1;
         foreach (Vector2 point in m_points)
         {
@@ -190,6 +189,8 @@ public class BiomeManager
             regions[x, y] = counter;
             counter++;
         }
+        swMapPoints.Stop();
+
 
         // time to fill the missing regions !
         // I can flood fill to figure out all the regions
@@ -197,7 +198,7 @@ public class BiomeManager
         // flood fill if done properly will be have run-time of O(Width * Height) + use some memory and is a bit more complex
         // while pixel per pixel will have O(Width * Height * NumPoints) and is simple.
         // So we will do pixel per pixel for now, and we can optimize later
-
+        Stopwatch minDistance = Stopwatch.StartNew();
         for (int j = 0; j < Height; j++)
         {
             for (int i = 0; i < Width; i++)
@@ -226,8 +227,10 @@ public class BiomeManager
                 regions[i, j] = best.Value;
             }
         }
+        minDistance.Stop();
 
         // For now just map all region back to EBiome
+        Stopwatch remap = Stopwatch.StartNew();
         for (int j = 0; j < Height; j++)
         {
             for (int i = 0; i < Width; i++)
@@ -237,10 +240,14 @@ public class BiomeManager
                 Map[i, j] = (EBiome)value;
             }
         }
+        remap.Stop();
 
         GenerateDebugTexture();
         sw.Stop();
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
+        Debug.Log(string.Format("BiomeManager: Voronoi tessellation remapPoints took {0} ms", swMapPoints.ElapsedMilliseconds));
+        Debug.Log(string.Format("BiomeManager: Voronoi tessellation min distance took {0} ms", minDistance.ElapsedMilliseconds));
+        Debug.Log(string.Format("BiomeManager: Voronoi tessellation remap took {0} ms", remap.ElapsedMilliseconds));
     }
 
     private void GenerateDebugTexture()
