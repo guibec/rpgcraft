@@ -15,8 +15,9 @@
     <Keyword>ajek-msw</Keyword>
     <RootNamespace>ajek_msw</RootNamespace>
     <ProjectGuid>{D45B9090-E34A-4796-908E-24F83CBD0FB3}</ProjectGuid>
+	<AJEK_FRAMEWORK_DIR>$(MSBuildThisFileDirectory)..</AJEK_FRAMEWORK_DIR>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)PlatformToolsetFix.props" />
+  <Import Project="$(SolutionDir)msbuild/sln-build-environ.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -33,15 +34,17 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="BringInTheProps.props" />
-    <Import Project="x64-libpng.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
+    <Import Project="$(AJEK_GPU_DIR)\msbuild\inc-ajek-gpu.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\libpng.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="BringInTheProps.props" />
-    <Import Project="x64-libpng.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
+    <Import Project="$(AJEK_GPU_DIR)\msbuild\inc-ajek-gpu.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\libpng.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -71,8 +74,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\gpu-ifc\src\msw\dx11-core_stuff.cpp" />
-    <ClCompile Include="..\..\gpu-ifc\src\msw\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\src\msw\msw-chrono.cpp" />
     <ClCompile Include="..\src\msw\msw-dualshock4.cpp" />
     <ClCompile Include="..\src\msw\msw-GetLastError.cpp" />

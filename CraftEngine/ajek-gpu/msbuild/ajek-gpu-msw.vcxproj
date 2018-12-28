@@ -14,10 +14,11 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <Keyword>gpu-ifc</Keyword>
     <RootNamespace>gpu-ifc</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <ProjectGuid>{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}</ProjectGuid>
-    <ProjectName>gpu-ifc-msw</ProjectName>
+    <ProjectName>msw-ajek-gpu</ProjectName>
+    <AJEK_GPU_DIR>$(MSBuildThisFileDirectory)..</AJEK_GPU_DIR>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)msbuild\sln-build-environ.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -36,15 +37,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
-    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
+    <Import Project="$(AJEK_GPU_DIR)\msbuild\inc-ajek-gpu.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\libpng.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\imgui.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\BringInTheProps.props" />
-    <Import Project="$(RepoRootDir)\ajek-framework\msbuild\x64-libpng.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
+    <Import Project="$(AJEK_GPU_DIR)\msbuild\inc-ajek-gpu.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\libpng.props" />
+    <Import Project="$(AJEK_EXTLIB_DIR)\msbuild\imgui.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -77,6 +82,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\msw\pch\PCH-msw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\msw\*.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

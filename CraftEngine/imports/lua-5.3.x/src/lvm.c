@@ -855,7 +855,7 @@ void luaV_execute (lua_State *L) {
         //   Idea here is to catch typos meant to access local variables.
         //   Lua's nature makes it infeasible to track these things at lex-parse stage due to
         //   the number of language features that rely on resolving objects at execution (eg,
-        //   right here and right now).
+        //   the behavior depends on object state that can only be known at runtime).
 
         const TValue *slot;
         if (!luaV_fastset(L,upval,rb,slot,luaH_get,rc)) {

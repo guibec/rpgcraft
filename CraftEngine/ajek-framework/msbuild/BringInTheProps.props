@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
-    <Import Project="Platform-$(Configuration).props" Condition="exists('Platform-$(Configuration).props')" />
-    <Import Project="$(Platform)-(all).props" Condition="exists('$(Platform)-(all).props')" />
-    <Import Project="$(Platform)-WarningLevel.props" Condition="exists('$(Platform)-WarningLevel.props')" />
+    <Import Project="$(SolutionDir)msbuild/build_environ.props"    Condition="exists('$(SolutionDir)msbuild/build_environ.props')" />
+    <Import Project="Platform-$(Configuration).props"    Condition="exists('Platform-$(Configuration).props')" />
+    <Import Project="$(Platform)-(all).props"            Condition="exists('$(Platform)-(all).props')" />
+    <Import Project="$(Platform)-WarningLevel.props"     Condition="exists('$(Platform)-WarningLevel.props')" />
     <Import Project="$(Platform)-$(Configuration).props" Condition="exists('$(Platform)-$(Configuration).props')" />
   </ImportGroup>
   <PropertyGroup>
@@ -12,11 +13,14 @@
     <IntDir>$(SolutionDir)output\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
+	<AJEK_FRAMEWORK_DIR>$(MSBuildThisFileDirectory)..\</AJEK_FRAMEWORK_DIR>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepoRootDir)\imports\imgui;$(RepoRootDir)\imports\h;$(RepoRootDir)\ajek-script\h;$(RepoRootDir)\ajek-framework\h;$(RepoRootDir)\gpu-ifc\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AJEK_FRAMEWORK_DIR)ajek-framework\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
   </ItemDefinitionGroup>
 </Project>
+	  
+

@@ -15,7 +15,7 @@
     <Keyword>imgui</Keyword>
     <RootNamespace>imgui</RootNamespace>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)PlatformToolsetFix.props" />
+  <Import Project="$(SolutionDir)msbuild\sln-build-environ.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -31,13 +31,13 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="..\..\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="RepoRootDir.props" />
-    <Import Project="..\..\ajek-framework\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\BringInTheProps.props" />
+    <Import Project="$(AJEK_FRAMEWORK_DIR)\msbuild\inc-ajek-framework.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

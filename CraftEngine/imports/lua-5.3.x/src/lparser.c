@@ -608,6 +608,7 @@ static void statlist (LexState *ls) {
 #if !AJEK_SCRIPT
     if (ls->t.token == TK_RETURN) {
       statement(ls);
+      return;
     }
 #endif
     statement(ls);
@@ -1172,6 +1173,8 @@ static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
     if (nexps != nvars)
       adjust_assign(ls, nvars, nexps, &e);
     else {
+        // AJEK-SCRIPT TODO : apply parse-time check for global table write here.
+        // check that lh->v->k == VINDEXED && var->u.ind.t == 1 && var->u.ind.vt == VLOCAL
       luaK_setoneret(ls->fs, &e);  /* close last expression */
       luaK_storevar(ls->fs, &lh->v, &e);
       return;  /* avoid default */
@@ -1244,6 +1247,14 @@ static void labelstat (LexState *ls, TString *label, int line) {
   }
   findgotos(ls, &ll->arr[l]);
 }
+
+#if defined(AJEK_WIP)
+/* copy the funcion stackframe into a save area, to be restored later. */
+static void yieldstat(LexState *ls, int line)
+{
+    lua_gettop
+}
+#endif
 
 
 static void whilestat (LexState *ls, int line) {

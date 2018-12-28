@@ -254,7 +254,7 @@ __xi T* xMallocNew(T* &ptr)
 template< typename T >
 __xi T* xMallocT(T* &ptr)
 {
-    static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.")
+    static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.");
     //static_assert(!std::is_trivially_copyable<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.")
     return ptr ? ptr : xMalloc(sizeof(*ptr));
 }

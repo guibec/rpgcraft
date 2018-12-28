@@ -2,6 +2,7 @@
 #pragma once
 
 #include "x-stdlib.h"
+#include "x-assertion.h"
 
 // --------------------------------------------------------------------------------------
 //  BaseScopedMalloc
@@ -40,7 +41,7 @@ public:
     {
         Reset();
     }
-    
+
     T* GetPtr( size_t idx=0 ) const
     {
         #if SECURE_SCOPED_MALLOC
@@ -146,7 +147,7 @@ public:
     {
         Reset(size);
     }
-    
+
     virtual ~ScopedAlignedMalloc() throw()
     {
         Reset();

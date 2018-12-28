@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msw-framework", "CraftEngin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua-5.3.x", "CraftEngine\imports\lua-5.3.x\lua-5.3.x.vcxproj", "{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-script", "CraftEngine\ajek-script\msbuild\lua-ifc.vcxproj", "{AFAEDCB1-030A-415B-A853-00E8CB21FD90}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-script", "CraftEngine\ajek-script\msbuild\ajek-script.vcxproj", "{AFAEDCB1-030A-415B-A853-00E8CB21FD90}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-framework", "CraftEngine\ajek-framework\msbuild\ajek-framework.vcxproj", "{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}"
 EndProject
@@ -25,44 +25,78 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "CraftEngine\import
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ext-Libs", "Ext-Libs", "{E48D01BB-4B15-400C-B17B-31BA26784E18}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-gpu", "CraftEngine\ajek-gpu\msbuild\ajek-gpu.vcxproj", "{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msw-ajek-gpu", "CraftEngine\ajek-gpu\msbuild\ajek-gpu-msw.vcxproj", "{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Debug|x64.ActiveCfg = Debug|x64
 		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Debug|x64.Build.0 = Debug|x64
+		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Debug|x86.ActiveCfg = Debug|x64
 		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Release|x64.ActiveCfg = Release|x64
 		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Release|x64.Build.0 = Release|x64
+		{52C9CA65-820F-42F1-AAE7-DAB919DD34A6}.Release|x86.ActiveCfg = Release|x64
 		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Debug|x64.ActiveCfg = Debug|x64
 		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Debug|x64.Build.0 = Debug|x64
+		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Debug|x86.ActiveCfg = Debug|x64
 		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Release|x64.ActiveCfg = Release|x64
 		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Release|x64.Build.0 = Release|x64
+		{D6973076-9317-4EF2-A0B8-B7A18AC0713E}.Release|x86.ActiveCfg = Release|x64
 		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Debug|x64.ActiveCfg = Debug|x64
 		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Debug|x64.Build.0 = Debug|x64
+		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Debug|x86.ActiveCfg = Debug|x64
 		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Release|x64.ActiveCfg = Release|x64
 		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Release|x64.Build.0 = Release|x64
+		{60F89955-91C6-3A36-8000-13C592FEC2DF}.Release|x86.ActiveCfg = Release|x64
 		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Debug|x64.ActiveCfg = Debug|x64
 		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Debug|x64.Build.0 = Debug|x64
+		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Debug|x86.ActiveCfg = Debug|x64
 		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Release|x64.ActiveCfg = Release|x64
 		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Release|x64.Build.0 = Release|x64
+		{D45B9090-E34A-4796-908E-24F83CBD0FB3}.Release|x86.ActiveCfg = Release|x64
 		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Debug|x64.ActiveCfg = Debug|x64
 		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Debug|x64.Build.0 = Debug|x64
+		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Debug|x86.ActiveCfg = Debug|x64
 		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Release|x64.ActiveCfg = Release|x64
 		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Release|x64.Build.0 = Release|x64
+		{6388EE6E-722D-4712-93C1-5A7EF1DA91E0}.Release|x86.ActiveCfg = Release|x64
 		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Debug|x64.ActiveCfg = Debug|x64
 		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Debug|x64.Build.0 = Debug|x64
+		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Debug|x86.ActiveCfg = Debug|x64
 		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Release|x64.ActiveCfg = Release|x64
 		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Release|x64.Build.0 = Release|x64
+		{AFAEDCB1-030A-415B-A853-00E8CB21FD90}.Release|x86.ActiveCfg = Release|x64
 		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Debug|x64.ActiveCfg = Debug|x64
 		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Debug|x64.Build.0 = Debug|x64
+		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Debug|x86.ActiveCfg = Debug|x64
 		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Release|x64.ActiveCfg = Release|x64
 		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Release|x64.Build.0 = Release|x64
+		{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}.Release|x86.ActiveCfg = Release|x64
 		{47396539-D8B1-4B13-93E7-40800CE6152E}.Debug|x64.ActiveCfg = Debug|x64
 		{47396539-D8B1-4B13-93E7-40800CE6152E}.Debug|x64.Build.0 = Debug|x64
+		{47396539-D8B1-4B13-93E7-40800CE6152E}.Debug|x86.ActiveCfg = Debug|x64
 		{47396539-D8B1-4B13-93E7-40800CE6152E}.Release|x64.ActiveCfg = Release|x64
 		{47396539-D8B1-4B13-93E7-40800CE6152E}.Release|x64.Build.0 = Release|x64
+		{47396539-D8B1-4B13-93E7-40800CE6152E}.Release|x86.ActiveCfg = Release|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Debug|x64.ActiveCfg = Debug|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Debug|x64.Build.0 = Debug|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Debug|x86.ActiveCfg = Debug|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Release|x64.ActiveCfg = Release|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Release|x64.Build.0 = Release|x64
+		{B7D36F0A-EDD3-48D6-8C9A-603F33D4EDAB}.Release|x86.ActiveCfg = Release|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Debug|x64.ActiveCfg = Debug|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Debug|x64.Build.0 = Debug|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Debug|x86.ActiveCfg = Debug|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x64.ActiveCfg = Release|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x64.Build.0 = Release|x64
+		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

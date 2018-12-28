@@ -15,7 +15,7 @@
     <Keyword>lua</Keyword>
     <RootNamespace>lua</RootNamespace>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)PlatformToolsetFix.props" />
+  <Import Project="$(SolutionDir)msbuild\sln-build-environ.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>

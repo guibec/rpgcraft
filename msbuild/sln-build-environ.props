@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+
+  <PropertyGroup>
+	<AjekEngineDir>$(SolutionDir)CraftEngine\</AjekEngineDir>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	<AJEK_FRAMEWORK_DIR Condition="'$(AJEK_FRAMEWORK_DIR)' == ''">$(AjekEngineDir)ajek-framework</AJEK_FRAMEWORK_DIR>
+	<AJEK_SCRIPT_DIR    Condition="'$(AJEK_SCRIPT_DIR)'    == ''">$(AjekEngineDir)ajek-script</AJEK_SCRIPT_DIR>
+	<AJEK_GPU_DIR       Condition="'$(AJEK_GPU_DIR)'       == ''">$(AjekEngineDir)ajek-gpu</AJEK_GPU_DIR>
+	<AJEK_EXTLIB_DIR    Condition="'$(AJEK_EXTLIB_DIR)'    == ''">$(AjekEngineDir)imports</AJEK_EXTLIB_DIR>
+  </PropertyGroup>
+
+  <Import Project="$(AJEK_FRAMEWORK_DIR)/msbuild/SetPlatformToolset.props" />
+</Project>
