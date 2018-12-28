@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajek-gpu", "CraftEngine\aje
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msw-ajek-gpu", "CraftEngine\ajek-gpu\msbuild\ajek-gpu-msw.vcxproj", "{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ajekscript-interpreter", "CraftEngine\ajekscript-interpreter\ajekscript-interpreter.vcxproj", "{D17A12E0-EB65-424C-99E1-83578DAFE15D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -97,6 +99,12 @@ Global
 		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x64.ActiveCfg = Release|x64
 		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x64.Build.0 = Release|x64
 		{5372F79D-0C8A-4A86-8E19-AEE6FA8DDD6D}.Release|x86.ActiveCfg = Release|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Debug|x64.ActiveCfg = Debug|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Debug|x64.Build.0 = Debug|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Debug|x86.ActiveCfg = Debug|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Release|x64.ActiveCfg = Release|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Release|x64.Build.0 = Release|x64
+		{D17A12E0-EB65-424C-99E1-83578DAFE15D}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

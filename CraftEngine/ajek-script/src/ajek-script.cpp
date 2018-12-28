@@ -141,7 +141,7 @@ extern "C" void ajek_warn_new_global(lua_State* L)
         return;
     }
 
-    warn_host("\n%s(%d): WARN: new global variable created", info0.short_src, info0.currentline);
+    warn_host("%s(%d): WARN: new global variable created", info0.short_src, info0.currentline);
 
     // log function name in future?
     //info0.name ? info0.name : "[module]", info0.name ? "()" : "" );
