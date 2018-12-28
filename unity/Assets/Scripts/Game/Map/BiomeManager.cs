@@ -159,22 +159,42 @@ public class BiomeManager
 
     // Implement Voronoi tessellation 
     // https://en.wikipedia.org/wiki/Voronoi_diagram#/media/File:Voronoi_growth_euclidean.gif
+    private class RegionDistance
+    {
+        public RegionDistance()
+        {
+            Region = -1;
+            Distance = 0;
+        }
+
+        public RegionDistance(int region, int distance)
+        {
+            Region = region;
+            Distance = distance;
+        }
+
+        public int Region
+        {
+            get;
+            set;
+        }
+
+        public int Distance
+        {
+            get;
+            set;
+        }
+    }
+
     private void voronoiTesselate()
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        int[,] regions = new int[Width, Height];
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                regions[i, j] = -1;
-            }
-        }
+        RegionDistance[,] regionDistances = new RegionDistance[Width, Height];
 
         // Remap each of the point into the biome. It's possible some will overwrite each other, that's fine, shouldn't happen too much.
         Stopwatch swMapPoints = Stopwatch.StartNew();
-        Dictionary<Tuple<int, int>, int> closePoints = new Dictionary<Tuple<int, int>, int>();
+        var closePoints = new Dictionary<Vector2, RegionDistance>();
         int counter = 1;
         foreach (Vector2 point in m_points)
         {
@@ -185,47 +205,55 @@ public class BiomeManager
             Debug.Assert(x >= 0 && x < Width);
             Debug.Assert(y >= 0 && y < Height);
 
-            closePoints[new Tuple<int, int>(x, y)] = counter;
-            regions[x, y] = counter;
-            counter++;
+            regionDistances[x, y] = new RegionDistance(counter++, 0);
+            closePoints[new Vector2(x, y)] = regionDistances[x,y];
         }
         swMapPoints.Stop();
 
-
         // time to fill the missing regions !
         // I can flood fill to figure out all the regions
-        // or I can do pixel per pixel and figure out which point is the closest
-        // flood fill if done properly will be have run-time of O(Width * Height) + use some memory and is a bit more complex
-        // while pixel per pixel will have O(Width * Height * NumPoints) and is simple.
-        // So we will do pixel per pixel for now, and we can optimize later
+        // This is a O(Width*Height) complexity algorithm. It will also use up to O(Width*Height) memory for optimization
         Stopwatch minDistance = Stopwatch.StartNew();
-        for (int j = 0; j < Height; j++)
+
+        Vector2[] dirs =
         {
-            for (int i = 0; i < Width; i++)
+            new Vector2(-1, -1),
+            new Vector2(-1, 0),
+            new Vector2(-1, 1),
+            new Vector2(-1, 0),
+            new Vector2(1, 0),
+            new Vector2(1, -1),
+            new Vector2(1, 0),
+            new Vector2(1,1),
+        };
+
+        // regionDistances keep track of the filled area
+        // closePoints keep track of which points to grow from
+
+        while (closePoints.Count > 0)
+        {
+            var newPoints = new Dictionary<Vector2, RegionDistance>(128);
+
+            foreach (var point in closePoints)
             {
-                if (regions[i,j] != -1) // already done
+                // look at the 8 neighbors and update closePoints
+                foreach (var dir in dirs)
                 {
-                    continue;
+                    Vector2 neighborVector = point.Key + dir;
+                    if (neighborVector.x < 0 || neighborVector.y < 0 || neighborVector.x >= Width || neighborVector.y >= Height)
+                        continue;
+
+                    if (regionDistances[(int)neighborVector.x, (int)neighborVector.y] != null)
+                        continue;
+
+                    RegionDistance rdCurrent = point.Value;
+                    regionDistances[(int)neighborVector.x, (int)neighborVector.y] = new RegionDistance(rdCurrent.Region, rdCurrent.Distance + 1);
+                    newPoints[new Vector2(neighborVector.x, neighborVector.y)] = regionDistances[(int)neighborVector.x, (int)neighborVector.y];
                 }
-
-                // not done yet, find the closest point
-                KeyValuePair<Tuple<int, int>, int> best;
-                float bestSqrDistance = float.MaxValue;
-                foreach (var candidate in closePoints)
-                {
-                    Vector2 firstValue = new Vector2(i, j);
-                    Vector2 secondValue = new Vector2(candidate.Key.Item1, candidate.Key.Item2);
-                    float sqrDistance = (firstValue - secondValue).sqrMagnitude;
-
-                    if (sqrDistance < bestSqrDistance)
-                    {
-                        bestSqrDistance = sqrDistance;
-                        best = candidate;
-                    }
-                }
-
-                regions[i, j] = best.Value;
             }
+
+            // restart with the new newPoints
+            closePoints = newPoints;
         }
         minDistance.Stop();
 
@@ -235,7 +263,7 @@ public class BiomeManager
         {
             for (int i = 0; i < Width; i++)
             {
-                int value = regions[i, j];
+                int value = regionDistances[i,j].Region;
                 value %= Enum.GetNames(typeof(EBiome)).Length;
                 Map[i, j] = (EBiome)value;
             }
