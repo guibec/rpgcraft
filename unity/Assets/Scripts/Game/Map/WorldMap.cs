@@ -131,6 +131,12 @@ public class WorldMap : MonoBehaviourEx
                 chunkInfo.WriteSlotValue(i, j, tile);
             }
         }
+
+        // Special case for starting spot
+        if (x == 0 && y == 0)
+        {
+            chunkInfo.GenerateSquare(ETile.Grass, 8, 8);
+        }
 #else
         // Chunk goes from -Inf to + Inf
         // But biomeMap goes from 0 to Width / 2

@@ -276,26 +276,33 @@ public class ChunkInfo
         return true;
     }
 
-    public bool GenerateArena()
+    public bool GenerateSquare(ETile tile, int width, int height)
     {
-        //Stopwatch sw = Stopwatch.StartNew();
-        for (int i = 0; i < Width; ++i)
-        {
-            for (int j = 0; j < Height; ++j)
-            {
-                int numTiles = System.Enum.GetNames(typeof(ETile)).Length;
+        if (width < 0)
+            return false;
+        if (height < 0)
+            return false;
 
-                if (numTiles > 0)
-                {
-                    //m_slot[i, j] = new Slot(Slot.TerrainType.TT_Forest);
-                    int tt = Random.Range(0, numTiles);
-                    WriteSlotValue(i, j, (ETile)tt);
-                }
+        Debug.Assert(width <= Width);
+        Debug.Assert(height <= Height);
+
+        width = Math.Min(Width, width);
+        height = Math.Min(Height, height);
+
+        int startX = Width / 2 - width / 2;
+        int startY = Height / 2 - height / 2;
+
+        int endX = startX + width - 1;
+        int endY = startY + height - 1;
+
+        for (int j = startY; j <= endY; ++j)
+        {
+            for (int i = startX; i < endX; ++i)
+            {
+                WriteSlotValue(i, j, tile);
             }
         }
 
-        //sw.Stop();
-        //Debug.Log(string.Format("ChunkInfo::GenerateArena took {0}ms", sw.ElapsedMilliseconds));
         return true;
     }
 
