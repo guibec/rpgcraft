@@ -25,6 +25,11 @@ public struct TileInfo
     private static readonly TileInfo Invalid = new TileInfo(
         ETile.Invalid);
 
+    public static implicit operator TileInfo(ETile tile_)
+    {
+        return new TileInfo(tile_);
+    }
+
     public TileInfo(ETile tile_) : this()
     {
         if (tile_ == ETile.Mountain || tile_ == ETile.Tree)
