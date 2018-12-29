@@ -107,8 +107,8 @@ public class BiomeManager
     {
         // TODO: Could be data driven
         GenerationTemplate plainTemplate = new GenerationTemplate();
-        plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.02f, 0.0f));
-        plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.02f, 0.0f));
+        //plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.02f, 0.0f));
+        //plainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Water, 0.02f, 0.0f));
         m_biomeToGeneration[EBiome.Plain] = plainTemplate;
 
         GenerationTemplate oceanTemplate = new GenerationTemplate();
@@ -116,17 +116,35 @@ public class BiomeManager
         m_biomeToGeneration[EBiome.Ocean] = oceanTemplate;
 
         GenerationTemplate forestTemplate = new GenerationTemplate();
-        forestTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 0.8f, 0.5f));
+        forestTemplate.patchTemplate.Add(new PatchTemplate(ETile.Forest, 1.0f, 1.0f));
         m_biomeToGeneration[EBiome.Forest] = forestTemplate;
 
         GenerationTemplate desertTemplate = new GenerationTemplate();
-        desertTemplate.patchTemplate.Add(new PatchTemplate(ETile.Desert, 0.95f, 0.80f));
+        desertTemplate.patchTemplate.Add(new PatchTemplate(ETile.Desert, 1.0f, 1.0f));
         m_biomeToGeneration[EBiome.Desert] = desertTemplate;
 
         GenerationTemplate mountainTemplate = new GenerationTemplate();
-        mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.85f, 0.80f));
-        mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 0.12f, 0.80f));
+        mountainTemplate.patchTemplate.Add(new PatchTemplate(ETile.Mountain, 1.0f, 1.0f));
         m_biomeToGeneration[EBiome.Mountain] = mountainTemplate;
+    }
+
+    static public ETile Biome2Tile(EBiome biome)
+    {
+        switch (biome)
+        {
+            case EBiome.Plain:
+                return ETile.Grass;
+            case EBiome.Ocean:
+                return ETile.Water;
+            case EBiome.Forest:
+                return ETile.Tree;
+            case EBiome.Desert:
+                return ETile.Desert;
+            case EBiome.Mountain:
+                return ETile.Mountain;
+            default:
+                return ETile.Grass;
+        }
     }
 
     public GenerationTemplate GetTemplateFromBiome(EBiome biome)
@@ -193,7 +211,6 @@ public class BiomeManager
         RegionDistance[,] regionDistances = new RegionDistance[Width, Height];
 
         // Remap each of the point into the biome. It's possible some will overwrite each other, that's fine, shouldn't happen too much.
-        Stopwatch swMapPoints = Stopwatch.StartNew();
         var closePoints = new Dictionary<Vector2, RegionDistance>();
         int counter = 1;
         foreach (Vector2 point in m_points)
@@ -208,7 +225,6 @@ public class BiomeManager
             regionDistances[x, y] = new RegionDistance(counter++, 0);
             closePoints[new Vector2(x, y)] = regionDistances[x,y];
         }
-        swMapPoints.Stop();
 
         // time to fill the missing regions !
         // I can flood fill to figure out all the regions
@@ -259,12 +275,13 @@ public class BiomeManager
 
         // For now just map all region back to EBiome
         Stopwatch remap = Stopwatch.StartNew();
+        int enumLength = Enum.GetNames(typeof(EBiome)).Length; // keeping this outside the loop actually save 1000ms for 1M elements
         for (int j = 0; j < Height; j++)
         {
             for (int i = 0; i < Width; i++)
             {
                 int value = regionDistances[i,j].Region;
-                value %= Enum.GetNames(typeof(EBiome)).Length;
+                value %= enumLength;
                 Map[i, j] = (EBiome)value;
             }
         }
@@ -273,7 +290,6 @@ public class BiomeManager
         GenerateDebugTexture();
         sw.Stop();
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation remapPoints took {0} ms", swMapPoints.ElapsedMilliseconds));
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation min distance took {0} ms", minDistance.ElapsedMilliseconds));
         Debug.Log(string.Format("BiomeManager: Voronoi tessellation remap took {0} ms", remap.ElapsedMilliseconds));
     }

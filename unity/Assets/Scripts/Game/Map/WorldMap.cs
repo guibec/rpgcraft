@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Use simple biome generation mapping them directly to tiles
+#define SIMPLE_BIOME
+
+using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
 using System;
@@ -107,6 +110,28 @@ public class WorldMap : MonoBehaviourEx
         m_posToChunks[new Vector2(chunkPos.x, chunkPos.y)] = chunkInfo;
         chunkInfo.PostInitialize();
 
+        TileMap anotherTileMap = chunkObj.GetComponent<TileMap>();
+        anotherTileMap.SourceChunk = chunkInfo;
+
+#if SIMPLE_BIOME
+        for (int j = 0; j < ChunkInfo.Height; j++)
+        {
+            for (int i = 0; i < ChunkInfo.Width; i++)
+            {
+                Vector2 worldPos = Chunk2World(chunkInfo, i, j);
+
+                int biomeX = (int)worldPos.x + m_biomeManager.Width / 2;
+                int biomeY = (int)worldPos.y + m_biomeManager.Height / 2;
+
+                Debug.Assert(biomeX >= 0 && biomeX < m_biomeManager.Width);
+                Debug.Assert(biomeY >= 0 && biomeY < m_biomeManager.Height);
+
+                EBiome biome = m_biomeManager.Map[biomeX, biomeY];
+                ETile tile = BiomeManager.Biome2Tile(biome);
+                chunkInfo.WriteSlotValue(i, j, tile);
+            }
+        }
+#else
         // Chunk goes from -Inf to + Inf
         // But biomeMap goes from 0 to Width / 2
         // So, this won't work for boundary, but temporary remap by adding half-size
@@ -116,17 +141,15 @@ public class WorldMap : MonoBehaviourEx
         EBiome biome = m_biomeManager.Map[biomeX, biomeY];
         GenerationTemplate template = m_biomeManager.GetTemplateFromBiome(biome);
         chunkInfo.Generate(template);
-
-        TileMap anotherTileMap = chunkObj.GetComponent<TileMap>();
-        anotherTileMap.SourceChunk = chunkInfo;
+#endif
     }
 
 
     private void UpdateChunks(Vector2 chunkOrigin)
     {
-        for (int i = -1; i <= 1; ++i)
+        for (int i = -2; i <= 2; ++i)
         {
-            for (int j = -1; j <= 1; ++j)
+            for (int j = -2; j <= 2; ++j)
             {
                 Vector2 newChunkPos = chunkOrigin + new Vector2(i, j);
                 if (!IsValidChunk(newChunkPos))
@@ -160,10 +183,10 @@ public class WorldMap : MonoBehaviourEx
     /// <returns></returns>
     static public Vector2 World2Chunk(Vector2 worldPos)
     {
-        double newX = (worldPos.x + 32f) / ChunkInfo.ChunkWidth;
+        double newX = (worldPos.x + 32f) / ChunkInfo.Width;
         newX = Math.Floor(newX);
 
-        double newY = (worldPos.y + 32f) / ChunkInfo.ChunkHeight;
+        double newY = (worldPos.y + 32f) / ChunkInfo.Height;
         newY = Math.Floor(newY);
 
         return new Vector2((float)newX, (float)newY);
@@ -181,18 +204,18 @@ public class WorldMap : MonoBehaviourEx
 
     static public Vector2 Chunk2World(ChunkInfo chunk, int x, int y)
     {
-        return Chunk2World(chunk) - new Vector2(ChunkInfo.ChunkWidth / 2, ChunkInfo.ChunkHeight / 2) + new Vector2(x + 0.5f, y + 0.5f);
+        return Chunk2World(chunk) - new Vector2(ChunkInfo.Width / 2, ChunkInfo.Height / 2) + new Vector2(x + 0.5f, y + 0.5f);
     }
 
 
     public bool GetTileDataFromWorldPos(Vector2 worldPos, out ChunkInfo chunk, out int x, out int y)
     {
         Vector2 chunkIndices = World2Chunk(worldPos);
-        Vector2 worldChunkPos = new Vector2(chunkIndices.x * ChunkInfo.ChunkWidth, chunkIndices.y * ChunkInfo.ChunkHeight);
+        Vector2 worldChunkPos = new Vector2(chunkIndices.x * ChunkInfo.Width, chunkIndices.y * ChunkInfo.Height);
 
         Vector2 relativePos = new Vector2(worldPos.x, worldPos.y) - worldChunkPos;
-        relativePos.x += ChunkInfo.ChunkWidth / 2;
-        relativePos.y += ChunkInfo.ChunkHeight / 2;
+        relativePos.x += ChunkInfo.Width / 2;
+        relativePos.y += ChunkInfo.Height / 2;
 
         chunk = GetChunkFromChunkPos(chunkIndices);
         if (chunk != null)
