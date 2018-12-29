@@ -50,7 +50,7 @@ public class BiomeMap
 
 public class BiomeManager
 {
-    private const int NumPoints = 256;
+    private const int NumPoints = 1024;
 
     List<Vector2> m_points;
     Texture m_debugTexture;
