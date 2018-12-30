@@ -54,7 +54,7 @@ public class DebugManager : MonoSingleton<DebugManager>
         // Make sure we only call GUI.Window if doWindow0 is true.
         if (m_displayDebug)
         {
-            GUI.Window(0, new Rect(Screen.width / 8, Screen.height / 8, Screen.width * 6 / 8, Screen.height * 6 / 8), DoDebugWindow, "Game menu");
+            GUI.Window((int)DebugWindowsID.GameMenu, new Rect(Screen.width / 8, Screen.height / 8, Screen.width * 6 / 8, Screen.height * 6 / 8), DoDebugWindow, "Game menu");
         }
 
         // Next step, draw the biome map here:

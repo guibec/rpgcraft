@@ -92,6 +92,8 @@ public class UIManager : MonoSingleton<UIManager>
 
     private const int NumInventorySlots = 10;
 
+
+
     private readonly List<InventorySlotUI> m_inventorySlot = new List<InventorySlotUI>(NumInventorySlots);
     private Text m_healthText;
     private Slider m_xpSlider;
@@ -200,6 +202,79 @@ public class UIManager : MonoSingleton<UIManager>
         base.OnInit();
 
         UnityEngine.Debug.Log("UIManager::Init");
+    }
+
+    private bool m_displayTravel = false;
+    void OnGUI()
+    {
+        m_displayTravel = GUI.Toggle(new Rect(Screen.width - 100, 50, 100, 20), m_displayTravel, "Travel");
+
+        if (m_displayTravel)
+        {
+            GUI.Window((int)DebugWindowsID.TravelMenu, new Rect(Screen.width / 8, Screen.height / 8, Screen.width * 6 / 8, Screen.height * 6 / 8), DoTravelWindow, "Travel menu");
+        }
+    }
+
+    // TODO: The window is hard to see, this can be improved by making it opaque as explained here:
+    // https://forum.unity.com/threads/non-transparent-gui-control-background.7365/
+    void DoTravelWindow(int windowID)
+    {
+        string[] planetStrings =
+        {
+            "Mercury",
+            "Venus",
+            "Earth",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uranus",
+            "Neptune"
+        };
+
+        int baseOffset = 30;
+        for (int i = 0; i < 8; i++)
+        {
+            m_planets[i] = GUI.Toggle(new Rect(10, baseOffset, 140, 20), m_planets[i], planetStrings[i]);
+
+            // Cheap radio button
+            if (m_planets[i])
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (i != j)
+                        m_planets[j] = false;
+                }
+            }
+
+            baseOffset += 30;
+        }
+
+        // if at least one planet selected
+        int selectedPlanet = GetSelectedPlanet();
+
+        if (selectedPlanet != -1)
+        {
+            // draw the texture that matches the planet
+            GUI.DrawTexture(new Rect(250, 50, 256, 256), m_planetTextures[selectedPlanet], ScaleMode.ScaleToFit, true, 0.0f);
+
+            if (GUI.Button(new Rect(300, 60, 140, 20), "Launch!"))
+            {
+                // Launch !
+            }
+        }
+    }
+
+    private bool[] m_planets = { false, false, false, false, false, false, false, false };
+    public Texture[] m_planetTextures;
+    private int GetSelectedPlanet()
+    {
+        for (int i = 0; i < m_planets.Length; i++)
+        {
+            if (m_planets[i])
+                return i;
+        }
+
+        return -1;
     }
 
     public void OnDestroy()
