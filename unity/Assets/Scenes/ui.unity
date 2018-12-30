@@ -1199,82 +1199,22 @@ MonoBehaviour:
   m_txtDynamicPrefab: {fileID: 157756, guid: cddd87594efeb5d4a84f0b4ad0f32b2b, type: 2}
   m_mouseTileInfo: {fileID: 0}
   m_gameOverMessage: {fileID: 0}
-  m_travelGUIStyle:
-    m_Name: TravelWindow
-    m_Normal:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Hover:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Active:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Focused:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnNormal:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnHover:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnActive:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnFocused:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Border:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Margin:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Padding:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Overflow:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Font: {fileID: 0}
-    m_FontSize: 0
-    m_FontStyle: 0
-    m_Alignment: 0
-    m_WordWrap: 0
-    m_RichText: 1
-    m_TextClipping: 0
-    m_ImagePosition: 0
-    m_ContentOffset: {x: 0, y: 0}
-    m_FixedWidth: 0
-    m_FixedHeight: 0
-    m_StretchWidth: 1
-    m_StretchHeight: 0
   m_planetTextures:
   - {fileID: 2800000, guid: 83a549bd146b2c34cbd34a15bac6c828, type: 3}
   - {fileID: 2800000, guid: b6116e709ef96054c89d744ab8fc559c, type: 3}
   - {fileID: 2800000, guid: 482fb7dedf60a0d42a8ca61f7f14bfde, type: 3}
   - {fileID: 2800000, guid: 924c12b9bb9dcd44a9a18e9958db38fa, type: 3}
+  - {fileID: 2800000, guid: 61cf99b1c497e8f45a63b1d6df7f8259, type: 3}
   - {fileID: 2800000, guid: d9b3a0ee6f2bd9c4cadca95491df729a, type: 3}
   - {fileID: 2800000, guid: aa01b39f06a55f74588f3038e1eb1956, type: 3}
   - {fileID: 2800000, guid: aedc0f44ab7550b4ba62b0df1adc94c1, type: 3}
   - {fileID: 2800000, guid: 92fbe9cd800ac6147afdd9c30ab1b586, type: 3}
+  - {fileID: 2800000, guid: 709d03a1ab41d3b4aaa0d32d31e716fb, type: 3}
+  - {fileID: 2800000, guid: fe7ea86a9ba4a2a448f3255a4e9d591b, type: 3}
+  - {fileID: 2800000, guid: cc10cef2357e6d44496e711a42746564, type: 3}
+  - {fileID: 2800000, guid: 34729c7a1c7996d4ea7364df56a53669, type: 3}
+  - {fileID: 2800000, guid: cf228bed197151a45be25e2cdb3060f8, type: 3}
+  - {fileID: 2800000, guid: 7106b30a417038b42b96cc8916bfba4c, type: 3}
 --- !u!4 &1842195848
 Transform:
   m_ObjectHideFlags: 0

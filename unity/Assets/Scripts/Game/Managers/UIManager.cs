@@ -225,28 +225,35 @@ public class UIManager : MonoSingleton<UIManager>
             "Venus",
             "Earth",
             "Mars",
+            "Ceres",
             "Jupiter",
             "Saturn",
             "Uranus",
-            "Neptune"
+            "Neptune",
+            "Orcus",
+            "Pluto",
+            "Haumea",
+            "Makemake",
+            "Eris",
+            "Sedna",
         };
 
         int baseOffset = 30;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < m_planets.Length; i++)
         {
             m_planets[i] = GUI.Toggle(new Rect(10, baseOffset, 140, 20), m_planets[i], planetStrings[i]);
 
             // Cheap radio button
             if (m_planets[i])
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < m_planets.Length; j++)
                 {
                     if (i != j)
                         m_planets[j] = false;
                 }
             }
 
-            baseOffset += 30;
+            baseOffset += 20;
         }
 
         // if at least one planet selected
@@ -264,7 +271,7 @@ public class UIManager : MonoSingleton<UIManager>
         }
     }
 
-    private bool[] m_planets = { false, false, false, false, false, false, false, false };
+    private bool[] m_planets = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     public Texture[] m_planetTextures;
     private int GetSelectedPlanet()
     {
