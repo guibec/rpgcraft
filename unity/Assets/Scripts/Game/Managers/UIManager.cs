@@ -266,7 +266,8 @@ public class UIManager : MonoSingleton<UIManager>
 
             if (GUI.Button(new Rect(300, 60, 140, 20), "Launch!"))
             {
-                // Launch !
+                GameManager.Instance.ChangePlanet(planetStrings[selectedPlanet]);
+                m_displayTravel = false;
             }
         }
     }

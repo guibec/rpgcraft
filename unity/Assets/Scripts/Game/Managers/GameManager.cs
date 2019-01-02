@@ -33,6 +33,23 @@ public class GameManager : MonoSingleton<GameManager>
         }
     }
 
+    // Map each Planet to a world.
+    private Dictionary<string, WorldMap> m_planetToWorldMap = new Dictionary<string, WorldMap>();
+    private string m_currentPlanet = "Earth";
+
+    public string CurrentPlanet
+    {
+        get
+        {
+            return m_currentPlanet;
+        }
+
+        private set
+        {
+            m_currentPlanet = value;
+        }
+    }
+
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);
@@ -43,6 +60,8 @@ public class GameManager : MonoSingleton<GameManager>
         base.Awake();
 
         m_worldMap = GetComponent<WorldMap>();
+        m_planetToWorldMap[CurrentPlanet] = m_worldMap;
+
         TileMapping.BuildFromJSON("tilesInfo");
     }
 
@@ -72,6 +91,29 @@ public class GameManager : MonoSingleton<GameManager>
     {
         m_worldMap.Generate();
         m_fsm.SwitchState<GameManagerState_Init>();
+    }
+
+    public void ChangePlanet(string planet)
+    {
+        if (planet == CurrentPlanet)
+            return;
+
+        // Otherwise check if it is in the mapping
+        WorldMap newPlanet;
+        if (!m_planetToWorldMap.TryGetValue(planet, out newPlanet))
+        {
+            // doesn't exist, so create it
+            newPlanet = new WorldMap();
+            newPlanet.Generate();
+        }
+
+        // exist, so re-assign the current component
+        WorldMap oldPlanet = GetComponent<WorldMap>();
+        DestroyImmediate(oldPlanet);
+        gameObject.AddComponent<WorldMap>();
+        m_worldMap = GetComponent<WorldMap>();
+
+        CurrentPlanet = planet;
     }
 
     public TileInfo GetTileFromWorldPos(Vector2 worldPos)
