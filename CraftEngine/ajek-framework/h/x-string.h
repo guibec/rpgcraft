@@ -34,8 +34,7 @@
 //    behave the same as MSVC's *_s versions.  I confirmed this change is present in
 //    the glibc associated with GCC 4.0 and newer (and possibly earlier, though I didn't
 //    care to check that far back into pre-history).  But since there's no harm in spamming
-//    redundant /0's on infrequently used vsnprinf calls, and since 'fortify' gives us a
-//    hard time about it, might as well leave it be.
+//    redundant /0's on infrequently used vsnprinf calls, might as well leave it be.
 //      -- jstine
 
 inline __ai int vsprintf_s( char* dest, size_t size, const char* fmt, va_list list )

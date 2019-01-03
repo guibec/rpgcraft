@@ -127,21 +127,6 @@ void GameplaySceneLogic(float deltaTime)
             // no C++ native tick() binding.  Look up and execute Lua module binding.
             // [Optimization] Should be able to cache the lua function/table values and avoid looking them up in the registry.
 
-            // and what about coroutines?  how do those impact this logic?
-            // See luaB_cowrap and luaB_auxwrap.
-            //
-            // Our IDEAL:
-            //   1. exec all Ticks() as coroutines.
-            //   2. record status on exit,  if resumable, resume.  If "finished" then create new coroutine.
-            //
-            // REALITY:
-            //   creating coroutines when yield() will never be called is very expensive.
-            //
-            // Workaround:
-            //   Tick functions are bound as either regular functions or as coroutines, delimited according to the
-            //   function used to register them -- eg, OnTick() vs. OnTickCo()
-            //
-
             g_scriptEnv.pushreg(entitem.lua_tick);      // function to call
             g_scriptEnv.pushreg(entity.lua_object);     // self object (lua table)
             g_scriptEnv.pushvalue(deltaTime);
@@ -282,6 +267,8 @@ void GameplaySceneRender()
 //   * Terraria updates lighting at ~10fps, movement of lights is noticably behind player.
 //
 
+extern void DevUI_LoadStaticAssets();
+
 bool Scene_TryLoadInit()
 {
     s_CanRenderScene = false;
@@ -300,6 +287,8 @@ bool Scene_TryLoadInit()
         return false;
     }
 
+    DevUI_LoadStaticAssets();
+
     if (1) {
         xBitmapData  pngtex;
         png_LoadFromFile(pngtex, ".\\Assets\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
@@ -316,10 +305,10 @@ bool Scene_TryLoadInit()
     NewStaticEntity(g_GroundLayerAbove);
     NewStaticEntity(g_OpenWorld);
 
-    g_ViewCamera    .InitScene();
+    g_ViewCamera.InitScene();
     g_GroundLayerBelow.InitScene("GroundSubLayer");
-    g_GroundLayerAbove  .InitScene("GroundLayer");
-    g_OpenWorld     .InitScene();
+    g_GroundLayerAbove.InitScene("GroundLayer");
+    g_OpenWorld.InitScene();
 
     auto* player    = NewEntity(PlayerSprite);
 

@@ -10,6 +10,7 @@
 #include "x-host-ifc.h"
 #include "x-gpu-ifc.h"
 #include "x-ThrowContext.h"
+#include "x-chrono.h"
 
 #include "appConfig.h"
 #include "ajek-script.h"
@@ -19,7 +20,7 @@
 #include "DbgFont.h"
 
 #include <queue>
-
+#include <ctime>
 
 DECLARE_MODULE_NAME("scene");
 
@@ -36,6 +37,22 @@ static bool                 s_scene_thread_running      = false;
 
 static int                  s_scene_frame_count         = 0;
 static bool                 s_scene_has_keyfocus = false;
+
+// Local world time is time measured while the game is not in a paused state.
+// This differs from network time, which will be based on either universal QPC results,
+// or something roughly similar that at at least 5ms resolution.
+
+HostClockTick               s_world_deltatime;          // in seconds.
+HostClockTick               s_world_localtime;
+HostClockTick               s_world_localtime_qpc_last_update;
+
+HostClockTick               s_world_qpc_frametick;          // cached QPC value, once per frame (scene loop)
+
+
+HostClockTick WorldTick_Now()
+{
+    return s_world_qpc_frametick;
+}
 
 bool Scene_IsKeyPressed(VirtKey_t vk_code)
 {
@@ -227,25 +244,36 @@ static void* GlobalKeyboardThreadProc(void*)
     }
 }
 
-#include "x-chrono.h"
+extern void DevUI_DevControl        ();
 
-// Local world time is time measured while the game is not in a paused state.
-// This differs from network time, which will be based on either universal QPC results,
-// or something roughly similar that at at least 5ms resolution.
-
-HostClockTick   s_world_deltatime;          // in seconds.
-HostClockTick   s_world_localtime;
-HostClockTick   s_world_localtime_qpc_last_update;
-
-HostClockTick   s_world_qpc_frametick;          // cached QPC value, once per frame (scene loop)
-
-
-HostClockTick WorldTick_Now()
+void DevUI_Clocks()
 {
-    return s_world_qpc_frametick;
-}
+    if (!ImGui::Begin("Clocks")) return;
 
-#include <ctime>
+    auto secs  = time(nullptr);
+
+    // calc local time and the current timezone.
+    // no function to return the current timezone, so use gmtime to calculate it ourselves...
+    tm   localtm, gmtm;
+    localtime_s (&localtm,  &secs);
+    gmtime_s    (&gmtm,     &secs);
+
+    auto loc_secs = mktime(&localtm);
+    auto gm_secs  = mktime(&gmtm);
+    auto tz_shift_secs  = loc_secs - gm_secs;
+
+    ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
+    ImGui::Value("worldtime ", s_world_localtime.asSeconds(), "%7.2fs");
+    ImGui::Value("deltatime ", s_world_deltatime.asMilliseconds(), "%7.02fms");
+    ImGui::NewLine();
+    ImGui::Text("localtime  : %02d:%02d:%02d %02d:%02d   (%04d-%02d-%02d)",
+        localtm.tm_hour, localtm.tm_min, localtm.tm_sec,
+        (tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
+        localtm.tm_year+1900, localtm.tm_mon+1, localtm.tm_mday
+    );
+
+    ImGui::End();
+}
 
 static void* SceneProducerThreadProc(void*)
 {
@@ -279,28 +307,8 @@ static void* SceneProducerThreadProc(void*)
             break;
         }
 
-        if (ImGui::Begin("Clocks")) {
-            auto secs  = time(nullptr);
-
-            // calc local time and the current timezone.
-            // no function to return the current timezone, so use gmtime to calculate it ourselves...
-            tm   localtm, gmtm;
-            localtime_s (&localtm,  &secs);
-            gmtime_s    (&gmtm,     &secs);
-
-            auto loc_secs = mktime(&localtm);
-            auto gm_secs  = mktime(&gmtm);
-            auto tz_shift_secs  = loc_secs - gm_secs;
-
-            ImGui::Text("walltime  : %02d:%02d:%02d %02d:%02d   (%04d-%02d-%02d)",
-                localtm.tm_hour, localtm.tm_min, localtm.tm_sec,
-                (tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
-                localtm.tm_year+1900, localtm.tm_mon, localtm.tm_mday
-            );
-            ImGui::Value("worldtime ", s_world_localtime.asSeconds(), "%7.2fs");
-            ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
-            ImGui::Value("deltatime ", s_world_deltatime.asMilliseconds(), "%7.02fms");
-        } ImGui::End();
+        DevUI_DevControl();
+        DevUI_Clocks();
 
         if (Scene_HasStopReason(SceneStopReason_ScriptError)) {
             dx11_BeginFrameDrawing();
