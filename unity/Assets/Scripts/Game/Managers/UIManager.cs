@@ -92,8 +92,6 @@ public class UIManager : MonoSingleton<UIManager>
 
     private const int NumInventorySlots = 10;
 
-
-
     private readonly List<InventorySlotUI> m_inventorySlot = new List<InventorySlotUI>(NumInventorySlots);
     private Text m_healthText;
     private Slider m_xpSlider;
