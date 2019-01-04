@@ -33,6 +33,22 @@ public class GameManager : MonoSingleton<GameManager>
         }
     }
 
+    // Map each Planet to a world.
+    private string m_currentPlanet = "Earth";
+
+    public string CurrentPlanet
+    {
+        get
+        {
+            return m_currentPlanet;
+        }
+
+        private set
+        {
+            m_currentPlanet = value;
+        }
+    }
+
     public GameManager()
     {
         m_fsm = new GameManagerState_Machine(this);
@@ -72,6 +88,15 @@ public class GameManager : MonoSingleton<GameManager>
     {
         m_worldMap.Generate();
         m_fsm.SwitchState<GameManagerState_Init>();
+    }
+
+    public void ChangePlanet(string planet)
+    {
+        if (planet == CurrentPlanet)
+            return;
+
+        m_worldMap.Load(planet);
+        CurrentPlanet = planet;
     }
 
     public TileInfo GetTileFromWorldPos(Vector2 worldPos)
