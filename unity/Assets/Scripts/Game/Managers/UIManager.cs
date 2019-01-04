@@ -211,7 +211,7 @@ public class UIManager : MonoSingleton<UIManager>
 
         if (m_displayTravel)
         {
-            GUI.Window((int)DebugWindowsID.TravelMenu, new Rect(Screen.width / 8, Screen.height / 8, Screen.width * 6 / 8, Screen.height * 6 / 8), DoTravelWindow, "Travel menu");
+            GUI.Window((int)DebugWindowsID.TravelMenu, new Rect(Screen.width / 8, Screen.height / 16, Screen.width * 6 / 8, Screen.height * 15 / 16), DoTravelWindow, "Travel menu");
         }
     }
 

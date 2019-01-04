@@ -34,7 +34,6 @@ public class GameManager : MonoSingleton<GameManager>
     }
 
     // Map each Planet to a world.
-    private Dictionary<string, WorldMap> m_planetToWorldMap = new Dictionary<string, WorldMap>();
     private string m_currentPlanet = "Earth";
 
     public string CurrentPlanet
@@ -60,8 +59,6 @@ public class GameManager : MonoSingleton<GameManager>
         base.Awake();
 
         m_worldMap = GetComponent<WorldMap>();
-        m_planetToWorldMap[CurrentPlanet] = m_worldMap;
-
         TileMapping.BuildFromJSON("tilesInfo");
     }
 
@@ -98,21 +95,7 @@ public class GameManager : MonoSingleton<GameManager>
         if (planet == CurrentPlanet)
             return;
 
-        // Otherwise check if it is in the mapping
-        WorldMap newPlanet;
-        if (!m_planetToWorldMap.TryGetValue(planet, out newPlanet))
-        {
-            // doesn't exist, so create it
-            newPlanet = new WorldMap();
-            newPlanet.Generate();
-        }
-
-        // exist, so re-assign the current component
-        WorldMap oldPlanet = GetComponent<WorldMap>();
-        DestroyImmediate(oldPlanet);
-        gameObject.AddComponent<WorldMap>();
-        m_worldMap = GetComponent<WorldMap>();
-
+        m_worldMap.Load(planet);
         CurrentPlanet = planet;
     }
 

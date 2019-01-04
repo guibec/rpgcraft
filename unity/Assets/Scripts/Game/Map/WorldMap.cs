@@ -42,6 +42,16 @@ public class WorldMap : MonoBehaviourEx
         m_biomeManager = new BiomeManager();
     }
 
+    public void Load(string planet)
+    {
+        Generate();
+    }
+
+    public void Save()
+    {
+
+    }
+
     public void Generate()
     {
         var sw = Stopwatch.StartNew();
