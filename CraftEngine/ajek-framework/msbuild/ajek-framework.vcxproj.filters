@@ -22,7 +22,6 @@
     <ClCompile Include="..\src\PCH-framework.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gpu-ifc\src\x-gpu-colors.cpp" />
     <ClCompile Include="..\src\imgtools.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -30,6 +29,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\x-environ.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x-simd.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -100,8 +102,6 @@
     <ClInclude Include="..\src\PCH-framework.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-colors.h" />
-    <ClInclude Include="..\..\gpu-ifc\h\x-gpu-ifc.h" />
     <ClInclude Include="..\h\x-virtkey.h">
       <Filter>Public Includes</Filter>
     </ClInclude>

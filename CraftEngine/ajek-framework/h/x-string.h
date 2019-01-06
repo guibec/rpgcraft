@@ -355,10 +355,6 @@ extern  xString     xPosixErrorStr      ();
 extern  bool        xStringToBoolean    (const xString& src);
 extern  bool        xStringIsBoolean    (const xString& src);
 
-extern  u32         CalcMemoryBlockHash32   (const void* src, int lenInWords, s32 startVal=0);
-extern  u32         CalcPs2ProductCodeHash  (const char src[10]);
-extern  u32         CalcPs2ProductCodeHash  (const xString& src);
-
 // --------------------------------------------------------------------------------------
 //  xHexStr (template function)
 // --------------------------------------------------------------------------------------
@@ -450,7 +446,6 @@ extern  xString xDecStr     ( const u32& src );
 extern  xString xDecStr     ( const s32& src );
 extern  xString xDecStr     ( const u64& src );
 extern  xString xDecStr     ( const s64& src );
-extern  xString xDecStr     ( const int2& src );
 
 #if !defined(_MSC_VER)
 extern  xString xDecStr     ( const long long& src );

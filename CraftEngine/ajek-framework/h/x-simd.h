@@ -709,7 +709,6 @@ union int2 {
     __ai float2 operator*(float src)            const;
 };
 
-
 union int4 {
     struct {
         int     x,y,z,w;
@@ -733,8 +732,8 @@ union int4 {
     __ai const int4_cmp_all& cmp_all()          const   { return (int4_cmp_all&)*this; }
     __ai const int4_cmp_any& cmp_any()          const   { return (int4_cmp_any&)*this; }
 
-    __ai bool operator==( const u128& right )       const   { return q == right; }
-    __ai bool operator!=( const u128& right )       const   { return q != right; }
+    __ai bool operator==( const u128& right )   const   { return q == right; }
+    __ai bool operator!=( const u128& right )   const   { return q != right; }
 };
 
 // uint2 implementation note: this structure pretty much only exists to satisfy some asinine C++ type
@@ -920,8 +919,21 @@ inline __ai bool    int2_cmp_any::operator> (float right)               const   
 
 static_assert( sizeof(u128) == 16, "A u128 is is not 128 bits long is scarcely a u128 at all!" );
 
-extern xString xDataStr( const __m128& src );       // Requires also x-string.h included by programmer
+// -------------------------------------------------------------------------------------
+// xHexStr, xDecStr, xDataStr - Requires also x-string.h included by programmer
 
+extern  xString xDecStr     (const int2&   src);
+extern  xString xDecStr     (const int4&   src);
+extern  xString xDecStr     (const uint2&  src);
+
+extern  xString xHexStr     (const int2&   src);
+extern  xString xHexStr     (const int4&   src);
+extern  xString xHexStr     (const uint2&  src);
+
+extern  xString xDataStr    (const __m128& src);
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
 // iterator to traverse just only 'bit-set' positions to avoid unnecessary huge looping.
 // NOTE:
 //      tzcnt(0) returns size of the operand
