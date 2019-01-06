@@ -230,24 +230,49 @@ xString xString::GetSubstring( size_t start, size_t len ) const
     return result;
 }
 
-size_t xString::FindFirst( const xString& delims, size_t startpos ) const
+size_t xString::FindFirst   (char c,                    size_t startpos ) const { return m_string.find_first_of     ( c,        startpos ); }
+size_t xString::FindFirst   (const xString& delims,     size_t startpos ) const { return m_string.find_first_of     ( delims,   startpos ); }
+size_t xString::FindFirstNot(char c,                    size_t startpos ) const { return m_string.find_first_not_of ( c,        startpos ); }
+size_t xString::FindFirstNot(const xString& delims,     size_t startpos ) const { return m_string.find_first_not_of ( delims,   startpos ); }
+size_t xString::FindLast    (char c,                    size_t offset   ) const { return m_string.find_last_of      ( c,        offset ); }
+size_t xString::FindLast    (const xString& delims,     size_t offset   ) const { return m_string.find_last_of      ( delims,   offset ); }
+size_t xString::FindLastNot (char c,                    size_t offset   ) const { return m_string.find_last_not_of  ( c,        offset ); }
+size_t xString::FindLastNot (const xString& delims,     size_t offset   ) const { return m_string.find_last_not_of  ( delims,   offset ); }
+
+void xString::RemoveAllInPlace(char c)
 {
-    return m_string.find_first_of( delims, startpos );
+    // removing chars can only shorten the string, which makes it an
+    // ideal candidiate for in-place (mutable) string operations:
+
+    auto orig_len = GetLength();
+    int destidx = 0;
+    for (int i=0; i<orig_len; ++i) {
+        char ci = this->operator[](i);
+        if (ci != c) {
+            this->operator[](destidx++) = ci;
+        }
+    }
+
+    Resize(destidx);
 }
 
-size_t xString::FindFirstNot( const xString& delims, size_t startpos ) const
+xString xString::RemoveAll(char c) const
 {
-    return m_string.find_first_not_of( delims, startpos );
-}
+    auto first = FindFirst(c, 0);
+    if (first == npos) return *this;
 
-size_t xString::FindLast( const xString& delims, size_t offset ) const
-{
-    return m_string.find_last_of( delims, offset );
-}
+    xString result;
+    result.Resize(GetLength() - 1);
 
-size_t xString::FindLastNot( const xString& delims, size_t offset ) const
-{
-    return m_string.find_last_not_of( delims, offset );
+    int destidx = 0;
+    for (int i=0; i<GetLength(); ++i) {
+        char ci = this->operator[](i);
+        if (ci != c) {
+            result[destidx++] = ci;
+        }
+    }
+
+    return result;
 }
 
 xString& xString::FormatV( const char* fmt, va_list list )
