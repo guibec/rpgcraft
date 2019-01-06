@@ -200,11 +200,20 @@ public:
 
      xString    GetTail         ( size_t start ) const;
      xString    GetSubstring    ( size_t start, size_t len ) const;
+     xString    RemoveAll       ( char c ) const;
+     void       RemoveAllInPlace( char c );
+
      size_t     FindFirst       ( const xString& delims, size_t startpos ) const;
      size_t     FindFirstNot    ( const xString& delims, size_t startpos ) const;
      size_t     FindLast        ( const xString& delims, size_t offset=npos ) const;
      size_t     FindLastNot     ( const xString& delims, size_t offset=npos ) const;
-     size_t     Find            ( const xString& str, size_t pos=0 ) const      { return m_string.find(str.m_string, pos); }
+
+     size_t     FindFirst       ( char c, size_t startpos ) const;
+     size_t     FindFirstNot    ( char c, size_t startpos ) const;
+     size_t     FindLast        ( char c, size_t offset=npos ) const;
+     size_t     FindLastNot     ( char c, size_t offset=npos ) const;
+
+    __ai size_t         Find        ( const xString& str, size_t pos=0 ) const  { return m_string.find(str.m_string, pos); }
 
     __ai void           Erase       ( size_t startpos, size_t endpos=npos ) { m_string.erase( startpos, endpos ); }
     __ai void           Clear       ()                              { m_string.clear();                 }
@@ -232,7 +241,7 @@ public:
     __ai xString&       operator+=  ( const xString& src )          { Append(src);      return *this;   }
     __ai xString&       operator+=  ( char src )                    { Append(src);      return *this;   }
     __ai tChar&         operator[]  ( size_t idx )                  { return m_string[idx]; }
-//  __ai const tChar&   operator[]  ( size_t idx ) const            { return m_string[idx]; }
+    __ai const tChar&   operator[]  ( size_t idx ) const            { return m_string[idx]; }
     __ai bool           operator==  ( const xString& right ) const  { return m_string == right.m_string; }
     __ai bool           operator!=  ( const xString& right ) const  { return m_string != right.m_string; }
     __ai bool           operator<   ( const xString& right ) const  { return m_string <  right.m_string; }
@@ -243,6 +252,7 @@ public:
     __ai operator const char*() const { return m_string.c_str(); }
     __ai operator qstringlen()  const { return qstringlen(m_string.c_str(), m_string.length() ); }
 };
+
 
 inline __ai xString operator+( const xString& right, const char* src )
 {
