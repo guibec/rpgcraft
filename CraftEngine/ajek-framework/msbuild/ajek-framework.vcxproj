@@ -15,7 +15,7 @@
     <Keyword>ajek-framework</Keyword>
     <RootNamespace>ajek_framework</RootNamespace>
     <ProjectGuid>{5DB34FC8-DAEB-4038-A731-BB23F4697EAD}</ProjectGuid>
-	<AJEK_FRAMEWORK_DIR>$(MSBuildThisFileDirectory)..</AJEK_FRAMEWORK_DIR>
+    <AJEK_FRAMEWORK_DIR>$(MSBuildThisFileDirectory)..</AJEK_FRAMEWORK_DIR>
   </PropertyGroup>
   <Import Project="$(SolutionDir)msbuild\sln-build-environ.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -85,6 +85,7 @@
     <ClCompile Include="..\src\x-environ.cpp" />
     <ClCompile Include="..\src\x-png-decode.cpp" />
     <ClCompile Include="..\src\x-png-encode.cpp" />
+    <ClCompile Include="..\src\x-simd.cpp" />
     <ClCompile Include="..\src\x-stdlib.cpp" />
     <ClCompile Include="..\src\x-string.cpp" />
     <ClCompile Include="..\src\x-thread.cpp" />
