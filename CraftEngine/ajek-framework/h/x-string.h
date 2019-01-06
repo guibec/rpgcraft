@@ -188,8 +188,8 @@ public:
      xString&   AppendFmt       ( const wchar_t* fmt, ... )     __verify_fmt(2,3);
 #endif
 
-     void       LowercaseInPlace();
-     void       UppercaseInPlace();
+     xString&   ToLowerMutable  ();
+     xString&   ToUpperMutable  ();
      xString    ToLower         ()  const;
      xString    ToUpper         ()  const;
      bool       EqualsNoCase    ( const xString& src ) const;
@@ -202,7 +202,7 @@ public:
      xString    GetTail         ( size_t start ) const;
      xString    GetSubstring    ( size_t start, size_t len ) const;
      xString    RemoveAll       ( char c ) const;
-     void       RemoveAllInPlace( char c );
+     xString&   RemoveAllMutable( char c );
 
      size_t     FindFirst       ( const xString& delims, size_t startpos ) const;
      size_t     FindFirstNot    ( const xString& delims, size_t startpos ) const;

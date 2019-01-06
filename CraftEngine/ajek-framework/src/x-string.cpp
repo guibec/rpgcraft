@@ -239,7 +239,7 @@ size_t xString::FindLast    (const xString& delims,     size_t offset   ) const 
 size_t xString::FindLastNot (char c,                    size_t offset   ) const { return m_string.find_last_not_of  ( c,        offset ); }
 size_t xString::FindLastNot (const xString& delims,     size_t offset   ) const { return m_string.find_last_not_of  ( delims,   offset ); }
 
-void xString::RemoveAllInPlace(char c)
+xString& xString::RemoveAllMutable(char c)
 {
     // removing chars can only shorten the string, which makes it an
     // ideal candidiate for in-place (mutable) string operations:
@@ -254,6 +254,7 @@ void xString::RemoveAllInPlace(char c)
     }
 
     Resize(destidx);
+    return *this;
 }
 
 xString xString::RemoveAll(char c) const
@@ -385,12 +386,12 @@ xString& xString::AppendFmt( const wchar_t* fmt, ... )
 }
 #endif
 
-void xString::LowercaseInPlace()
+xString& xString::ToLowerMutable()
 {
     std::transform(m_string.begin(), m_string.end(), m_string.begin(), ::tolower);
 }
 
-void xString::UppercaseInPlace()
+xString& xString::ToUpperMutable()
 {
     std::transform(m_string.begin(), m_string.end(), m_string.begin(), ::toupper);
 }
