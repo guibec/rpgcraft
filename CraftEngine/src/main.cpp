@@ -302,7 +302,7 @@ bool Scene_TryLoadInit()
 
     if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, ".\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+        png_LoadFromFile(pngtex, ".\\Assets\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
         dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
     }
 
