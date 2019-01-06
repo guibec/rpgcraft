@@ -37,7 +37,7 @@ void PlayerSprite::LoadStaticAssets()
     // Because we're using an RPGMaker style sprite sheet sample:
     //   Cut sprites from the source image and paste them into a well-formed GPU texture.
 
-    png_LoadFromFile(pngsrc, ".\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+    png_LoadFromFile(pngsrc, ".\\Assets\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
     //imgtool::ConvertOpaqueColorToAlpha(pngsrc, rgba32(0x007575));     // git-checked copy is currently pre-converted via imagemagick...
 
     xBitmapData     curtex;
