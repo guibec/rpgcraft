@@ -108,14 +108,13 @@ typedef std::string     tString;
 #define cPosixErrorStr(...)     (xPosixErrorStr ( __VA_ARGS__ )             .c_str())
 
 // semi-internal-use struct for efficiently accepting either xString or `const char*` as input
-// parameters to a function.
+// parameters to a function.  For use in functions where the majority of use cases involve
+// const char* parameter input, such that using const xString& would result in unnecessary
+// heap allocations and cleanup operations.
 
 struct qstringlen
 {
-    qstringlen(const char* src) {
-        strptr = src;
-        length = strlen(src);
-    }
+    qstringlen(const char* src);
 
     qstringlen(const char* _strptr, int _len)
     {

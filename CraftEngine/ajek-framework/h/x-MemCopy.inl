@@ -234,8 +234,8 @@ inline __xi void xMemCopyQwc_NT( void* dest, const void* src, uint lenQwc )
 template< typename T, typename T2 >
 inline __ai void xObjCopy( T& dest, const T2& src )
 {
-    static_assert(__is_trivially_copyable(T),   "This is not a trivially-copyable object!");
-    static_assert(__is_trivially_copyable(T2),  "This is not a trivially-copyable object!");
+    static_assert(xIs_trivially_copyable(T),   "This is not a trivially-copyable object!");
+    static_assert(xIs_trivially_copyable(T2),  "This is not a trivially-copyable object!");
     static_assert( sizeof(T) == sizeof(T2),     "Objects are not of the same size!");
 
     // Size is known so a fancy copy can be used -- compiler will factor out most
