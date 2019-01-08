@@ -8,15 +8,14 @@
 class x_png_enc {
 
 private:
-    u8*  bmp;
-    u8** lines;
-    s32  width;
-    s32  height;
-    u32  bbp;
-    bool reverseRGB;
+    u8*  bmp        = nullptr;
+    u8** lines      = nullptr;
+    s32  width      = 0;
+    s32  height     = 0;
+    u32  bbp        = 0;
+    bool reverseRGB = 0;
 
 public:
-     x_png_enc()    { xMemZero(*this); }
     ~x_png_enc()    { Cleanup(); }
 
     void            Cleanup             ();

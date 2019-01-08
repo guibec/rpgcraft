@@ -108,7 +108,7 @@ void TileMapLayer::InitScene(const char* script_objname)
 
     // GPU Resource Initialization.
 
-    xMemZero(gpu.layout_tilemap);
+    gpu.layout_tilemap.Reset();
     gpu.layout_tilemap.AddVertexSlot( {
         { "POSITION", GPU_ResourceFmt_R32G32_FLOAT  },
         { "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT  }

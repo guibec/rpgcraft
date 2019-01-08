@@ -206,9 +206,14 @@ using GPU_InputDescHash_t = u64;
 class GPU_InputDesc
 {
 protected:
-    InputLayoutSlot     m_slots[InputLayoutMaxSlots];
+    InputLayoutSlot     m_slots[InputLayoutMaxSlots] = {};
     int                 m_numSlots      = 0;
     u64                 m_hashval       = 0;
+
+public:
+    void Reset() {
+        xMemZero(*this);
+    }
 
 public:
     __ai u64                        GetHash         ()          const   { return m_hashval; }

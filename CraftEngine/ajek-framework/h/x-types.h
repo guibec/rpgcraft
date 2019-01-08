@@ -145,10 +145,15 @@ typedef void VoidFunc();
 
 #if defined(__clang__)
 
-//
+#if !defined(SCE_ORBIS_SDK_VERSION)
 // Note: ORBIS SDK already defines several things that we've also be defining here (yay!)
 //       Such as __unused, __aligned(), __noinline, etc.
-//
+#   define __aligned(x)             __attribute__((aligned(x)))
+#   define __noinline               __attribute__((noinline))
+#   define __unused                 __attribute__((unused))
+#   define __used
+#   define __packed                 __attribute__((packed))
+#endif
 
 #   define sealed                   final
 #   define __alwaysinline           __attribute__((always_inline))
@@ -165,9 +170,9 @@ typedef void VoidFunc();
 #   define __noreturn               __attribute__((noreturn))
 #   define __optimize(n)
 #   define _msc_pragma(str)
-#   if (SCE_ORBIS_SDK_VERSION >> 16) < 0x0200
-#       define  __is_trivially_copyable(x)  (std::is_trivially_copyable<T>::value)
-#       define  __is_standard_layout(x)     (std::is_standard_layout<T>::value)
+#   if !defined(SCE_ORBIS_SDK_VERSION) || (SCE_ORBIS_SDK_VERSION >> 16) < 0x0200
+#       define  xIs_trivially_copyable(x)   (std::is_trivially_copyable<T>::value)
+#       define  xIs_standard_layout(x)      (std::is_standard_layout<T>::value)
 #   endif
 #   define __verify_fmt(fmtpos, vapos)
 
@@ -219,7 +224,7 @@ typedef void VoidFunc();
 
 // GCC 4.7 still has no support for the std:: version of this.  The builtin will probably
 // be around indefinitely so let's just use it unconditionally for now.
-#   define  __is_trivially_copyable(x)      __has_trivial_copy(x)
+#   define  xIs_trivially_copyable(x)      __has_trivial_copy(x)
 
 // A lot of GLIBC headers use __xi and __unused as variable names (sigh), so we have to
 // undef and redef them accordingly, as needed.  Therefore create both __UNUSED and __unused,
@@ -264,9 +269,9 @@ typedef void VoidFunc();
 // VS 2012 supports is_trivially_copyable!
 // VS 2010... not so much.
 #if _MSC_VER >= 0x1700
-#   define  __is_trivially_copyable(x)      (std::is_trivially_copyable<T>::value)
+#   define  xIs_trivially_copyable(x)      (std::is_trivially_copyable<T>::value)
 #else
-#   define  __is_trivially_copyable(x)      (true)
+#   define  xIs_trivially_copyable(x)      (true)
 #endif
 
 // MSVC has no printf format verification fanciness :(
@@ -351,7 +356,7 @@ typedef void VoidFunc();
 #   define xSWAP32(in)  _byteswap_ulong(in)
 #   define xSWAP64(in)  _byteswap_uint64(in)
 #elif defined(__clang__)
-#   include "machine/endian.h"
+#   include "endian.h"
 #   define xSWAP16(in)  __bswap16(in)
 #   define xSWAP32(in)  __bswap32(in)
 #   define xSWAP64(in)  __bswap64(in)

@@ -78,7 +78,7 @@ void PlayerSprite::LoadStaticAssets()
 }
 
 PlayerSprite::PlayerSprite() {
-    xMemZero(gpu_layout_sprite);
+    gpu_layout_sprite.Reset();
     gpu_layout_sprite.AddVertexSlot( {
         { "POSITION", GPU_ResourceFmt_R32G32B32_FLOAT   },
         { "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT      }
