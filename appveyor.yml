@@ -1,0 +1,70 @@
+
+# version format -  A unique build version "string" is needed to surpress Appveyor warnings.
+# for the most part though it doesn't make sense to be storing "relevant" version information in
+# this file.  This "version" just needs to be something that effectively references back to the
+# AppVeyor job.  instead just use the build number, which should always be unique unless it's changed
+# manually in the project settings.
+version: "{build}"
+
+# branches to build
+# This list should only consists of branches which are expected to be the target of PRs
+branches:
+  only:
+    - master
+  
+# Do not build feature branch with open Pull Requests
+# Enabling this option probably isn't necessary when only specific branches (above) are whitelisted.
+skip_branch_with_pr: true
+
+skip_tags: true
+shallow_clone: true
+
+
+# scripts that run after cloning repository
+# note that 'cmd:' scripts run on Windows nodes and that 'sh:' scripts run on linux nodes
+# scripts that start with hyphen (-) run on both, but there's very few commands that work
+# on both shells (pretty much just cd/echo, and perhaps some cross-platform executables such
+# as git).  The good news is that AppVeryor Windows images have MSYS2 installed by default,
+# which means we can use bash scripts for everything and then just provide a .bat file
+# trampoline that invokes our bash scripts under MSYS2.  So easy!  --jstine
+#
+# Note also, env vars 'CI_WINDOWS' and 'CI_LINUX' will be set true/false accordingly.
+# (apparently both vars actually set for both images so you must explicitly check for 'true'
+#  vs the usual pattern of checking if a var is non-empty)
+install:
+  cmd: echo ajek appveyor test v2
+
+# Build worker image (VM template)
+image: Visual Studio 2017
+#image: Ubuntu1804
+
+build:
+  parallel: true                  # enable MSBuild parallel builds
+  project: rpgcraft-ajek.sln
+
+# Platform / Configuration stuff
+#   Platform is explicitly specified for possible addition of console or mobile platforms...
+platform:
+  - x64
+
+# TODO - Release configuration errors.  Re-enable release mode in a PR and ensure build is working.
+configuration:
+  - Debug
+#  - Release
+
+
+# Tell AppVeyor to use makefile on linux image. [WIP - UNTESTED]
+# This snippet will only become effective once a Ubuntu image is enabled (see above)
+# 
+# This implements a 'for.matrix.only/.except' construct, which is the most complicated part of
+# any appveyor.yml.  It's a special syntax where-in the 'matrix' item is used as a conditional
+# filter for all other items specified within the for-block.
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+
+  # 'build_script' to run custom scripts instead of automatic MSBuild
+  build_script:
+    - make
