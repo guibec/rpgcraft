@@ -4,12 +4,17 @@
 #endif
 
 #if USE_PRECOMPILED_HEADER
-#include "x-types.h"
-#include "x-simd.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
+
+#if defined(__GLIBC__)
+// GLIBC has abusive use of double-underscore variable names.
+#   include <memory>
+#endif
+
+#include "x-types.h"
+#include "x-simd.h"
 
 #include "x-stl.h"
 

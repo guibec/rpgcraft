@@ -10,7 +10,7 @@
 #include <cstdio>
 
 #define serialization_assert(T) \
-    static_assert(__is_trivially_copyable(T), "Cannot serialize non-POD object.")
+    static_assert(xIs_trivially_copyable(T), "Cannot serialize non-POD object.")
 
 #if TARGET_LINUX
 #   define printf_s         printf
@@ -392,7 +392,8 @@ inline __ai void _internal_memzero( void* dest )
 template< typename T >
 inline __ai void xMemZero( T& dest )
 {
-    static_assert(__is_trivially_copyable(T), "This is not a trivially-copyable object!");
+    //static_assert(std::is_trivially_default_constructible<T>::value, "Unsafe use of memset on non-trivial object type.");
+    static_assert(xIs_trivially_copyable(T), "This is not a trivially-copyable object!");
     static_assert(!std::is_pointer<T>::value, "xMemZero of pointer value.  Use var == nullptr to explicity zero pointer variables." );
     _internal_memzero<sizeof(T)>(&dest);
 }
@@ -407,7 +408,7 @@ inline __ai void xMemZero( T (*&dest)[_size] )
 template< u8 data, typename T >
 inline __ai void xMemSet( T& dest )
 {
-    static_assert(__is_trivially_copyable(T), "This is not a trivially-copyable object!");
+    static_assert(xIs_trivially_copyable(T), "This is not a trivially-copyable object!");
     static_assert(!std::is_pointer<T>::value, "xMemSet of pointer value.  Did you mean to memset the buffer pointed to instead?" );
     memset(&dest, data, sizeof(T));
 }

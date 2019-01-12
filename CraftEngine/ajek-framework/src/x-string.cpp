@@ -30,6 +30,13 @@ char* sbinary(u32 val)
     return  &bchars[0];
 }
 
+
+qstringlen::qstringlen(const char* src) {
+    strptr = src;
+    length = strlen(src);
+}
+
+
 // ----------------------------------------------------------------------------
 //  toUTF16 / toUTF8  (implementations)
 // ----------------------------------------------------------------------------
