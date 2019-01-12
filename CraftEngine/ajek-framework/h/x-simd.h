@@ -541,14 +541,14 @@ union float2 {
     __ai bool       operator==(float right)             const       { return  x == right && y == right; }
     __ai bool       operator!=(float right)             const       { return  x != right || y != right; }
 
-    __ai template<typename T> bool      cmp_le_any(const T& right)      const       { return  cmp_any() <= right; }
-    __ai template<typename T> bool      cmp_ge_any(const T& right)      const       { return  cmp_any() >= right; }
-    __ai template<typename T> bool      cmp_le_all(const T& right)      const       { return  cmp_all() <= right; }
-    __ai template<typename T> bool      cmp_ge_all(const T& right)      const       { return  cmp_all() <= right; }
-    __ai template<typename T> bool      cmp_lt_any(const T& right)      const       { return  cmp_any() <  right; }
-    __ai template<typename T> bool      cmp_gt_any(const T& right)      const       { return  cmp_any() >  right; }
-    __ai template<typename T> bool      cmp_lt_all(const T& right)      const       { return  cmp_all() <  right; }
-    __ai template<typename T> bool      cmp_gt_all(const T& right)      const       { return  cmp_all() <  right; }
+    template<typename T> __ai bool      cmp_le_any(const T& right)      const       { return  this->cmp_any() <= right; }
+    template<typename T> __ai bool      cmp_ge_any(const T& right)      const       { return  this->cmp_any() >= right; }
+    template<typename T> __ai bool      cmp_le_all(const T& right)      const       { return  this->cmp_all() <= right; }
+    template<typename T> __ai bool      cmp_ge_all(const T& right)      const       { return  this->cmp_all() <= right; }
+    template<typename T> __ai bool      cmp_lt_any(const T& right)      const       { return  this->cmp_any() <  right; }
+    template<typename T> __ai bool      cmp_gt_any(const T& right)      const       { return  this->cmp_any() >  right; }
+    template<typename T> __ai bool      cmp_lt_all(const T& right)      const       { return  this->cmp_all() <  right; }
+    template<typename T> __ai bool      cmp_gt_all(const T& right)      const       { return  this->cmp_all() <  right; }
 
     __ai float2     operator+(float src)                const       { return { x + src, y + src }; }
     __ai float2     operator-(float src)                const       { return { x - src, y - src }; }
@@ -576,6 +576,7 @@ union float2 {
     __ai float2&    operator*=(const float2& src)                   { x *= src.x; y *= src.y; return *this; }
 
 };
+
 
 union float4 {
     struct {
@@ -624,21 +625,21 @@ union float4 {
     __ai operator u128              () const    { return {{ q }};   }
     __ai operator const __m128&     () const    { return q;         }
 
-    __ai const float4_cmp_all& cmp_all()                const       { return (float4_cmp_all&)*this; }
-    __ai const float4_cmp_any& cmp_any()                const       { return (float4_cmp_any&)*this; }
+    __ai const float4_cmp_all& cmp_all()            const       { return (float4_cmp_all&)*this; }
+    __ai const float4_cmp_any& cmp_any()            const       { return (float4_cmp_any&)*this; }
 
     __ai bool       operator==(const float4& right) const       { return  rawflt4_cmp_eq(q, right.q); }
     __ai bool       operator!=(const float4& right) const       { return !rawflt4_cmp_eq(q, right.q); }
 
-    __ai float4     operator+(const float4& src)    const       { return (float4&)_mm_add_ps(q, src.q); }
-    __ai float4     operator-(const float4& src)    const       { return (float4&)_mm_sub_ps(q, src.q); }
-    __ai float4     operator/(const float4& src)    const       { return (float4&)_mm_div_ps(q, src.q); }
-    __ai float4     operator*(const float4& src)    const       { return (float4&)_mm_mul_ps(q, src.q); }
+    __ai float4     operator+(const float4& src)    const       { auto r = _mm_add_ps(q, src.q); return (float4&)r; }
+    __ai float4     operator-(const float4& src)    const       { auto r = _mm_sub_ps(q, src.q); return (float4&)r; }
+    __ai float4     operator/(const float4& src)    const       { auto r = _mm_div_ps(q, src.q); return (float4&)r; }
+    __ai float4     operator*(const float4& src)    const       { auto r = _mm_mul_ps(q, src.q); return (float4&)r; }
 
-    __ai float4     operator+(const float& src)     const       { return (float4&)_mm_add_ps(q, _mm_set1_ps(src)); }
-    __ai float4     operator-(const float& src)     const       { return (float4&)_mm_sub_ps(q, _mm_set1_ps(src)); }
-    __ai float4     operator/(const float& src)     const       { return (float4&)_mm_div_ps(q, _mm_set1_ps(src)); }
-    __ai float4     operator*(const float& src)     const       { return (float4&)_mm_mul_ps(q, _mm_set1_ps(src)); }
+    __ai float4     operator+(const float& src)     const       { auto r = _mm_add_ps(q, _mm_set1_ps(src)); return (float4&)r; }
+    __ai float4     operator-(const float& src)     const       { auto r = _mm_sub_ps(q, _mm_set1_ps(src)); return (float4&)r; }
+    __ai float4     operator/(const float& src)     const       { auto r = _mm_div_ps(q, _mm_set1_ps(src)); return (float4&)r; }
+    __ai float4     operator*(const float& src)     const       { auto r = _mm_mul_ps(q, _mm_set1_ps(src)); return (float4&)r; }
 
     __ai float4&    operator+=(const float4& src)               { i_addps(q, q, src.q); return *this; }
     __ai float4&    operator-=(const float4& src)               { i_subps(q, q, src.q); return *this; }
@@ -676,14 +677,14 @@ union int2 {
     __ai bool   operator==(const int2& right)       const       { return _i64val == right._i64val; }
     __ai bool   operator!=(const int2& right)       const       { return _i64val != right._i64val; }
 
-    __ai template<typename T> bool  cmp_le_any(const T& right)      const       { return  cmp_any() <= right; }
-    __ai template<typename T> bool  cmp_ge_any(const T& right)      const       { return  cmp_any() >= right; }
-    __ai template<typename T> bool  cmp_lt_any(const T& right)      const       { return  cmp_any() <  right; }
-    __ai template<typename T> bool  cmp_gt_any(const T& right)      const       { return  cmp_any() >  right; }
-    __ai template<typename T> bool  cmp_le_all(const T& right)      const       { return  cmp_all() <= right; }
-    __ai template<typename T> bool  cmp_ge_all(const T& right)      const       { return  cmp_all() >= right; }
-    __ai template<typename T> bool  cmp_lt_all(const T& right)      const       { return  cmp_all() <  right; }
-    __ai template<typename T> bool  cmp_gt_all(const T& right)      const       { return  cmp_all() >  right; }
+    template<typename T> __ai bool  cmp_le_any(const T& right)      const       { return  cmp_any() <= right; }
+    template<typename T> __ai bool  cmp_ge_any(const T& right)      const       { return  cmp_any() >= right; }
+    template<typename T> __ai bool  cmp_lt_any(const T& right)      const       { return  cmp_any() <  right; }
+    template<typename T> __ai bool  cmp_gt_any(const T& right)      const       { return  cmp_any() >  right; }
+    template<typename T> __ai bool  cmp_le_all(const T& right)      const       { return  cmp_all() <= right; }
+    template<typename T> __ai bool  cmp_ge_all(const T& right)      const       { return  cmp_all() >= right; }
+    template<typename T> __ai bool  cmp_lt_all(const T& right)      const       { return  cmp_all() <  right; }
+    template<typename T> __ai bool  cmp_gt_all(const T& right)      const       { return  cmp_all() >  right; }
 
     __ai int2&  operator+=(const int2& src)                 { x += src.x; y += src.y; return *this; }
     __ai int2&  operator-=(const int2& src)                 { x -= src.x; y -= src.y; return *this; }

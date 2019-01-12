@@ -1153,7 +1153,7 @@ static GPU_InputDesc InputLayout_DbgFont;
 
 void DbgFont_MakeVertexLayout()
 {
-    xMemZero(InputLayout_DbgFont);
+    InputLayout_DbgFont.Reset();
     InputLayout_DbgFont.AddVertexSlot( {
         { "POSITION", GPU_ResourceFmt_R32G32_FLOAT  },
         { "TEXCOORD", GPU_ResourceFmt_R32G32_FLOAT  }
