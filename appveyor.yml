@@ -47,10 +47,9 @@ build:
 platform:
   - x64
 
-# TODO - Release configuration errors.  Re-enable release mode in a PR and ensure build is working.
 configuration:
   - Debug
-#  - Release
+  - Release
 
 
 # Tell AppVeyor to use makefile on linux image. [WIP - UNTESTED]
