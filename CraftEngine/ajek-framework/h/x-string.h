@@ -175,47 +175,50 @@ public:
     }
 #endif
 
-     xString&   FormatV         ( const char*    fmt, va_list list );
-     xString&   AppendFmtV      ( const char*    fmt, va_list list );
-     xString&   Format          ( const char*    fmt=nullptr, ... )     __verify_fmt(2,3);
-     xString&   AppendFmt       ( const char*    fmt=nullptr, ... )     __verify_fmt(2,3);
+// Mutable API, Modifies string contents in-place {
+    xString&   ToLowerMutable       ();
+    xString&   ToUpperMutable       ();
+    xString&   RemoveAllMutable     (char c);
+// }
+
+    xString&   FormatV              (const char*    fmt, va_list list);
+    xString&   AppendFmtV           (const char*    fmt, va_list list);
+    xString&   Format               (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
 
 #if TARGET_MSW
-     xString&   FormatV         ( const wchar_t* fmt, va_list list );
-     xString&   AppendFmtV      ( const wchar_t* fmt, va_list list );
-     xString&   Format          ( const wchar_t* fmt, ... )     __verify_fmt(2,3);
-     xString&   AppendFmt       ( const wchar_t* fmt, ... )     __verify_fmt(2,3);
+    xString&   FormatV              (const wchar_t* fmt, va_list list);
+    xString&   AppendFmtV           (const wchar_t* fmt, va_list list);
+    xString&   Format               (const wchar_t* fmt, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (const wchar_t* fmt, ...)     __verify_fmt(2,3);
 #endif
 
-     xString&   ToLowerMutable  ();
-     xString&   ToUpperMutable  ();
-     xString    ToLower         ()  const;
-     xString    ToUpper         ()  const;
-     bool       EqualsNoCase    ( const xString& src ) const;
-     bool       EqualsAsFilename( const xString& src ) const;
-     bool       StartsWith      ( const xString& src ) const;
-     bool       StartsWith      ( char c ) const;
-     bool       EndsWith        ( const xString& src ) const;
-     bool       EndsWith        ( char c ) const;
+    xString    ToLower              ()  const;
+    xString    ToUpper              ()  const;
+    bool       EqualsNoCase         (const xString& src) const;
+    bool       EqualsAsFilename     (const xString& src) const;
+    bool       StartsWith           (const xString& src) const;
+    bool       StartsWith           (char c) const;
+    bool       EndsWith             (const xString& src) const;
+    bool       EndsWith             (char c) const;
 
-     xString    GetTail         ( size_t start ) const;
-     xString    GetSubstring    ( size_t start, size_t len ) const;
-     xString    RemoveAll       ( char c ) const;
-     xString&   RemoveAllMutable( char c );
+    xString    GetTail              (size_t start ) const;
+    xString    GetSubstring         (size_t start, size_t len ) const;
+    xString    RemoveAll            (char c ) const;
 
-     size_t     FindFirst       ( const xString& delims, size_t startpos ) const;
-     size_t     FindFirstNot    ( const xString& delims, size_t startpos ) const;
-     size_t     FindLast        ( const xString& delims, size_t offset=npos ) const;
-     size_t     FindLastNot     ( const xString& delims, size_t offset=npos ) const;
+    size_t     FindFirst            (const xString& delims, size_t startpos) const;
+    size_t     FindFirstNot         (const xString& delims, size_t startpos) const;
+    size_t     FindLast             (const xString& delims, size_t offset=npos) const;
+    size_t     FindLastNot          (const xString& delims, size_t offset=npos) const;
 
-     size_t     FindFirst       ( char c, size_t startpos ) const;
-     size_t     FindFirstNot    ( char c, size_t startpos ) const;
-     size_t     FindLast        ( char c, size_t offset=npos ) const;
-     size_t     FindLastNot     ( char c, size_t offset=npos ) const;
+    size_t     FindFirst            (char c, size_t startpos) const;
+    size_t     FindFirstNot         (char c, size_t startpos) const;
+    size_t     FindLast             (char c, size_t offset=npos) const;
+    size_t     FindLastNot          (char c, size_t offset=npos) const;
 
-    __ai size_t         Find        ( const xString& str, size_t pos=0 ) const  { return m_string.find(str.m_string, pos); }
+    __ai size_t         Find        (const xString& str, size_t pos=0) const  { return m_string.find(str.m_string, pos); }
 
-    __ai void           Erase       ( size_t startpos, size_t endpos=npos ) { m_string.erase( startpos, endpos ); }
+    __ai void           Erase       (size_t startpos, size_t endpos=npos) { m_string.erase( startpos, endpos ); }
     __ai void           Clear       ()                              { m_string.clear();                 }
     __ai void           Reserve     ( size_t rsv_size )             { m_string.reserve(rsv_size);       }
     __ai void           Resize      ( size_t newsize )              { m_string.resize(newsize);         }
