@@ -6,6 +6,7 @@ public class Player : Entity
 {
     public Inventory Inventory { get; private set; }
 
+    [SerializeField]
     public Experience Experience { get; private set; }
 
     public Vector2 BeforeInputPos { get; set; }

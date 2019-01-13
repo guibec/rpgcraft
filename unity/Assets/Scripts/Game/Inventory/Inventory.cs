@@ -12,8 +12,6 @@ public class Inventory
 
     public Inventory(Player player_)
     {
-        Owner = player_;
-
         m_itemSlots = new ItemCount[10];
         for (int i = 0; i < m_itemSlots.Length; ++i)
             m_itemSlots[i] = new ItemCount();
@@ -107,10 +105,4 @@ public class Inventory
     /// All items slot
     /// </summary>
     private ItemCount[] m_itemSlots;
-
-    /// <summary>
-    /// Amount of gold the player has
-    /// </summary>
-    public int Gold { get; set; }
-    public Player Owner { get; private set; }
 }

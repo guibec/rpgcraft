@@ -28,6 +28,7 @@ public class Experience
         }
     }
 
+    [SerializeField]
     public int XP { get; private set; }
 
     public int GetXPRequiredForNextLevel()
