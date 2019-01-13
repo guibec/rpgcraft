@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using Newtonsoft.Json;
 using System.Collections;
 
 public class Player : Entity, ISave
@@ -18,11 +17,19 @@ public class Player : Entity, ISave
         }
     }
 
-    public string Save()
+    private struct Complete_Data
     {
-        var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-        string jsonString = JsonConvert.SerializeObject(GameManager.Instance.MainPlayer.PlayerData, Formatting.Indented, jsonSettings);
-        return jsonString;
+        public Player_Data playerData;
+        public Inventory_Data inventoryData;
+    }
+
+    public object Save()
+    {
+        // Prepare the main holder
+        Complete_Data completeData;
+        completeData.playerData = PlayerData;
+        completeData.inventoryData = Inventory.InventoryData;
+        return completeData;
     }
 
     public Inventory Inventory { get; private set; }

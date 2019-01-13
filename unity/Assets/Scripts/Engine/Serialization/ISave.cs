@@ -5,7 +5,7 @@ using UnityEngine;
 public interface ISave
 {
     /**
-     * Return a string representation of the object that can be saved to a persistent store
+     * Returns an object that can be serialized for persistent storage
      */
-    string Save(); 
+    object Save(); 
 }

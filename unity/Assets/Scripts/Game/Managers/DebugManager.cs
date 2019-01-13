@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using UnityEngine;
+using Newtonsoft.Json;
 
 public class DebugManager : MonoSingleton<DebugManager>
 {
@@ -18,9 +19,11 @@ public class DebugManager : MonoSingleton<DebugManager>
 
     private void SaveCharacter()
     {
-        string serializedData = GameManager.Instance.MainPlayer.Save();
-        string path = Application.persistentDataPath + "main.chr";
+        object toSave = GameManager.Instance.MainPlayer.Save();
+        var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+        string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
 
+        string path = Application.persistentDataPath + "main.chr";
         Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, path));
 
         StreamWriter writer = new StreamWriter(path, true);
