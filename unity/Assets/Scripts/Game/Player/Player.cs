@@ -1,10 +1,29 @@
 ﻿using System;
 using UnityEngine;
+using Newtonsoft.Json;
 using System.Collections;
 
-public class Player : Entity 
+public class Player : Entity, ISave
 {
     private Player_Data m_playerData;
+    public Player_Data PlayerData
+    {
+        private set
+        {
+            m_playerData = value;
+        }
+        get
+        {
+            return m_playerData;
+        }
+    }
+
+    public string Save()
+    {
+        var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+        string jsonString = JsonConvert.SerializeObject(GameManager.Instance.MainPlayer.PlayerData, Formatting.Indented, jsonSettings);
+        return jsonString;
+    }
 
     public Inventory Inventory { get; private set; }
 
