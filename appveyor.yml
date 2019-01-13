@@ -19,28 +19,44 @@ skip_branch_with_pr: true
 skip_tags: true
 shallow_clone: true
 
+# Build worker image (VM template)
+image:
+  - Visual Studio 2017
+#  - Ubuntu1804
 
-# scripts that run after cloning repository
-# note that 'cmd:' scripts run on Windows nodes and that 'sh:' scripts run on linux nodes
-# scripts that start with hyphen (-) run on both, but there's very few commands that work
-# on both shells (pretty much just cd/echo, and perhaps some cross-platform executables such
-# as git).  The good news is that AppVeryor Windows images have MSYS2 installed by default,
+# shell/script execution steps  (init / before_build / after_build)
+#   * 'cmd:' scripts run only on Windows nodes
+#   * 'sh:'  scripts run on only linux nodes
+#   * scripts that start with hyphen (-) run on both, but there's very few commands that work
+#     on both shells (pretty much just cd/echo, and perhaps some cross-platform executables such
+#     as git).
+# The good news is that AppVeryor Windows images have MSYS2 installed by default,
 # which means we can use bash scripts for everything and then just provide a .bat file
 # trampoline that invokes our bash scripts under MSYS2.  So easy!  --jstine
 #
 # Note also, env vars 'CI_WINDOWS' and 'CI_LINUX' will be set true/false accordingly.
-# (apparently both vars actually set for both images so you must explicitly check for 'true'
-#  vs the usual pattern of checking if a var is non-empty)
-install:
-  cmd: echo ajek appveyor test v2
+# (apparently both vars actually set for both images so you must explicitly check for 
+#  'true' vs the usual pattern of checking if a var is non-empty)
 
-# Build worker image (VM template)
-image: Visual Studio 2017
-#image: Ubuntu1804
+# scripts that are called at very beginning, before repo cloning
+init:
+
+# scripts that run after cloning repository
+install:
+  cmd: .\ci-shell\msys-sh.cmd ./unity/BuildCI/find_missing_meta.sh ./unity
+
+before_build:
+
+after_build:
 
 build:
   parallel: true                  # enable MSBuild parallel builds
   project: rpgcraft-ajek.sln
+
+# matrix 'fast-finish' allows us to configure an early-exit if an error occurs.  If Debug
+# fails then Release won't be built.
+matrix:
+  fast_finish: true
 
 # Platform / Configuration stuff
 #   Platform is explicitly specified for possible addition of console or mobile platforms...
