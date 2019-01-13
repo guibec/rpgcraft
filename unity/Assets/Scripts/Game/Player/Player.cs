@@ -4,6 +4,8 @@ using System.Collections;
 
 public class Player : Entity 
 {
+    private Player_Data m_playerData;
+
     public Inventory Inventory { get; private set; }
 
     [SerializeField]
@@ -57,18 +59,16 @@ public class Player : Entity
         m_fsm = new PlayerStateMachine(this);
     }
 
-    [SerializeField]
-    private CharacterClass m_characterClass = CharacterClass.Knight;
     public CharacterClass Class
     {
         private set
         {
-            m_characterClass = value;
+            m_playerData.characterClass = value;
             SetRenderInfo();
         }
         get
         {
-            return m_characterClass;
+            return m_playerData.characterClass;
         }
     }
 
@@ -111,7 +111,7 @@ public class Player : Entity
         {
             for (int i = 0; i < 8; ++i)
             {
-                int yOffset = (int)m_characterClass * 16;
+                int yOffset = (int)m_playerData.characterClass * 16;
 
                 m_entityRender.SetFrameInfo(frameGroups[i / 2], i * 16, yOffset, 16, 16);
             }

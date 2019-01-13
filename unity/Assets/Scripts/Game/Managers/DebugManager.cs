@@ -23,8 +23,9 @@ public class DebugManager : MonoSingleton<DebugManager>
 
     private void SaveCharacter()
     {
-        string jsonString = JsonConvert.SerializeObject(GameManager.Instance.MainPlayer);
-        //string characterProps = JsonUtility.ToJson(GameManager.Instance.MainPlayer, true);
+        var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+
+        string jsonString = JsonConvert.SerializeObject(GameManager.Instance.MainPlayer, Formatting.Indented, jsonSettings);
         string path = Application.persistentDataPath + "main.chr";
 
         Debug.Log(string.Format("Saving: \"{0}\" to file {1}", jsonString, path));
