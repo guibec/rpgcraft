@@ -26,7 +26,7 @@ ImGuiTextures      s_gui_tex;
 
 void DevUI_LoadImageAsset(DevUI_ImageAsset& dest, const char* asset_name)
 {
-    xString fullpath = xPath_Combine("./assets/dev-ui", asset_name);
+    xString fullpath = xFmtStr("./assets/dev-ui/%s", asset_name);
     xBitmapData pngsrc;
     png_LoadFromFile(pngsrc, fullpath);
     dx11_CreateTexture2D(dest.gpures, pngsrc, GPU_ResourceFmt_R8G8B8A8_UNORM);

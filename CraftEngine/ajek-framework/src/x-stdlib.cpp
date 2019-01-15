@@ -105,13 +105,11 @@ void xMalloc_ReportDelta()
 // ======================================================================================
 
 // --------------------------------------------------------------------------------------
-bool xFileExists( const char* fullpath )
+bool xFileExists(const xUnixPath& upath)
 {
-    if (!fullpath || !fullpath[0]) return false;
-
-    xString fixed = xFixFilenameForPlatform(fullpath);
+    if (upath.IsEmpty()) return false;
     struct _stat64 sinfo;
-    return( _stat64 (fixed, &sinfo ) != -1 );
+    return( _stat64 (upath.GetLibcStr(), &sinfo ) != -1 );
 }
 
 // --------------------------------------------------------------------------------------
@@ -132,26 +130,27 @@ void xFileSetSize( int fd, size_t filesize )
 }
 
 // --------------------------------------------------------------------------------------
-bool xFileRename( const xString& src_, const xString& dest_ )
+bool xFileRename( const xUnixPath& src_, const xUnixPath& dest_ )
 {
 #if !TARGET_MSW
     // On Windows rename errors if a file exists.  Linux/POSIX however just clobber
     // the existing file instead.  I prefer windows since what I want is an atomic
     // rename-if-no-existing-file function.  This work-around isn't robust against running
-    // multiple instances in the same runenv.
+    // multiple instances in the same runenv.  An improved strategy would attempt to create
+    // the destination file, instead of checking if it already exists.
 
     if (xFileExists(dest_)) return false;
 #endif
 
-    const xString src  (xFixFilenameForPlatform(src_));
-    const xString dest (xFixFilenameForPlatform(dest_));
+    auto& src  = src_ .GetLibcStr();
+    auto& dest = dest_.GetLibcStr();
 
     int result = rename( src, dest );
     if (!result) return true;
 
     switch(errno)
     {
-        case ENOENT:    return true;    // responsibility of caller to care if it exists or not...
+        case ENOENT:    return true;    // responsibility of caller to care if source exists or not...
 
         case EEXIST:
         case ENOTEMPTY:
@@ -168,52 +167,21 @@ bool xFileRename( const xString& src_, const xString& dest_ )
 
         case EINVAL:
             x_abort(
-                "Invalid parameters, one or both filenames contain invalid characters...\n"
-                "srcfile : %s\n"
-                "destfile: %s",
-                src.c_str(),
-                dest.c_str()
+                "xFileRename failed due to invalid parameters. One or both filenames may contain invalid characters.\n"
+                "  src-host : %s\n"
+                "  src-unix : %s\n"
+                "  dst-host : %s\n"
+                "  dst-unix : %s\n",
+                src_ .GetLibcStr().c_str(),
+                src_ .asUnixStr().c_str(),
+                dest_.GetLibcStr().c_str(),
+                dest_.asUnixStr().c_str()
             );
         break;
     }
 
     // Some other unconsidered posix error condition.
     return false;
-}
-
-// --------------------------------------------------------------------------------------
-// Looks for the next filename available in the form of:
-//   {destPathAndFileBase}xxxx{ext} -->  /path/to/padlog0003.txt
-// ... and renames srcFullPathname into that slot.
-//
-// Returns TRUE (success) if srcFullPathName does not exist, or is successfully renamed.
-// Returns FALSE only if no suitable slot could be found (which should never happen).
-//
-bool xFileSystematicRename( const xString& srcFullPathname, const xString& destPathAndFileBase, const xString& ext, int checkLimit )
-{
-    if (!xFileExists(srcFullPathname)) return true;
-
-    xString destTry;
-    int attemptCounter = 0;
-
-    while(1)
-    {
-        // [TODO] if we assume a limit of 9999 (which is reasonable) then this could
-        //        be optimized to just write the xxxx number in-place without re-forming
-        //        the whole string each time.
-        destTry.Format( "%s%04u%s", destPathAndFileBase.c_str(), attemptCounter, ext.c_str());
-        if (xFileRename(srcFullPathname, destTry))
-            break;
-
-        if (++attemptCounter > checkLimit)
-        {
-            log_host( "Could not rename '%s' -- all destination slots are full!", srcFullPathname.c_str() );
-            return false;
-        }
-    }
-
-    log_host( "Renamed '%s' -> '%s'", srcFullPathname.c_str(), destTry.c_str() );
-    return true;
 }
 
 // --------------------------------------------------------------------------------------
@@ -261,14 +229,10 @@ bool xFgets(xString& dest, FILE* stream)
     return true;
 }
 
-bool _createDirectory( const xString& dir )
+bool _createDirectory( const char* dir )
 {
-    // EEXIST isn't always a good thing -- if its a DIR it is good, but if the existing
-    // entity is a file then its bad.  Too much work to differentiate tho (need to use
-    // stat). --jstine
-
     struct _stat64i32 info;
-    if (_stat(dir.c_str(), &info) == -1) {
+    if (_stat(dir, &info) == -1) {
         auto code = errno;
         if (code == ENOENT) {
             int result = _mkdir( dir );
@@ -283,41 +247,37 @@ bool _createDirectory( const xString& dir )
     return ((info.st_mode & _S_IFDIR) == _S_IFDIR);
 }
 
-// --------------------------------------------------------------------------------------
-// Creates entire hierarchy of requested directory trees.
-//
-bool xCreateDirectory( const xString& origDir )
-{
-    if (origDir.IsEmpty()) return true;
+bool xCreateDirectory( const xString& dir ) {
+    return xCreateDirectory(xUnixPathInit(dir));
+}
 
-    xString dir = xFixFilenameForPlatform(origDir);
+// Creates entire hierarchy of requested directory trees.
+bool xCreateDirectory( const xUnixPath& orig_unix_dir )
+{
+    if (orig_unix_dir.IsEmpty()) return true;
+
+    const auto& dir  = orig_unix_dir.m_unixpath;
     bool isAbsolute = xPathIsAbsolute(dir);
 
-    static const char* dirseps  = TARGET_LINUX ? "/" : "\\/";
-    static const char* sepChar  = TARGET_MSW   ? "\\" : "/";
-    static const char* uriCheck = TARGET_MSW   ? "\\" : "/";
+    static const char* dirseps  = "/";
+    static const char* sepChar  = "/";
+    static const char* uriCheck = "/";
 
     int tokenSkip = 0;
     int pos = 0;
 
-#if TARGET_MSW
-    if (dir.StartsWith("\\\\")) {
-        tokenSkip = 2;
-        pos = 2;
-    }
-    elif (dir.GetLength() >= 2 && (dir[1] == ':')) {
-        if (dir.GetLength() < 3) return true;
-        pos = 3;
-    }
-#else
+    // check for network URI and skip root if it exists.
     if (dir.StartsWith("//")) {
         tokenSkip = 2;
         pos = 2;
     }
-#endif
+    if(TARGET_MSW && dir[0] == '/' && isalnum(dir[1])) {
+        tokenSkip = 1;
+        pos = 2;
+    }
 
-    xString dirdup = dir;
     bool firstToken = 1;
+    bool isTangible = 0;        // set to 1 once path becomes something other than ./../.. (so on)
 
     for(; pos < dir.GetLength() && dir[pos]; ++pos) {
         if (xIsPathSeparator(dir[pos])) {
@@ -329,19 +289,29 @@ bool xCreateDirectory( const xString& origDir )
                 --tokenSkip;
                 continue;
             }
-            dirdup[pos] = 0;
-            auto success = _createDirectory(dirdup);
-            dirdup[pos] = dir[pos];
-            if (!success) return false;
+
+            xString dirdup = dir.GetSubstring(0, pos);
+            isTangible = isTangible || !(
+                (dirdup.EndsWith("/.")   ) ||
+                (dirdup.EndsWith("/..")  ) ||
+                (dirdup == "."           ) ||
+                (dirdup == ".."          )
+            );
+
+            if (isTangible) {
+                if (!_createDirectory(orig_unix_dir.GetLibcStr(dirdup))) {
+                    return false;
+                }
+            }
         }
     }
-    return _createDirectory(dir);
+    return _createDirectory(orig_unix_dir.GetLibcStr());
 }
 
 FILE* xFopen( const xString& fullpath, const char* mode )
 {
     FILE* fp;
-    auto result = fopen_s( &fp, xFixFilenameForPlatform(fullpath), mode );
+    auto result = fopen_s( &fp, fullpath, mode );
     if (result) { fp = nullptr; }
     return fp;
 }
@@ -432,11 +402,6 @@ void xStrnCopy(char* dest, size_t destLen, const char* src, size_t srcLen)
 #endif
 }
 
-
-__exi xString xFixFilenameForPlatform(const xString& src)
-{
-    return src;
-}
 
 // x-simd.h tihings  (not in a mood to put these in their own module, yet...)
 

@@ -4,6 +4,7 @@
 #include "x-types.h"
 #include "x-simd.h"
 #include "x-stl.h"
+#include "x-unixpath.h"
 
 #include <cstring>      // needed for memset
 #include <type_traits>
@@ -221,15 +222,14 @@ extern void     xMemCopyQwc_WrappedSrc  (u128* dest,        const u128* srcBase,
 extern void     xMemCopyShortQwc        (void* dest, const void* src, uint lenQwc);
 extern void     xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQwc);
 
-extern void     xFileDelete             (const xString& file);
-extern void     xFileSetSize            (int fd, size_t filesize);
-extern bool     xFileExists             (const char* fullpath);
-extern bool     xFileRename             (const xString& src, const xString& dest);
-extern bool     xFileSystematicRename   (const xString& srcFullPathname, const xString& destPathAndFileBase, const xString& ext, int checkCount);
-
-extern bool     xFgets                  (xString& dest, FILE* stream);
+extern void     xFileDelete             (const xString& upath);
+extern bool     xFileExists             (const xString& upath);
+extern bool     xFileRename             (const xString& src, const xUnixPath& dst);
 extern bool     xCreateDirectory        (const xString& dir);
 extern FILE*    xFopen                  (const xString& fullpath, const char* mode);
+
+extern void     xFileSetSize            (int fd, size_t filesize);
+extern bool     xFgets                  (xString& dest, FILE* stream);
 
 extern bool     xEnvironExists          (const xString& varname);
 extern xString  xEnvironGet             (const xString& varname);
@@ -469,7 +469,6 @@ inline __ai bool i_BitScanForward( u64& result, u64 src )
 
 
 extern xString DecodeBitField(u32 bits, const char* pLegend[], u32 numEntries);
-extern xString xFixFilenameForPlatform( const xString& src );
 
 extern void Host_RemoveFolder( const char* remFolder);
 extern char xConvertBuildTargetToInt();

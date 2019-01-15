@@ -90,6 +90,7 @@
     <ClCompile Include="..\src\x-string.cpp" />
     <ClCompile Include="..\src\x-thread.cpp" />
     <ClCompile Include="..\src\x-ThrowContext.cpp" />
+    <ClCompile Include="..\src\x-unixpath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
@@ -102,6 +103,7 @@
     <ClInclude Include="..\h\x-BitmapData.h" />
     <ClInclude Include="..\h\x-chrono.h" />
     <ClInclude Include="..\h\x-ForwardDefs.h" />
+    <ClInclude Include="..\h\x-unixpath.h" />
     <ClInclude Include="..\h\x-host-ifc.h" />
     <ClInclude Include="..\h\imgtools.h" />
     <ClInclude Include="..\h\x-pad.h" />
