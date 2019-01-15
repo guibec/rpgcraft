@@ -176,19 +176,12 @@ xString xUnixPath::GetLibcStr(const xString& new_path) const {
     return m_hostprefix + xPathConvertToLibc(new_path.IsEmpty() ? m_unixpath : new_path);
 }
 
-__eai bool xIsPathSeparator( const char& c )
-{
-#if TARGET_MSW
-    //bug_on(c == '\\', "Invalid filename character");
-#endif
-    return (c == '/');
-}
 
 bool xPathIsAbsolute(const xUnixPath& upath)
 {
     auto& src = upath.m_unixpath;
-    if (upath.IsEmpty())           return false;
-    if (xIsPathSeparator(src[0]))  return true;
+    if (upath.IsEmpty())    return false;
+    if (src[0] == '/')      return true;
 
     return false;
 }

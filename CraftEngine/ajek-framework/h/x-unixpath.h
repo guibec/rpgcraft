@@ -33,7 +33,6 @@ struct xUnixPath
 extern  void        xPathSetLibcLayout      (xPathLayout layout);
 
 extern  xUnixPath   xUnixPathInit           (const xString& src);
-extern  bool        xIsPathSeparator        (const char& c);
 extern  xString     xBaseFilename           (const xUnixPath& src);
 extern  xString     xDirectoryName          (const xUnixPath& src);
 extern  bool        xPathIsAbsolute         (const xUnixPath& src);

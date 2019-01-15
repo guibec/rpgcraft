@@ -280,7 +280,7 @@ bool xCreateDirectory( const xUnixPath& orig_unix_dir )
     bool isTangible = 0;        // set to 1 once path becomes something other than ./../.. (so on)
 
     for(; pos < dir.GetLength() && dir[pos]; ++pos) {
-        if (xIsPathSeparator(dir[pos])) {
+        if (dir[pos] == '/') {
             if (!pos) {
                 continue;
             }
