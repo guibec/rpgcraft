@@ -22,12 +22,7 @@
 
    2. convert Windows Drive Letter URIs into unix-style paths, in the same fashion as MSYS2.
         c:\some\path  -> /c/some/path
-        \some\path    -> /some/path
 
-      Note that in the second case, the Host OS will treat the path as relative to the drive
-      letter of the current working directory of the application.  This should be considered
-      expected behavior for windows user and, if they need different behavior, then it is
-      their responsibility to specify drive letters _explicitly_.
 
    3. Perform processing universally, looking only for single forward-slash separators.
       Backslash can be treated as an error on windows platforms.  They are valid filename
@@ -48,37 +43,25 @@ static xPathLayout s_pathfmt_for_libc = PathLayout_Msw;
 static xPathLayout s_pathfmt_for_libc = PathLayout_Unix;
 #endif
 
-// for use by custom platforms (consoles, phones) which might have unique pathname expectations
-// in their custom libc.
+// for use by custom platforms (consoles, phones) which might have unique pathname expectations in
+// their custom libc, independent of the regular expectation associated with the branded host OS.
 void xPathSetLibcLayout(xPathLayout layout)
 {
     x_abort_on(int(layout) < 0 || int(layout) >= PathLayout_MAXINTVAL, "Invalid xPathLayout value=%d", layout);
     s_pathfmt_for_libc = layout;
 }
 
-bool xPathIsUnixLayout(const xString& src)
+static bool IsMswPathSep(char c)
 {
-#if TARGET_MSW
-    // Windows path rules
-    //  - look for c:
-    //  - look for backslash
-    // If neither is present then the path requires no conversion logic.
-
-    if (isalnum(src[0]) && src[1] == ':') return false;
-    return (src.FindFirst('\\', 0) == xString::npos);
-#else
-    return true;
-#endif
+    return (c == '\\') || (c == '/');
 }
 
-xString xPathConvertToUnix(const xString& origPath)
+xString xPathConvertFromMsw(const xString& origPath)
 {
-#if TARGET_LINUX
-    return origPath;
-#elif TARGET_MSW
     xString result;
 
-    result.Resize(origPath.GetLength());
+    // max output length is original length plus drive specifier, eg. /c  (two letters)
+    result.Resize(origPath.GetLength() + 2);
     const char* src = origPath.c_str();
           char* dst = &result[0];
 
@@ -99,13 +82,13 @@ xString xPathConvertToUnix(const xString& origPath)
         dst[1] = tolower(src[0]);
 
         // early-exit to to allow `c:` -> `/c`
-        // this conversion might be useful for path parsing and is an unlikely source of user error.
+        // this conversion might be useful for internal path parsing and is an unlikely source of user error.
 
         if (!src[2]) {
             return result;
         }
 
-        x_abort_on (src[2] != '\\',
+        x_abort_on (!IsMswPathSep(src[2]),
             "Invalid msw-specific non-rooted path with drive letter: %s\n\n"
             "Non-rooted paths of this type are not supported to non-standard\n"
             "and non-portable nature of the specification.\n",
@@ -116,13 +99,46 @@ xString xPathConvertToUnix(const xString& origPath)
         dst  += 2;
     }
 
+    // - a path that starts with a single backslash is always rejected.
+    // - a path that starts with a single forward slash is only rejected if it doesn't _look_ like a
+    //   drive letter spec.
+    //       /c/woombey/to  <-- OK!
+    //       /woombey/to    <-- not good.
+
+    elif (src[0] == '\\') {
+        if (src[0] == src[1]) {
+            // network name URI, don't do anything (regular slash conversion is OK)
+        }
+        else {
+            x_abort( "Invalid path layout: %s\n"
+                "Rooted paths without drive specification are not allowed.\n"
+                "Please explicitly specify the drive letter in the path.",
+                origPath.c_str()
+            );
+        }
+    }
+    elif (src[0] == '/') {
+        if (src[0] == src[1]) {
+            // network name URI, don't do anything (regular slash conversion is OK)
+        }
+        else {
+            // allow format /c or /c/ and nothing else:
+            if (!isalnum(src[1]) || (src[2] && src[2] != '/')) {
+                x_abort( "Invalid path layout: %s\n"
+                    "Rooted paths without drive specification are not allowed.\n"
+                    "Please explicitly specify the drive letter in the path.",
+                    origPath.c_str()
+                );
+            }
+        }
+    }
+
     // copy rest of the string char for char, replacing '\\' with '/'
     for(; src; ++src, ++dst) {
         dst[0] = (src[0] == '\\') ? '/' : src[0];
     }
     dst[0] = 0;
     return result;
-#endif
 }
 
 xString xPathConvertToLibc(const xString& unix_path)
@@ -152,6 +168,21 @@ xString xPathConvertToLibc(const xString& unix_path)
     return result;
 }
 
+bool xPathIsUnixLayout(const xString& src)
+{
+#if TARGET_MSW
+    // Windows path rules
+    //  - look for c:
+    //  - look for backslash
+    // If neither is present then the path requires no conversion logic.
+
+    if (isalnum(src[0]) && src[1] == ':') return false;
+    return (src.FindFirst('\\', 0) == xString::npos);
+#else
+    return true;
+#endif
+}
+
 xUnixPath xUnixPathInit(const xString& src)
 {
     // The implementation of this function is sufficient for Desktop PCs, where it is expected that
@@ -165,7 +196,7 @@ xUnixPath xUnixPathInit(const xString& src)
     }
 
     // MSW-only: convert path and indicate such in the structure.
-    return { xString(), xPathConvertToUnix(src), PathLayout_Msw };
+    return { xString(), xPathConvertFromMsw(src), PathLayout_Msw };
 }
 
 xString xUnixPath::asUnixStr() const {

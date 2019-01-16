@@ -38,5 +38,5 @@ extern  xString     xDirectoryName          (const xUnixPath& src);
 extern  bool        xPathIsAbsolute         (const xUnixPath& src);
 extern  bool        xCreateDirectory        (const xUnixPath& orig_unix_dir);
 
-extern xString      xPathConvertToUnix      (const xString& origPath);
+extern xString      xPathConvertFromMsw      (const xString& origPath);
 extern xString      xPathConvertToLibc      (const xString& unix_path);
