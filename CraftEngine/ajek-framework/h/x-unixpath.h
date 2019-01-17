@@ -31,12 +31,13 @@ struct xUnixPath
 };
 
 extern  void        xPathSetLibcLayout      (xPathLayout layout);
-
 extern  xUnixPath   xUnixPathInit           (const xString& src);
+
 extern  xString     xBaseFilename           (const xUnixPath& src);
 extern  xString     xDirectoryName          (const xUnixPath& src);
 extern  bool        xPathIsAbsolute         (const xUnixPath& src);
 extern  bool        xCreateDirectory        (const xUnixPath& orig_unix_dir);
 
-extern xString      xPathConvertFromMsw      (const xString& origPath);
+extern xString      xPathConvertFromMsw     (const xString& origPath);
 extern xString      xPathConvertToLibc      (const xString& unix_path);
+extern xString      xPathConvertToMsw       (const xString& unix_path);

@@ -311,7 +311,7 @@ bool xCreateDirectory( const xUnixPath& orig_unix_dir )
 FILE* xFopen( const xString& fullpath, const char* mode )
 {
     FILE* fp;
-    auto result = fopen_s( &fp, fullpath, mode );
+    auto result = fopen_s( &fp, xUnixPathInit(fullpath).GetLibcStr(), mode );
     if (result) { fp = nullptr; }
     return fp;
 }

@@ -56,6 +56,7 @@ static bool IsMswPathSep(char c)
     return (c == '\\') || (c == '/');
 }
 
+// intended for use on fullpaths which have already had host prefixes removed.
 xString xPathConvertFromMsw(const xString& origPath)
 {
     xString result;
@@ -141,21 +142,16 @@ xString xPathConvertFromMsw(const xString& origPath)
     return result;
 }
 
-xString xPathConvertToLibc(const xString& unix_path)
+// intended for use on fullpaths which have already had host prefixes removed.
+xString xPathConvertToMsw(const xString& unix_path)
 {
-    if (s_pathfmt_for_libc == PathLayout_Unix) {
-        return unix_path;
-    }
-
-    // assume s_pathfmt_for_libc == PathLayout_Msw ...
-
     xString result;
 
     result.Resize(unix_path.GetLength());
     const char* src = unix_path.c_str();
           char* dst = &result[0];
     if (src[0] == '/' && isalnum(src[1])) {
-        dst[0] = toupper(src[0]);
+        dst[0] = toupper(src[1]);
         dst[1] = ':';
         src  += 2;
         dst  += 2;
@@ -167,6 +163,18 @@ xString xPathConvertToLibc(const xString& unix_path)
     dst[0] = 0;
     return result;
 }
+
+// intended for use on fullpaths which have already had host prefixes removed.
+xString xPathConvertToLibc(const xString& unix_path)
+{
+    if (s_pathfmt_for_libc == PathLayout_Unix) {
+        return unix_path;
+    }
+
+    // assume s_pathfmt_for_libc == PathLayout_Msw ...
+    return xPathConvertToMsw(unix_path);
+}
+
 
 bool xPathIsUnixLayout(const xString& src)
 {
