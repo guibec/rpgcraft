@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class Player : Entity, ISave
+public class Player : Entity, ISave<Player.Save_Data>
 {
     private Player_Data m_playerData;
     public Player_Data PlayerData
@@ -18,21 +18,32 @@ public class Player : Entity, ISave
         }
     }
 
-    private struct Complete_Data
+    public struct Save_Data
     {
         public Player_Data playerData;
         public Experience_Data experienceData;
         public Inventory_Data inventoryData;
     }
 
-    public object Save()
+    public void Load(Save_Data saveData)
+    {
+        m_playerData = saveData.playerData;
+        Experience.ExperienceData = saveData.experienceData;
+        //Inventory.InventoryData = saveData.inventoryData;
+
+        // reset the player position
+        transform.position = m_playerData.position;
+    }
+
+
+    public Save_Data Save()
     {
         // Prepare the main holder
-        Complete_Data completeData;
-        completeData.playerData = PlayerData;
-        completeData.experienceData = Experience.ExperienceData;
-        completeData.inventoryData = Inventory.InventoryData;
-        return completeData;
+        Save_Data saveData;
+        saveData.playerData = PlayerData;
+        saveData.experienceData = Experience.ExperienceData;
+        saveData.inventoryData = Inventory.InventoryData;
+        return saveData;
     }
 
     public Inventory Inventory { get; private set; }

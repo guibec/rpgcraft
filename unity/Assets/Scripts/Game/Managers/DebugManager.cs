@@ -17,23 +17,47 @@ public class DebugManager : MonoSingleton<DebugManager>
         }
     }
 
+    public string PathToCharacterSave
+    {
+        get
+        {
+            return Application.persistentDataPath + "main.chr";
+        }
+    }
+
+    JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+
     private void SaveCharacter()
     {
         object toSave = GameManager.Instance.MainPlayer.Save();
-        var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
         string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
 
-        string path = Application.persistentDataPath + "main.chr";
-        Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, path));
+        Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, PathToCharacterSave));
 
-        StreamWriter writer = new StreamWriter(path, true);
+        StreamWriter writer = new StreamWriter(PathToCharacterSave, false);
         writer.Write(serializedData);
         writer.Close();
     }
     
-    private void LoadCharacter()
+    private bool LoadCharacter()
     {
+        string serializedData;
+        using (StreamReader reader = new StreamReader(PathToCharacterSave))
+        {
+            serializedData = reader.ReadToEnd();
+        }
 
+        Debug.Log(string.Format("Loading: \"{0}\" from file {1}", serializedData, PathToCharacterSave));
+
+        if (serializedData.Length == 0)
+        {
+            return false;
+        }
+
+        Player.Save_Data saveData = JsonConvert.DeserializeObject<Player.Save_Data>(serializedData, jsonSettings);
+        GameManager.Instance.MainPlayer.Load(saveData);
+
+        return true;
     }
 
     // Make the contents of the window.
