@@ -183,9 +183,6 @@ __ni void SceneInit()
     EntityManager_Reset();
 
     x_try() {
-        g_scriptEnv.LoadModule(g_pkg_config_filename);
-        AjekScript_LoadConfiguration(g_scriptEnv);
-
         DbgFont_LoadInit    ();
         Scene_TryLoadInit   ();
         s_scene_initialized = true;

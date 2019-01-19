@@ -79,7 +79,7 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const AssertContextInfoTriad& tr
         break;
     }
 
-    xPrintLn( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", triad.filepos, message.c_str(), context.c_str()) );
+    xPrintLn( xFmtStr("%s%s\n\nContext:\n%s", triad.filepos, message.c_str(), context.c_str()) );
     _flush_all_that_filesystem_jazz();
 
     assert_t breakit = assert_none;
