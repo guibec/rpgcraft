@@ -13,6 +13,7 @@ public class Player : Entity, ISave
         }
         get
         {
+            m_playerData.position = gameObject.transform.position;
             return m_playerData;
         }
     }
@@ -20,6 +21,7 @@ public class Player : Entity, ISave
     private struct Complete_Data
     {
         public Player_Data playerData;
+        public Experience_Data experienceData;
         public Inventory_Data inventoryData;
     }
 
@@ -28,6 +30,7 @@ public class Player : Entity, ISave
         // Prepare the main holder
         Complete_Data completeData;
         completeData.playerData = PlayerData;
+        completeData.experienceData = Experience.ExperienceData;
         completeData.inventoryData = Inventory.InventoryData;
         return completeData;
     }

@@ -3,6 +3,11 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Assertions;
 
+public struct Experience_Data
+{
+    public int xp;
+}
+
 public class Experience
 {
     public delegate void XPChangedEventHandler(object sender, System.EventArgs e);
@@ -28,8 +33,19 @@ public class Experience
         }
     }
 
-    [SerializeField]
-    public int XP { get; private set; }
+    public Experience_Data ExperienceData;
+
+    public int XP
+    {
+        get
+        {
+            return ExperienceData.xp;
+        }
+        private set
+        {
+            ExperienceData.xp = value;
+        }
+    }
 
     public int GetXPRequiredForNextLevel()
     {
