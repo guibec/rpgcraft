@@ -8,13 +8,14 @@ public class Inventory
     private Inventory_Data m_inventoryData;
     public Inventory_Data InventoryData
     {
-        private set
-        {
-            m_inventoryData = value;
-        }
         get
         {
             return m_inventoryData;
+        }
+        set
+        {
+            m_inventoryData = value;
+            OnChanged();
         }
     }
 
@@ -109,8 +110,7 @@ public class Inventory
 
     private void OnChanged()
     {
-        if (Changed != null)
-            Changed(this, EventArgs.Empty);
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public ItemCount GetSlotInformation(int index_)

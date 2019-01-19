@@ -29,7 +29,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     {
         m_playerData = saveData.playerData;
         Experience.ExperienceData = saveData.experienceData;
-        //Inventory.InventoryData = saveData.inventoryData;
+        Inventory.InventoryData = saveData.inventoryData;
 
         // reset the player position
         transform.position = m_playerData.position;
