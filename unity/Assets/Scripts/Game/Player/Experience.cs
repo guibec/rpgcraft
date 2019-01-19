@@ -33,7 +33,20 @@ public class Experience
         }
     }
 
-    public Experience_Data ExperienceData;
+    private Experience_Data m_experienceData;
+    public Experience_Data ExperienceData
+    {
+        get
+        {
+            return m_experienceData;
+        }
+
+        set
+        {
+            m_experienceData = value;
+            Changed?.Invoke(this, new EventArgs());
+        }
+    }
 
     public int XP
     {
@@ -43,7 +56,11 @@ public class Experience
         }
         private set
         {
-            ExperienceData.xp = value;
+            if (value !=  ExperienceData.xp)
+            {
+                m_experienceData.xp = value;
+                Changed?.Invoke(this, new EventArgs());
+            }
         }
     }
 
@@ -75,8 +92,6 @@ public class Experience
     public void AddXP(int amount)
     {
         XP += amount;
-
-        Changed?.Invoke(this, new EventArgs());
     }
 
 }
