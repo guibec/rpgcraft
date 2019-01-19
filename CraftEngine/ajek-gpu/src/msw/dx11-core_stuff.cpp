@@ -648,7 +648,6 @@ void dx11_InitDevice()
     samplerDesc.MinLOD          = 0;
     samplerDesc.MaxLOD          = D3D11_FLOAT32_MAX;
 
-    // Create the sampler
     hr = g_pd3dDevice->CreateSamplerState( &samplerDesc, &m_pTextureSampler);
     x_abort_on(FAILED(hr));
     dx11_ManageObject(m_pTextureSampler);

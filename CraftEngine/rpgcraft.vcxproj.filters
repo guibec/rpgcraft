@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{3e11ec2d-8fb7-4b60-bdf7-8c2296a6f67b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Dev-UI">
+      <UniqueIdentifier>{258cc750-3578-42fc-8235-e2969409eee2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -57,9 +60,6 @@
     <ClCompile Include="src\TileMapLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui-console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Mouse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -77,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="src\x-DebugUtil.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui-console.cpp">
+      <Filter>Source Files\Dev-UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dev-ui\DevUI.cpp">
+      <Filter>Source Files\Dev-UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,9 +125,6 @@
     <ClInclude Include="src\appConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui-console.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Mouse.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Box2D.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui-console.h">
+      <Filter>Source Files\Dev-UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

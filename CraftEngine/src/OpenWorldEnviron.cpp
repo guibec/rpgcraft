@@ -345,7 +345,7 @@ void OpenWorldEnviron::InitScene()
 
     if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, "./sheets/tiles/terrain_2.png");
+        png_LoadFromFile(pngtex, "./Assets/sheets/tiles/terrain_2.png");
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 

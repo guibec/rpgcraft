@@ -126,14 +126,6 @@ __ai size_t _vscprintf( const char* fmt, va_list args )
     // prevent the inner function from clobbering the by-reference parameter
     // for the caller.  --jstine
 
-    // [FORTIFY] PS4 justification use of vsnprintf:
-    //   1. Microsoft's prescribed implementation of vsnprintf_s() DEPENDS on the existence of
-    //      a separate and independent way to calculate the length of an snprintf() result.
-    //   2. PS4 libc lacks _vscprintf() or vscprintf(), therefore no way exists to calculate
-    //      the outgoing length of a formatted string.
-    //   3. PS4 libs always to parameter verification internally for all types of printf(), so
-    //      vsnprintf(nullptr) should always be just as secure as vsnprintf_s() anyway.
-
     va_list l2;
     va_copy(l2, args);
     auto result = vsnprintf( nullptr, 0, fmt, l2);
