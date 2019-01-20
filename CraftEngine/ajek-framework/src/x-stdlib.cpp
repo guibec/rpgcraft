@@ -105,7 +105,7 @@ void xMalloc_ReportDelta()
 // ======================================================================================
 
 // --------------------------------------------------------------------------------------
-bool xFileExists(const xUnixPath& upath)
+bool xFileExists(const xUniPath& upath)
 {
     if (upath.IsEmpty()) return false;
     struct _stat64 sinfo;
@@ -130,7 +130,7 @@ void xFileSetSize( int fd, size_t filesize )
 }
 
 // --------------------------------------------------------------------------------------
-bool xFileRename( const xUnixPath& src_, const xUnixPath& dest_ )
+bool xFileRename( const xUniPath& src_, const xUniPath& dest_ )
 {
 #if !TARGET_MSW
     // On Windows rename errors if a file exists.  Linux/POSIX however just clobber
@@ -248,11 +248,11 @@ bool _createDirectory( const char* dir )
 }
 
 bool xCreateDirectory( const xString& dir ) {
-    return xCreateDirectory(xUnixPathInit(dir));
+    return xCreateDirectory(xUniPathInit(dir));
 }
 
 // Creates entire hierarchy of requested directory trees.
-bool xCreateDirectory( const xUnixPath& orig_unix_dir )
+bool xCreateDirectory( const xUniPath& orig_unix_dir )
 {
     if (orig_unix_dir.IsEmpty()) return true;
 
@@ -311,7 +311,7 @@ bool xCreateDirectory( const xUnixPath& orig_unix_dir )
 FILE* xFopen( const xString& fullpath, const char* mode )
 {
     FILE* fp;
-    auto result = fopen_s( &fp, xUnixPathInit(fullpath).GetLibcStr(), mode );
+    auto result = fopen_s( &fp, xUniPathInit(fullpath).GetLibcStr(), mode );
     if (result) { fp = nullptr; }
     return fp;
 }

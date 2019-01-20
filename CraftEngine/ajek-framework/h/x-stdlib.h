@@ -4,7 +4,7 @@
 #include "x-types.h"
 #include "x-simd.h"
 #include "x-stl.h"
-#include "x-unixpath.h"
+#include "x-unipath.h"
 
 #include <cstring>      // needed for memset
 #include <type_traits>
@@ -224,7 +224,7 @@ extern void     xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQw
 
 extern void     xFileDelete             (const xString& upath);
 extern bool     xFileExists             (const xString& upath);
-extern bool     xFileRename             (const xString& src, const xUnixPath& dst);
+extern bool     xFileRename             (const xString& src, const xUniPath& dst);
 extern bool     xCreateDirectory        (const xString& dir);
 extern FILE*    xFopen                  (const xString& fullpath, const char* mode);
 

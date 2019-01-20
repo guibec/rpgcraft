@@ -1,6 +1,6 @@
 
 #include "PCH-framework.h"
-#include "x-unixpath.h"
+#include "x-unipath.h"
 
 /*
  Cross-platform Path Handling
@@ -176,7 +176,7 @@ xString xPathConvertToLibc(const xString& unix_path)
 }
 
 
-bool xPathIsUnixLayout(const xString& src)
+bool xPathIsUniversal(const xString& src)
 {
 #if TARGET_MSW
     // Windows path rules
@@ -191,7 +191,7 @@ bool xPathIsUnixLayout(const xString& src)
 #endif
 }
 
-xUnixPath xUnixPathInit(const xString& src)
+xUniPath xUniPathInit(const xString& src)
 {
     // The implementation of this function is sufficient for Desktop PCs, where it is expected that
     // there is only one type of path, and that sub-paths (via custom prefixes) are not in use.
@@ -199,7 +199,7 @@ xUnixPath xUnixPathInit(const xString& src)
     // this function and provide prefix and xPathFormat information accordingly, and also validate the
     // path format (where appropriate).
 
-    if (xPathIsUnixLayout(src)) {
+    if (xPathIsUniversal(src)) {
         return { xString(), src };
     }
 
@@ -207,16 +207,16 @@ xUnixPath xUnixPathInit(const xString& src)
     return { xString(), xPathConvertFromMsw(src), PathLayout_Msw };
 }
 
-xString xUnixPath::asUnixStr() const {
+xString xUniPath::asUnixStr() const {
     return m_hostprefix + m_unixpath;
 }
 
-xString xUnixPath::GetLibcStr(const xString& new_path) const {
+xString xUniPath::GetLibcStr(const xString& new_path) const {
     return m_hostprefix + xPathConvertToLibc(new_path.IsEmpty() ? m_unixpath : new_path);
 }
 
 
-bool xPathIsAbsolute(const xUnixPath& upath)
+bool xPathIsAbsolute(const xUniPath& upath)
 {
     auto& src = upath.m_unixpath;
     if (upath.IsEmpty())    return false;
@@ -225,7 +225,7 @@ bool xPathIsAbsolute(const xUnixPath& upath)
     return false;
 }
 
-xString xBaseFilename( const xUnixPath& upath )
+xString xBaseFilename( const xUniPath& upath )
 {
     auto& src = upath.m_unixpath;
     size_t pos = src.FindLast('/');
@@ -233,7 +233,7 @@ xString xBaseFilename( const xUnixPath& upath )
     return upath.GetOriginalLayoutStr(src.GetTail(pos+1));
 }
 
-xString xDirectoryName( const xUnixPath& upath )
+xString xDirectoryName( const xUniPath& upath )
 {
     auto& src = upath.m_unixpath;
     size_t pos = src.FindLast('/');
@@ -241,12 +241,12 @@ xString xDirectoryName( const xUnixPath& upath )
     return upath.GetOriginalLayoutStr(src.GetSubstring(0, pos));
 }
 
-__exi xString     xBaseFilename       (const xString& src) { return xBaseFilename       (xUnixPathInit(src)); }
-__exi xString     xDirectoryName      (const xString& src) { return xDirectoryName      (xUnixPathInit(src)); }
-__exi bool        xPathIsAbsolute     (const xString& src) { return xPathIsAbsolute     (xUnixPathInit(src)); }
+__exi xString     xBaseFilename       (const xString& src) { return xBaseFilename       (xUniPathInit(src)); }
+__exi xString     xDirectoryName      (const xString& src) { return xDirectoryName      (xUniPathInit(src)); }
+__exi bool        xPathIsAbsolute     (const xString& src) { return xPathIsAbsolute     (xUniPathInit(src)); }
 
 
-xString xUnixPath::GetOriginalLayoutStr(const xString& new_path) const
+xString xUniPath::GetOriginalLayoutStr(const xString& new_path) const
 {
     return (m_orig_fmt == PathLayout_Unix) ? asUnixStr() : GetLibcStr();
 }

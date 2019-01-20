@@ -14,7 +14,7 @@ enum xPathLayout
     PathLayout_MAXINTVAL    // for sanity checks
 };
 
-struct xUnixPath
+struct xUniPath
 {
     xString     m_hostprefix;       // optional host prefix part, includes trailing slash or colon
     xString     m_unixpath;         // unix-style path (always delimited by forward slash even on windows)
@@ -31,12 +31,12 @@ struct xUnixPath
 };
 
 extern  void        xPathSetLibcLayout      (xPathLayout layout);
-extern  xUnixPath   xUnixPathInit           (const xString& src);
+extern  xUniPath    xUniPathInit            (const xString& src);
 
-extern  xString     xBaseFilename           (const xUnixPath& src);
-extern  xString     xDirectoryName          (const xUnixPath& src);
-extern  bool        xPathIsAbsolute         (const xUnixPath& src);
-extern  bool        xCreateDirectory        (const xUnixPath& orig_unix_dir);
+extern  xString     xBaseFilename           (const xUniPath& src);
+extern  xString     xDirectoryName          (const xUniPath& src);
+extern  bool        xPathIsAbsolute         (const xUniPath& src);
+extern  bool        xCreateDirectory        (const xUniPath& orig_unix_dir);
 
 extern xString      xPathConvertFromMsw     (const xString& origPath);
 extern xString      xPathConvertToLibc      (const xString& unix_path);

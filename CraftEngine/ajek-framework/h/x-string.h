@@ -356,6 +356,7 @@ public:
 extern  xString     xBaseFilename       (const xString& src);
 extern  xString     xDirectoryName      (const xString& src);
 extern  bool        xPathIsAbsolute     (const xString& src);
+extern  bool        xPathIsUniversal    (const xString& src);
 
 extern  xString     xPosixErrorStr      (int errorval);
 extern  xString     xPosixErrorStr      ();

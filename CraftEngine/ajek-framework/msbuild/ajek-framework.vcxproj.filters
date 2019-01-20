@@ -34,7 +34,7 @@
     <ClCompile Include="..\src\x-simd.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\x-unixpath.cpp">
+    <ClCompile Include="..\src\x-unipath.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -120,7 +120,7 @@
     <ClInclude Include="..\h\x-png-encode.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
-    <ClInclude Include="..\h\x-unixpath.h">
+    <ClInclude Include="..\h\x-unipath.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
   </ItemGroup>
