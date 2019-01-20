@@ -8,7 +8,10 @@ if [[ ! -d "$assets_dir" ]]; then
 	>&2 echo "Please run this script from your unity project dir, or specify the dir"
 	>&2 echo "on the command line.  Ex:"
 	>&2 echo "   $ find_missing_meta.sh /path/to/UnityProject"
+	exit 1
 fi
+
+echo "Verifying unity metadata-to-assets references..."
 
 # search for any files in the assets dir which don't have associated .meta files.
 # done by listing all files, and stripping .meta from .meta files.  Any item in the list

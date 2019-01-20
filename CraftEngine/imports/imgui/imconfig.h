@@ -41,11 +41,16 @@
 //---- Define constructor and implicit cast operators to convert back<>forth from your math types and ImVec2/ImVec4.
 #define IM_VEC2_CLASS_EXTRA                                                 \
         ImVec2(const float2& f) { x = f.x; y = f.y; }						\
-        operator float2() const { return { x, y }; }
+        ImVec2(const int2&   i) { x = i.x; y = i.y; }						\
+                 operator float2() const { return { x, y };  }              \
+        explicit operator int2  () const { return { int(x), int(y) }; }
+
 
 #define IM_VEC4_CLASS_EXTRA                                                 \
         ImVec4(const float4& f) { x = f.x; y = f.y; z = f.z; w = f.w; }		\
-        operator float4() const { return { x,y,z,w }; }
+        ImVec4(const int4&   i) { x = i.x; y = i.y; z = i.z; w = i.w; }		\
+                 operator float4() const { return { x,y,z,w }; }            \
+        explicit operator int4  () const { return { int(x), int(y), int(z), int(w) }; }
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices
 //#define ImDrawIdx unsigned int

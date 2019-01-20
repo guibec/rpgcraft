@@ -34,8 +34,7 @@
 //    behave the same as MSVC's *_s versions.  I confirmed this change is present in
 //    the glibc associated with GCC 4.0 and newer (and possibly earlier, though I didn't
 //    care to check that far back into pre-history).  But since there's no harm in spamming
-//    redundant /0's on infrequently used vsnprinf calls, and since 'fortify' gives us a
-//    hard time about it, might as well leave it be.
+//    redundant /0's on infrequently used vsnprinf calls, might as well leave it be.
 //      -- jstine
 
 inline __ai int vsprintf_s( char* dest, size_t size, const char* fmt, va_list list )
@@ -175,38 +174,50 @@ public:
     }
 #endif
 
-     xString&   FormatV         ( const char*    fmt, va_list list );
-     xString&   AppendFmtV      ( const char*    fmt, va_list list );
-     xString&   Format          ( const char*    fmt=nullptr, ... )     __verify_fmt(2,3);
-     xString&   AppendFmt       ( const char*    fmt=nullptr, ... )     __verify_fmt(2,3);
+// Mutable API, Modifies string contents in-place {
+    xString&   ToLowerMutable       ();
+    xString&   ToUpperMutable       ();
+    xString&   RemoveAllMutable     (char c);
+// }
+
+    xString&   FormatV              (const char*    fmt, va_list list);
+    xString&   AppendFmtV           (const char*    fmt, va_list list);
+    xString&   Format               (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
 
 #if TARGET_MSW
-     xString&   FormatV         ( const wchar_t* fmt, va_list list );
-     xString&   AppendFmtV      ( const wchar_t* fmt, va_list list );
-     xString&   Format          ( const wchar_t* fmt, ... )     __verify_fmt(2,3);
-     xString&   AppendFmt       ( const wchar_t* fmt, ... )     __verify_fmt(2,3);
+    xString&   FormatV              (const wchar_t* fmt, va_list list);
+    xString&   AppendFmtV           (const wchar_t* fmt, va_list list);
+    xString&   Format               (const wchar_t* fmt, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (const wchar_t* fmt, ...)     __verify_fmt(2,3);
 #endif
 
-     void       LowercaseInPlace();
-     void       UppercaseInPlace();
-     xString    ToLower         ()  const;
-     xString    ToUpper         ()  const;
-     bool       EqualsNoCase    ( const xString& src ) const;
-     bool       EqualsAsFilename( const xString& src ) const;
-     bool       StartsWith      ( const xString& src ) const;
-     bool       StartsWith      ( char c ) const;
-     bool       EndsWith        ( const xString& src ) const;
-     bool       EndsWith        ( char c ) const;
+    xString    ToLower              ()  const;
+    xString    ToUpper              ()  const;
+    bool       EqualsNoCase         (const xString& src) const;
+    bool       EqualsAsFilename     (const xString& src) const;
+    bool       StartsWith           (const xString& src) const;
+    bool       StartsWith           (char c) const;
+    bool       EndsWith             (const xString& src) const;
+    bool       EndsWith             (char c) const;
 
-     xString    GetTail         ( size_t start ) const;
-     xString    GetSubstring    ( size_t start, size_t len ) const;
-     size_t     FindFirst       ( const xString& delims, size_t startpos ) const;
-     size_t     FindFirstNot    ( const xString& delims, size_t startpos ) const;
-     size_t     FindLast        ( const xString& delims, size_t offset=npos ) const;
-     size_t     FindLastNot     ( const xString& delims, size_t offset=npos ) const;
-     size_t     Find            ( const xString& str, size_t pos=0 ) const      { return m_string.find(str.m_string, pos); }
+    xString    GetTail              (size_t start ) const;
+    xString    GetSubstring         (size_t start, size_t len ) const;
+    xString    RemoveAll            (char c ) const;
 
-    __ai void           Erase       ( size_t startpos, size_t endpos=npos ) { m_string.erase( startpos, endpos ); }
+    size_t     FindFirst            (const xString& delims, size_t startpos) const;
+    size_t     FindFirstNot         (const xString& delims, size_t startpos) const;
+    size_t     FindLast             (const xString& delims, size_t offset=npos) const;
+    size_t     FindLastNot          (const xString& delims, size_t offset=npos) const;
+
+    size_t     FindFirst            (char c, size_t startpos) const;
+    size_t     FindFirstNot         (char c, size_t startpos) const;
+    size_t     FindLast             (char c, size_t offset=npos) const;
+    size_t     FindLastNot          (char c, size_t offset=npos) const;
+
+    __ai size_t         Find        (const xString& str, size_t pos=0) const  { return m_string.find(str.m_string, pos); }
+
+    __ai void           Erase       (size_t startpos, size_t endpos=npos) { m_string.erase( startpos, endpos ); }
     __ai void           Clear       ()                              { m_string.clear();                 }
     __ai void           Reserve     ( size_t rsv_size )             { m_string.reserve(rsv_size);       }
     __ai void           Resize      ( size_t newsize )              { m_string.resize(newsize);         }
@@ -232,7 +243,7 @@ public:
     __ai xString&       operator+=  ( const xString& src )          { Append(src);      return *this;   }
     __ai xString&       operator+=  ( char src )                    { Append(src);      return *this;   }
     __ai tChar&         operator[]  ( size_t idx )                  { return m_string[idx]; }
-//  __ai const tChar&   operator[]  ( size_t idx ) const            { return m_string[idx]; }
+    __ai const tChar&   operator[]  ( size_t idx ) const            { return m_string[idx]; }
     __ai bool           operator==  ( const xString& right ) const  { return m_string == right.m_string; }
     __ai bool           operator!=  ( const xString& right ) const  { return m_string != right.m_string; }
     __ai bool           operator<   ( const xString& right ) const  { return m_string <  right.m_string; }
@@ -243,6 +254,7 @@ public:
     __ai operator const char*() const { return m_string.c_str(); }
     __ai operator qstringlen()  const { return qstringlen(m_string.c_str(), m_string.length() ); }
 };
+
 
 inline __ai xString operator+( const xString& right, const char* src )
 {
@@ -354,10 +366,6 @@ extern  xString     xPosixErrorStr      ();
 extern  bool        xStringToBoolean    (const xString& src);
 extern  bool        xStringIsBoolean    (const xString& src);
 
-extern  u32         CalcMemoryBlockHash32   (const void* src, int lenInWords, s32 startVal=0);
-extern  u32         CalcPs2ProductCodeHash  (const char src[10]);
-extern  u32         CalcPs2ProductCodeHash  (const xString& src);
-
 // --------------------------------------------------------------------------------------
 //  xHexStr (template function)
 // --------------------------------------------------------------------------------------
@@ -449,7 +457,6 @@ extern  xString xDecStr     ( const u32& src );
 extern  xString xDecStr     ( const s32& src );
 extern  xString xDecStr     ( const u64& src );
 extern  xString xDecStr     ( const s64& src );
-extern  xString xDecStr     ( const int2& src );
 
 #if !defined(_MSC_VER)
 extern  xString xDecStr     ( const long long& src );
