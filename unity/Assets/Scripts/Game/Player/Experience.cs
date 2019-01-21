@@ -3,6 +3,11 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Assertions;
 
+public struct Experience_Data
+{
+    public int xp;
+}
+
 public class Experience
 {
     public delegate void XPChangedEventHandler(object sender, System.EventArgs e);
@@ -28,7 +33,36 @@ public class Experience
         }
     }
 
-    public int XP { get; private set; }
+    private Experience_Data m_experienceData;
+    public Experience_Data ExperienceData
+    {
+        get
+        {
+            return m_experienceData;
+        }
+
+        set
+        {
+            m_experienceData = value;
+            Changed?.Invoke(this, new EventArgs());
+        }
+    }
+
+    public int XP
+    {
+        get
+        {
+            return ExperienceData.xp;
+        }
+        private set
+        {
+            if (value !=  ExperienceData.xp)
+            {
+                m_experienceData.xp = value;
+                Changed?.Invoke(this, new EventArgs());
+            }
+        }
+    }
 
     public int GetXPRequiredForNextLevel()
     {
@@ -58,8 +92,6 @@ public class Experience
     public void AddXP(int amount)
     {
         XP += amount;
-
-        Changed?.Invoke(this, new EventArgs());
     }
 
 }
