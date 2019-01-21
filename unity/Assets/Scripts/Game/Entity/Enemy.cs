@@ -65,7 +65,7 @@ public class Enemy : Entity
                 RewardWithXP();
 
                 // OnKilled mean the enemy was killed as part of the gameplay, this is different from calling
-                // RequestDestroy which just means we want the enemy go to go away and disapear
+                // RequestDestroy which just means we want the enemy go to go away and disappear
                 OnKilled();
             }
         }
@@ -73,7 +73,7 @@ public class Enemy : Entity
 
     private void OnKilled()
     {
-        EnemyInfo enemyInfo = EnemiesInfo.GetInfoFromName(Name);
+        EnemyInfo enemyInfo = DataManager.Instance.m_enemiesInfo.GetInfoFromName(Name);
 
         if (enemyInfo != null)
         {

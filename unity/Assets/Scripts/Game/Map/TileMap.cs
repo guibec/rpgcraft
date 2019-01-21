@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using SimpleJSON;
 using System.Collections;
 using System.Runtime.CompilerServices;
 

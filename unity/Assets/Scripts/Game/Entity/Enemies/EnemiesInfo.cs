@@ -2,17 +2,81 @@
 using System.Collections.Generic;
 using UnityEngine;
 using SimpleJSON;
-
+using Newtonsoft.Json;
+using System.IO;
 using IronExtension;
 
-public static class EnemiesInfo
+namespace LootData
 {
-    public static string version { get; set; }
-
-    public static Dictionary<string, EnemyInfo> m_enemiesInfo = new Dictionary<string, EnemyInfo>();
-
-    static EnemiesInfo()
+    public class Count
     {
+        public int min;
+        public int max;
+    }
+
+    public class Item
+    {
+        public string name;
+        public Count count;
+    }
+
+    public class Loot
+    {
+        public float probability;
+        public List<Item> items;
+    }
+    public class LootInfo
+    {
+        public string name;
+        public List<Loot> loots;
+    }
+
+    public class LootsInfo
+    {
+        public string version;
+        public List<LootInfo> lootsinfo;
+    }
+}
+
+public class EnemiesInfo
+{
+    public string version { get; set; }
+
+    public Dictionary<string, EnemyInfo> m_enemiesInfo = new Dictionary<string, EnemyInfo>();
+
+    public EnemiesInfo()
+    {
+        // Simple test to see if the data structure holds up
+        LootData.Count count = new LootData.Count();
+        count.min = 2;
+        count.max = 4;
+
+        LootData.Item item = new LootData.Item();
+        item.name = "stone";
+        item.count = count;
+
+        LootData.Loot loot = new LootData.Loot();
+        loot.probability = 0.5f;
+        loot.items = new List<LootData.Item>();
+        loot.items.Add(item);
+
+        LootData.LootInfo lootInfo = new LootData.LootInfo();
+        lootInfo.name = "Slime";
+        lootInfo.loots = new List<LootData.Loot>();
+        lootInfo.loots.Add(loot);
+
+        LootData.LootsInfo lootsInfo = new LootData.LootsInfo();
+        lootsInfo.version = "1.0";
+        lootsInfo.lootsinfo = new List<LootData.LootInfo>();
+        lootsInfo.lootsinfo.Add(lootInfo);
+
+        string serializedData = JsonConvert.SerializeObject(lootsInfo, Formatting.Indented);
+
+        StreamWriter writer = new StreamWriter(Application.persistentDataPath + "test.json", false);
+        writer.Write(serializedData);
+        writer.Close();
+        Debug.Log(string.Format("Wrote to {0}", Application.persistentDataPath + "test.json"));
+
         string filename = "enemiesInfo";
 
         JSONNode rootNode = JSONUtils.ParseJSON(filename);
@@ -32,7 +96,7 @@ public static class EnemiesInfo
         }
     }
 
-    public static EnemyInfo GetInfoFromName(string name)
+    public EnemyInfo GetInfoFromName(string name)
     {
         EnemyInfo enemyInfo = null;
         m_enemiesInfo.TryGetValue(name, out enemyInfo);
