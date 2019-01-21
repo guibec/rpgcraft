@@ -5,6 +5,20 @@ using System.Text;
 
 public class Inventory
 {
+    private Inventory_Data m_inventoryData;
+    public Inventory_Data InventoryData
+    {
+        get
+        {
+            return m_inventoryData;
+        }
+        set
+        {
+            m_inventoryData = value;
+            OnChanged();
+        }
+    }
+
     public readonly int MAX_ITEMS_PER_SLOT = 99;
 
     public delegate void InventoryChangedEventHandler(object sender, EventArgs e);
@@ -12,27 +26,29 @@ public class Inventory
 
     public Inventory(Player player_)
     {
-        Owner = player_;
+        Inventory_Data inventoryData;
 
-        m_itemSlots = new ItemCount[10];
-        for (int i = 0; i < m_itemSlots.Length; ++i)
-            m_itemSlots[i] = new ItemCount();
+        inventoryData.m_itemSlots = new ItemCount[10];
+        for (int i = 0; i < inventoryData.m_itemSlots.Length; ++i)
+            inventoryData.m_itemSlots[i] = new ItemCount();
 
         // default inventory
-        m_itemSlots[0].Count = 1;
-        m_itemSlots[0].Item = EItem.PickAxe;
+        inventoryData.m_itemSlots[0].Count = 1;
+        inventoryData.m_itemSlots[0].Item = EItem.PickAxe;
 
-        m_itemSlots[1].Count = 1;
-        m_itemSlots[1].Item = EItem.Sword;
+        inventoryData.m_itemSlots[1].Count = 1;
+        inventoryData.m_itemSlots[1].Item = EItem.Sword;
 
-        m_itemSlots[2].Count = 1;
-        m_itemSlots[2].Item = EItem.Copper_Axe;
+        inventoryData.m_itemSlots[2].Count = 1;
+        inventoryData.m_itemSlots[2].Item = EItem.Copper_Axe;
 
-        m_itemSlots[3].Count = 10;
-        m_itemSlots[3].Item = EItem.Bomb;
+        inventoryData.m_itemSlots[3].Count = 10;
+        inventoryData.m_itemSlots[3].Item = EItem.Bomb;
 
-        m_itemSlots[4].Count = 10;
-        m_itemSlots[4].Item = EItem.Arrow;
+        inventoryData.m_itemSlots[4].Count = 10;
+        inventoryData.m_itemSlots[4].Item = EItem.Arrow;
+
+        InventoryData = inventoryData;
     }
 
     public void Start()
@@ -47,8 +63,8 @@ public class Inventory
         if (index == -1)
             return false;
 
-        m_itemSlots[index].Item = item;
-        m_itemSlots[index].Count++;
+        InventoryData.m_itemSlots[index].Item = item;
+        InventoryData.m_itemSlots[index].Count++;
 
         //UnityEngine.Debug.Log("Adding item " + item + " to slot " + index + " with count of " + m_itemSlots[index].Count);
         OnChanged();
@@ -58,12 +74,12 @@ public class Inventory
 
     public bool Use(int slotIndex)
     {
-        if (m_itemSlots[slotIndex].Count >= 1)
+        if (InventoryData.m_itemSlots[slotIndex].Count >= 1)
         {
-            m_itemSlots[slotIndex].Count--;
-            if (m_itemSlots[slotIndex].Count == 0)
+            InventoryData.m_itemSlots[slotIndex].Count--;
+            if (InventoryData.m_itemSlots[slotIndex].Count == 0)
             {
-                m_itemSlots[slotIndex].Item = EItem.None;
+                InventoryData.m_itemSlots[slotIndex].Item = EItem.None;
             }
 
             OnChanged();
@@ -76,16 +92,16 @@ public class Inventory
     private int FindBestSlotFor(EItem item)
     {
         // look for existing slot
-        for (int i = 0; i < m_itemSlots.Length; ++i)
+        for (int i = 0; i < InventoryData.m_itemSlots.Length; ++i)
         {
-            if (m_itemSlots[i].Item == item && m_itemSlots[i].Count < MAX_ITEMS_PER_SLOT)
+            if (InventoryData.m_itemSlots[i].Item == item && InventoryData.m_itemSlots[i].Count < MAX_ITEMS_PER_SLOT)
                 return i;
         }
 
         // try to find an empty slot
-        for (int i = 0; i < m_itemSlots.Length; ++i)
+        for (int i = 0; i < InventoryData.m_itemSlots.Length; ++i)
         {
-            if (m_itemSlots[i].Item == EItem.None)
+            if (InventoryData.m_itemSlots[i].Item == EItem.None)
                 return i;
         }
 
@@ -94,23 +110,11 @@ public class Inventory
 
     private void OnChanged()
     {
-        if (Changed != null)
-            Changed(this, EventArgs.Empty);
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public ItemCount GetSlotInformation(int index_)
     {
-        return m_itemSlots[index_];
+        return InventoryData.m_itemSlots[index_];
     }
-
-    /// <summary>
-    /// All items slot
-    /// </summary>
-    private ItemCount[] m_itemSlots;
-
-    /// <summary>
-    /// Amount of gold the player has
-    /// </summary>
-    public int Gold { get; set; }
-    public Player Owner { get; private set; }
 }

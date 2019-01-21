@@ -1,8 +1,6 @@
-﻿using System;
+﻿using System.IO;
 using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.Profiling;
-using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 
 public class DebugManager : MonoSingleton<DebugManager>
 {
@@ -19,21 +17,74 @@ public class DebugManager : MonoSingleton<DebugManager>
         }
     }
 
+    public string PathToCharacterSave
+    {
+        get
+        {
+            return Application.persistentDataPath + "main.chr";
+        }
+    }
+
+    JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+
+    private void SaveCharacter()
+    {
+        Player.Save_Data toSave = GameManager.Instance.MainPlayer.Save();
+        string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
+
+        Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, PathToCharacterSave));
+
+        StreamWriter writer = new StreamWriter(PathToCharacterSave, false);
+        writer.Write(serializedData);
+        writer.Close();
+    }
+    
+    private bool LoadCharacter()
+    {
+        string serializedData;
+        using (StreamReader reader = new StreamReader(PathToCharacterSave))
+        {
+            serializedData = reader.ReadToEnd();
+        }
+
+        Debug.Log(string.Format("Loading: \"{0}\" from file {1}", serializedData, PathToCharacterSave));
+
+        if (serializedData.Length == 0)
+        {
+            return false;
+        }
+
+        Player.Save_Data saveData = JsonConvert.DeserializeObject<Player.Save_Data>(serializedData, jsonSettings);
+        GameManager.Instance.MainPlayer.Load(saveData);
+
+        return true;
+    }
+
     // Make the contents of the window.
     void DoDebugWindow(int windowID)
     {
         // TODO: button layout / placement should be automated
-        GUI.Button(new Rect(10, 30, 140, 20), "Options...");
+        GUI.Button(new Rect(10, 30, 200, 20), "Options...");
 
-        if (GUI.Button(new Rect(10, 60, 140, 20), "Generate new level..."))
+        if (GUI.Button(new Rect(10, 60, 200, 20), "Generate new level..."))
         {
             RegenerateLevel();
         }
 
-        GUI.Button(new Rect(10, 90, 140, 20), "Save level...");
-        GUI.Button(new Rect(10, 120, 140, 20), "Load level...");
+        GUI.Button(new Rect(10, 90, 200, 20), "Save level...");
+        GUI.Button(new Rect(10, 120, 200, 20), "Load level...");
 
-        if (GUI.Button(new Rect(10, 180, 140, 20), "Back to game"))
+        if (GUI.Button(new Rect(10, 150, 200, 20), "(Debug) Save character..."))
+        {
+            SaveCharacter();
+        }
+
+        if (GUI.Button(new Rect(10, 180, 200, 20), "(Debug) Load character..."))
+        {
+            LoadCharacter();
+        }
+
+        if (GUI.Button(new Rect(10, 240, 200, 20), "Back to game"))
         {
             m_displayDebug = false;
         }

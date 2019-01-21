@@ -2,10 +2,56 @@
 using UnityEngine;
 using System.Collections;
 
-public class Player : Entity 
+public class Player : Entity, ISave<Player.Save_Data>
 {
+    /**
+     * Internal Save data structure. Do not use this class outside the Save/Load serialization system
+     */
+    public struct Save_Data
+    {
+        public Player_Data playerData;
+        public Experience_Data experienceData;
+        public Inventory_Data inventoryData;
+    }
+
+    public void Load(Save_Data saveData)
+    {
+        m_playerData = saveData.playerData;
+        Experience.ExperienceData = saveData.experienceData;
+        Inventory.InventoryData = saveData.inventoryData;
+
+        // reset the player position
+        transform.position = m_playerData.position;
+    }
+
+    public Save_Data Save()
+    {
+        // Prepare the main holder
+        Save_Data saveData;
+        saveData.playerData = PlayerData;
+        saveData.experienceData = Experience.ExperienceData;
+        saveData.inventoryData = Inventory.InventoryData;
+        return saveData;
+    }
+
+    private Player_Data m_playerData;
+    public Player_Data PlayerData
+    {
+        private set
+        {
+            m_playerData = value;
+        }
+        get
+        {
+            m_playerData.position = gameObject.transform.position;
+            return m_playerData;
+        }
+    }
+
+
     public Inventory Inventory { get; private set; }
 
+    [SerializeField]
     public Experience Experience { get; private set; }
 
     public Vector2 BeforeInputPos { get; set; }
@@ -56,18 +102,16 @@ public class Player : Entity
         m_fsm = new PlayerStateMachine(this);
     }
 
-    [SerializeField]
-    private CharacterClass m_characterClass = CharacterClass.Knight;
     public CharacterClass Class
     {
         private set
         {
-            m_characterClass = value;
+            m_playerData.characterClass = value;
             SetRenderInfo();
         }
         get
         {
-            return m_characterClass;
+            return m_playerData.characterClass;
         }
     }
 
@@ -110,7 +154,7 @@ public class Player : Entity
         {
             for (int i = 0; i < 8; ++i)
             {
-                int yOffset = (int)m_characterClass * 16;
+                int yOffset = (int)m_playerData.characterClass * 16;
 
                 m_entityRender.SetFrameInfo(frameGroups[i / 2], i * 16, yOffset, 16, 16);
             }
