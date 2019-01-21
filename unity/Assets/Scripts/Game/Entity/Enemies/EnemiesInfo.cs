@@ -71,11 +71,7 @@ public class EnemiesInfo
         lootsInfo.lootsinfo.Add(lootInfo);
 
         string serializedData = JsonConvert.SerializeObject(lootsInfo, Formatting.Indented);
-
-        StreamWriter writer = new StreamWriter(Application.persistentDataPath + "test.json", false);
-        writer.Write(serializedData);
-        writer.Close();
-        Debug.Log(string.Format("Wrote to {0}", Application.persistentDataPath + "test.json"));
+        Debug.Log(string.Format("Serialized to {0}", serializedData));
 
         string filename = "enemiesInfo";
 
