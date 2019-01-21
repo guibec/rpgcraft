@@ -29,7 +29,7 @@ public class DebugManager : MonoSingleton<DebugManager>
 
     private void SaveCharacter()
     {
-        object toSave = GameManager.Instance.MainPlayer.Save();
+        Player.Save_Data toSave = GameManager.Instance.MainPlayer.Save();
         string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
 
         Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, PathToCharacterSave));

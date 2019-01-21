@@ -4,20 +4,9 @@ using System.Collections;
 
 public class Player : Entity, ISave<Player.Save_Data>
 {
-    private Player_Data m_playerData;
-    public Player_Data PlayerData
-    {
-        private set
-        {
-            m_playerData = value;
-        }
-        get
-        {
-            m_playerData.position = gameObject.transform.position;
-            return m_playerData;
-        }
-    }
-
+    /**
+     * Internal Save data structure. Do not use this class outside the Save/Load serialization system
+     */
     public struct Save_Data
     {
         public Player_Data playerData;
@@ -35,7 +24,6 @@ public class Player : Entity, ISave<Player.Save_Data>
         transform.position = m_playerData.position;
     }
 
-
     public Save_Data Save()
     {
         // Prepare the main holder
@@ -45,6 +33,21 @@ public class Player : Entity, ISave<Player.Save_Data>
         saveData.inventoryData = Inventory.InventoryData;
         return saveData;
     }
+
+    private Player_Data m_playerData;
+    public Player_Data PlayerData
+    {
+        private set
+        {
+            m_playerData = value;
+        }
+        get
+        {
+            m_playerData.position = gameObject.transform.position;
+            return m_playerData;
+        }
+    }
+
 
     public Inventory Inventory { get; private set; }
 
