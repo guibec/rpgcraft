@@ -15,7 +15,7 @@ namespace LootData
 
     public class Item
     {
-        public string name;
+        public EItem name;
         public Count count;
     }
 
@@ -39,7 +39,7 @@ namespace LootData
         /// Built dynamically after deserializing
         /// </summary>
         [JsonIgnore]
-        private Dictionary<string, List<Loot>> m_cache = new Dictionary<string, List<Loot>>();
+        private Dictionary<string, LootInfo> m_cache = new Dictionary<string, LootInfo>();
 
         /// <summary>
         /// Load from file 
@@ -72,12 +72,24 @@ namespace LootData
             return true;
         }
 
+        /// <summary>
+        /// Get LootInfo for the given enemy name
+        /// </summary>
+        /// <param name="name">Name of Enemy</param>
+        /// <returns></returns>
+        LootInfo GetFromName(string name)
+        {
+            LootInfo lootInfo = null;
+            m_cache.TryGetValue(name, out lootInfo);
+            return lootInfo;
+        }
+
         private void UpdateCache()
         {
             m_cache.Clear();
             foreach (var keyValue in lootsInfos)
             {
-                m_cache[keyValue.name] = keyValue.loots;
+                m_cache[keyValue.name] = keyValue;
             }
         }
     }
