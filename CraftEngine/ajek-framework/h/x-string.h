@@ -354,17 +354,15 @@ public:
 #endif
 
 extern  xString     xBaseFilename       (const xString& src);
-extern  xString     xBasePath           (const xString& src);
-extern  bool        xIsPathSeparator    (const char& c);
+extern  xString     xDirectoryName      (const xString& src);
 extern  bool        xPathIsAbsolute     (const xString& src);
-extern  xString     xPath_Combine       (const xString& left, const xString& right);
-extern  xString     xPath_Combine       (const xString& left, const xString& right1, const xString& right2);
+extern  bool        xPathIsUniversal    (const xString& src);
 
 extern  xString     xPosixErrorStr      (int errorval);
 extern  xString     xPosixErrorStr      ();
-
 extern  bool        xStringToBoolean    (const xString& src);
 extern  bool        xStringIsBoolean    (const xString& src);
+
 
 // --------------------------------------------------------------------------------------
 //  xHexStr (template function)

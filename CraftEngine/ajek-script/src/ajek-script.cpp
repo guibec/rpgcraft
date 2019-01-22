@@ -154,7 +154,7 @@ extern "C" void ajek_warn_new_global(lua_State* L)
 
 extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t bufflen)
 {
-    xString result = xPath_Combine(s_script_dbg_path_prefix, source);
+    xString result = xFmtStr("%s/%s", s_script_dbg_path_prefix, source);
 
     size_t l = result.GetLength();
     if (l <= bufflen)  /* small enough? */

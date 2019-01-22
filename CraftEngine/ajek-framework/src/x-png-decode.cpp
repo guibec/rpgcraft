@@ -6,6 +6,8 @@
 void png_LoadFromFile(xBitmapData& dest, const xString& filename)
 {
     bug_on (filename.IsEmpty());
+    bug_on (!xPathIsUniversal(filename));       // paths should be converted at
+
     auto* fp = xFopen(filename, "rb");
     x_abort_on (!fp, "png_LoadFromFile('%s') error: %s", filename.c_str(), strerror(errno));
     png_LoadFromFile(dest, fp, filename);

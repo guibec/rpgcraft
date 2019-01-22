@@ -4,6 +4,7 @@
 #include "x-types.h"
 #include "x-simd.h"
 #include "x-stl.h"
+#include "x-unipath.h"
 
 #include <cstring>      // needed for memset
 #include <type_traits>
@@ -150,46 +151,19 @@ public:
     }
 };
 
-
-// ======================================================================================
-//  xStreamWriter (class)
-// ======================================================================================
-class xStreamWriter : public xBaseStream
+struct xStatInfo
 {
-    typedef xBaseStream __parent;
+    u32         st_mode;
+    s64         st_size;
 
-protected:
-    u8*         m_data;
-    size_t      m_dataReserved;
-    size_t      m_alignMask;
-    bool        m_suppress_assertions;
+    time_t      time_accessed;
+    time_t      time_modified;
+    time_t      time_created;
 
-public:
-                        xStreamWriter   ()          { m_data = nullptr; m_dataReserved = 0; }
-    virtual             ~xStreamWriter  () throw()  { Close(); }
-    virtual void        Close           ()                          override;
-    virtual const void* GetBufferPtr    (size_t size) const         override;
-    virtual void*       GetBufferPtr    (size_t size)               override;
-            bool        CreateFile      (const xString& filename);
-            bool        CreateFileBuffered(const xString& filename);
-            bool        OpenFile        (const xString& filename);
-            bool        OpenFileBuffered(const xString& filename);
-            bool        OpenMem         (size_t initial_length, size_t align_by=_64kb);
+    bool IsFile     () const;
+    bool IsDir      () const;
+    bool Exists     () const;
 
-            void        Flush           ();
-            bool        Write           ( const void* src, ssize_t bytes );
-            bool        WriteChars      ( const xString& src );
-            bool        CopyToStream    ( xStreamWriter& dest );
-
-    template< typename T >
-    bool Write( const T& src )
-    {
-        serialization_assert(T);
-        return Write( &src, sizeof(T) );
-    }
-
-protected:
-            void        _growPast       (size_t pos);
 };
 
 
@@ -209,31 +183,29 @@ extern void     xMalloc_ReportDelta ();
 template<typename T>
 void placement_delete(T* ptr)   { (ptr)->~T(); xFree(ptr); }
 
-extern void     xStrCopy                (char* dest, size_t destLen, const char* src);
-extern void     xStrnCopy               (char* dest, size_t destLen, const char* src, size_t srcLen);
+extern void         xStrCopy                (char* dest, size_t destLen, const char* src);
+extern void         xStrnCopy               (char* dest, size_t destLen, const char* src, size_t srcLen);
 
-extern void     xMemCopy                (void* dest, const void* src, uint len);
-extern void     xMemCopy32              (void* dest, const void* src, uint len32);
-extern void     xMemCopyQwc             (void* dest, const void* src, uint lenQwc);
-extern void     xMemCopyQwc_WrappedDest (u128* destBase,    const u128* src,        uint& destStartQwc, uint lenQwc, uint destSizeQwc);
-extern void     xMemCopyQwc_WrappedSrc  (u128* dest,        const u128* srcBase,    uint& srcStartQwc,  uint lenQwc, uint srcSizeQwc);
+extern void         xMemCopy                (void* dest, const void* src, uint len);
+extern void         xMemCopy32              (void* dest, const void* src, uint len32);
+extern void         xMemCopyQwc             (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyQwc_WrappedDest (u128* destBase,    const u128* src,        uint& destStartQwc, uint lenQwc, uint destSizeQwc);
+extern void         xMemCopyQwc_WrappedSrc  (u128* dest,        const u128* srcBase,    uint& srcStartQwc,  uint lenQwc, uint srcSizeQwc);
 
-extern void     xMemCopyShortQwc        (void* dest, const void* src, uint lenQwc);
-extern void     xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyShortQwc        (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQwc);
 
-extern void     xFileDelete             (const xString& file);
-extern void     xFileSetSize            (int fd, size_t filesize);
-extern bool     xFileExists             (const char* fullpath);
-extern bool     xFileRename             (const xString& src, const xString& dest);
-extern bool     xFileSystematicRename   (const xString& srcFullPathname, const xString& destPathAndFileBase, const xString& ext, int checkCount);
+extern xStatInfo    xFileStat               (const xString& path);
+extern bool         xFileRename             (const xString& src, const xString& dst);
+extern bool         xCreateDirectory        (const xString& dir);
+extern FILE*        xFopen                  (const xString& fullpath, const char* mode);
 
-extern bool     xFgets                  (xString& dest, FILE* stream);
-extern bool     xCreateDirectory        (const xString& dir);
-extern FILE*    xFopen                  (const xString& fullpath, const char* mode);
+extern void         xFileSetSize            (int fd, size_t filesize);
+extern bool         xFgets                  (xString& dest, FILE* stream);
 
-extern bool     xEnvironExists          (const xString& varname);
-extern xString  xEnvironGet             (const xString& varname);
-extern void     xEnvironSet             (const xString& varname, const xString& value, bool overwrite=1);
+extern bool         xEnvironExists          (const xString& varname);
+extern xString      xEnvironGet             (const xString& varname);
+extern void         xEnvironSet             (const xString& varname, const xString& value, bool overwrite=1);
 
 
 // Performs cleanup of existing object pointer (if non-null) and creates a new object in its place.
@@ -469,7 +441,6 @@ inline __ai bool i_BitScanForward( u64& result, u64 src )
 
 
 extern xString DecodeBitField(u32 bits, const char* pLegend[], u32 numEntries);
-extern xString xFixFilenameForPlatform( const xString& src );
 
 extern void Host_RemoveFolder( const char* remFolder);
 extern char xConvertBuildTargetToInt();

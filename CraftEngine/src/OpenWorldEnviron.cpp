@@ -304,7 +304,7 @@ void OpenWorldEnviron::InitScene()
 {
     if (0) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, ".\\rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+        png_LoadFromFile(pngtex, "./rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 

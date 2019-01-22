@@ -90,6 +90,7 @@
     <ClCompile Include="..\src\x-string.cpp" />
     <ClCompile Include="..\src\x-thread.cpp" />
     <ClCompile Include="..\src\x-ThrowContext.cpp" />
+    <ClCompile Include="..\src\x-unipath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="..\h\x-thread.h" />
     <ClInclude Include="..\h\x-ThrowContext.h" />
     <ClInclude Include="..\h\x-types.h" />
+    <ClInclude Include="..\h\x-unipath.h" />
     <ClInclude Include="..\h\x-virtkey.h" />
     <ClInclude Include="..\src\PCH-framework.h" />
     <ClInclude Include="..\h\x-MemCopy.inl" />
