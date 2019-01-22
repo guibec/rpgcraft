@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using SimpleJSON;
 using Newtonsoft.Json;
-using System.IO;
+using System;
 using IronExtension;
+using SimpleJSON;
 
 namespace LootData
 {
@@ -34,7 +33,53 @@ namespace LootData
     public class LootsInfo
     {
         public string version;
-        public List<LootInfo> lootsinfo;
+        public List<LootInfo> lootsInfos;
+
+        /// <summary>
+        /// Built dynamically after deserializing
+        /// </summary>
+        [JsonIgnore]
+        private Dictionary<string, List<Loot>> m_cache = new Dictionary<string, List<Loot>>();
+
+        /// <summary>
+        /// Load from file 
+        /// </summary>
+        /// <param name="filename"></param>
+        bool Load(string filename)
+        {
+            LootsInfo lootsInfo;
+
+            try
+            {
+                lootsInfo = JSONUtils.LoadJSON<LootData.LootsInfo>(filename);
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.Log($"Failed to deserialize {filename} due to {e.Message}");
+                return false;
+            }
+
+            if (lootsInfo == null)
+            {
+                UnityEngine.Debug.Log($"Failed to read {filename}");
+                return false;
+            }
+
+            version = lootsInfo.version;
+            lootsInfos = lootsInfo.lootsInfos;
+            UpdateCache();
+
+            return true;
+        }
+
+        private void UpdateCache()
+        {
+            m_cache.Clear();
+            foreach (var keyValue in lootsInfos)
+            {
+                m_cache[keyValue.name] = keyValue.loots;
+            }
+        }
     }
 }
 
@@ -43,37 +88,56 @@ public class EnemiesInfo
     public string version { get; set; }
 
     public Dictionary<string, EnemyInfo> m_enemiesInfo = new Dictionary<string, EnemyInfo>();
+    public LootData.LootsInfo m_lootsInfo;
+
 
     public EnemiesInfo()
     {
         // Simple test to see if the data structure holds up
-        LootData.Count count = new LootData.Count();
-        count.min = 2;
-        count.max = 4;
+        //LootData.Count count = new LootData.Count();
+        //count.min = 2;
+        //count.max = 4;
 
-        LootData.Item item = new LootData.Item();
-        item.name = "stone";
-        item.count = count;
+        //LootData.Item item = new LootData.Item();
+        //item.name = "stone";
+        //item.count = count;
 
-        LootData.Loot loot = new LootData.Loot();
-        loot.probability = 0.5f;
-        loot.items = new List<LootData.Item>();
-        loot.items.Add(item);
+        //LootData.Loot loot = new LootData.Loot();
+        //loot.probability = 0.5f;
+        //loot.items = new List<LootData.Item>();
+        //loot.items.Add(item);
 
-        LootData.LootInfo lootInfo = new LootData.LootInfo();
-        lootInfo.name = "Slime";
-        lootInfo.loots = new List<LootData.Loot>();
-        lootInfo.loots.Add(loot);
+        //LootData.LootInfo lootInfo = new LootData.LootInfo();
+        //lootInfo.name = "Slime";
+        //lootInfo.loots = new List<LootData.Loot>();
+        //lootInfo.loots.Add(loot);
 
-        LootData.LootsInfo lootsInfo = new LootData.LootsInfo();
-        lootsInfo.version = "1.0";
-        lootsInfo.lootsinfo = new List<LootData.LootInfo>();
-        lootsInfo.lootsinfo.Add(lootInfo);
+        //LootData.LootsInfo lootsInfo = new LootData.LootsInfo();
+        //lootsInfo.version = "1.0";
+        //lootsInfo.lootsinfo = new List<LootData.LootInfo>();
+        //lootsInfo.lootsinfo.Add(lootInfo);
 
-        string serializedData = JsonConvert.SerializeObject(lootsInfo, Formatting.Indented);
-        Debug.Log(string.Format("Serialized to {0}", serializedData));
+        //string serializedData = JsonConvert.SerializeObject(lootsInfo, Formatting.Indented);
+        //Debug.Log(string.Format("Serialized to {0}", serializedData));
 
         string filename = "enemiesInfo";
+
+        try
+        {
+            m_lootsInfo = JSONUtils.LoadJSON<LootData.LootsInfo>(filename);
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.Log($"Failed to deserialize {filename} due to {e.Message}");
+            return;
+        }
+
+        if (m_lootsInfo == null)
+        {
+            UnityEngine.Debug.Log($"Failed to read {filename}");
+            return;
+        }
+        
 
         JSONNode rootNode = JSONUtils.ParseJSON(filename);
 
@@ -169,7 +233,6 @@ public class EnemyInfo
         }
 
         return outputLoots;
-
     }
 }
 
