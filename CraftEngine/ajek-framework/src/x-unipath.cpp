@@ -78,7 +78,7 @@ xString xPathConvertFromMsw(const xString& origPath)
     // it is very difficult to port logic that somehow relies on this feature.  In the interest
     // of cross-platform support, we detect this and throw a hard error rather than try to support it.
 
-    if (isalnum(src[0]) && src[1] == ':') {
+    if (isalnum((u8)src[0]) && src[1] == ':') {
         dst[0] = '/';
         dst[1] = tolower(src[0]);
 
@@ -124,7 +124,9 @@ xString xPathConvertFromMsw(const xString& origPath)
         }
         else {
             // allow format /c or /c/ and nothing else:
-            if (!isalnum(src[1]) || (src[2] && src[2] != '/')) {
+            // note that windows itself only allows a-z and 0-9 so isalnum() works for us
+            // since it will also reject any unicode chars (which is what we want).
+            if (!isalnum((u8)src[1]) || (src[2] && src[2] != '/')) {
                 x_abort( "Invalid path layout: %s\n"
                     "Rooted paths without drive specification are not allowed.\n"
                     "Please explicitly specify the drive letter in the path.",
@@ -150,7 +152,7 @@ xString xPathConvertToMsw(const xString& unix_path)
     result.Resize(unix_path.GetLength());
     const char* src = unix_path.c_str();
           char* dst = &result[0];
-    if (src[0] == '/' && isalnum(src[1])) {
+    if (src[0] == '/' && isalnum((u8)src[1])) {
         dst[0] = toupper(src[1]);
         dst[1] = ':';
         src  += 2;
@@ -184,7 +186,7 @@ bool xPathIsUniversal(const xString& src)
     //  - look for backslash
     // If neither is present then the path requires no conversion logic.
 
-    if (isalnum(src[0]) && src[1] == ':') return false;
+    if (isalnum((u8)src[0]) && src[1] == ':') return false;
     return (src.FindFirst('\\', 0) == xString::npos);
 #else
     return true;
