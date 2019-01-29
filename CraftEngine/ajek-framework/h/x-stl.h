@@ -68,7 +68,7 @@ struct Defer_t {
     std::function<void()>   m_func;
 
     Defer_t() throw() { }
-    Defer_t(std::function<void()> func) throw() {
+    Defer_t(const std::function<void()>& func) throw() {
         m_func = func;
     }
 
@@ -76,7 +76,7 @@ struct Defer_t {
         m_func();
     }
 
-    void Bind(std::function<void()> func) {
+    void Bind(const std::function<void()>& func) {
         m_func = func;
     }
 };
