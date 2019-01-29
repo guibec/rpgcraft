@@ -24,7 +24,7 @@ struct CliParseState {
     xString         option;
     xString         value;
 
-    xString         diag_filepos;       // filename and line, pre-formatted for diagnostic printout
+    std::function<xString()>  diag_filepos;       // filename and line, pre-formatted for diagnostic printout
 
     void        log_problem(const char* fmt, ...);
     bool        boundscheck_int(int input, int lower, int upper);
@@ -55,10 +55,10 @@ void CliParseState::log_problem(const char* fmt, ...)
     va_end(arglist);
 
     if (s_release_check_mode) {
-        x_abort("%s", formatted.c_str());
+        x_abort("%s%s", diag_filepos().c_str(), formatted.c_str());
     }
     else {
-        warn_host("%s", formatted.c_str());
+        warn_host("%s%s", diag_filepos().c_str(), formatted.c_str());
     }
 }
 
@@ -84,7 +84,7 @@ s64 to_s64(const char* src, char** endpos=nullptr, int radix=0)
 
 void to_int2(const int2& dest, const xString& src)
 {
-    xStringTokenizer tok(src);
+    xStringTokenizer tok(",", src);
     auto xpos = to_s64(tok.GetNextToken());
     auto ypos = to_s64(tok.GetNextToken());
     if (tok.HasMoreTokens()) {
@@ -108,7 +108,7 @@ bool to_bool(bool& dest, const xString& value)
     if (value == "0" || lower == "false" || lower == "off" || lower == "no" ) { dest = false; return dest; }
     if (value == "1" || lower == "true"  || lower == "on"  || lower == "yes") { dest = true;  return dest; }
 
-    s_cli->log_problem("expected boolean value [0,1,yes,no,true,false,on,off]");
+    s_cli->log_problem("expected boolean r-value [0,1,yes,no,true,false,on,off]");
     return dest;
 }
 
@@ -171,13 +171,17 @@ Fn_CliParseCb* validate_option_string(const xString& option)
 }
 
 
-void CliParseOption(const xString& utf8, const xString& file_lineno_diag)
+void CliParseOption(const xString& utf8)
 {
-    x_abort_on(!utf8.StartsWith("--"), "%scli error expected '--' prefix near:\n    %s", file_lineno_diag.c_str(), utf8.c_str());
-    CliParseOptionRaw(utf8, file_lineno_diag, 2);       // readpos = 2, skips '--'
+    CliParseOptionRaw(utf8,
+        [utf8]() {
+            return xFmtStr("error parsing cli arg '%s': ", utf8.c_str());
+        },
+        utf8.StartsWith("--") ? 2 : 0          // readpos = 2, skips '--'
+    );
 }
 
-void CliParseOptionRaw(const xString& utf8, const xString& file_lineno_diag, int startpos)
+void CliParseOptionRaw(const xString& utf8, const std::function<xString()>& file_lineno_diag, int startpos)
 {
     // Tokenizer.
     //   * only care about double dash "--" anything lacking a double-dash prefix is an error.
@@ -201,16 +205,16 @@ void CliParseOptionRaw(const xString& utf8, const xString& file_lineno_diag, int
     int readpos  = startpos;
     int writepos = 0;
     for(;src[readpos];) {
-        x_abort_on(_sopt_isWhitespace(utf8.data()[readpos]), "%scli error whitespace is not allowed in option"   "\n    %s", file_lineno_diag.c_str(), utf8.c_str());
-        x_abort_on(writepos >= bulkof(optmp)-1,              "%scli error option exceeds length limit of %d"     "\n    %s", file_lineno_diag.c_str(), bulkof(optmp)-1, utf8.c_str());
+        x_abort_on(_sopt_isWhitespace(utf8.data()[readpos]), "%swhitespace is not allowed in option", file_lineno_diag().c_str());
+        x_abort_on(writepos >= bulkof(optmp)-1,              "%soption exceeds length limit of %d"  , file_lineno_diag().c_str(), bulkof(optmp)-1);
 
         optmp[writepos] = utf8.data()[readpos++];
         if (optmp[writepos] == '=') break;
         ++writepos;
     }
 
-    x_abort_on(optmp[writepos] != '=', "%scli error assignment operator '=' is required"  "\n    %s", file_lineno_diag.c_str(), utf8.c_str());
-    x_abort_on(!writepos,              "%scli error zero-length option not allowed"       "\n    %s", file_lineno_diag.c_str(), utf8.c_str());
+    x_abort_on(optmp[writepos] != '=', "%sassignment operator '=' is required", file_lineno_diag().c_str());
+    x_abort_on(!writepos,              "%szero-length option not allowed"     , file_lineno_diag().c_str());
 
     optmp[writepos] = 0;
 

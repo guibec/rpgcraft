@@ -1,12 +1,11 @@
 
---release-check=false
---asset-search-dir=./assets
---asset-search-dir=../unity/assets
+release-check    = false
+asset-search-dir = ./assets
 
 # Read in window/display settings saved during previous run
 # (this step would not be included on console editions)
---load-cli=./.ajek/saved-ui-state.cli.txt
+load-cli=./.ajek/saved-ui-state.cli.txt
 
 # Read in local developer configuration settings.
---load-cli=./.ajek/user-config-local.cli.txt
+load-cli=./.ajek/user-config-local.cli.txt
 

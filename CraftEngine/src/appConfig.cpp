@@ -13,6 +13,7 @@ DECLARE_MODULE_NAME("config");
 
 HostwindowSettings g_settings_hostwnd;
 
+
 void CliParseFromFile(const xString& srcfullpath)
 {
     auto* fp = xFopen(srcfullpath, "rb");
@@ -27,6 +28,10 @@ void CliParseFromFile(const xString& srcfullpath)
     xString curline;
     bool    eof = 0;
     int     lineno = 0;
+
+    auto getdiagstr_file_lineno = [&]() {
+        return xFmtStr("error parsing cli:\n%s(%d): ", Host_GetFullPathName(srcfullpath).c_str(), lineno);
+    };
 
     while (!eof) {
 clear_line:
@@ -69,20 +74,50 @@ append_line:
         //  (or put the other way, they all expect it to be stripped).
         //
         // Therefore we provide rudimentary quotes parsing here.
+        // To further match user behavior expectations in files, quotes are only allowed on rvalues.
 
         const char* src = curline.data();
               char* dst = curline.data();
 
         char quotes_mode = 0;
+        bool is_rvalue = 0;
+        bool is_leading_white  = 1;
+        bool is_trailing_white = 0;
 
         for (; src[0]; ++src) {
-            if (src[0] == quotes_mode) {
-                quotes_mode = 0;
-                continue;
+            if (is_leading_white && src[0] == ' ') continue;
+            is_leading_white = 0;
+
+            bool is_any_quote = (src[0] == '"') || (src[0] == '\'');
+            bool is_any_space = (src[0] == ' ') || (src[0] == '\t');
+
+            x_abort_on(!is_rvalue && is_any_quote, "%squotes are not allowed in l-values", getdiagstr_file_lineno().c_str());
+
+            if (is_rvalue) {
+                if (src[0] == quotes_mode) {
+                    quotes_mode = 0;
+                    continue;
+                }
+                if (!quotes_mode && is_any_quote) {
+                    quotes_mode = src[0];
+                    continue;
+                }
             }
-            if (!quotes_mode && (src[0] == '"') || (src[0] == '\'')) {
-                quotes_mode = src[0];
-                continue;
+            else {
+                if (src[0] == '=') {
+                    is_rvalue = 1;
+                    is_leading_white  = 1;
+                    is_trailing_white = 0;
+                }
+                elif (is_trailing_white) {
+                    if (is_any_space) continue;
+
+                    x_abort("%sl-values cannot contain whitespace", getdiagstr_file_lineno().c_str());
+                }
+                elif (is_any_space) {
+                    is_trailing_white = 1;
+                    continue;
+                }
             }
 
             dst[0] = src[0];
@@ -92,10 +127,18 @@ append_line:
         bug_on(dst > src);
         curline.Resize(dst - curline.data());
 
-        if (quotes_mode) {
-            x_abort("%s(%d): error unclosed %s-quote", srcfullpath.c_str(), lineno, quotes_mode == '"' ? "double" : "single");
+        // remove trailing whitespace .. just tabs and spaces.  Newlines had to have been escaped
+        // and so those should be honored as part of the entire string.
+
+        auto trailing_space_pos = curline.FindLastNot(" \t");
+        if (trailing_space_pos != xString::npos) {
+            curline.Erase(trailing_space_pos+1);
         }
 
-        CliParseOptionRaw(curline, xFmtStr("%s(%d): ", srcfullpath.c_str(), lineno), 2);
+        if (quotes_mode) {
+            x_abort("%serror unclosed %s-quote", getdiagstr_file_lineno().c_str(), quotes_mode == '"' ? "double" : "single");
+        }
+
+        CliParseOptionRaw(curline, getdiagstr_file_lineno);
     }
 }

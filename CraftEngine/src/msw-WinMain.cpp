@@ -424,6 +424,22 @@ xString Host_GetCWD()
     return ret ? xString(buff) : xString();
 }
 
+xString Host_GetFullPathName(const xString& relpath)
+{
+    if (xPathIsAbsolute(relpath)) {
+        return relpath;
+    }
+
+    wchar_t meh[4096];
+    auto len = ::GetFullPathNameW(toUTF16(relpath).wc_str(), 4095, meh, nullptr);
+    if (len == 0) {
+        warn_host("GetFullPathNameW('%s') failed.", relpath.c_str());
+        return relpath;
+    }
+    return meh;
+}
+
+
 bool Msw_DrainMsgQueue()
 {
     MSG msg = { 0 };
@@ -455,19 +471,43 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // an assist to microsoft for being kind enough to just provide these as globals already.
     auto g_argc = __argc;
 
+    #if 0       // diag thing
     for (int a=1; a<g_argc; ++a) {
-        //OutputDebugString( g_argv[a] );
-        //OutputDebugString( TEXT("\n") );
+        OutputDebugStringA( __argv[a] );
+        OutputDebugStringA( TEXT("\n") );
+    }
+    #endif
 
+    // look for some first-chance switches in the cli.
+    // Anything prefixed with a double-dash is applied _before_ the package config.
+    // Anything without double-dash is processed _after_ the package config.
+    // This allows developers to specify CLI options that override the package config.
+
+    for (int a=1; a<g_argc; ++a) {
 #ifdef UNICODE
         xString utf8(__wargv[a]);
 #else
         xString utf8(__argv[a]);
 #endif
-        CliParseOption(utf8);
+
+        if (utf8.StartsWith("--")) {
+            CliParseOption(utf8);
+        }
     }
 
     CliParseFromFile("config-package-msw.cli.txt");
+
+    for (int a=1; a<g_argc; ++a) {
+#ifdef UNICODE
+        xString utf8(__wargv[a]);
+#else
+        xString utf8(__argv[a]);
+#endif
+
+        if (!utf8.StartsWith("--")) {
+            CliParseOption(utf8);
+        }
+    }
 
     AjekScript_InitAlloc();
 
