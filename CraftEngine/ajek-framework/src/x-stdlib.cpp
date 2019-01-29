@@ -104,12 +104,26 @@ void xMalloc_ReportDelta()
 // ======================================================================================
 // ======================================================================================
 
+
+bool xStatInfo::IsFile     () const { return st_mode & S_IFREG; }
+bool xStatInfo::IsDir      () const { return st_mode & S_IFDIR; }
+bool xStatInfo::Exists     () const { return st_mode & (S_IFDIR | S_IFREG); }
+
 // --------------------------------------------------------------------------------------
-bool xFileExists(const xUniPath& upath)
+xStatInfo xFileStat(const xUniPath& upath)
 {
-    if (upath.IsEmpty()) return false;
+    if (upath.IsEmpty()) return {};
     struct _stat64 sinfo;
-    return( _stat64 (upath.GetLibcStr(), &sinfo ) != -1 );
+
+    if (_stat64 (upath.GetLibcStr(), &sinfo ) == -1) return {};
+
+    return {
+        sinfo.st_mode,
+        sinfo.st_size,
+        sinfo.st_atime,
+        sinfo.st_mtime,
+        sinfo.st_ctime
+    };
 }
 
 // --------------------------------------------------------------------------------------
@@ -194,11 +208,13 @@ bool xFileRename( const xUniPath& src_, const xUniPath& dest_ )
 //
 // Returns FALSE if the stream is EOF.
 //
-// [TODO] Add support for multi-line quoted strings and backslashed (escaped) EOL!
-//
 bool xFgets(xString& dest, FILE* stream)
 {
     if (feof(stream)) return false;
+
+    // Dev note: do not add support for escaping EOLs or quotes.
+    // Parsing those sort of things should be the job of the caller because there's
+    // far to many nuanced behavioral choices about how to handle those.
 
     bool isCR = false;
     while (1)
@@ -245,10 +261,6 @@ bool _createDirectory( const char* dir )
     }
 
     return ((info.st_mode & _S_IFDIR) == _S_IFDIR);
-}
-
-bool xCreateDirectory( const xString& dir ) {
-    return xCreateDirectory(xUniPathInit(dir));
 }
 
 // Creates entire hierarchy of requested directory trees.
@@ -314,6 +326,20 @@ FILE* xFopen( const xString& fullpath, const char* mode )
     auto result = fopen_s( &fp, xUniPathInit(fullpath).GetLibcStr(), mode );
     if (result) { fp = nullptr; }
     return fp;
+}
+
+xStatInfo xFileStat(const xString& path)
+{
+    return xFileStat(xUniPathInit(path));
+}
+
+bool xFileRename(const xString& src_, const xString& dest_)
+{
+    return xFileRename(xUniPathInit(src_), xUniPathInit(dest_));
+}
+
+bool xCreateDirectory( const xString& dir ) {
+    return xCreateDirectory(xUniPathInit(dir));
 }
 
 
