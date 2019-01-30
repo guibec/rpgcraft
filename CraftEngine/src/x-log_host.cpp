@@ -3,6 +3,7 @@
 #include "x-types.h"
 #include "x-string.h"
 #include "x-thread.h"
+#include "x-stdfile.h"
 #include "x-assertion.h"
 
 #include "x-chrono.h"
@@ -124,31 +125,15 @@ static void advanceMyLog( int numChars )
 }
 
 // --------------------------------------------------------------------------------------
-void vlog_append_host_clock(xString& dest)
-{
-    dest.AppendFmt("[%8.03fsec] ", Host_GetProcessTicks().asSeconds());
-}
-
-void vlog_append_prefix(xString& buffer, const char* moduleName)
-{
-    if (moduleName && moduleName[0])
-        buffer.AppendFmt("%-8s", moduleName);
-    else
-        buffer.Append("        ");
-}
-
-
-// --------------------------------------------------------------------------------------
 void xPrintLn(const xString& msg)
 {
     xScopedMutex lock(s_mtx_unilogger);
 
-    if (1)                  { xOutputString(msg + "\n");    }
-    if (s_myLog)            { fputs(msg + "\n", s_myLog);   }
+    if (1)                  { xOutputString(msg + "\n", stdout);    }
+    if (s_myLog)            { fputs(msg + "\n", s_myLog);           }
 }
 
-// --------------------------------------------------------------------------------------
-void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
+static void _host_log_v(FILE* std_fp, const char* fmt, va_list list)
 {
     if (!fmt || !fmt[0])
     {
@@ -156,55 +141,12 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
         // (sometimes used to generate visual separation in the console output)
 
         xScopedMutex lock(s_mtx_unilogger);
-        xOutputString("\n");
+        xOutputString("\n", std_fp);
         if (s_myLog) fputs("\n", s_myLog);
         return;
     }
 
     xString buffer;
-    vlog_append_prefix      (buffer, moduleName);
-    vlog_append_host_clock  (buffer);
-
-    if (fmt && fmt[0])
-    {
-        va_list list;
-        va_start(list, fmt);
-        buffer.AppendFmtV(fmt, list);
-        buffer += "\n";
-        va_end(list);
-    }
-
-    xScopedMutex lock(s_mtx_unilogger);
-
-    if (flags & xLogFlag_Important) { xOutputStringError(buffer); }
-    else                            { xOutputString     (buffer); }
-
-    if (s_myLog)
-    {
-        fputs(buffer, s_myLog);
-        //fflush(s_myLog);      // fflush(nullptr) performend on sigsegv handler.
-        advanceMyLog(buffer.GetLength() + 10);
-    }
-
-    //spamAbortCheck(buffer.GetLength() + 10);
-}
-
-void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list list)
-{
-    if (!fmt || !fmt[0])
-    {
-        // just treat it as a newline, no prefixing or other mess.
-        // (sometimes used to generate visual separation in the console output)
-
-        xScopedMutex lock(s_mtx_unilogger);
-        xOutputString("\n");
-        if (s_myLog) fputs("\n", s_myLog);
-        return;
-    }
-
-    xString buffer;
-    vlog_append_prefix      (buffer, moduleName);
-    vlog_append_host_clock  (buffer);
 
     if (fmt && fmt[0])
     {
@@ -214,18 +156,44 @@ void _host_log_v(uint flags, const char* moduleName, const char* fmt, va_list li
 
     xScopedMutex lock(s_mtx_unilogger);
 
-    if (flags & xLogFlag_Important) { xOutputStringError(buffer); }
-    else                            { xOutputString     (buffer); }
+    xOutputString(buffer, std_fp);
 
     if (s_myLog)
     {
         fputs(buffer, s_myLog);
-        //fflush(s_myLog);      // fflush(nullptr) performend on sigsegv handler.
+        //fflush(s_myLog);      // fflush(nullptr) performed on sigsegv handler.
         advanceMyLog(buffer.GetLength() + 10);
     }
 
     //spamAbortCheck(buffer.GetLength() + 10);
 }
+
+void log_host(const char* fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    _host_log_v(stdout, fmt, list);
+    va_end(list);
+}
+
+void log_host_v(const char* fmt, va_list list)
+{
+    _host_log_v(stdout, fmt, list);
+}
+
+void warn_host(const char* fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    _host_log_v(stderr, fmt, list);
+    va_end(list);
+}
+
+void warn_host_v(const char* fmt, va_list list)
+{
+    _host_log_v(stderr, fmt, list);
+}
+
 
 void flush_log()
 {

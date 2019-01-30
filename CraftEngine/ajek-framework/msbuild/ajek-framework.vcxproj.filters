@@ -123,6 +123,12 @@
     <ClInclude Include="..\h\x-unipath.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
+    <ClInclude Include="..\h\x-stdfile.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-stdalloc.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Includes">

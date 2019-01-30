@@ -1,6 +1,7 @@
 #include "PCH-rpgcraft.h"
 
 #include "x-types.h"
+#include "x-stdfile.h"
 #include "ajek-script.h"
 #include "appConfig.h"
 
@@ -10,8 +11,6 @@
 
 static std::vector<xString> s_asset_search_dirs;
 static bool s_release_check_mode = false;
-
-DECLARE_MODULE_NAME("CliOpt");
 
 enum CliResultType
 {

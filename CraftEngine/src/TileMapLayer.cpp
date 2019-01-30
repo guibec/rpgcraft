@@ -9,8 +9,6 @@
 #include "TileMapLayer.h"
 #include "DbgFont.h"
 
-DECLARE_MODULE_NAME("TileMap");
-
 // Probably need some sort of classification system here.
 // Some terrains may change over time, such as grow moss after being crafted.
 //  - Maybe better handled as a generic "age" engine feature?

@@ -10,8 +10,6 @@
 #include "x-pad.h"
 #include "x-host-ifc.h"
 
-DECLARE_MODULE_NAME("kpad");
-
 #if 0
 #   define trace_kpad(...)      log_host( __VA_ARGS__ )
 #else

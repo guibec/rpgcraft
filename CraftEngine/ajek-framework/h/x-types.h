@@ -899,10 +899,6 @@ inline __ai bool IsInInt32u(u64 x)  { return (x <= 0xFFFFFFFFUL); }
 #   define __FUNCTION_NAME__        ((const char*)__FUNCTION__)
 #endif
 
-#define DECLARE_MODULE_NAME_CLASS( name )   static      __unused const char* const s_ModuleName;
-#define DECLARE_MODULE_NAME_LOCAL( name )   static      __unused const char* const s_ModuleName = name;
-#define DECLARE_MODULE_NAME( name )         namespace { __unused const char* const s_ModuleName = name; }
-
 // -------------------------------------------------------------
 //                     C++ Class Macros
 // -------------------------------------------------------------

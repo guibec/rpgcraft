@@ -205,11 +205,6 @@ enum DbgBreakType
     DbgBreakType_Abort,
 };
 
-enum xLogFlag {
-    xLogFlag_Default        = 0,
-    xLogFlag_Important      = (1 << 0),     // warnings or errors, honored by log_verbose only, also assumes NoRepeat.
-};
-
 struct AssertContextInfoTriad {
     const char*     filepos;
     const char*     funcname;
@@ -220,8 +215,10 @@ struct AssertContextInfoTriad {
 extern void     vlog_append_host_clock  (xString& dest);
 extern void     vlog_append_prefix      (xString& buffer, const char* moduleName);
 
-extern void     _host_log           (uint flags, const char* moduleName, const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
-extern void     _host_log_v         (uint flags, const char* moduleName, const char* fmt, va_list params);
+extern void     log_host           (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
+extern void     warn_host          (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
+extern void     log_host_v         (const char* fmt, va_list params);
+extern void     warn_host_v        (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
 
 extern void     xPrintLn            (const xString& msg);
 extern void     flush_log           ();
@@ -233,33 +230,24 @@ extern void     xStopProcess        ( const char* filepos, const char* funcname 
 extern assert_t xDebugBreak         ( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt=nullptr, ... ) __verify_fmt(3, 4);
 extern assert_t xDebugBreak_v       ( DbgBreakType breakType, const AssertContextInfoTriad& triad, const char* fmt, va_list list );
 
-// Writes directly to debug console where supported (visual studio), or stdout otherwise.
-extern void     xOutputString       (const char* str);
-
-// Writes directly to debug console where supported (visual studio), or stderr otherwise.
-extern void     xOutputStringError(const char* msg);
-
 extern bool     xIsDebuggerAttached ();
 
-#define log_host(...)                        _host_log      (xLogFlag_Default,      s_ModuleName,           ## __VA_ARGS__)
-#define log_host_loud(...)                   _host_log      (xLogFlag_Important,    s_ModuleName,           ## __VA_ARGS__)
-#define warn_host(...)                       _host_log      (xLogFlag_Important,    s_ModuleName, "WARN: "  ## __VA_ARGS__)
-#define warn_host_on(cond,...)  ((cond) &&  (_host_log      (xLogFlag_Important,    s_ModuleName, "WARN: "  ## __VA_ARGS__), true))
+#define warn_host_on(cond,...)  ((cond) &&  (warn_host      (__VA_ARGS__), true))
 
 #if ENABLE_DEBUG_LOG
-#   define log_debug(fmt, ...)          _host_log( xLogFlag_Default, s_ModuleName, fmt, ## __VA_ARGS__ )
+#   define log_debug(fmt, ...)          log_host( fmt, ## __VA_ARGS__ )
 #else
 #   define log_debug(fmt, ...)          ((void)0)
 #endif
 
 #if ENABLE_QA_LOG
-#   define log_qa(fmt, ...)             _host_log( xLogFlag_Default, s_ModuleName, fmt, ## __VA_ARGS__ )
+#   define log_qa(fmt, ...)             log_host( fmt, ## __VA_ARGS__ )
 #else
 #   define log_qa(fmt, ...)             ((void)0)
 #endif
 
 #if ENABLE_PERF_LOG
-#   define log_perf( fmt, ... )         _host_log( xLogFlag_Default, s_ModuleName, fmt, ## __VA_ARGS__ )
+#   define log_perf( fmt, ... )         log_host( fmt, ## __VA_ARGS__ )
 #else
 #   define log_perf( fmt, ... )         ((void)0)
 #endif
@@ -269,8 +257,8 @@ extern bool     xIsDebuggerAttached ();
 #       define  x_abort(...)                                 (void(_inline_abort_("error/abort", ## __VA_ARGS__)))
 #       define  x_abort_on(cond,...)            ( (cond) &&  (    (_inline_abort_( # cond,       ## __VA_ARGS__)), true) )
 #   else
-#       define  x_abort(...)                                 (_host_log(xLogFlag_Important, "abort",    ## __VA_ARGS__),    __stop())
-#       define  x_abort_on(cond,...)            ( (cond) &&  (_host_log(xLogFlag_Important, "abort",    ## __VA_ARGS__),    __stop(), true) )
+#       define  x_abort(...)                                 (log_host(__VA_ARGS__),    __stop())
+#       define  x_abort_on(cond,...)            ( (cond) &&  (log_host(__VA_ARGS__),    __stop(), true) )
 #   endif
 #   define      abort_var(...)                      __VA_ARGS__
 #else
@@ -290,7 +278,7 @@ extern bool     xIsDebuggerAttached ();
 #if ENABLE_HOST_TRACE_LOGS
 #   define HostTraceEnter()         _verbose_log( 0, __FILEPOS__, __FUNCTION_NAME__, " entered." )
 #   define HostTraceLeave()         _verbose_log( 0, __FILEPOS__, __FUNCTION_NAME__, " completed." )
-#   define HostTraceCheckpoint()    _verbose_log( 0, __FILEPOS__, __FUNCTION_NAME__, " --> Checkpoint Reached" )
+#   define HostTraceCheckpont()    _verbose_log( 0, __FILEPOS__, __FUNCTION_NAME__, " --> Checkpoint Reached" )
 #else
 #   define HostTraceEnter()         ((void)0)
 #   define HostTraceLeave()         ((void)0)
@@ -457,8 +445,8 @@ namespace
 // behavior even in final builds.
 //
 #if ENABLE_WARNING_LOGS
-#   define  warn(msg, ...)                          _host_log( xLogFlag_Important, s_ModuleName, "WARN: " msg,          ## __VA_ARGS__ )
-#   define  warn_on(cond, ...)      ( (cond) && (   _host_log( xLogFlag_Important, s_ModuleName, "WARN: " # cond ", "   ## __VA_ARGS__ ), true) )
+#   define  warn(msg, ...)                          log_host( msg, ## __VA_ARGS__ )
+#   define  warn_on(cond, ...)      ( (cond) && (   log_host( "(warn on) " # cond,  ## __VA_ARGS__ ), true) )
 #else
 #   define  warn(...)               (false)
 #   define  warn_on(cond, ...)      (false)
@@ -502,7 +490,7 @@ inline __ai void xStopProcess(const char* filepos, const char* func)
 {
     // do not call log_abort() here, causes recursion...
     if (ENABLE_ABORT_LOG) {
-        _host_log( xLogFlag_Important, nullptr, filepos, "(function '%s'): Process halted by way of __stop() or similar.", func );
+        log_host("%s: (function '%s') Process halted by way of __stop() or similar.", filepos, func );
     }
 
     abort();

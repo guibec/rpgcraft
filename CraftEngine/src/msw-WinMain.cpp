@@ -18,8 +18,6 @@
 
 #include <direct.h>     // for _getcwd()
 
-DECLARE_MODULE_NAME("winmain");
-
 extern void         LogHostInit();
 extern void         MSW_InitChrono();
 extern VirtKey_t    ConvertFromMswVK( UINT key );
@@ -581,7 +579,7 @@ void xOutputStringError(const char* str)
     }
 }
 
-void xOutputString(const char* str)
+void xOutputString(const char* str, FILE* std_fp)
 {
 #if MSW_ENABLE_DEBUG_OUTPUT
     if (::IsDebuggerPresent())

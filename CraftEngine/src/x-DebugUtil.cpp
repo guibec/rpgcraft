@@ -3,6 +3,7 @@
 
 #include "x-types.h"
 #include "x-string.h"
+#include "x-stdfile.h"
 
 
 xString xGetTempDir()

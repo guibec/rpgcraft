@@ -12,8 +12,6 @@
 #include "Scene.h"
 #include "Mouse.h"
 
-DECLARE_MODULE_NAME("player");
-
 GPU_ConstantBuffer      gpu_constbuf;
 GPU_TextureResource2D   tex_camel[4][3];
 GPU_TextureResource2D   tex_hero [4][3];
