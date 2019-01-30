@@ -87,17 +87,19 @@ bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
 }
 
 template<typename T>
-bool strtoanynum(T& dest, const char* src, char** endpos=nullptr, int radix=0)
+bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
-    constexpr bool is_unsigned = std::is_unsigned<T>::value;
+    // this implementation works on the restriction that full-range u64 (unsigned 64-bit) is
+    // not supported.  Given that restriction, full range unsigned 32, 16, and 8 bit values can
+    // be supported since their unsigned representations readily fit within the signed-64 bit space.
 
     s64 full_result;
     bool success = to_s64(full_result, src, endpos, radix);
     if (success) {
         if (full_result != (T)full_result) {
             // log out ranges ony for word/byte size types.
-            s_cli->log_problem("strtoanynum<%c%d>(src='%s', radix=%d) integer overflow. %s",
-                is_unsigned ? 'u' : 's', sizeof(T) * 8, src, radix,
+            s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
+                std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
                 ((sizeof(T) <= 2)
                     ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
                     : ""
@@ -116,8 +118,8 @@ bool strtoanynum(T& dest, const char* src, char** endpos=nullptr, int radix=0)
 bool to_int2(int2& dest, const xString& src)
 {
     xStringTokenizer tok(",", src);
-    if (!strtoanynum(dest.x, tok.GetNextToken())) return false;
-    if (!strtoanynum(dest.y, tok.GetNextToken())) return false;
+    if (!strtoanyint(dest.x, tok.GetNextToken())) return false;
+    if (!strtoanyint(dest.y, tok.GetNextToken())) return false;
     if (tok.HasMoreTokens()) {
         s_cli->log_problem("%signoring extra tokens in value");
     }
