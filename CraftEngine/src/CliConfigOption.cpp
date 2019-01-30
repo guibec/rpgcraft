@@ -5,6 +5,9 @@
 #include "ajek-script.h"
 #include "appConfig.h"
 
+#include "x-stl.h"
+#include <type_traits>
+
 #if !defined(VALIDATE_CLI_OPTIONS_LIST)
 #   define VALIDATE_CLI_OPTIONS_LIST     1
 #endif
@@ -63,7 +66,7 @@ void CliParseState::log_problem(const char* fmt, ...)
 
 static thread_local CliParseState* s_cli;
 
-s64 to_s64(const char* src, char** endpos=nullptr, int radix=0)
+bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
     // strtol / strtoll have some strange behavior about handling overflow.
     // It supposedly returns LLONG_MAX and sets errno=ERANGE, and sets endpos to the last character at
@@ -77,19 +80,48 @@ s64 to_s64(const char* src, char** endpos=nullptr, int radix=0)
     auto result = strtoll(src, endpos, radix);
     if (errno) {
         s_cli->log_problem("toInt64(src='%s', radix=%d) failed: %s", src, radix, strerror(errno));
+        return false;
     }
-    return result;
+    dest = result;
+    return true;
 }
 
-void to_int2(const int2& dest, const xString& src)
+template<typename T>
+bool strtoanynum(T& dest, const char* src, char** endpos=nullptr, int radix=0)
+{
+    constexpr bool is_unsigned = std::is_unsigned<T>::value;
+
+    s64 full_result;
+    bool success = to_s64(full_result, src, endpos, radix);
+    if (success) {
+        if (full_result != (T)full_result) {
+            // log out ranges ony for word/byte size types.
+            s_cli->log_problem("strtoanynum<%c%d>(src='%s', radix=%d) integer overflow. %s",
+                is_unsigned ? 'u' : 's', sizeof(T) * 8, src, radix,
+                ((sizeof(T) <= 2)
+                    ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
+                    : ""
+                )
+            );
+            success = 0;
+        }
+    }
+    if (success) {
+        dest = (T)full_result;
+    }
+    return success;
+}
+
+
+bool to_int2(int2& dest, const xString& src)
 {
     xStringTokenizer tok(",", src);
-    auto xpos = to_s64(tok.GetNextToken());
-    auto ypos = to_s64(tok.GetNextToken());
+    if (!strtoanynum(dest.x, tok.GetNextToken())) return false;
+    if (!strtoanynum(dest.y, tok.GetNextToken())) return false;
     if (tok.HasMoreTokens()) {
-        s_cli->log_problem("%signoring extra tokens ");
+        s_cli->log_problem("%signoring extra tokens in value");
     }
-
+    return true;
 }
 
 static inline bool _sopt_isWhitespace( char ch )
@@ -134,9 +166,10 @@ static const CliOptionDesc s_valid_options_list[] = {
         }
     }},
     { "window-client-pos"           ,[](const xString& value){
-        to_int2(g_settings_hostwnd.client_pos, value);
+        g_settings_hostwnd.has_client_pos  |= to_int2(g_settings_hostwnd.client_pos,  value);
     }},
     { "window-client-size"          ,[](const xString& value){
+        g_settings_hostwnd.has_client_size |= to_int2(g_settings_hostwnd.client_size, value);
     }},
 
     // Visual Studio script debug mode:
