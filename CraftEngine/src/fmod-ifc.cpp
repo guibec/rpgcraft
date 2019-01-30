@@ -28,7 +28,6 @@ enum {
     AudioGroup_UI,
 };
 
-DECLARE_MODULE_NAME("fmod");
 DECLARE_MODULE_THROW(xThrowModule_FMOD);
 
 #define check_result(res)   res && bug("FMOD Error 0x%08x: %s", res, fmod_result_toString(res))

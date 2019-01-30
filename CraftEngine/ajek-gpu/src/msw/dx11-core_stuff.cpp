@@ -22,8 +22,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-DECLARE_MODULE_NAME("dx11");
-
 #include "x-MemCopy.inl"
 
 DECLARE_MODULE_THROW(xThrowModule_GPU);     // enables use of throw_abort() macro
@@ -219,7 +217,7 @@ void dx11_Release(T*& resource)
     if (!resource) return;
 
     if (dx11_ObjectReportEnabled()) {
-        log_host("(runtime) Releasing managed object @ %s", cPtrStr(resource, ""));
+        log_host("[dx11](runtime) Releasing managed object @ %s", cPtrStr(resource, ""));
     }
 
 #if DX11_DEBUG_FLAG_SUPPORT
@@ -353,7 +351,7 @@ void dx11_CleanupDevice()
 #if DX11_DEBUG_FLAG_SUPPORT
     for(auto& ref : s_dx11_managed_objects) {
         if (dx11_ObjectReportEnabled()) {
-            log_host("(Cleanup) Releasing managed object @ %s", cPtrStr(ref, ""));
+            log_host("[dx11](Cleanup) Releasing managed object @ %s", cPtrStr(ref, ""));
         }
         ((IUnknown*)ref)->Release();
     }
@@ -775,7 +773,7 @@ ID3D11InputLayout* do_prep_inputLayout()
     newCacheItem.inputDescHash = s_CurrentInputDesc->GetHash();
 
     pragma_todo("Add user-defined long-name description to InputDesc for logging and debugging.");
-    log_perf( "Adding new InputLayout to cache, hash=0x%08x count=%d", fullhash_vs, s_dx11_InputLayoutCache.size() );
+    log_perf( "[dx11] Adding new InputLayout to cache, hash=0x%08x count=%d", fullhash_vs, s_dx11_InputLayoutCache.size() );
 
     HRESULT hr;
     hr = g_pd3dDevice->CreateInputLayout(

@@ -1,6 +1,9 @@
 
 #include "PCH-framework.h"
+
+#include "x-types.h"
 #include "x-chrono.h"
+#include "x-stdfile.h"
 
 #if USE_GLIBC_MACRO_FIXUP
 #   undef __unused
@@ -23,8 +26,6 @@
 #   define __unused     __UNUSED
 #   define __xi         __ALWAYS_INLINE_FUNCTION
 #endif
-
-DECLARE_MODULE_NAME( "x-stdlib" );
 
 #include "x-MemCopy.inl"
 

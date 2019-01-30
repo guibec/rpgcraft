@@ -110,6 +110,8 @@
     <ClInclude Include="..\h\x-png-encode.h" />
     <ClInclude Include="..\h\x-ScopedMalloc.h" />
     <ClInclude Include="..\h\x-simd.h" />
+    <ClInclude Include="..\h\x-stdalloc.h" />
+    <ClInclude Include="..\h\x-stdfile.h" />
     <ClInclude Include="..\h\x-stdlib.h" />
     <ClInclude Include="..\h\x-stl.h" />
     <ClInclude Include="..\h\x-string.h" />

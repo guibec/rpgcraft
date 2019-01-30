@@ -3,6 +3,7 @@
 #include "x-types.h"
 #include "x-simd.h"
 #include "x-BitmapData.h"
+#include "x-stdlib.h"
 
 enum GPU_ResourceFmt : u8
 {

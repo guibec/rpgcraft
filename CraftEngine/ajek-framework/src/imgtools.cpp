@@ -5,7 +5,6 @@
 
 using namespace imgtool;
 
-DECLARE_MODULE_NAME("imgtool");
 DECLARE_MODULE_THROW(xThrowModule_Bridge);
 
 static __ai void _imt_copyscan(const u32* srcptr, u32* destptr, int copylen)

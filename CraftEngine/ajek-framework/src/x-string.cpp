@@ -6,8 +6,6 @@
 #include "x-string.h"
 
 
-DECLARE_MODULE_NAME( "x-string" );
-
 //
 // Converts a u32 to a binary string.
 // [TODO] : Rename this to "binaryToString()" or something slightly more obvious.

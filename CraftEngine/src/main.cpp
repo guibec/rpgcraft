@@ -30,8 +30,6 @@
 
 using namespace DirectX;
 
-DECLARE_MODULE_NAME("main");
-
 GPU_IndexBuffer         g_idx_box2D;
 GPU_ShaderVS            g_ShaderVS_Tiler;
 GPU_ShaderFS            g_ShaderFS_Tiler;

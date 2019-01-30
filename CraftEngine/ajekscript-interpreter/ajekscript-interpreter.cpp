@@ -60,7 +60,7 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const AssertContextInfoTriad& tr
     return assert_break;
 }
 
-void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
+void log_host(const char* fmt, ...)
 {
     if (fmt && fmt[0])
     {
@@ -69,6 +69,14 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
         vprintf(fmt, list);
         va_end(list);
         printf("\n");
+    }
+}
+
+void log_host_v(const char* fmt, va_list list)
+{
+    if (fmt && fmt[0])
+    {
+        vprintf(fmt, list);
     }
 }
 
@@ -108,8 +116,6 @@ extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t 
         memcpy(out, result.c_str() + l - bufflen, bufflen * sizeof(char) + 1);
     }
 }
-
-DECLARE_MODULE_NAME("as-int");
 
 extern "C" void ajek_warn_new_global(lua_State* L)
 {

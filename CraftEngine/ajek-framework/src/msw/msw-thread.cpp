@@ -7,8 +7,6 @@
 
 #include "x-atomic.h"
 
-DECLARE_MODULE_NAME( "msw-thread" );
-
 // needed for thread profiling.
 void msw_CloneCurrentThread( thread_t& dest )
 {

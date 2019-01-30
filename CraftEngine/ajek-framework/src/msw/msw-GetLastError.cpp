@@ -6,11 +6,6 @@
 #include <fcntl.h>
 
 
-namespace {
-    const char* s_ModuleName = nullptr;     // this module name is not relevant to the errors it logs
-};
-
-
 // --------------------------------------------------------------------------------------
 void msw_AttachToParentConsole()
 {

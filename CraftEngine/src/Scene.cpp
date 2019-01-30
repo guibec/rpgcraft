@@ -22,8 +22,6 @@
 #include <queue>
 #include <ctime>
 
-DECLARE_MODULE_NAME("scene");
-
 typedef std::queue<SceneMessage> SceneMessageList;
 
 static thread_t             s_thr_scene_producer;

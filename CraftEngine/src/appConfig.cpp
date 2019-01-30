@@ -2,14 +2,13 @@
 #include "PCH-rpgcraft.h"
 
 #include "x-types.h"
+#include "x-stdfile.h"
 #include "x-stl.h"
 #include "x-assertion.h"
 
 #include "appConfig.h"
 #include "ajek-script.h"
 
-
-DECLARE_MODULE_NAME("config");
 
 HostwindowSettings g_settings_hostwnd;
 

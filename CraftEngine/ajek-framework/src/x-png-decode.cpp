@@ -1,6 +1,8 @@
 
 #include "PCH-framework.h"
 #include "x-png-decode.h"
+#include "x-stdfile.h"
+
 #include "png.h"
 
 void png_LoadFromFile(xBitmapData& dest, const xString& filename)

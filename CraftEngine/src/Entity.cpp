@@ -11,9 +11,6 @@
 
 #include <unordered_set>
 
-DECLARE_MODULE_NAME("Entity");
-
-
 // Entity Engineering Thoughts:
 //   Currently supporting managed and unmanaged entities for sake of completeness.  Unmnaged entities
 //   are typically static (persisitent) objects within C++ for which pointers are always valid.  There's
