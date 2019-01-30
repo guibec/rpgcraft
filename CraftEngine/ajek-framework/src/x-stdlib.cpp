@@ -283,7 +283,7 @@ bool xCreateDirectory( const xUniPath& orig_unix_dir )
         tokenSkip = 2;
         pos = 2;
     }
-    if(TARGET_MSW && dir[0] == '/' && isalnum(dir[1])) {
+    if(TARGET_MSW && dir[0] == '/' && isalnum((u8)dir[1])) {
         tokenSkip = 1;
         pos = 2;
     }

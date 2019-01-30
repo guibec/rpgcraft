@@ -396,7 +396,8 @@ inline __ai int xMemCmp( const void* d0, const void* d1, uint len )
     return memcmp(d0, d1, len);
 }
 
-#ifdef _MSC_VER
+// not actually sure when strtoll was added to MSVC, somewhere duing VS 2017 lifespan.
+#if defined(_MSC_VER) && (_MSC_VER < 1910)
 inline __ai s64 strtoll(const char * _Str, char ** _EndPtr, int _Radix )
 {
     return _strtoi64( _Str, _EndPtr, _Radix );

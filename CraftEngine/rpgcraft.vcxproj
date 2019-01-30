@@ -81,6 +81,7 @@
   <ItemGroup>
     <ClCompile Include="Box2D.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="src\CliConfigOption.cpp" />
     <ClCompile Include="src\dev-ui\DevUI.cpp" />
     <ClCompile Include="src\fmod-ifc.cpp" />
     <ClCompile Include="src\imgui-console.cpp" />
