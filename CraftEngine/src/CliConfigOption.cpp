@@ -39,6 +39,23 @@ struct CliOptionDesc {
     Fn_CliParseCb*  func;
 };
 
+
+static inline bool _sopt_isWhitespace( char ch )
+{
+    return !ch
+        || (ch == '\r')
+        || (ch == '\n')
+        || (ch == ' ')
+        || (ch == '\t');
+}
+
+static inline bool _sopt_is_number_flag( char ch )
+{
+    auto chl = tolower(ch);
+    return (chl == 'f') || (chl == 'd');
+}
+
+
 bool CliParseState::boundscheck_int(int input, int lower, int upper)
 {
     if (input >= lower && input < upper) {
@@ -66,9 +83,11 @@ void CliParseState::log_problem(const char* fmt, ...)
 
 static thread_local CliParseState* s_cli;
 
+// when endpos=nullptr, the function expects the number to end with either \0 or whitespace.
+// Any non-whitespace character is considered an error.
 bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
-    // strtol / strtoll have some strange behavior about handling overflow.
+    // strtol / strtoll / strtod have some strange behavior about handling overflow.
     // It supposedly returns LLONG_MAX and sets errno=ERANGE, and sets endpos to the last character at
     // the end of the number (not the last character before overflow occurred).
     // For our purposes, it's OK to just force errno=0 before calls and not bother with this LLONG_MAX mess.
@@ -76,18 +95,92 @@ bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
     // Most use cases should do their own bounds checking anyway.  Almost nothing _actually_ supports full-
     // range 64-bit ints.
 
+    char* local_endpos = nullptr;
+    if (!endpos) {
+        endpos = &local_endpos;
+    }
+
     errno = 0;
     auto result = strtoll(src, endpos, radix);
     if (errno) {
-        s_cli->log_problem("toInt64(src='%s', radix=%d) failed: %s", src, radix, strerror(errno));
+        s_cli->log_problem("toInt64(src='%s') failed: %s", src, strerror(errno));
         return false;
     }
+    if (local_endpos && (local_endpos[0] == '.')) {
+        errno = 0;
+        auto result_f = strtof(src, endpos);
+        if (errno) {
+            // as far as I know, this shouldn't really happen (?)
+            s_cli->log_problem("toInt64(src='%s') strtof failed: %s", src, strerror(errno));
+        }
+        elif (result != (s64)result_f) {
+            s_cli->log_problem("toInt64(src='%s') floating point value will be truncated", src, result);
+        }
+        if (local_endpos && _sopt_is_number_flag(local_endpos[0])) {
+            local_endpos += local_endpos[0] ? 1 : 0;
+        }
+    }
+
+    if (local_endpos && (!_sopt_isWhitespace(local_endpos[0]))) {
+        s_cli->log_problem("toInt64(src='%s') unexpected char(s) after integer", src, result);
+    }
+
+    dest = result;
+    return true;
+}
+
+// when endpos=nullptr, the function expects the number to end with either \0 or whitespace.
+// Any non-whitespace character is considered an error.
+bool to_double(double& dest, const char* src, char** endpos=nullptr)
+{
+    char* local_endpos = nullptr;
+    if (!endpos) {
+        endpos = &local_endpos;
+    }
+
+    auto result = strtof(src, endpos);
+    if (errno) {
+        s_cli->log_problem("to_double(src='%s') failed: %s", src, strerror(errno));
+    }
+
+    if (local_endpos && (!_sopt_isWhitespace(local_endpos[0] && !_sopt_is_number_flag(local_endpos[0])))) {
+        s_cli->log_problem("toInt64(src='%s') unexpected char(s) after number", src, result);
+    }
+
     dest = result;
     return true;
 }
 
 template<typename T>
 bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
+{
+    // this implementation works on the restriction that full-range u64 (unsigned 64-bit) is
+    // not supported.  Given that restriction, full range unsigned 32, 16, and 8 bit values can
+    // be supported since their unsigned representations readily fit within the signed-64 bit space.
+
+    s64 full_result;
+    bool success = to_s64(full_result, src, endpos, radix);
+    if (success) {
+        if (full_result != (T)full_result) {
+            // log out ranges ony for word/byte size types.
+            s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
+                std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
+                ((sizeof(T) <= 2)
+                    ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
+                    : ""
+                )
+            );
+            success = 0;
+        }
+    }
+    if (success) {
+        dest = (T)full_result;
+    }
+    return success;
+}
+
+template<typename T>
+bool strtoanynum(T& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
     // this implementation works on the restriction that full-range u64 (unsigned 64-bit) is
     // not supported.  Given that restriction, full range unsigned 32, 16, and 8 bit values can
@@ -124,15 +217,6 @@ bool to_int2(int2& dest, const xString& src)
         s_cli->log_problem("%signoring extra tokens in value");
     }
     return true;
-}
-
-static inline bool _sopt_isWhitespace( char ch )
-{
-    return !ch
-        || (ch == '\r')
-        || (ch == '\n')
-        || (ch == ' ')
-        || (ch == '\t');
 }
 
 bool to_bool(bool& dest, const xString& value)
