@@ -579,18 +579,6 @@ bool xIsDebuggerAttached()
     return ::IsDebuggerPresent();
 }
 
-void xOutputStringError(const char* str)
-{
-#if MSW_ENABLE_DEBUG_OUTPUT
-    if (::IsDebuggerPresent())
-        OutputDebugStringA(str);
-    else
-#endif
-    {
-        fputs(str, stderr);
-    }
-}
-
 void xOutputString(const char* str, FILE* std_fp)
 {
 #if MSW_ENABLE_DEBUG_OUTPUT
@@ -599,7 +587,7 @@ void xOutputString(const char* str, FILE* std_fp)
     else
 #endif
     {
-        fputs(str, stdout);
+        fputs(str, std_fp);
     }
 }
 
