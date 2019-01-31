@@ -10,9 +10,8 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# User-specific files (CraftEngine/ImGui)
-imgui.ini
-saved-settings.lua
+# User-specific files (Ajek-CraftEngine)
+.ajek/
 
 # Build results
 [Dd]ebug/
