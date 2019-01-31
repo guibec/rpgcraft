@@ -56,8 +56,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps;
     HDC hdc;
 
-    ImGuiIO& io = ImGui::GetIO();
-
     switch (msg)
     {
         case WM_MOVE: {
@@ -470,6 +468,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     s_sem_SettingsDirtied.Create("SettingsDirtied");
     s_mtx_saved_by_app.Create("SettingsSavedByApp");
+
+    // Set imgui configurations.
+    // Most of these settings can be overridden by user CLI options
+    ImGui::GetIO().IniFilename = ".ajek/imgui.ini";
+    ImGui::GetIO().LogFilename = ".ajek/imgui.log";
 
     HostClockTick::Init();
     MSW_InitChrono();

@@ -308,6 +308,13 @@ void CliParseOption(const xString& utf8)
     );
 }
 
+// Params:
+//   file_lineno_diag
+//      this is a lambda rather than a pre-made string so that string calc can be done
+//      on-demand.  This avoids the process of building a diagnostic string for every line/argument.
+//   startpos
+//      specifies starting position form which to process input string.  Typically used to advance past
+//      prefix such as `''`.
 void CliParseOptionRaw(const xString& utf8, const std::function<xString()>& file_lineno_diag, int startpos)
 {
     // Tokenizer.
