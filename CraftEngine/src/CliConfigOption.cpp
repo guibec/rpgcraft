@@ -160,18 +160,16 @@ bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
 
     s64 full_result;
     bool success = to_s64(full_result, src, endpos, radix);
-    if (success) {
-        if (full_result != (T)full_result) {
-            // log out ranges ony for word/byte size types.
-            s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
-                std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
-                ((sizeof(T) <= 2)
-                    ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
-                    : ""
-                )
-            );
-            success = 0;
-        }
+    if (success && full_result != (T)full_result) {
+        // log out ranges ony for word/byte size types.
+        s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
+            std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
+            ((sizeof(T) <= 2)
+                ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
+                : ""
+            )
+        );
+        success = 0;
     }
     if (success) {
         dest = (T)full_result;
@@ -179,30 +177,27 @@ bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
     return success;
 }
 
-template<typename T>
-bool strtoanynum(T& dest, const char* src, char** endpos=nullptr, int radix=0)
+bool strtoanynum(double& dest, const char* src, char** endpos=nullptr)
 {
-    // this implementation works on the restriction that full-range u64 (unsigned 64-bit) is
-    // not supported.  Given that restriction, full range unsigned 32, 16, and 8 bit values can
-    // be supported since their unsigned representations readily fit within the signed-64 bit space.
-
-    s64 full_result;
-    bool success = to_s64(full_result, src, endpos, radix);
+    double full_result;
+    bool success = to_double(full_result, src, endpos);
     if (success) {
-        if (full_result != (T)full_result) {
-            // log out ranges ony for word/byte size types.
-            s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
-                std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
-                ((sizeof(T) <= 2)
-                    ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
-                    : ""
-                )
-            );
-            success = 0;
-        }
+        dest = full_result;
+    }
+    return success;
+}
+
+bool strtoanynum(float& dest, const char* src, char** endpos=nullptr)
+{
+    double full_result;
+    bool success = to_double(full_result, src, endpos);
+    if (success && full_result != (float)full_result) {
+        // log out ranges ony for word/byte size types.
+        s_cli->log_problem("strtoanynum<float>(src='%s') ", src);
+        success = 0;
     }
     if (success) {
-        dest = (T)full_result;
+        dest = (float)full_result;
     }
     return success;
 }
