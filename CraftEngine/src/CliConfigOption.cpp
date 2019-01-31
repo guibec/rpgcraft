@@ -49,10 +49,24 @@ static inline bool _sopt_isWhitespace( char ch )
         || (ch == '\t');
 }
 
-static inline bool _sopt_is_number_flag( char ch )
+static inline bool _sopt_is_number_flag( const char* flagc )
 {
-    auto chl = tolower(ch);
-    return (chl == 'f') || (chl == 'd');
+    // Allows 'f' to be specified as the postfix to a number.
+    // allowed mostly as a convenience for C-familiar syntax and copy-paste things.
+
+    // intentionally disregards 'd' postfix, which might have other more important uses
+    // in our cli than for numerical typing.
+
+    bug_on(!flagc);
+    if (!flagc[0]) return true;
+
+    auto chl = tolower(flagc[0]);
+    if (chl != 'f') return false;
+
+    // make sure there's nothing else suspicious after the 'f' (any alphanumerics)
+    // caller's responsibility to do more aggressive syntax validation.
+
+    return !flagc[1] || !isalnum(u8(flagc[1]));
 }
 
 
@@ -116,7 +130,7 @@ bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
         elif (result != (s64)result_f) {
             s_cli->log_problem("toInt64(src='%s') floating point value will be truncated", src, result);
         }
-        if (local_endpos && _sopt_is_number_flag(local_endpos[0])) {
+        if (local_endpos && _sopt_is_number_flag(local_endpos)) {
             local_endpos += local_endpos[0] ? 1 : 0;
         }
     }
@@ -143,8 +157,8 @@ bool to_double(double& dest, const char* src, char** endpos=nullptr)
         s_cli->log_problem("to_double(src='%s') failed: %s", src, strerror(errno));
     }
 
-    if (local_endpos && (!_sopt_isWhitespace(local_endpos[0] && !_sopt_is_number_flag(local_endpos[0])))) {
-        s_cli->log_problem("toInt64(src='%s') unexpected char(s) after number", src, result);
+    if (local_endpos && (!_sopt_isWhitespace(local_endpos[0] && !_sopt_is_number_flag(local_endpos)))) {
+        s_cli->log_problem("to_double(src='%s') unexpected char(s) after number", src, result);
     }
 
     dest = result;
