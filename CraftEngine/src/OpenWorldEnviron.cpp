@@ -4,6 +4,8 @@
 
 #include "x-png-decode.h"
 #include "x-png-encode.h"
+
+#include "appConfig.h"
 #include "fmod-ifc.h"
 #include "imgtools.h"
 
@@ -304,7 +306,7 @@ void OpenWorldEnviron::InitScene()
 {
     if (0) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, "./rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png");
+        png_LoadFromFile(pngtex, FindAsset("rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png"));
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
@@ -345,7 +347,7 @@ void OpenWorldEnviron::InitScene()
 
     if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, "./Assets/sheets/tiles/terrain_2.png");
+        png_LoadFromFile(pngtex, FindAsset("sheets/tiles/terrain_2.png"));
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
@@ -392,7 +394,7 @@ void OpenWorldEnviron::InitScene()
     g_GroundLayerBelow.PopulateUVs(g_TileMap, {0,0});
     g_GroundLayerAbove.PopulateUVs(g_TileMap, {0,0});
 
-    fmod_CreateMusic(s_music_world, "../unity/Assets/Audio/Music/ff2over.s3m");
+    fmod_CreateMusic(s_music_world, FindAsset("Audio/Music/ff2over.s3m"));
 }
 
 bool s_showLayer_above = 1;
