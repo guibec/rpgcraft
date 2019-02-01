@@ -99,7 +99,7 @@ static thread_local CliParseState* s_cli;
 
 // when endpos=nullptr, the function expects the number to end with either \0 or whitespace.
 // Any non-whitespace character is considered an error.
-bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
+bool _cli_strtoi64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
     // strtol / strtoll / strtod have some strange behavior about handling overflow.
     // It supposedly returns LLONG_MAX and sets errno=ERANGE, and sets endpos to the last character at
@@ -145,7 +145,7 @@ bool to_s64(s64& dest, const char* src, char** endpos=nullptr, int radix=0)
 
 // when endpos=nullptr, the function expects the number to end with either \0 or whitespace.
 // Any non-whitespace character is considered an error.
-bool to_double(double& dest, const char* src, char** endpos=nullptr)
+bool _cli_strtod(double& dest, const char* src, char** endpos=nullptr)
 {
     char* local_endpos = nullptr;
     if (!endpos) {
@@ -154,11 +154,11 @@ bool to_double(double& dest, const char* src, char** endpos=nullptr)
 
     auto result = strtof(src, endpos);
     if (errno) {
-        s_cli->log_problem("to_double(src='%s') failed: %s", src, strerror(errno));
+        s_cli->log_problem("_cli_strtod(src='%s') failed: %s", src, strerror(errno));
     }
 
     if (local_endpos && (!_sopt_isWhitespace(local_endpos[0] && !_sopt_is_number_flag(local_endpos)))) {
-        s_cli->log_problem("to_double(src='%s') unexpected char(s) after number", src, result);
+        s_cli->log_problem("_cli_strtod(src='%s') unexpected char(s) after number", src, result);
     }
 
     dest = result;
@@ -166,17 +166,17 @@ bool to_double(double& dest, const char* src, char** endpos=nullptr)
 }
 
 template<typename T>
-bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
+bool to_any_int(T& dest, const char* src, char** endpos=nullptr, int radix=0)
 {
     // this implementation works on the restriction that full-range u64 (unsigned 64-bit) is
     // not supported.  Given that restriction, full range unsigned 32, 16, and 8 bit values can
     // be supported since their unsigned representations readily fit within the signed-64 bit space.
 
     s64 full_result;
-    bool success = to_s64(full_result, src, endpos, radix);
+    bool success = _cli_strtoi64(full_result, src, endpos, radix);
     if (success && full_result != (T)full_result) {
         // log out ranges ony for word/byte size types.
-        s_cli->log_problem("strtoanyint<%c%d>(src='%s', radix=%d) integer overflow. %s",
+        s_cli->log_problem("to_any_int<%c%d>(src='%s', radix=%d) integer overflow. %s",
             std::is_unsigned<T>::value ? 'u' : 's', sizeof(T) * 8, src, radix,
             ((sizeof(T) <= 2)
                 ? cFmtStr("Valid range is %d to %d.", std::numeric_limits<T>::min(), std::numeric_limits<T>::max())
@@ -191,23 +191,23 @@ bool strtoanyint(T& dest, const char* src, char** endpos=nullptr, int radix=0)
     return success;
 }
 
-bool strtoanynum(double& dest, const char* src, char** endpos=nullptr)
+bool to_float(double& dest, const char* src, char** endpos=nullptr)
 {
     double full_result;
-    bool success = to_double(full_result, src, endpos);
+    bool success = _cli_strtod(full_result, src, endpos);
     if (success) {
         dest = full_result;
     }
     return success;
 }
 
-bool strtoanynum(float& dest, const char* src, char** endpos=nullptr)
+bool to_float(float& dest, const char* src, char** endpos=nullptr)
 {
     double full_result;
-    bool success = to_double(full_result, src, endpos);
+    bool success = _cli_strtod(full_result, src, endpos);
     if (success && full_result != (float)full_result) {
         // log out ranges ony for word/byte size types.
-        s_cli->log_problem("strtoanynum<float>(src='%s') ", src);
+        s_cli->log_problem("to_float<float>(src='%s') ", src);
         success = 0;
     }
     if (success) {
@@ -220,8 +220,8 @@ bool strtoanynum(float& dest, const char* src, char** endpos=nullptr)
 bool to_int2(int2& dest, const xString& src)
 {
     xStringTokenizer tok(",", src);
-    if (!strtoanyint(dest.x, tok.GetNextToken())) return false;
-    if (!strtoanyint(dest.y, tok.GetNextToken())) return false;
+    if (!to_any_int(dest.x, tok.GetNextToken())) return false;
+    if (!to_any_int(dest.y, tok.GetNextToken())) return false;
     if (tok.HasMoreTokens()) {
         s_cli->log_problem("%signoring extra tokens in value");
     }
@@ -267,11 +267,11 @@ static const CliOptionDesc s_valid_options_list[] = {
         g_settings_hostwnd.has_client_size |= to_int2(g_settings_hostwnd.client_size, value);
     }},
 
-    { "audio-global-volume"         ,[](const xString& value){ strtoanynum(g_settings_audio.glo_volume, value); }},
-    { "audio-bgm-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.bgm_volume, value); }},
-    { "audio-sfx-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.sfx_volume, value); }},
-    { "audio-nav-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.nav_volume, value); }},
-    { "audio-vod-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.vod_volume, value); }},
+    { "audio-global-volume"         ,[](const xString& value){ to_float(g_settings_audio.glo_volume, value); }},
+    { "audio-bgm-volume"            ,[](const xString& value){ to_float(g_settings_audio.bgm_volume, value); }},
+    { "audio-sfx-volume"            ,[](const xString& value){ to_float(g_settings_audio.sfx_volume, value); }},
+    { "audio-nav-volume"            ,[](const xString& value){ to_float(g_settings_audio.nav_volume, value); }},
+    { "audio-vod-volume"            ,[](const xString& value){ to_float(g_settings_audio.vod_volume, value); }},
 
     { "audio-global-mute"           ,[](const xString& value){ to_bool(g_settings_audio.glo_muted, value); }},
     { "audio-bgm-mute"              ,[](const xString& value){ to_bool(g_settings_audio.bgm_muted, value); }},
