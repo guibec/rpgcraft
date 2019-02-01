@@ -329,6 +329,34 @@ static void UpdateLastKnownWindowPosition()
     }
 }
 
+extern bool cli_bug_chk_option_exists(const char* option);
+
+
+#if !defined(SAVE_SETTINGS_OPTION_CHECK)
+#   define SAVE_SETTINGS_OPTION_CHECK       1
+#endif
+
+
+// Runtime Option Verification
+//  - Uses lambda encapsulation of a static boolean to ensure each check is only performed once.
+//  - assertion is checked outsaide the lambda so that debugger/console is more likely to have meaningful
+//    file/line info.
+//  - The value of the string parameter is returned from the macro by use of C comma-operator syntax.
+//    (performed by the `, (a)` bit at the end of the macro)
+#if SAVE_SETTINGS_OPTION_CHECK
+#define OPT(a)  (([]() {                                                    \
+        static bool isChecked = false; if (isChecked) return true;          \
+        isChecked = true;                                                   \
+        return cli_bug_chk_option_exists(a);                                \
+    }() || bug_all("cli save-settings: no handler exists for option '" a "'" )), (a))
+#else
+#define OPT(a)  (a)
+#endif
+
+// CLI_LVALUE provides uniform tabulation for entire settings file (no strict requirement to use,
+// purely for cosmetic advantage)
+#define CLI_LVALUE "%-22s= "
+
 static void AppendDesktopSettings(xString& dest)
 {
     // This version ensures the client position stays consistent even if the decaling sizes change between sessions,
@@ -336,14 +364,29 @@ static void AppendDesktopSettings(xString& dest)
     // perspective.
 
     UpdateLastKnownWindowPosition();
-    dest.AppendFmt("window-client-pos  = %d,%d\n",
-        s_lastknown_window_rect.left, s_lastknown_window_rect.top
-    );
-
-    dest.AppendFmt("window-client-size = %d,%d\n",
-        g_client_size_pix.x, g_client_size_pix.y
-    );
+    dest.Append   ("\n# Host Window\n");
+    dest.AppendFmt(CLI_LVALUE "%d,%d\n",    OPT("window-client-pos"     ), s_lastknown_window_rect.left, s_lastknown_window_rect.top);
+    dest.AppendFmt(CLI_LVALUE "%d,%d\n",    OPT("window-client-size"    ), g_client_size_pix.x, g_client_size_pix.y);
 }
+
+static void AppendAudioSettings(xString& dest)
+{
+    dest.Append   ("\n# Audio Volume Controls\n");
+    dest.AppendFmt(CLI_LVALUE "%3.2f\n",    OPT("audio-global-volume"   ), g_settings_audio.glo_volume);
+    dest.AppendFmt(CLI_LVALUE "%3.2f\n",    OPT("audio-bgm-volume"      ), g_settings_audio.bgm_volume);
+    dest.AppendFmt(CLI_LVALUE "%3.2f\n",    OPT("audio-sfx-volume"      ), g_settings_audio.sfx_volume);
+    dest.AppendFmt(CLI_LVALUE "%3.2f\n",    OPT("audio-nav-volume"      ), g_settings_audio.nav_volume);
+    dest.AppendFmt(CLI_LVALUE "%3.2f\n",    OPT("audio-vod-volume"      ), g_settings_audio.vod_volume);
+
+    dest.AppendFmt(CLI_LVALUE "%s\n",       OPT("audio-global-mute"     ), g_settings_audio.glo_muted ? "1" : "0");
+    dest.AppendFmt(CLI_LVALUE "%s\n",       OPT("audio-bgm-mute"        ), g_settings_audio.bgm_muted ? "1" : "0");
+    dest.AppendFmt(CLI_LVALUE "%s\n",       OPT("audio-sfx-mute"        ), g_settings_audio.sfx_muted ? "1" : "0");
+    dest.AppendFmt(CLI_LVALUE "%s\n",       OPT("audio-nav-mute"        ), g_settings_audio.nav_muted ? "1" : "0");
+    dest.AppendFmt(CLI_LVALUE "%s\n",       OPT("audio-vod-mute"        ), g_settings_audio.vod_muted ? "1" : "0");
+}
+
+#undef CLI_LVALUE
+#undef OPT
 
 bool SaveDesktopSettings(bool isMarkedDirty)
 {
@@ -352,6 +395,7 @@ bool SaveDesktopSettings(bool isMarkedDirty)
     // NewVersion is static (non-local) to avoid redundant heap alloc.
     s_settings_content_NewVersion.Clear();
     AppendDesktopSettings(s_settings_content_NewVersion);
+    AppendAudioSettings(s_settings_content_NewVersion);
 
     if (s_settings_content_NewVersion == s_settings_content_KnownVersion) {
         return false;
@@ -368,7 +412,7 @@ bool SaveDesktopSettings(bool isMarkedDirty)
     xCreateDirectory(".ajek");
     if (FILE* f = xFopen(".ajek/saved-by-app.cli", "wb")) {
         fputs("# Machine-generated user settings file.\n",f);
-        fputs("# Any human modifications here will be lost!\n\n",f);
+        fputs("# Any human modifications here will be lost!\n",f);
         fputs(s_settings_content_NewVersion, f);
         s_settings_content_KnownVersion = s_settings_content_NewVersion;
         fclose(f);

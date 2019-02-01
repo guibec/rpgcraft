@@ -267,6 +267,18 @@ static const CliOptionDesc s_valid_options_list[] = {
         g_settings_hostwnd.has_client_size |= to_int2(g_settings_hostwnd.client_size, value);
     }},
 
+    { "audio-global-volume"         ,[](const xString& value){ strtoanynum(g_settings_audio.glo_volume, value); }},
+    { "audio-bgm-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.bgm_volume, value); }},
+    { "audio-sfx-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.sfx_volume, value); }},
+    { "audio-nav-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.nav_volume, value); }},
+    { "audio-vod-volume"            ,[](const xString& value){ strtoanynum(g_settings_audio.vod_volume, value); }},
+
+    { "audio-global-mute"           ,[](const xString& value){ to_bool(g_settings_audio.glo_muted, value); }},
+    { "audio-bgm-mute"              ,[](const xString& value){ to_bool(g_settings_audio.bgm_muted, value); }},
+    { "audio-sfx-mute"              ,[](const xString& value){ to_bool(g_settings_audio.sfx_muted, value); }},
+    { "audio-nav-mute"              ,[](const xString& value){ to_bool(g_settings_audio.nav_muted, value); }},
+    { "audio-vod-mute"              ,[](const xString& value){ to_bool(g_settings_audio.vod_muted, value); }},
+
     // Visual Studio script debug mode:
     // Script error messages should be printed relative to the solution directory.
     { "script-dbg-relpath"          ,[](const xString& value){
@@ -277,6 +289,18 @@ static const CliOptionDesc s_valid_options_list[] = {
 bool IsReleaseCheckMode()
 {
     return s_release_check_mode;
+}
+
+// Used to verify that options written to the user config have handlers in the options table.
+bool cli_bug_chk_option_exists(const char* option)
+{
+    for(const auto& item : s_valid_options_list) {
+        if (strcmp(option, item.name) == 0) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // validate option against known list.
