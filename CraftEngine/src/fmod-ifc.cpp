@@ -223,6 +223,22 @@ void fmod_SetVolume(const FmodMusic& stream, float vol)
     check_result(result);
 }
 
+void fmod_SetMute(const FmodMusic& stream, bool is_muted)
+{
+    if (!stream.channel) return;
+    auto result = FMOD_Channel_SetMute(stream.channel, is_muted);
+    check_result(result);
+}
+
+bool fmod_GetMute(const FmodMusic& stream)
+{
+    if (!stream.channel) return true;
+    FMOD_BOOL is_muted;
+    auto result = FMOD_Channel_GetMute(stream.channel, &is_muted);
+    check_result(result);
+    return bool(is_muted);
+}
+
 FMOD_CHANNEL* fmod_PlaySound(const FmodSound& sound)
 {
     if (!sound.sndptr) {
