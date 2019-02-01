@@ -26,5 +26,8 @@ extern void             fmod_Play           (FmodMusic& stream);
 extern void             fmod_SetPause       (FmodMusic& stream, bool isPaused);
 extern void             fmod_SetVolume      (const FmodMusic& stream, float vol);
 extern void             fmod_SetVolume      (FMOD_CHANNEL* channel, float volume);
+extern void             fmod_SetMute        (const FmodMusic& stream, bool is_muted);
+extern bool             fmod_GetMute        (const FmodMusic& stream);
+
 
 extern FMOD_CHANNEL*    fmod_PlaySound      (const FmodSound& sound);
