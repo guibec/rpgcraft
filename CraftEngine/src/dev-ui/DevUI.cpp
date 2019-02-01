@@ -4,41 +4,31 @@
 #include "x-png-decode.h"
 #include "x-chrono.h"
 
+#include "appConfig.h"
 #include "Scene.h"
+#include "dev-ui/ui-assets.h"
 
-
-struct DevUI_ImageAsset
-{
-    int2                    size;
-    GPU_TextureResource2D   gpures;
-};
-
-struct ImGuiTextures
-{
-    DevUI_ImageAsset   Play;
-    DevUI_ImageAsset   Pause;
-    DevUI_ImageAsset   Stop;
-    DevUI_ImageAsset   Power;
-};
 
 ImGuiTextures      s_gui_tex;
 
 
 void DevUI_LoadImageAsset(DevUI_ImageAsset& dest, const char* asset_name)
 {
-    xString fullpath = xFmtStr("./assets/dev-ui/%s", asset_name);
+    xString fullpath = FindAsset(xFmtStr("dev-ui/%s", asset_name));
     xBitmapData pngsrc;
     png_LoadFromFile(pngsrc, fullpath);
     dx11_CreateTexture2D(dest.gpures, pngsrc, GPU_ResourceFmt_R8G8B8A8_UNORM);
-    s_gui_tex.Play.size = pngsrc.size;
+    dest.size = pngsrc.size;
 }
 
 void DevUI_LoadStaticAssets()
 {
-    DevUI_LoadImageAsset(s_gui_tex.Play,   "Play.png");
-    DevUI_LoadImageAsset(s_gui_tex.Pause,  "Pause.png");
-    DevUI_LoadImageAsset(s_gui_tex.Stop,   "Stop.png");
-    DevUI_LoadImageAsset(s_gui_tex.Power,  "Power.png");
+    DevUI_LoadImageAsset(s_gui_tex.Play,      "Play.png");
+    DevUI_LoadImageAsset(s_gui_tex.Pause,     "Pause.png");
+    DevUI_LoadImageAsset(s_gui_tex.Stop,      "Stop.png");
+    DevUI_LoadImageAsset(s_gui_tex.Power,     "Power.png");
+
+    DevUI_LoadImageAsset(s_gui_tex.SoundIcon, "sound-icons.png");
 }
 
 enum DevUi_SimplePlayState

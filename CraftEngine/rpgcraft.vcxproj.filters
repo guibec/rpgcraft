@@ -146,6 +146,9 @@
     <ClInclude Include="src\imgui-console.h">
       <Filter>Source Files\Dev-UI</Filter>
     </ClInclude>
+    <ClInclude Include="src\dev-ui\ui-assets.h">
+      <Filter>Source Files\Dev-UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DbgFont.fx">

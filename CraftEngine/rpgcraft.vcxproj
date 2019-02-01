@@ -114,6 +114,7 @@
     <ClInclude Include="src\appConfig.h" />
     <ClInclude Include="src\Bezier2D.h" />
     <ClInclude Include="src\DbgFont.h" />
+    <ClInclude Include="src\dev-ui\ui-assets.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\fmod-ifc.h" />
     <ClInclude Include="src\imgui-console.h" />

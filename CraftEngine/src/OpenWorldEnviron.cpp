@@ -9,6 +9,7 @@
 #include "fmod-ifc.h"
 #include "imgtools.h"
 
+#include "dev-ui/ui-assets.h"
 #include "imgui.h"
 
 TileMapItem*        g_TileMap       = nullptr;
@@ -415,8 +416,28 @@ void OpenWorldEnviron::Tick()
     g_GroundLayerAbove.m_enableDraw = s_showLayer_above;
     g_GroundLayerBelow.m_enableDraw = s_showLayer_below;
 
-    fmod_Play(s_music_world);
-    if (ImGui::SliderFloat("BGM Volume", &g_settings_audio.bgm_volume, 0, 1.0f)) {
-        fmod_SetVolume(s_music_world, g_settings_audio.bgm_volume);
+    fmod_Play       (s_music_world);
+    fmod_SetMute    (s_music_world, g_settings_audio.bgm_muted);
+    fmod_SetVolume  (s_music_world, g_settings_audio.bgm_volume);
+
+    ImVec2 buttonSize       = { 18, 13 };
+
+    ImVec2 uv0_unmuted      = { 0.5f, 0.0f };
+    ImVec2 uv1_unmuted      = { 1.0f, 1.0f };
+    ImVec2 uv0_muted        = { 0.0f, 0.0f };
+    ImVec2 uv1_muted        = { 0.5f, 1.0f };
+
+    bool mutepress = ImGui::ImageButton((ImTextureID)s_gui_tex.SoundIcon.gpures.m_driverData_view, buttonSize,
+        g_settings_audio.bgm_muted ? uv0_muted : uv0_unmuted,
+        g_settings_audio.bgm_muted ? uv1_muted : uv1_unmuted,
+        -1      // padding
+    );
+
+    if (mutepress) {
+        g_settings_audio.bgm_muted = !g_settings_audio.bgm_muted;
+        MarkUserSettingsDirty();
     }
+
+    ImGui::SameLine();
+    ImGui::SliderFloat("BGM Volume", &g_settings_audio.bgm_volume, 0, 1.0f);
 }
