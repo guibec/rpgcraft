@@ -15,7 +15,8 @@ TileMapItem*        g_TileMap       = nullptr;
 TerrainMapItem*     g_TerrainMap    = nullptr;
 
 static FmodMusic    s_music_world;
-static float        s_bgm_volume =  1.0f;
+
+AudioSettings       g_settings_audio;
 
 enum class TerrainTileConstructId
 {
@@ -415,7 +416,7 @@ void OpenWorldEnviron::Tick()
     g_GroundLayerBelow.m_enableDraw = s_showLayer_below;
 
     fmod_Play(s_music_world);
-    if (ImGui::SliderFloat("BGM Volume", &s_bgm_volume, 0, 1.0f)) {
-        fmod_SetVolume(s_music_world, s_bgm_volume);
+    if (ImGui::SliderFloat("BGM Volume", &g_settings_audio.bgm_volume, 0, 1.0f)) {
+        fmod_SetVolume(s_music_world, g_settings_audio.bgm_volume);
     }
 }

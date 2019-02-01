@@ -87,6 +87,9 @@
     <ClCompile Include="src\CliConfigOption.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CliConfigSave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">

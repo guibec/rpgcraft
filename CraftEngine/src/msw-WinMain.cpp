@@ -329,29 +329,29 @@ static void UpdateLastKnownWindowPosition()
     }
 }
 
-static void AppendDesktopSettings(xString& dest)
+void Cli_SaveDesktopSettings(xString& dest)
 {
-    // This version ensures the client position stays consistent even if the decaling sizes change between sessions,
-    // (eg, user changes window title bar sizes or similar) -- and generally makes more sense from a human-readable
-    // perspective.
-
-    UpdateLastKnownWindowPosition();
-    dest.AppendFmt("window-client-pos  = %d,%d\n",
-        s_lastknown_window_rect.left, s_lastknown_window_rect.top
-    );
-
-    dest.AppendFmt("window-client-size = %d,%d\n",
-        g_client_size_pix.x, g_client_size_pix.y
-    );
+    dest.Append   ("\n# Host Window\n");
+    CliSaveSettingFmt(dest, "window-client-pos"     , "%d,%d", s_lastknown_window_rect.left, s_lastknown_window_rect.top);
+    CliSaveSettingFmt(dest, "window-client-size"    , "%d,%d", g_client_size_pix.x, g_client_size_pix.y);
 }
+
 
 bool SaveDesktopSettings(bool isMarkedDirty)
 {
     s_mtx_saved_by_app.Lock();  Defer(s_mtx_saved_by_app.Unlock());
 
+    // This version ensures the client position stays consistent even if the decaling sizes change between sessions,
+    // (eg, user changes window title bar sizes or similar) -- and generally makes more sense from a human-readable
+    // perspective.
+    UpdateLastKnownWindowPosition();
+
     // NewVersion is static (non-local) to avoid redundant heap alloc.
     s_settings_content_NewVersion.Clear();
-    AppendDesktopSettings(s_settings_content_NewVersion);
+    Cli_SaveDesktopSettings(s_settings_content_NewVersion);
+    Cli_SaveAudioSettings(s_settings_content_NewVersion);
+
+    cli_bug_chk_option_complete();
 
     if (s_settings_content_NewVersion == s_settings_content_KnownVersion) {
         return false;
@@ -368,7 +368,7 @@ bool SaveDesktopSettings(bool isMarkedDirty)
     xCreateDirectory(".ajek");
     if (FILE* f = xFopen(".ajek/saved-by-app.cli", "wb")) {
         fputs("# Machine-generated user settings file.\n",f);
-        fputs("# Any human modifications here will be lost!\n\n",f);
+        fputs("# Any human modifications here will be lost!\n",f);
         fputs(s_settings_content_NewVersion, f);
         s_settings_content_KnownVersion = s_settings_content_NewVersion;
         fclose(f);
