@@ -106,25 +106,6 @@ typedef std::string     tString;
 #define cDecStr(value)          (xDecStr        ( value )                   .c_str())
 #define cPosixErrorStr(...)     (xPosixErrorStr ( __VA_ARGS__ )             .c_str())
 
-// semi-internal-use struct for efficiently accepting either xString or `const char*` as input
-// parameters to a function.  For use in functions where the majority of use cases involve
-// const char* parameter input, such that using const xString& would result in unnecessary
-// heap allocations and cleanup operations.
-
-struct qstringlen
-{
-    qstringlen(const char* src);
-
-    qstringlen(const char* _strptr, int _len)
-    {
-        strptr = _strptr;
-        length = _len;
-    }
-
-    const char* strptr;
-    int         length;
-};
-
 // --------------------------------------------------------------------------------------
 //  xString  (definition)
 // --------------------------------------------------------------------------------------
@@ -160,6 +141,10 @@ public:
 
     xString(const char* src)
         : m_string( src ) { }
+
+    template<int src_len>
+    xString(const char (&src)[src_len])
+        : m_string(src, src_len) { }
 
     xString(const lua_string& lua_str);
 
@@ -226,7 +211,7 @@ public:
     __ai int            Compare     (const xString& right)  const   { return m_string.compare(right);   }
 
     __ai const char*    c_str       ()  const                       { return m_string.c_str();          }
-    __ai xString&       Append      ( const char* src )             { m_string.append( src );       return *this; }
+    __ai xString&       Append      ( const xString& src )          { m_string.append( src );       return *this; }
     __ai xString&       Append      ( const char* src, int len )    { m_string.append( src, len );  return *this; }
     __ai xString&       Append      ( char src )                    { m_string += src;              return *this; }
     __ai xString&       PopBack     ()                              { m_string.pop_back();          return *this; }
@@ -252,20 +237,22 @@ public:
     __ai bool           operator!=  ( const char* right ) const     { return m_string != right; }
 
     __ai operator const char*() const { return m_string.c_str(); }
-    __ai operator qstringlen()  const { return qstringlen(m_string.c_str(), m_string.length() ); }
+
+    template<int append_len>
+    xString& Append(const char (&src)[append_len]);
 };
 
 
-inline __ai xString operator+( const xString& right, const char* src )
+template<int src_len>
+inline __ni xString operator+( const xString& right, const char (&src)[src_len] )
 {
     return xString(right).Append( src );
 }
 
-//inline __ai xString operator+( const char* left, const xString& right )
-//{
-//  return xString(left).Append( right );
-//}
-
+inline __ni xString operator+( const xString& right, const xString& src )
+{
+    return xString(right).Append( src );
+}
 
 // --------------------------------------------------------------------------------------
 //  xStringTokenizer  (class)
@@ -465,3 +452,10 @@ extern  xString xDecStr     ( const long long& src );
 extern  char*   sbinary (u32 val);
 extern  xString xPtrStr (const void*    src, const char* sep=":");
 extern  xString xPtrStr (VoidFunc*      src, const char* sep=":");
+
+
+template<int append_len>
+xString& xString::Append(const char (&src)[append_len]) {
+    m_string.append(src, append_len-1);
+    return *this;
+}
