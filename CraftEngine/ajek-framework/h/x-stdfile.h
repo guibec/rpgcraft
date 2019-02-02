@@ -100,6 +100,7 @@ struct xStatInfo
 
 extern xStatInfo    xFileStat               (const xString& path);
 extern bool         xFileRename             (const xString& src, const xString& dst);
+extern void         xFileUnlink             (const xString& src);
 extern bool         xCreateDirectory        (const xString& dir);
 extern FILE*        xFopen                  (const xString& fullpath, const char* mode);
 

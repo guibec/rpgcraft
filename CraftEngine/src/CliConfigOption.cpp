@@ -4,6 +4,7 @@
 #include "x-stdfile.h"
 #include "ajek-script.h"
 #include "appConfig.h"
+#include "imgui.h"
 
 #include "x-stl.h"
 #include <type_traits>
@@ -278,6 +279,15 @@ static const CliOptionDesc s_valid_options_list[] = {
     { "audio-sfx-mute"              ,[](const xString& value){ to_bool(g_settings_audio.sfx_muted, value); }},
     { "audio-nav-mute"              ,[](const xString& value){ to_bool(g_settings_audio.nav_muted, value); }},
     { "audio-vod-mute"              ,[](const xString& value){ to_bool(g_settings_audio.vod_muted, value); }},
+
+
+    { "imgui-reset-ini"             ,[](const xString& value){
+        bool do_reset = false; to_bool(do_reset, value);
+        if (do_reset) {
+            xFileUnlink(ImGui::GetIO().IniFilename);
+            log_host("[imgui-reset-ini] Deleted imgui configuration file '%s'", ImGui::GetIO().IniFilename);
+        }
+    }},
 
     // Visual Studio script debug mode:
     // Script error messages should be printed relative to the solution directory.

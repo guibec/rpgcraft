@@ -5,6 +5,7 @@
 
 #include "x-types.h"
 #include "x-string.h"
+#include "x-stdfile.h"
 
 enum xPathLayout
 {
@@ -32,6 +33,10 @@ struct xUniPath
 
 extern  void        xPathSetLibcLayout      (xPathLayout layout);
 extern  xUniPath    xUniPathInit            (const xString& src);
+
+extern  void        xFileUnlink             (const xUniPath& src);
+extern  bool        xFileRename             (const xUniPath& src_, const xUniPath& dest_);
+extern  xStatInfo   xFileStat               (const xUniPath& upath);
 
 extern  xString     xBaseFilename           (const xUniPath& src);
 extern  xString     xDirectoryName          (const xUniPath& src);
