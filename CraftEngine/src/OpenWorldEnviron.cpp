@@ -210,7 +210,7 @@ void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
 
     // edge matching algo is probably going to _pretty_ complicated.  Just sayin'.  --jstine
 
-    TerrainClass               a_class     = TerrainClass::Empty;
+    TerrainClass            a_class     = TerrainClass::Empty;
     TerrainTileConstructId  a_construct = TerrainTileConstructId::Solid;
 
     TileMatchBits   matched;
@@ -306,54 +306,12 @@ xString xGetTempDir();
 
 void OpenWorldEnviron::InitScene()
 {
-    if (0) {
-        xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, FindAsset("rpg_maker_vx__modernrtp_tilea2_by_painhurt-d3f7rwg.png"));
-
-        // cut sets out of the source and paste them into a properly-formed TextureAtlas.
-
-        // Assume pngtex is rpgmaker layout for now.
-        // Complete Sets are 64 px wide and 96 px tall (32px set + 64px set)
-        // Within those are several subsets... there's a text file describing them, search for rpgmaker.
-
-        int2 setSize    = {64, 96};
-        int2 tileSize   = {16, 16};
-        auto sizeInSets = pngtex.size / setSize;
-
-        TextureAtlas atlas;
-
-        atlas.Init(tileSize);
-
-        int2 setToGrab  = {5, 2};
-        auto topLeft = setToGrab * setSize;
-        topLeft.y += 32;    // grab the area set.
-
-
-        for (int y=0; y<4; ++y, topLeft.y += 16) {
-            auto tl = topLeft;
-            for (int x=0; x<4; ++x, tl.x += 16) {
-                imgtool::AddTileToAtlas(atlas, pngtex, tl);
-            }
-        }
-
-        atlas.Solidify();
-
-        x_png_enc pngenc;
-        pngenc.WriteImage(atlas);
-
-        auto tempdir = xGetTempDir();
-        pngenc.SaveImage(xFmtStr("%s/atlas.png", tempdir.c_str()));
-
-        g_GroundLayerAbove.SetSourceTexture(atlas);
-    }
-
     if (1) {
         xBitmapData  pngtex;
         png_LoadFromFile(pngtex, FindAsset("sheets/tiles/terrain_2.png"));
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
-        // terrain2 is designed a bit differently than the painhurt set:
         //   * Each tile is 32x32 pix
         //   * Each terrain set is 96x192 pixels
         //   * Sets are subdivided into four smaller sets:
