@@ -307,43 +307,55 @@ xString xGetTempDir();
 void OpenWorldEnviron::InitScene()
 {
     if (1) {
-        xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, FindAsset("sheets/tiles/terrain_2.png"));
+        xBitmapData  pngtex_a1;
+        xBitmapData  pngtex_a2;
+        png_LoadFromFile(pngtex_a1, FindAsset("sheets/tiles/world_a1_20120604_1883840417.png"));
+        png_LoadFromFile(pngtex_a2, FindAsset("sheets/tiles/world_a2_20120604_1478571129.png"));
 
         // cut sets out of the source and paste them into a properly-formed TextureAtlas.
 
-        //   * Each tile is 32x32 pix
-        //   * Each terrain set is 96x192 pixels
-        //   * Sets are subdivided into four smaller sets:
-        //        32x64  -- highlight decals for being placed on top of other terrain types
-        //        64x64  -- obtuse turns
-        //        96x96  -- acute turns and filler
-        //        96x32  -- four fill tiles
-        //   * In some cases the highlight decal is a single 32x64 tile, rather than two independent tiles,
-        //     and might even be some special decoration unrelated to the tile set.
+        // Complete Sets are 64 px wide and 96 px tall (32px set + 64px set)
+        // Within those are several subsets... there's a text file describing them, search for rpgmaker.
 
-        int2 setSize    = {96, 192};
+        int2 setSize    = {64, 96};
         int2 tileSize   = {32, 32};
-        auto sizeInSets = pngtex.size / setSize;
+        auto sizeInSets = pngtex_a2.size / setSize;
 
         TextureAtlas atlas;
+
         atlas.Init(tileSize);
+
+        // grabs everything:
+        //for (int cur_set_y=0; cur_set_y < sizeInSets.y; ++cur_set_y) {
+        //    for (int cur_set_x=0; cur_set_x < sizeInSets.x; ++cur_set_x) {
+        //        int2 setToGrab  = { cur_set_x, cur_set_y };
+        //        auto topLeft = setToGrab * setSize;
+        //        topLeft.y += 32;          // grab the area set.
+        //        topLeft += { 16, 16 };    // skip the transitions.
+        //
+        //        imgtool::AddTileToAtlas(atlas, pngtex, topLeft);
+        //    }
+        //}
+
+        int2 offset_solid = {16, 32+16};
 
         imgtool::AddEmptyTileToAtlas(atlas);
 
-        GrabTerrainSet2(atlas, pngtex, setSize, {6, 0});        // water
-        GrabTerrainSet2(atlas, pngtex, setSize, {0, 2});        // sand
-        GrabTerrainSet2(atlas, pngtex, setSize, {0, 1});        // grassy
-        atlas.Solidify();
+        imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{0,0} * setSize) + offset_solid);
+        //imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{1,0} * setSize) + offset_solid);
+        //imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{2,0} * setSize) + offset_solid);
 
+        imgtool::AddTileToAtlas(atlas, pngtex_a2, (int2{0,0} * setSize) + offset_solid);
+        imgtool::AddTileToAtlas(atlas, pngtex_a2, (int2{0,1} * setSize) + offset_solid);
+
+        atlas.Solidify();
         x_png_enc pngenc;
         pngenc.WriteImage(atlas);
 
         auto tempdir = xGetTempDir();
-        pngenc.SaveImage(xFmtStr("%s/atlas2.png", tempdir.c_str()));
+        pngenc.SaveImage(tempdir + "/atlas.png");
 
         g_GroundLayerAbove.SetSourceTexture(atlas);
-        g_GroundLayerBelow.SetSourceTexture(atlas);
     }
 
     WorldMap_Procgen();
