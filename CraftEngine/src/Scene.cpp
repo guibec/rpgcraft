@@ -243,6 +243,10 @@ extern void DevUI_DevControl        ();
 
 void DevUI_Clocks()
 {
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos( int2 { g_client_size_pix.x - 180, 10 }, ImGuiCond_FirstUseEver);
+
+    Defer(ImGui::End());
     if (!ImGui::Begin("Clocks")) return;
 
     auto secs  = time(nullptr);
@@ -257,7 +261,7 @@ void DevUI_Clocks()
     auto gm_secs  = mktime(&gmtm);
     auto tz_shift_secs  = loc_secs - gm_secs;
 
-    ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
+    //ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
     ImGui::Value("worldtime ", s_world_localtime.asSeconds(), "%7.2fs");
     ImGui::Value("deltatime ", s_world_deltatime.asMilliseconds(), "%7.02fms");
     ImGui::NewLine();
@@ -266,8 +270,6 @@ void DevUI_Clocks()
         (tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
         localtm.tm_year+1900, localtm.tm_mon+1, localtm.tm_mday
     );
-
-    ImGui::End();
 }
 
 static void* SceneProducerThreadProc(void*)

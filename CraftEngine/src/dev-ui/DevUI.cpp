@@ -59,6 +59,15 @@ void DevUI_DevControl()
         }
     }
 
+    // Using Pivot doesn't really work unless we already know the size of the window,
+    // and the size isn't know until the second run through, which means Pivot is useless with
+    // the FirstTimeEver flag since it'll only be considered the first time through, when size
+    // is meaningless.  So for now just hard-code stuff !
+
+    // [TODO] Upgrade Imgui and see if it's addressed this problem.  If not, file a bug.
+    ImGui::SetNextWindowPos( int2 { g_client_size_pix.x / 2, g_client_size_pix.y } - int2 { 48, 72 }, ImGuiCond_FirstUseEver);
+
+    Defer(ImGui::End());
     if (!ImGui::Begin("DevControl")) return;
 
     ImVec4 activeBackColor     = { 0.99f, 0.75f, 0.20f, 1.00f };
@@ -113,6 +122,4 @@ void DevUI_DevControl()
             s_powerDoubleThrow  = 0;
         }
     }
-
-    ImGui::End();
 }
