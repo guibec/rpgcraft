@@ -144,6 +144,15 @@ void xFileSetSize( int fd, size_t filesize )
     }
 }
 
+void xFileUnlink(const xUniPath& src)
+{
+#if defined(TARGET_MSW)
+    _unlink(src.GetLibcStr());
+#else
+	unlink(src.GetLibcStr());
+#endif
+}
+
 // --------------------------------------------------------------------------------------
 bool xFileRename( const xUniPath& src_, const xUniPath& dest_ )
 {
@@ -337,6 +346,11 @@ xStatInfo xFileStat(const xString& path)
 bool xFileRename(const xString& src_, const xString& dest_)
 {
     return xFileRename(xUniPathInit(src_), xUniPathInit(dest_));
+}
+
+void xFileUnlink(const xString& src)
+{
+    xFileUnlink(xUniPathInit(src));
 }
 
 bool xCreateDirectory( const xString& dir ) {
