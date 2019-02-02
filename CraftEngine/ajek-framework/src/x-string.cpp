@@ -28,13 +28,6 @@ char* sbinary(u32 val)
     return  &bchars[0];
 }
 
-
-qstringlen::qstringlen(const char* src) {
-    strptr = src;
-    length = strlen(src);
-}
-
-
 // ----------------------------------------------------------------------------
 //  toUTF16 / toUTF8  (implementations)
 // ----------------------------------------------------------------------------
@@ -305,7 +298,7 @@ xString& xString::AppendFmtV( const char* fmt, va_list list )
     if (!fmt) return *this;
 
     size_t origlen  = GetLength();
-    int destSize    = _vscprintf( fmt, list );
+    int destSize    = fmt ? _vscprintf( fmt, list ) : 0;
 
     bug_on_qa( destSize < 0, "Invalid string formatting parameters! -- or nasty old glibc?" );
     if (destSize==0) return *this;      // don't waste time appending nothing.
