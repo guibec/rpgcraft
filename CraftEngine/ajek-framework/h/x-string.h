@@ -244,12 +244,12 @@ public:
 
 
 template<int src_len>
-inline __ni xString operator+( const xString& right, const char (&src)[src_len] )
+inline __ai xString operator+( const xString& right, const char (&src)[src_len] )
 {
     return xString(right).Append( src );
 }
 
-inline __ni xString operator+( const xString& right, const xString& src )
+inline __ai xString operator+( const xString& right, const xString& src )
 {
     return xString(right).Append( src );
 }
