@@ -12,6 +12,12 @@ public class RandomManager : MonoSingleton<RandomManager>
         return Next(0, 2) == 0;
     }
 
+    /// <summary>
+    /// Return a random integer between minValue (included) and maxValue (not included)
+    /// </summary>
+    /// <param name="minValue"></param>
+    /// <param name="maxValue"></param>
+    /// <returns></returns>
     public static int Next(int minValue, int maxValue)
     {
         return m_random.Next(minValue, maxValue);

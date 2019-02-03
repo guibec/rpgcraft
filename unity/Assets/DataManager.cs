@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class DataManager : MonoSingleton<DataManager>
 {
-    public EnemiesInfo m_enemiesInfo;
+    private EnemiesInfo m_enemiesInfo;
 
     protected override void OnInit()
     {
         m_enemiesInfo = new EnemiesInfo();
+    }
+
+    public LootData.LootsInfo LootData
+    {
+        get
+        {
+            return m_enemiesInfo.LootData;
+        }
     }
 }

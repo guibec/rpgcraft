@@ -73,11 +73,11 @@ public class Enemy : Entity
 
     private void OnKilled()
     {
-        EnemyInfo enemyInfo = DataManager.Instance.m_enemiesInfo.GetInfoFromName(Name);
+        LootData.LootInfo lootInfo = DataManager.Instance.LootData.GetFromName(Name);
 
-        if (enemyInfo != null)
+        if (lootInfo != null)
         {
-            foreach (EItem item in enemyInfo.RandomLoot())
+            foreach (EItem item in lootInfo.Random())
             {
                 SpawnManager.Instance.SpawnLoot(item, transform.position);
             }
