@@ -63,26 +63,6 @@ union TileMatchBits {
     bool    isNone  ()          const { return b == 0; }
 };
 
-enum TileMatchType
-{
-    None    = 0,
-    N       = 1,
-    E       = 2,
-    NE      = 3,
-    S       = 4,
-    NS      = 5,
-    ES      = 6,
-    NES     = 7,
-    W       = 8,
-    NW      = 9,
-    EW      = 10,
-    NEW     = 11,
-    SW      = 12,
-    NSW     = 13,
-    ESW     = 14,
-    NESW    = 15,
-};
-
 // Parameters:
 //     tileDecorType - for defining variety in apperance, can be unsed for now until such time we want to "pretty things up"
 void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
@@ -174,6 +154,8 @@ void WorldMap_Procgen()
     g_TileMap      = (TileMapItem*)    xRealloc(g_TileMap,     WorldSizeX    * WorldSizeY    * sizeof(TileMapItem));
     g_TerrainMap   = (TerrainMapItem*) xRealloc(g_TerrainMap,  WorldSizeX    * WorldSizeY    * sizeof(TerrainMapItem));
 
+    memset(g_TileMap, 0, WorldSizeX    * WorldSizeY    * sizeof(TileMapItem));
+
     // Fill map with boring grass.  or sand.
 
     for (int y=0; y<WorldSizeY; ++y) {
@@ -183,11 +165,10 @@ void WorldMap_Procgen()
         }
     }
 
-    // carve a bunch of tiny watering holes...
-    for (int y=3; y<3+12; y+=3) {
-        for (int x=3; x<3+12; x+=3) {
-            //g_TileMap        [(y * WorldSizeX) + x].tile_above  = StdTileOffset::Water;
-            PlaceTileWithRules(TerrainClass::Water, 0, {x,y});
+    // carve a some grass...
+    for (int y=3; y<3+12; y+=1) {
+        for (int x=3; x<3+12; x+=1) {
+            g_TileMap        [(y * WorldSizeX) + x].tile_below  = StdTileOffset::Grassy;
         }
     }
 
@@ -233,12 +214,14 @@ void OpenWorldEnviron::InitScene()
 
         imgtool::AddEmptyTileToAtlas(atlas);
 
+        // Water!  (2nd and third ones are animation states)
         imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{0,0} * setSize) + offset_solid);
         //imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{1,0} * setSize) + offset_solid);
         //imgtool::AddTileToAtlas(atlas, pngtex_a1, (int2{2,0} * setSize) + offset_solid);
 
-        imgtool::AddTileToAtlas(atlas, pngtex_a2, (int2{0,0} * setSize) + offset_solid);
+        // sand followed by grass.
         imgtool::AddTileToAtlas(atlas, pngtex_a2, (int2{0,1} * setSize) + offset_solid);
+        imgtool::AddTileToAtlas(atlas, pngtex_a2, (int2{0,0} * setSize) + offset_solid);
 
         atlas.Solidify();
         x_png_enc pngenc;
