@@ -6,6 +6,8 @@ union float2;
 union float4;
 union int2;
 union int4;
+union byte4;
+union ubyte4;
 
 struct vFloat2;
 struct vFloat4;
@@ -621,6 +623,14 @@ union float4 {
         return i_ptestz(q);
     }
 
+    byte4       saturate_to_byte    () const;         // float input must be normalized (-1.0f -> 1.0f)
+    ubyte4      saturate_to_ubyte   () const;         // float input must be normalized (0 -> 1.0f)
+
+    bool        is_snorm            () const;
+    bool        is_unorm            () const;
+
+    explicit operator int4          () const;         // always uses current hardware round mode
+
     __ai operator __m128&           ()          { return q;         }
     __ai operator u128              () const    { return {{ q }};   }
     __ai operator const __m128&     () const    { return q;         }
@@ -743,7 +753,6 @@ union int4 {
 //
 union uint2 {
 
-
     struct {
         uint        x, y;
     };
@@ -790,31 +799,49 @@ union uint2 {
     __ai float2 operator*(float src)            const;
 };
 
+union byte4 {
+    struct {
+        s8     x,y,z,w;
+    };
 
-//union int4 {
-//  struct {
-//      int     x,y,z,w;
-//  };
-//
-//  struct {
-//      int2    xy,zw;
-//  };
-//
-//  struct {
-//      int     u,v;
-//  };
-//
-//  u128    q;
-//
-//  __ai operator __m128&           ()          { return q.qf;  }
-//  __ai operator u128&             ()          { return q;     }
-//
-//  __ai operator const __m128&     () const    { return q.qf;  }
-//  __ai operator const u128&       () const    { return q;     }
-//
-//  __ai bool operator==( const u128& right ) const { return q == right; }
-//  __ai bool operator!=( const u128& right ) const { return q != right; }
-//};
+    struct {
+        s8    r,g,b,a;
+    };
+
+    u32    _i32val;
+
+    explicit operator float4 () const;
+    explicit operator vFloat4() const;
+
+    operator int4 () const;
+
+    bool isEmpty() const { return _i32val == 0; }
+
+    __ai bool   operator==(const uint2& right)      const       { return _i32val == right._i64val; }
+    __ai bool   operator!=(const uint2& right)      const       { return _i32val != right._i64val; }
+};
+
+union ubyte4 {
+    struct {
+        u8     x,y,z,w;
+    };
+
+    struct {
+        u8    r,g,b,a;
+    };
+
+    u32    _i32val;
+
+    explicit operator float4 () const;
+    explicit operator vFloat4() const;
+
+    operator int4 () const;
+
+    bool isEmpty() const { return _i32val == 0; }
+
+    __ai bool   operator==(const uint2& right)      const       { return _i32val == right._i64val; }
+    __ai bool   operator!=(const uint2& right)      const       { return _i32val != right._i64val; }
+};
 
 inline __ai float2  int2::operator+(float src)          const       { return { x + src,   y + src }; }
 inline __ai float2  int2::operator-(float src)          const       { return { x - src,   y - src }; }
@@ -839,83 +866,150 @@ inline __ai float2  float2::operator-(const int2& src)  const       { return { x
 inline __ai float2  float2::operator/(const int2& src)  const       { return { x / src.x, y / src.y }; }
 inline __ai float2  float2::operator*(const int2& src)  const       { return { x * src.x, y * src.y }; }
 
+inline float4::operator int4    () const { int4 result; i_cvtps2dq(result, *this); return result; }
 inline float2::operator int2    () const { return int2   { (int)  x, (int)  y }; }
 inline int2  ::operator float2  () const { return float2 { (float)x, (float)y }; }
 inline uint2 ::operator float2  () const { return float2 { (float)x, (float)y }; }
 
-// Non-member operators...
+inline bool float4::is_snorm() const
+{
+    return (this->cmp_any() >= -1.f) && (this->cmp_any() <= 1.f);
+}
 
-inline float2 operator/(float i, const float2& rhs)                 { return { i / rhs.x, i / rhs.y }; }
-inline float2 operator/(float i, const int2&   rhs)                 { return { i / rhs.x, i / rhs.y }; }
+inline bool float4::is_unorm() const
+{
+    return (this->cmp_any() >= -1.f) && (this->cmp_any() <= 1.f);
+}
 
+inline byte4 float4::saturate_to_byte() const
+{
+    // responsibility of caller to do normal checks and bug on invalid inputs.
+    const float4& src = *this;
+    auto result = (int4)((src * 127.f) / 128.f);
+    i_packssdw(result,result,result);
+    i_packsswb(result,result,result);
+    return (byte4&)result.x;
+}
+
+inline ubyte4 float4::saturate_to_ubyte() const
+{
+    // responsibility of caller to do normal checks and bug on invalid inputs.
+    const float4& src = *this;
+    auto result = (int4)((src * 255.f) / 256.f);
+    i_packusdw(result,result,result);
+    i_packuswb(result,result,result);
+    return (ubyte4&)result.x;
+}
+
+// [TODO] : Use SIMD intrinsics optimization here.
+//   (but probably not needed until platform-specific porting occurs)
+
+inline __ai bool    float4_cmp_all::operator<=(const int4& right)       const       { return  x <= right.x  && y <= right.y && z <= right.z && w <= right.w;  }
+inline __ai bool    float4_cmp_all::operator>=(const int4& right)       const       { return  x >= right.x  && y >= right.y && z >= right.z && w >= right.w;  }
+inline __ai bool    float4_cmp_all::operator< (const int4& right)       const       { return  x <  right.x  && y <  right.y && z <  right.z && w <  right.w;  }
+inline __ai bool    float4_cmp_all::operator> (const int4& right)       const       { return  x >  right.x  && y >  right.y && z >  right.z && w >  right.w;  }
+inline __ai bool    float4_cmp_all::operator<=(const float4& right)     const       { return  x <= right.x  && y <= right.y && z <= right.z && w <= right.w;  }
+inline __ai bool    float4_cmp_all::operator>=(const float4& right)     const       { return  x >= right.x  && y >= right.y && z >= right.z && w >= right.w;  }
+inline __ai bool    float4_cmp_all::operator< (const float4& right)     const       { return  x <  right.x  && y <  right.y && z <  right.z && w <  right.w;  }
+inline __ai bool    float4_cmp_all::operator> (const float4& right)     const       { return  x >  right.x  && y >  right.y && z >  right.z && w >  right.w;  }
+inline __ai bool    float4_cmp_all::operator<=(int right)               const       { return  x <= right    && y <= right   && z <= right   && w <= right;    }
+inline __ai bool    float4_cmp_all::operator>=(int right)               const       { return  x >= right    && y >= right   && z >= right   && w >= right;    }
+inline __ai bool    float4_cmp_all::operator< (int right)               const       { return  x <  right    && y <  right   && z <  right   && w <  right;    }
+inline __ai bool    float4_cmp_all::operator> (int right)               const       { return  x >  right    && y >  right   && z >  right   && w >  right;    }
+inline __ai bool    float4_cmp_all::operator<=(float right)             const       { return  x <= right    && y <= right   && z <= right   && w <= right;    }
+inline __ai bool    float4_cmp_all::operator>=(float right)             const       { return  x >= right    && y >= right   && z >= right   && w >= right;    }
+inline __ai bool    float4_cmp_all::operator< (float right)             const       { return  x <  right    && y <  right   && z <  right   && w <  right;    }
+inline __ai bool    float4_cmp_all::operator> (float right)             const       { return  x >  right    && y >  right   && z >  right   && w >  right;    }
+
+inline __ai bool    float4_cmp_any::operator<=(const int4& right)       const       { return  x <= right.x  || y <= right.y || z <= right.z  || w <= right.w;    }
+inline __ai bool    float4_cmp_any::operator>=(const int4& right)       const       { return  x >= right.x  || y >= right.y || z >= right.z  || w >= right.w;    }
+inline __ai bool    float4_cmp_any::operator< (const int4& right)       const       { return  x <  right.x  || y <  right.y || z <  right.z  || w <  right.w;    }
+inline __ai bool    float4_cmp_any::operator> (const int4& right)       const       { return  x >  right.x  || y >  right.y || z >  right.z  || w >  right.w;    }
+inline __ai bool    float4_cmp_any::operator<=(const float4& right)     const       { return  x <= right.x  || y <= right.y || z <= right.z  || w <= right.w;    }
+inline __ai bool    float4_cmp_any::operator>=(const float4& right)     const       { return  x >= right.x  || y >= right.y || z >= right.z  || w >= right.w;    }
+inline __ai bool    float4_cmp_any::operator< (const float4& right)     const       { return  x <  right.x  || y <  right.y || z <  right.z  || w <  right.w;    }
+inline __ai bool    float4_cmp_any::operator> (const float4& right)     const       { return  x >  right.x  || y >  right.y || z >  right.z  || w >  right.w;    }
+inline __ai bool    float4_cmp_any::operator<=(int right)               const       { return  x <= right    || y <= right   || z <= right    || w <= right;      }
+inline __ai bool    float4_cmp_any::operator>=(int right)               const       { return  x >= right    || y >= right   || z >= right    || w >= right;      }
+inline __ai bool    float4_cmp_any::operator< (int right)               const       { return  x <  right    || y <  right   || z <  right    || w <  right;      }
+inline __ai bool    float4_cmp_any::operator> (int right)               const       { return  x >  right    || y >  right   || z >  right    || w >  right;      }
+inline __ai bool    float4_cmp_any::operator<=(float right)             const       { return  x <= right    || y <= right   || z <= right    || w <= right;      }
+inline __ai bool    float4_cmp_any::operator>=(float right)             const       { return  x >= right    || y >= right   || z >= right    || w >= right;      }
+inline __ai bool    float4_cmp_any::operator< (float right)             const       { return  x <  right    || y <  right   || z <  right    || w <  right;      }
+inline __ai bool    float4_cmp_any::operator> (float right)             const       { return  x >  right    || y >  right   || z >  right    || w >  right;      }
 
 inline __ai bool    float2_cmp_all::operator<=(const int2& right)       const       { return  x <= right.x  && y <= right.y; }
 inline __ai bool    float2_cmp_all::operator>=(const int2& right)       const       { return  x >= right.x  && y >= right.y; }
-inline __ai bool    float2_cmp_all::operator<=(const float2& right)     const       { return  x <= right.x  && y <= right.y; }
-inline __ai bool    float2_cmp_all::operator>=(const float2& right)     const       { return  x >= right.x  && y >= right.y; }
 inline __ai bool    float2_cmp_all::operator< (const int2& right)       const       { return  x <  right.x  && y <  right.y; }
 inline __ai bool    float2_cmp_all::operator> (const int2& right)       const       { return  x >  right.x  && y >  right.y; }
+inline __ai bool    float2_cmp_all::operator<=(const float2& right)     const       { return  x <= right.x  && y <= right.y; }
+inline __ai bool    float2_cmp_all::operator>=(const float2& right)     const       { return  x >= right.x  && y >= right.y; }
 inline __ai bool    float2_cmp_all::operator< (const float2& right)     const       { return  x <  right.x  && y <  right.y; }
 inline __ai bool    float2_cmp_all::operator> (const float2& right)     const       { return  x >  right.x  && y >  right.y; }
 inline __ai bool    float2_cmp_all::operator<=(int right)               const       { return  x <= right    && y <= right;   }
 inline __ai bool    float2_cmp_all::operator>=(int right)               const       { return  x >= right    && y >= right;   }
-inline __ai bool    float2_cmp_all::operator<=(float right)             const       { return  x <= right    && y <= right;   }
-inline __ai bool    float2_cmp_all::operator>=(float right)             const       { return  x >= right    && y >= right;   }
 inline __ai bool    float2_cmp_all::operator< (int right)               const       { return  x <  right    && y <  right;   }
 inline __ai bool    float2_cmp_all::operator> (int right)               const       { return  x >  right    && y >  right;   }
+inline __ai bool    float2_cmp_all::operator<=(float right)             const       { return  x <= right    && y <= right;   }
+inline __ai bool    float2_cmp_all::operator>=(float right)             const       { return  x >= right    && y >= right;   }
 inline __ai bool    float2_cmp_all::operator< (float right)             const       { return  x <  right    && y <  right;   }
 inline __ai bool    float2_cmp_all::operator> (float right)             const       { return  x >  right    && y >  right;   }
 
 inline __ai bool    float2_cmp_any::operator<=(const int2& right)       const       { return  x <= right.x  || y <= right.y; }
 inline __ai bool    float2_cmp_any::operator>=(const int2& right)       const       { return  x >= right.x  || y >= right.y; }
-inline __ai bool    float2_cmp_any::operator<=(const float2& right)     const       { return  x <= right.x  || y <= right.y; }
-inline __ai bool    float2_cmp_any::operator>=(const float2& right)     const       { return  x >= right.x  || y >= right.y; }
 inline __ai bool    float2_cmp_any::operator< (const int2& right)       const       { return  x <  right.x  || y <  right.y; }
 inline __ai bool    float2_cmp_any::operator> (const int2& right)       const       { return  x >  right.x  || y >  right.y; }
+inline __ai bool    float2_cmp_any::operator<=(const float2& right)     const       { return  x <= right.x  || y <= right.y; }
+inline __ai bool    float2_cmp_any::operator>=(const float2& right)     const       { return  x >= right.x  || y >= right.y; }
 inline __ai bool    float2_cmp_any::operator< (const float2& right)     const       { return  x <  right.x  || y <  right.y; }
 inline __ai bool    float2_cmp_any::operator> (const float2& right)     const       { return  x >  right.x  || y >  right.y; }
 inline __ai bool    float2_cmp_any::operator<=(int right)               const       { return  x <= right    || y <= right;   }
 inline __ai bool    float2_cmp_any::operator>=(int right)               const       { return  x >= right    || y >= right;   }
-inline __ai bool    float2_cmp_any::operator<=(float right)             const       { return  x <= right    || y <= right;   }
-inline __ai bool    float2_cmp_any::operator>=(float right)             const       { return  x >= right    || y >= right;   }
 inline __ai bool    float2_cmp_any::operator< (int right)               const       { return  x <  right    || y <  right;   }
 inline __ai bool    float2_cmp_any::operator> (int right)               const       { return  x >  right    || y >  right;   }
+inline __ai bool    float2_cmp_any::operator<=(float right)             const       { return  x <= right    || y <= right;   }
+inline __ai bool    float2_cmp_any::operator>=(float right)             const       { return  x >= right    || y >= right;   }
 inline __ai bool    float2_cmp_any::operator< (float right)             const       { return  x <  right    || y <  right;   }
 inline __ai bool    float2_cmp_any::operator> (float right)             const       { return  x >  right    || y >  right;   }
 
 inline __ai bool    int2_cmp_all::operator<=(const int2& right)         const       { return  x <= right.x  && y <= right.y; }
 inline __ai bool    int2_cmp_all::operator>=(const int2& right)         const       { return  x >= right.x  && y >= right.y; }
-inline __ai bool    int2_cmp_all::operator<=(const float2& right)       const       { return  x <= right.x  && y <= right.y; }
-inline __ai bool    int2_cmp_all::operator>=(const float2& right)       const       { return  x >= right.x  && y >= right.y; }
 inline __ai bool    int2_cmp_all::operator< (const int2& right)         const       { return  x <  right.x  && y <  right.y; }
 inline __ai bool    int2_cmp_all::operator> (const int2& right)         const       { return  x >  right.x  && y >  right.y; }
+inline __ai bool    int2_cmp_all::operator<=(const float2& right)       const       { return  x <= right.x  && y <= right.y; }
+inline __ai bool    int2_cmp_all::operator>=(const float2& right)       const       { return  x >= right.x  && y >= right.y; }
 inline __ai bool    int2_cmp_all::operator< (const float2& right)       const       { return  x <  right.x  && y <  right.y; }
 inline __ai bool    int2_cmp_all::operator> (const float2& right)       const       { return  x >  right.x  && y >  right.y; }
 inline __ai bool    int2_cmp_all::operator<=(int right)                 const       { return  x <= right    && y <= right;   }
 inline __ai bool    int2_cmp_all::operator>=(int right)                 const       { return  x >= right    && y >= right;   }
-inline __ai bool    int2_cmp_all::operator<=(float right)               const       { return  x <= right    && y <= right;   }
-inline __ai bool    int2_cmp_all::operator>=(float right)               const       { return  x >= right    && y >= right;   }
 inline __ai bool    int2_cmp_all::operator< (int right)                 const       { return  x <  right    && y <  right;   }
 inline __ai bool    int2_cmp_all::operator> (int right)                 const       { return  x >  right    && y >  right;   }
+inline __ai bool    int2_cmp_all::operator<=(float right)               const       { return  x <= right    && y <= right;   }
+inline __ai bool    int2_cmp_all::operator>=(float right)               const       { return  x >= right    && y >= right;   }
 inline __ai bool    int2_cmp_all::operator< (float right)               const       { return  x <  right    && y <  right;   }
 inline __ai bool    int2_cmp_all::operator> (float right)               const       { return  x >  right    && y >  right;   }
 
 inline __ai bool    int2_cmp_any::operator<=(const int2& right)         const       { return  x <= right.x  || y <= right.y; }
 inline __ai bool    int2_cmp_any::operator>=(const int2& right)         const       { return  x >= right.x  || y >= right.y; }
-inline __ai bool    int2_cmp_any::operator<=(const float2& right)       const       { return  x <= right.x  || y <= right.y; }
-inline __ai bool    int2_cmp_any::operator>=(const float2& right)       const       { return  x >= right.x  || y >= right.y; }
 inline __ai bool    int2_cmp_any::operator< (const int2& right)         const       { return  x <  right.x  || y <  right.y; }
 inline __ai bool    int2_cmp_any::operator> (const int2& right)         const       { return  x >  right.x  || y >  right.y; }
+inline __ai bool    int2_cmp_any::operator<=(const float2& right)       const       { return  x <= right.x  || y <= right.y; }
+inline __ai bool    int2_cmp_any::operator>=(const float2& right)       const       { return  x >= right.x  || y >= right.y; }
 inline __ai bool    int2_cmp_any::operator< (const float2& right)       const       { return  x <  right.x  || y <  right.y; }
 inline __ai bool    int2_cmp_any::operator> (const float2& right)       const       { return  x >  right.x  || y >  right.y; }
 inline __ai bool    int2_cmp_any::operator<=(int right)                 const       { return  x <= right    || y <= right;   }
 inline __ai bool    int2_cmp_any::operator>=(int right)                 const       { return  x >= right    || y >= right;   }
-inline __ai bool    int2_cmp_any::operator<=(float right)               const       { return  x <= right    || y <= right;   }
-inline __ai bool    int2_cmp_any::operator>=(float right)               const       { return  x >= right    || y >= right;   }
 inline __ai bool    int2_cmp_any::operator< (int right)                 const       { return  x <  right    || y <  right;   }
 inline __ai bool    int2_cmp_any::operator> (int right)                 const       { return  x >  right    || y >  right;   }
+inline __ai bool    int2_cmp_any::operator<=(float right)               const       { return  x <= right    || y <= right;   }
+inline __ai bool    int2_cmp_any::operator>=(float right)               const       { return  x >= right    || y >= right;   }
 inline __ai bool    int2_cmp_any::operator< (float right)               const       { return  x <  right    || y <  right;   }
 inline __ai bool    int2_cmp_any::operator> (float right)               const       { return  x >  right    || y >  right;   }
+
+// Non-member operators...
+
+inline float2 operator/(float i, const float2& rhs)                 { return { i / rhs.x, i / rhs.y }; }
+inline float2 operator/(float i, const int2&   rhs)                 { return { i / rhs.x, i / rhs.y }; }
 
 
 static_assert( sizeof(u128) == 16, "A u128 is is not 128 bits long is scarcely a u128 at all!" );

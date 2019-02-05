@@ -17,7 +17,7 @@
 
 #include "Scene.h"
 #include "Entity.h"
-#include "DbgFont.h"
+#include "DbgTextOverlay.h"
 
 #include <queue>
 #include <ctime>
@@ -181,7 +181,7 @@ __ni void SceneInit()
     EntityManager_Reset();
 
     x_try() {
-        DbgFont_LoadInit    ();
+        DbgTextOverlay_LoadInit    ();
         Scene_TryLoadInit   ();
         s_scene_initialized = true;
     }
@@ -279,7 +279,7 @@ static void* SceneProducerThreadProc(void*)
     while(1)
     {
         Host_ImGui_NewFrame();
-        DbgFont_NewFrame();
+        DbgTextOverlay_NewFrame();
 
         // Timer Features!
         //  - Changes to Pause/Stop status occur during the msg queue
@@ -311,7 +311,7 @@ static void* SceneProducerThreadProc(void*)
             dx11_BeginFrameDrawing();
             dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
             dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
-            DbgFont_SceneRender();
+            DbgTextOverlay_SceneRender();
             ImGui::Render();
             dx11_SubmitFrameAndSwap();
             xThreadSleep(32);
@@ -365,7 +365,7 @@ static void* SceneProducerThreadProc(void*)
             if (s_scene_devExecMask & SceneExecMask_HudRender) {
                 //HudSceneRender();
             }
-            DbgFont_SceneRender();
+            DbgTextOverlay_SceneRender();
             ImGui::Render();
             dx11_SubmitFrameAndSwap();
 
