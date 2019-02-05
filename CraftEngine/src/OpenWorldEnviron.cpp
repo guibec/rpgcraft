@@ -141,14 +141,6 @@ void PlaceTileWithRules(TerrainClass terrain, int tileDecorType, int2 pos)
     }
 }
 
-void DigThroughTile(int2 pos)
-{
-    auto  digSpotIndex  = (pos.y * WorldSizeX) + pos.x;
-    auto& digSpot       = g_TileMap[digSpotIndex];
-
-    //
-}
-
 void WorldMap_Procgen()
 {
     g_TileMap      = (TileMapItem*)    xRealloc(g_TileMap,     WorldSizeX    * WorldSizeY    * sizeof(TileMapItem));
@@ -179,25 +171,24 @@ xString xGetTempDir();
 
 void OpenWorldEnviron::InitScene()
 {
+    // cut sets out of the source and paste them into a properly-formed TextureAtlas.
+
+    // Complete Sets are 64 px wide and 96 px tall (32px set + 64px set)
+    // Within those are several subsets... there's a text file describing them, search for rpgmaker.
+
+    int2 setSize    = {64, 96};
+    int2 tileSize   = {32, 32};
+
     if (1) {
         xBitmapData  pngtex_a1;
         xBitmapData  pngtex_a2;
         png_LoadFromFile(pngtex_a1, FindAsset("sheets/tiles/world_a1_20120604_1883840417.png"));
         png_LoadFromFile(pngtex_a2, FindAsset("sheets/tiles/world_a2_20120604_1478571129.png"));
 
-        // cut sets out of the source and paste them into a properly-formed TextureAtlas.
-
-        // Complete Sets are 64 px wide and 96 px tall (32px set + 64px set)
-        // Within those are several subsets... there's a text file describing them, search for rpgmaker.
-
-        int2 setSize    = {64, 96};
-        int2 tileSize   = {32, 32};
-        auto sizeInSets = pngtex_a2.size / setSize;
-
         TextureAtlas atlas;
-
         atlas.Init(tileSize);
 
+        //auto sizeInSets = pngtex_a2.size / setSize;
         // grabs everything:
         //for (int cur_set_y=0; cur_set_y < sizeInSets.y; ++cur_set_y) {
         //    for (int cur_set_x=0; cur_set_x < sizeInSets.x; ++cur_set_x) {
