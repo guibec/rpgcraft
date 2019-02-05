@@ -96,7 +96,7 @@
     </ClCompile>
     <ClCompile Include="src\appConfig.cpp" />
     <ClCompile Include="src\Bezier2D.cpp" />
-    <ClCompile Include="src\DbgFont.cpp" />
+    <ClCompile Include="src\DbgTextOverlay.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
@@ -113,7 +113,7 @@
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="src\appConfig.h" />
     <ClInclude Include="src\Bezier2D.h" />
-    <ClInclude Include="src\DbgFont.h" />
+    <ClInclude Include="src\DbgTextOverlay.h" />
     <ClInclude Include="src\dev-ui\ui-assets.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\fmod-ifc.h" />

@@ -69,8 +69,8 @@ struct DbgFontDrawItem
     u8      chr;        // character to display
 };
 
-extern void DbgFont_LoadInit        ();
-extern void DbgFont_NewFrame        ();
-extern void DbgFont_SceneRender     ();
+extern void DbgTextOverlay_LoadInit        ();
+extern void DbgTextOverlay_NewFrame        ();
+extern void DbgTextOverlay_SceneRender     ();
 
-extern DbgFontSheet g_DbgFontOverlay;
+extern DbgFontSheet g_DbgTextOverlay;

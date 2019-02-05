@@ -67,12 +67,11 @@ void imgtool::CutTex(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 x
     }
 }
 
+// This function is probably for-reference-only.  It would be a much better idea to use
+// a robust tool like ImageMagick to perform these sort of conversions rather than try
+// to re-invent them all here in our imgtool library.
 void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color)
 {
-    // copy from src to dest
-    // One pixel to the top/left/bottom/right has duplicated RGB info and alpha=0
-    // This allows for artifact-free GPU bilinear filtering.
-
     _cuttex_prepDest(dest, src, xy1, xy2);
 
     auto color_native = color.w32();
@@ -92,7 +91,7 @@ void imgtool::CutTex_and_ConvertOpaqueColorToAlpha(xBitmapData& dest, const xBit
     }
 }
 
-int imgtool::AddEmptyTileToAtlas(TextureAtlas& dest)
+int imgtool::AddEmptyTileToAtlas(TextureAtlas& dest, const float4& color)
 {
     int  tileId     = dest.AllocTile();
     auto tileSize   = dest.m_tileSizePix;
@@ -101,13 +100,15 @@ int imgtool::AddEmptyTileToAtlas(TextureAtlas& dest)
     auto destSize   = dest.GetSizePix();
 
     u32* dstptr     = (u32*)dest.GetRawPtr32()  + (tilePos.y * destSize.x)  + tilePos.x;
+    auto color_i    = color.saturate_to_ubyte();
 
     for(int y=0; y<dest.m_tileSizePix.y; ++y, dstptr+=destSize.x)
     {
-        auto* dptr  = dstptr;
-        memset(dptr, 0, dest.m_tileSizePix.x * 4);
+        for(int x=0; x<dest.m_tileSizePix.x; ++x) {
+            dstptr[x] = color_i._i32val;
+        }
     }
-    return 0;
+    return tileId;
 }
 
 int imgtool::AddTileToAtlas(TextureAtlas& dest, const xBitmapData& src, const int2& srcpos)
@@ -132,7 +133,7 @@ int imgtool::AddTileToAtlas(TextureAtlas& dest, const xBitmapData& src, const in
 
         xMemCopy32(dptr, sptr, dest.m_tileSizePix.x);
     }
-    return 0;
+    return tileId;
 }
 
 void TextureAtlas::Init(const int2& tileSizePix, int texWidthHint) {
