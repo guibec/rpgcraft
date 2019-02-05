@@ -103,16 +103,11 @@ namespace LootData
         [JsonIgnore]
         private Dictionary<string, LootInfo> m_cache = new Dictionary<string, LootInfo>();
 
-        public LootsInfo(string filename)
-        {
-            Load(filename);
-        }
-
         /// <summary>
         /// Load from file 
         /// </summary>
         /// <param name="filename"></param>
-        bool Load(string filename)
+        public static LootsInfo CreateFromFile(string filename)
         {
             LootsInfo lootsInfo;
 
@@ -123,20 +118,18 @@ namespace LootData
             catch (Exception e)
             {
                 UnityEngine.Debug.Log($"Failed to deserialize {filename} due to {e.Message}");
-                return false;
+                return null;
             }
 
             if (lootsInfo == null)
             {
                 UnityEngine.Debug.Log($"Failed to read {filename}");
-                return false;
+                return null;
             }
 
-            version = lootsInfo.version;
-            lootsInfos = lootsInfo.lootsInfos;
-            UpdateCache();
+            lootsInfo.UpdateCache();
 
-            return true;
+            return lootsInfo;
         }
 
         /// <summary>
@@ -154,6 +147,10 @@ namespace LootData
         private void UpdateCache()
         {
             m_cache.Clear();
+
+            if (lootsInfos == null)
+                return;
+
             foreach (var keyValue in lootsInfos)
             {
                 m_cache[keyValue.name] = keyValue;
@@ -162,11 +159,12 @@ namespace LootData
     }
 }
 
+// TODO: This class is kinda useless now. Could just use LootData.LootsInfo directly
 public class EnemiesInfo
 {
     public LootData.LootsInfo m_lootsInfo;
 
-    public LootData.LootsInfo LootData
+    public LootData.LootsInfo Data
     {
         get
         {
@@ -181,7 +179,7 @@ public class EnemiesInfo
 
         try
         {
-            m_lootsInfo = new LootData.LootsInfo(filename);
+            m_lootsInfo = LootData.LootsInfo.CreateFromFile(filename);
         }
         catch (Exception e)
         {

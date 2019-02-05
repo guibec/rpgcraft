@@ -60,6 +60,11 @@ public class DebugManager : MonoSingleton<DebugManager>
         return true;
     }
 
+    private void ReloadConfiguration()
+    {
+        DataManager.Instance.Reload();
+    }
+
     // Make the contents of the window.
     void DoDebugWindow(int windowID)
     {
@@ -82,6 +87,11 @@ public class DebugManager : MonoSingleton<DebugManager>
         if (GUI.Button(new Rect(10, 180, 200, 20), "(Debug) Load character..."))
         {
             LoadCharacter();
+        }
+
+        if (GUI.Button(new Rect(10, 210, 200, 20), "(Debug) Reload configuration files"))
+        {
+            ReloadConfiguration();
         }
 
         if (GUI.Button(new Rect(10, 240, 200, 20), "Back to game"))

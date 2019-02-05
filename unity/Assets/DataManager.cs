@@ -11,11 +11,16 @@ public class DataManager : MonoSingleton<DataManager>
         m_enemiesInfo = new EnemiesInfo();
     }
 
+    public void Reload()
+    {
+        OnInit();
+    }
+
     public LootData.LootsInfo LootData
     {
         get
         {
-            return m_enemiesInfo.LootData;
+            return m_enemiesInfo.Data;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿#define DEBUG
+#define TRACE
+
 using UnityEngine;
 using SimpleJSON;
 using Newtonsoft.Json;
@@ -21,7 +23,17 @@ public class JSONUtils {
         TextAsset textAsset = Resources.Load(filename) as TextAsset;
         if (textAsset != null)
         {
-            return JsonConvert.DeserializeObject<T>(textAsset.text);
+            Newtonsoft.Json.Serialization.ITraceWriter traceWriter = new Newtonsoft.Json.Serialization.MemoryTraceWriter
+                { LevelFilter = System.Diagnostics.TraceLevel.Verbose };
+
+            JsonSerializerSettings settings = new JsonSerializerSettings
+                { TraceWriter = traceWriter };
+
+            T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
+
+            UnityEngine.Debug.Log($"Deserialize trace output {traceWriter.ToString()}");
+
+            return obj;
         }
 
         return default(T);
