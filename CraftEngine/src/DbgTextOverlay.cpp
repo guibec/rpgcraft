@@ -67,8 +67,8 @@ void DbgFontSheet::AllocSheet(int2 sizeInPix)
     charmap     = (DbgChar*) xRealloc(charmap,  size.y * size.x * sizeof(DbgChar));
     colormap    = (DbgColor*)xRealloc(colormap, size.y * size.x * sizeof(DbgColor));
 
-    dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ));
-    dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor));
+    dx11_CreateDynamicVertexBuffer(gpu.mesh_charmap, size.y * size.x * sizeof(DbgChar ), "DbgTextOverlayChar");
+    dx11_CreateDynamicVertexBuffer(gpu.mesh_rgbamap, size.y * size.x * sizeof(DbgColor), "DbgTextOverlayColor");
 }
 
 template< typename T >

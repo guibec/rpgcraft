@@ -86,7 +86,7 @@ int                     g_curBufferIdx = 0;
 // * Use rotating buffers to avoid blocking on prev frame in order to setup new frame.
 // * Index Buffers use series of "Default Layouts" which can be packed into a single buffer.
 
-enum DynBufferType {
+enum DynBufferType : u8 {
     DynBuffer_Free,         // not allocated
     DynBuffer_Vertex,
     DynBuffer_Input,
@@ -112,7 +112,19 @@ struct DynBufferItem
 {
     ID3D11Buffer*           m_dx11_buffer;
     DynBufferType           m_type;
+    u8                      m_updated_this_frame;
+    char                    m_name[30];
 };
+
+// compiler may pad the struct as 4, 8, or 16 depending on architecture.
+// This check just helps catch poor use of memory. It's not really too important, but it's a neat tool
+// and I think it's nice to have here for copy/paste usage elsewhere later on.
+namespace _DynBufferSizeCheck {
+    constexpr auto sizeof_m_name   = sizeof(((DynBufferItem*)0)->m_name);
+    constexpr auto offsetof_m_name = offsetof(DynBufferItem, m_name);
+    static_assert(((sizeof_m_name + offsetof_m_name) % 8 == 0), "Unused padding at the end of DynBufferItem detected. Adjust m_name larger or smaller to better utilize memory.");
+}
+
 
 //int                           g_DynVertBufferCount = 0;
 DynBufferItem               g_DynVertBuffers[BackBufferCount][256];
@@ -248,6 +260,19 @@ __ai void dx11_ReleaseLocal(T*& resource)
 
     resource->Release();
     resource = nullptr;
+}
+
+bool dx11_IsManagedObject(void* objptr)
+{
+#if DX11_DEBUG_FLAG_SUPPORT
+    auto it = s_dx11_managed_objects.find(objptr);
+    return (it != s_dx11_managed_objects.end());
+#endif
+}
+
+bool dx11_IsManagedObject(const sptr& objptr)
+{
+    return dx11_IsManagedObject((void*)objptr);
 }
 
 //--------------------------------------------------------------------------------------
@@ -689,6 +714,10 @@ static const GPU_InputDesc*     s_CurrentInputDesc  = nullptr;
 static const GPU_ShaderVS*      s_CurrentShaderVS   = nullptr;
 static const GPU_ShaderFS*      s_CurrentShaderFS   = nullptr;
 
+static       sptr               s_current_vertex_buffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+static       int                s_current_vertex_buffer_high_water = 0;
+
+
 static InputLayoutCache_t       s_dx11_InputLayoutCache;
 //static InputDescCache_t           s_dx11_InputDescCache;
 
@@ -795,6 +824,18 @@ void dx11_NewFrame()
     s_CurrentShaderVS = {};
     s_CurrentShaderFS = {};
 
+    // Clear dynamic vertex shader runtime checks.
+
+    for (int i=0; i<s_current_vertex_buffer_high_water; ++i) {
+        s_current_vertex_buffers[i] = 0;
+    }
+    s_current_vertex_buffer_high_water = 0;
+
+    for(int i=0; i<bulkof(g_DynVertBuffers[0]); ++i) {
+        if (g_DynVertBuffers[g_curBufferIdx][i].m_type == DynBuffer_Vertex) {
+            g_DynVertBuffers[g_curBufferIdx][i].m_updated_this_frame = 0;
+        }
+    }
 }
 
 // to be called after logic step and before issuing any draw commands through the pipeline.
@@ -821,6 +862,33 @@ void dx11_PreDrawPrep()
     auto&   shaderFS    = ptr_cast<ID3D11PixelShader*   const &>(s_CurrentShaderFS->m_driverBinary);
     bug_on_qa(!shaderVS, "VS shader resource has been deinitialized since being bound.");
     bug_on_qa(!shaderFS, "FS shader resource has been deinitialized since being bound.");
+
+    for (int i=0; i<s_current_vertex_buffer_high_water+1; ++i) {
+
+        // assume any empty ones are intentional for now...
+        if (!s_current_vertex_buffers[i]) continue;
+
+        if (s_current_vertex_buffers[i] < 256) {
+            // dynamic buffer handle
+            auto dynidx = s_current_vertex_buffers[i] - 1;
+            auto& buffer = g_DynVertBuffers[g_curBufferIdx][dynidx];
+            if (!buffer.m_updated_this_frame) {
+                warn_host("GPU_DynVsBuffer was not updated this frame. id=%d%s%s", dynidx,
+                    buffer.m_name[0] ? buffer.m_name : "(unnamed)"
+                );
+            }
+        }
+        else {
+            // direct x managed object
+#if DX11_DEBUG_FLAG_SUPPORT
+            auto it = s_dx11_managed_objects.find((void*)s_current_vertex_buffers[i]);
+            if (it == s_dx11_managed_objects.end()) {
+                bug_qa("Vertex Buffer resource has been deinitialized since being bound.");
+            }
+        }
+#endif
+    }
+    s_current_vertex_buffer_high_water = 0;
 
     g_pImmediateContext->IASetInputLayout(do_prep_inputLayout());
     g_pImmediateContext->VSSetShader(shaderVS, nullptr, 0);
@@ -940,6 +1008,14 @@ void dx11_SetVertexBuffer(const GPU_DynVsBuffer& src, int shaderSlot, int _strid
         enumToString(buffer.m_type)
     );
     g_pImmediateContext->IASetVertexBuffers(shaderSlot, 1, &buffer.m_dx11_buffer, &stride, &offset);
+    if (s_current_vertex_buffers[shaderSlot] != src.m_buffer_idx+1) {
+        s_current_vertex_buffers[shaderSlot]  = src.m_buffer_idx+1;
+        s_NeedsPreDrawPrep = 1;
+}
+    if (s_current_vertex_buffer_high_water < shaderSlot) {
+        s_current_vertex_buffer_high_water = shaderSlot;
+        s_NeedsPreDrawPrep = 1;
+    }
 }
 
 void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int _stride, int _offset)
@@ -947,7 +1023,18 @@ void dx11_SetVertexBuffer( const GPU_VertexBuffer& vbuffer, int shaderSlot, int 
     uint stride = _stride;
     uint offset = _offset;
 
+    bug_on(!vbuffer.m_driverData);
+    bug_on(!dx11_IsManagedObject(vbuffer.m_driverData));
+
     g_pImmediateContext->IASetVertexBuffers(shaderSlot, 1, (ID3D11Buffer**)&vbuffer.m_driverData, &stride, &offset);
+    if (s_current_vertex_buffers[shaderSlot] != vbuffer.m_driverData) {
+        s_current_vertex_buffers[shaderSlot]  = vbuffer.m_driverData;
+        s_NeedsPreDrawPrep = 1;
+}
+    if (s_current_vertex_buffer_high_water < shaderSlot) {
+        s_current_vertex_buffer_high_water = shaderSlot;
+        s_NeedsPreDrawPrep = 1;
+    }
 }
 
 void dx11_SetIndexBuffer(const GPU_IndexBuffer& indexBuffer, int bitsPerIndex, int offset)
@@ -1048,13 +1135,19 @@ void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcDat
 
     auto&   simple      = g_DynVertBuffers[g_curBufferIdx][src.m_buffer_idx];
 
+    if (simple.m_updated_this_frame) {
+        log_perf("[dx11] Dynamic buffer data was already updated this frame [src.m_buffer_idx=%d, size=%d]", src.m_buffer_idx, sizeInBytes);
+    }
+
+    simple.m_updated_this_frame = 1;
+
     bug_on_qa(simple.m_type == DynBuffer_Free);
     g_pImmediateContext->Map(simple.m_dx11_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     xMemCopy(mappedResource.pData, srcData, sizeInBytes);
     g_pImmediateContext->Unmap(simple.m_dx11_buffer, 0);
 }
 
-void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes)
+void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes, const char* diag_name)
 {
     // TODO : Improve search algo efficiency...
     int bufferIdx = dest.m_buffer_idx;
@@ -1082,6 +1175,9 @@ void dx11_CreateDynamicVertexBuffer(GPU_DynVsBuffer& dest, int bufferSizeInBytes
         auto hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &buffer.m_dx11_buffer);
         bug_on (FAILED(hr));
         buffer.m_type = DynBuffer_Vertex;
+        if (diag_name) {
+            strncpy_s(buffer.m_name, diag_name, _TRUNCATE);
+        }
         dx11_ManageObject(buffer.m_dx11_buffer);
     }
 
