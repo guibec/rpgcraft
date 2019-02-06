@@ -278,6 +278,7 @@ static void* SceneProducerThreadProc(void*)
 
     while(1)
     {
+        dx11_NewFrame();
         Host_ImGui_NewFrame();
         DbgTextOverlay_NewFrame();
 
