@@ -260,7 +260,7 @@ extern void                 dx11_CleanupDevice              ();
 extern void                 dx11_NewFrame                   ();
 extern void                 dx11_BeginFrameDrawing          ();
 extern void                 dx11_SubmitFrameAndSwap         ();
-extern void                 dx11_CreateDynamicVertexBuffer  (GPU_DynVsBuffer& dest, int bufferSizeInBytes);
+extern void                 dx11_CreateDynamicVertexBuffer  (GPU_DynVsBuffer& dest, int bufferSizeInBytes, const char* diag_name=nullptr);
 extern void                 dx11_CreateStaticMesh           (GPU_VertexBuffer&  dest, void* vertexData, int itemSizeInBytes, int vertexCount);
 extern void                 dx11_CreateIndexBuffer          (GPU_IndexBuffer&   dest, void* indexBuffer, int bufferSize);
 extern void                 dx11_CreateConstantBuffer       (GPU_ConstantBuffer& dest, int bufferSize);
