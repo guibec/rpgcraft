@@ -788,6 +788,15 @@ ID3D11InputLayout* do_prep_inputLayout()
     return newCacheItem.dx;
 }
 
+void dx11_NewFrame()
+{
+    bug_on(s_NeedsPreDrawPrep, "Pipeline state changes were made but no Draw command was issued.");
+
+    s_CurrentShaderVS = {};
+    s_CurrentShaderFS = {};
+
+}
+
 // to be called after logic step and before issuing any draw commands through the pipeline.
 void dx11_BeginFrameDrawing()
 {
@@ -977,6 +986,55 @@ void dx11_DrawIndexedInstanced(int indexesPerInstance, int instanceCount, int st
     g_pImmediateContext->DrawIndexedInstanced(indexesPerInstance, instanceCount, startIndex, baseVertex, startInstance);
 }
 
+/*
+  Dynamic Buffer Methodology
+
+  Update-every-frame Scenario:
+    In this scenario, upload of buffer data can be executed in parallel with GPU rendering of
+    the current buffer data.  Note that there isn't any requirement to have separate game-engine
+    threads for this purpose.  The parallel activity occurs automatically as the GPU renders
+    previous buffer in the background while the CPU prepares the next frame.
+
+  Sparse Update Scenario:   (TODO: not yet implemented)
+    In this scenario, dynamic vertex buffers are updated every Nth frame, where 'N' is any integer.
+    Each buffer in between uses the most recent vertex data.
+        Frame     DynBufferIdx
+          0            0          <-- vertex data uploaded
+          1            0
+          2            0
+          3            1          <-- vertex data uploaded
+          4            1
+          5            1
+          6            0          <-- vertex data uploaded
+          7            0
+          8            0
+
+    Using this strategy, a dynamic vertex mesh can meter itself and reduce performance overhead,
+    without having to give up specific perf gains earned by the buffering system.
+
+    When Sparse Buffering is enabled, the engine will create at least two vertex buffers and
+    at most (NumBackbuffers/N) vertex buffers.  In a typical scenario the number of backbuffers
+    is three or four, so the sparse buffer will be a simple double-buffer for all practical
+    purposes.  A possible exception might be an ultra-high framerate renderer (180hz or such),
+    where it might be reasonable to set six backbuffers since the latency penalty for such
+    a deep pipeline is far less.  In that case, a Sparse Update N=2 would be like this:
+
+        Frame     DynBufferIdx
+          0            0          <-- vertex data uploaded
+          1            0
+          2            1          <-- vertex data uploaded
+          3            1
+          4            2          <-- vertex data uploaded
+          5            2
+          6            0          <-- vertex data uploaded
+          7            0
+*/
+
+
+// Convenience function for uploading dynamic vertex data.
+// Fine enough for desktops, however use of this function on mobile devices is not recommended due to
+// the redundant memory copies it incurs (which cost both CPU and also battery life even if CPU is not
+// a bottleneck).
 void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcData, int sizeInBytes)
 {
     // Trying to decide between assert or silent ignore if the buffer is not initialized...
