@@ -32,7 +32,7 @@ public class DebugManager : MonoSingleton<DebugManager>
         Player.Save_Data toSave = GameManager.Instance.MainPlayer.Save();
         string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
 
-        Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, PathToCharacterSave));
+        Debug.Log($"Saving: \"{serializedData}\" to file {PathToCharacterSave}");
 
         StreamWriter writer = new StreamWriter(PathToCharacterSave, false);
         writer.Write(serializedData);
@@ -47,7 +47,7 @@ public class DebugManager : MonoSingleton<DebugManager>
             serializedData = reader.ReadToEnd();
         }
 
-        Debug.Log(string.Format("Loading: \"{0}\" from file {1}", serializedData, PathToCharacterSave));
+        Debug.Log($"Loading: \"{serializedData}\" from file {PathToCharacterSave}");
 
         if (serializedData.Length == 0)
         {

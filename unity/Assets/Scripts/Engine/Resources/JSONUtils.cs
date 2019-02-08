@@ -21,22 +21,20 @@ public class JSONUtils {
     public static T LoadJSON<T>(string filename)
     {
         TextAsset textAsset = Resources.Load(filename) as TextAsset;
-        if (textAsset != null)
-        {
-            Newtonsoft.Json.Serialization.ITraceWriter traceWriter = new Newtonsoft.Json.Serialization.MemoryTraceWriter
-                { LevelFilter = System.Diagnostics.TraceLevel.Verbose };
+        if (textAsset == null) return default;
 
-            JsonSerializerSettings settings = new JsonSerializerSettings
-                { TraceWriter = traceWriter };
+        Newtonsoft.Json.Serialization.ITraceWriter traceWriter = new Newtonsoft.Json.Serialization.MemoryTraceWriter
+            { LevelFilter = System.Diagnostics.TraceLevel.Verbose };
 
-            T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
+        var settings = new JsonSerializerSettings
+            { TraceWriter = traceWriter };
 
-            UnityEngine.Debug.Log($"Deserialize trace output {traceWriter.ToString()}");
+        T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
 
-            return obj;
-        }
+        UnityEngine.Debug.Log($"Deserialize trace output {traceWriter.ToString()}");
 
-        return default(T);
+        return obj;
+
     }
 
 }
