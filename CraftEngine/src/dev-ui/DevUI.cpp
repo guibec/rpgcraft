@@ -4,41 +4,31 @@
 #include "x-png-decode.h"
 #include "x-chrono.h"
 
+#include "appConfig.h"
 #include "Scene.h"
+#include "dev-ui/ui-assets.h"
 
-
-struct DevUI_ImageAsset
-{
-    int2                    size;
-    GPU_TextureResource2D   gpures;
-};
-
-struct ImGuiTextures
-{
-    DevUI_ImageAsset   Play;
-    DevUI_ImageAsset   Pause;
-    DevUI_ImageAsset   Stop;
-    DevUI_ImageAsset   Power;
-};
 
 ImGuiTextures      s_gui_tex;
 
 
 void DevUI_LoadImageAsset(DevUI_ImageAsset& dest, const char* asset_name)
 {
-    xString fullpath = xPath_Combine("./assets/dev-ui", asset_name);
+    xString fullpath = FindAsset(xFmtStr("dev-ui/%s", asset_name));
     xBitmapData pngsrc;
     png_LoadFromFile(pngsrc, fullpath);
     dx11_CreateTexture2D(dest.gpures, pngsrc, GPU_ResourceFmt_R8G8B8A8_UNORM);
-    s_gui_tex.Play.size = pngsrc.size;
+    dest.size = pngsrc.size;
 }
 
 void DevUI_LoadStaticAssets()
 {
-    DevUI_LoadImageAsset(s_gui_tex.Play,   "Play.png");
-    DevUI_LoadImageAsset(s_gui_tex.Pause,  "Pause.png");
-    DevUI_LoadImageAsset(s_gui_tex.Stop,   "Stop.png");
-    DevUI_LoadImageAsset(s_gui_tex.Power,  "Power.png");
+    DevUI_LoadImageAsset(s_gui_tex.Play,      "Play.png");
+    DevUI_LoadImageAsset(s_gui_tex.Pause,     "Pause.png");
+    DevUI_LoadImageAsset(s_gui_tex.Stop,      "Stop.png");
+    DevUI_LoadImageAsset(s_gui_tex.Power,     "Power.png");
+
+    DevUI_LoadImageAsset(s_gui_tex.SoundIcon, "sound-icons.png");
 }
 
 enum DevUi_SimplePlayState
@@ -59,6 +49,15 @@ void DevUI_DevControl()
         }
     }
 
+    // Using Pivot doesn't really work unless we already know the size of the window,
+    // and the size isn't know until the second run through, which means Pivot is useless with
+    // the FirstTimeEver flag since it'll only be considered the first time through, when size
+    // is meaningless.  So for now just hard-code stuff !
+
+    // [TODO] Upgrade Imgui and see if it's addressed this problem.  If not, file a bug.
+    ImGui::SetNextWindowPos( int2 { g_client_size_pix.x / 2, g_client_size_pix.y } - int2 { 48, 72 }, ImGuiCond_FirstUseEver);
+
+    Defer(ImGui::End());
     if (!ImGui::Begin("DevControl")) return;
 
     ImVec4 activeBackColor     = { 0.99f, 0.75f, 0.20f, 1.00f };
@@ -113,6 +112,4 @@ void DevUI_DevControl()
             s_powerDoubleThrow  = 0;
         }
     }
-
-    ImGui::End();
 }

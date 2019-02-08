@@ -17,12 +17,10 @@
 
 #include "Scene.h"
 #include "Entity.h"
-#include "DbgFont.h"
+#include "DbgTextOverlay.h"
 
 #include <queue>
 #include <ctime>
-
-DECLARE_MODULE_NAME("scene");
 
 typedef std::queue<SceneMessage> SceneMessageList;
 
@@ -183,10 +181,7 @@ __ni void SceneInit()
     EntityManager_Reset();
 
     x_try() {
-        g_scriptEnv.LoadModule(g_pkg_config_filename);
-        AjekScript_LoadConfiguration(g_scriptEnv);
-
-        DbgFont_LoadInit    ();
+        DbgTextOverlay_LoadInit    ();
         Scene_TryLoadInit   ();
         s_scene_initialized = true;
     }
@@ -248,6 +243,10 @@ extern void DevUI_DevControl        ();
 
 void DevUI_Clocks()
 {
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos( int2 { g_client_size_pix.x - 180, 10 }, ImGuiCond_FirstUseEver);
+
+    Defer(ImGui::End());
     if (!ImGui::Begin("Clocks")) return;
 
     auto secs  = time(nullptr);
@@ -262,7 +261,7 @@ void DevUI_Clocks()
     auto gm_secs  = mktime(&gmtm);
     auto tz_shift_secs  = loc_secs - gm_secs;
 
-    ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
+    //ImGui::Value("proctime  ", HostClockTick::Now().asSeconds(), "%7.2fs");
     ImGui::Value("worldtime ", s_world_localtime.asSeconds(), "%7.2fs");
     ImGui::Value("deltatime ", s_world_deltatime.asMilliseconds(), "%7.02fms");
     ImGui::NewLine();
@@ -271,8 +270,6 @@ void DevUI_Clocks()
         (tz_shift_secs / 3600), ((tz_shift_secs /60) % 60),
         localtm.tm_year+1900, localtm.tm_mon+1, localtm.tm_mday
     );
-
-    ImGui::End();
 }
 
 static void* SceneProducerThreadProc(void*)
@@ -281,8 +278,9 @@ static void* SceneProducerThreadProc(void*)
 
     while(1)
     {
+        dx11_NewFrame();
         Host_ImGui_NewFrame();
-        DbgFont_NewFrame();
+        DbgTextOverlay_NewFrame();
 
         // Timer Features!
         //  - Changes to Pause/Stop status occur during the msg queue
@@ -314,7 +312,7 @@ static void* SceneProducerThreadProc(void*)
             dx11_BeginFrameDrawing();
             dx11_SetRasterState(GPU_Fill_Solid, GPU_Cull_None, GPU_Scissor_Disable);
             dx11_ClearRenderTarget(g_gpu_BackBuffer, GPU_Colors::MidnightBlue);
-            DbgFont_SceneRender();
+            DbgTextOverlay_SceneRender();
             ImGui::Render();
             dx11_SubmitFrameAndSwap();
             xThreadSleep(32);
@@ -368,7 +366,7 @@ static void* SceneProducerThreadProc(void*)
             if (s_scene_devExecMask & SceneExecMask_HudRender) {
                 //HudSceneRender();
             }
-            DbgFont_SceneRender();
+            DbgTextOverlay_SceneRender();
             ImGui::Render();
             dx11_SubmitFrameAndSwap();
 

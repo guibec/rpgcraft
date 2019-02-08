@@ -45,9 +45,6 @@
     <ClCompile Include="src\Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DbgFont.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\UniformMeshes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -84,6 +81,15 @@
     <ClCompile Include="src\dev-ui\DevUI.cpp">
       <Filter>Source Files\Dev-UI</Filter>
     </ClCompile>
+    <ClCompile Include="src\CliConfigOption.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CliConfigSave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DbgTextOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x-thread-internal.h">
@@ -108,9 +114,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\UniformMeshes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DbgFont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PCH-rpgcraft.h">
@@ -139,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="src\imgui-console.h">
       <Filter>Source Files\Dev-UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dev-ui\ui-assets.h">
+      <Filter>Source Files\Dev-UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DbgTextOverlay.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

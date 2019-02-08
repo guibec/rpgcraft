@@ -76,6 +76,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\dbgfont.cpp" />
     <ClCompile Include="..\src\kpad.cpp" />
     <ClCompile Include="..\src\PCH-framework.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -90,6 +91,7 @@
     <ClCompile Include="..\src\x-string.cpp" />
     <ClCompile Include="..\src\x-thread.cpp" />
     <ClCompile Include="..\src\x-ThrowContext.cpp" />
+    <ClCompile Include="..\src\x-unipath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\msw-error.h" />
@@ -109,6 +111,8 @@
     <ClInclude Include="..\h\x-png-encode.h" />
     <ClInclude Include="..\h\x-ScopedMalloc.h" />
     <ClInclude Include="..\h\x-simd.h" />
+    <ClInclude Include="..\h\x-stdalloc.h" />
+    <ClInclude Include="..\h\x-stdfile.h" />
     <ClInclude Include="..\h\x-stdlib.h" />
     <ClInclude Include="..\h\x-stl.h" />
     <ClInclude Include="..\h\x-string.h" />
@@ -116,6 +120,7 @@
     <ClInclude Include="..\h\x-thread.h" />
     <ClInclude Include="..\h\x-ThrowContext.h" />
     <ClInclude Include="..\h\x-types.h" />
+    <ClInclude Include="..\h\x-unipath.h" />
     <ClInclude Include="..\h\x-virtkey.h" />
     <ClInclude Include="..\src\PCH-framework.h" />
     <ClInclude Include="..\h\x-MemCopy.inl" />

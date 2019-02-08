@@ -34,6 +34,12 @@
     <ClCompile Include="..\src\x-simd.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\x-unipath.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbgfont.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\h\sse_intrinsics.h">
@@ -115,6 +121,15 @@
       <Filter>Public Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\h\x-png-encode.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-unipath.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-stdfile.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\x-stdalloc.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
   </ItemGroup>

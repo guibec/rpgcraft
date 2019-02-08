@@ -238,10 +238,16 @@ void ImGuiConsole::AppendToCurrentFrame()
 
 void ImGuiConsole::DrawFrame()
 {
-    ImGui::SetNextWindowSize(ImVec2(520,600), ImGuiCond_FirstUseEver);
+    // The console isn't much use yet so let's not have it clutter the view by default for now.
+    // Can change this to default to un-collapsed and a larger display window later on.
+
+    ImGui::SetNextWindowSize(ImVec2(420,400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos( int2 { g_client_size_pix.x/2 + 32, 10 }, ImGuiCond_FirstUseEver);
+
+    Defer(ImGui::End());
     if (ImGui::Begin("Console"))
     {
         AppendToCurrentFrame();
     }
-    ImGui::End();
 }

@@ -55,12 +55,12 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const AssertContextInfoTriad& tr
         message.FormatV(fmt, list);
     }
 
-    xPrintLn( xFmtStr("%s: *** ASSERTION FAILURE ***\n%s\n\nContext:\n%s", triad.filepos, message.c_str(), context.c_str()) );
+    xPrintLn( xFmtStr("%s%s\n\nContext:\n%s", triad.filepos, message.c_str(), context.c_str()) );
     _flush_all_that_filesystem_jazz();
     return assert_break;
 }
 
-void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
+void log_host(const char* fmt, ...)
 {
     if (fmt && fmt[0])
     {
@@ -69,6 +69,14 @@ void _host_log(uint flags, const char* moduleName, const char* fmt, ...)
         vprintf(fmt, list);
         va_end(list);
         printf("\n");
+    }
+}
+
+void log_host_v(const char* fmt, va_list list)
+{
+    if (fmt && fmt[0])
+    {
+        vprintf(fmt, list);
     }
 }
 
@@ -97,7 +105,7 @@ const char* s_script_dbg_path_prefix = "./";
 
 extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t bufflen)
 {
-    xString result = xPath_Combine(s_script_dbg_path_prefix, source);
+    xString result = xFmtStr("%s/%s", s_script_dbg_path_prefix, source);
 
     size_t l = result.GetLength();
     if (l <= bufflen)  /* small enough? */
@@ -108,8 +116,6 @@ extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t 
         memcpy(out, result.c_str() + l - bufflen, bufflen * sizeof(char) + 1);
     }
 }
-
-DECLARE_MODULE_NAME("as-int");
 
 extern "C" void ajek_warn_new_global(lua_State* L)
 {

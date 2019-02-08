@@ -14,7 +14,6 @@ extern "C" {
 #   include "linit.c"
 }
 
-DECLARE_MODULE_NAME("lua-main");
 DECLARE_MODULE_THROW(xThrowModule_Script);
 
 AjekScriptSettings      g_ScriptConfig;
@@ -47,10 +46,10 @@ bool AjekScript_LoadConfiguration(AjekScriptEnv& env)
         g_ScriptConfig.lua_print_enabled = scriptConfig.get_bool    ("LuaPrintEnable");
 
         if (g_ScriptConfig.path_to_modules != old_script_config.path_to_modules) {
-            log_host_loud("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
+            log_host("   > ModulePath = %s", g_ScriptConfig.path_to_modules.c_str());
         }
         if (!g_ScriptConfig.lua_print_enabled || (g_ScriptConfig.lua_print_enabled != old_script_config.lua_print_enabled)) {
-            log_host_loud("   > Lua Print has been turned %s!", g_ScriptConfig.lua_print_enabled ? "ON" : "OFF");
+            log_host("   > Lua Print has been turned %s!", g_ScriptConfig.lua_print_enabled ? "ON" : "OFF");
         }
     }
 
@@ -154,7 +153,7 @@ extern "C" void ajek_warn_new_global(lua_State* L)
 
 extern "C" void ajek_lua_ChunkId_Filename(char* out, const char* source, size_t bufflen)
 {
-    xString result = xPath_Combine(s_script_dbg_path_prefix, source);
+    xString result = xFmtStr("%s/%s", s_script_dbg_path_prefix, source);
 
     size_t l = result.GetLength();
     if (l <= bufflen)  /* small enough? */
@@ -170,7 +169,7 @@ extern "C" void ajek_lua_printf(const char *fmt, ...)
 {
     va_list list;
     va_start(list, fmt);
-    _host_log_v(xLogFlag_Important, "Lua", fmt, list);
+    log_host_v(fmt, list);
     flush_log();
     va_end(list);
 }

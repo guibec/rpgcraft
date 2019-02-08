@@ -81,6 +81,8 @@
   <ItemGroup>
     <ClCompile Include="Box2D.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="src\CliConfigOption.cpp" />
+    <ClCompile Include="src\CliConfigSave.cpp" />
     <ClCompile Include="src\dev-ui\DevUI.cpp" />
     <ClCompile Include="src\fmod-ifc.cpp" />
     <ClCompile Include="src\imgui-console.cpp" />
@@ -94,7 +96,7 @@
     </ClCompile>
     <ClCompile Include="src\appConfig.cpp" />
     <ClCompile Include="src\Bezier2D.cpp" />
-    <ClCompile Include="src\DbgFont.cpp" />
+    <ClCompile Include="src\DbgTextOverlay.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\msw-WinMain.cpp" />
@@ -111,7 +113,8 @@
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="src\appConfig.h" />
     <ClInclude Include="src\Bezier2D.h" />
-    <ClInclude Include="src\DbgFont.h" />
+    <ClInclude Include="src\DbgTextOverlay.h" />
+    <ClInclude Include="src\dev-ui\ui-assets.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\fmod-ifc.h" />
     <ClInclude Include="src\imgui-console.h" />

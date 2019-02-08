@@ -11,8 +11,8 @@ struct rgba32 {
         r = r_;
     }
     rgba32(u32 im_code) {
-        // im_code expected format is ARGB, which is convenient for annotation, but needs to be converted
-        // into machine code for both big and little endians.
+        // im_code expected format is ARGB, which is convenient for annotation when the alpha component
+        // is ineffective (ignored).
 
         a = (im_code >> 24) & 0xff;
         b = (im_code >>  0) & 0xff;
@@ -34,6 +34,18 @@ namespace imgtool
     void        CutTex                                  (xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2);
     void        CutTex_and_ConvertOpaqueColorToAlpha    (xBitmapData& dest, const xBitmapData& src, int2 xy1, int2 xy2, const rgba32& color);
     int         AddTileToAtlas                          (TextureAtlas& dest, const xBitmapData& src, const int2& srcpos = {0,0});
-    int         AddEmptyTileToAtlas                     (TextureAtlas& dest);
+    int         AddEmptyTileToAtlas                     (TextureAtlas& dest, const float4& color={0,0,0,1.0f});
+};
+
+namespace DbgFont
+{
+    static const int        BytesPerGlyph = 8;
+    extern const int        LowCharacterCode;
+    extern const int        CharacterCodeCount;
+    extern const int        HighCharacterCode;
+    extern const uint8_t    GlyphData[][BytesPerGlyph];
+
+    extern int      BlitChar            (xBitmapData& dest, int2 topleft, char ch, const float4& color={1.f,1.f,1.f,1.f});
+    extern void     BlitAtlasTexture    (xBitmapData& dest);
 };
 

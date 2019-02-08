@@ -6,8 +6,6 @@
 #include "x-string.h"
 
 
-DECLARE_MODULE_NAME( "x-string" );
-
 //
 // Converts a u32 to a binary string.
 // [TODO] : Rename this to "binaryToString()" or something slightly more obvious.
@@ -29,13 +27,6 @@ char* sbinary(u32 val)
     *c_p++=0;
     return  &bchars[0];
 }
-
-
-qstringlen::qstringlen(const char* src) {
-    strptr = src;
-    length = strlen(src);
-}
-
 
 // ----------------------------------------------------------------------------
 //  toUTF16 / toUTF8  (implementations)
@@ -307,7 +298,7 @@ xString& xString::AppendFmtV( const char* fmt, va_list list )
     if (!fmt) return *this;
 
     size_t origlen  = GetLength();
-    int destSize    = _vscprintf( fmt, list );
+    int destSize    = fmt ? _vscprintf( fmt, list ) : 0;
 
     bug_on_qa( destSize < 0, "Invalid string formatting parameters! -- or nasty old glibc?" );
     if (destSize==0) return *this;      // don't waste time appending nothing.
@@ -407,80 +398,6 @@ xString xString::ToUpper() const
     xString result( *this );
     std::transform(result.m_string.begin(), result.m_string.end(), result.m_string.begin(), ::toupper);
     return result;
-}
-
-// --------------------------------------------------------------------------------------
-__eai bool xIsPathSeparator( const char& c )
-{
-#if TARGET_MSW || TARGET_ORBIS
-    return (c == '/') || (c == '\\');
-#else
-    return (c == '/');
-#endif
-}
-
-// --------------------------------------------------------------------------------------
-bool xPathIsAbsolute( const xString& src )
-{
-    if (src.IsEmpty())                                  return false;
-    if (xIsPathSeparator(src[0]))                       return true;
-
-#if TARGET_MSW || TARGET_ORBIS
-    // Some notes about absolute paths on Windows:
-    //   * technically drives should be letters (alpha-only, non-numeric) but Windows/DOS
-    //     parses files in such a way that "1:\" will always be considered as a drive specification.
-    //      (one which cannot be fulfilled since the system cannot map drives to numbers!)
-    //   * Drive letter without a backslash will use relative path on the drive, thus:
-    //       a:folder\folder\file.txt -> a:\cwd_of_drive_a\folder\folder\file.txt
-
-    if (src.GetLength() < 3)                            return false;
-    if ((src[1] == ':') && xIsPathSeparator(src[2]))    return true;
-#endif
-
-    return false;
-}
-
-// --------------------------------------------------------------------------------------
-xString xBaseFilename( const xString& src )
-{
-    static const char* PATH_SEP = TARGET_MSW ? "/\\" : "/";
-    size_t pos = src.FindLast( PATH_SEP );
-    if (pos == xString::npos) return src;
-    return src.GetTail( pos+1 );
-}
-
-xString xBasePath( const xString& src )
-{
-    static const char* PATH_SEP = TARGET_MSW ? "/\\" : "/";
-    size_t pos = src.FindLast( PATH_SEP );
-    if (pos == xString::npos) return xString();     // no path separator?  means it's just a filename.  (could also return ./)
-    return src.GetSubstring( 0, pos );
-}
-
-// --------------------------------------------------------------------------------------
-xString xPath_Combine( const xString& left, const xString& right )
-{
-    if (right.IsEmpty())            return left;
-    if (xPathIsAbsolute( right ))   return right;
-    if (left.IsEmpty())             return right;
-
-    const size_t lastpos = left.GetLength();
-    assume (lastpos);       // should always be true since we escaped empty lefts above!
-    if (!xIsPathSeparator(left[lastpos-1]))
-    {
-        #if TARGET_MSW
-        return left + "\\" + right;
-        #else
-        return left + "/" + right;
-        #endif
-    }
-    else
-        return left + right;
-}
-
-xString xPath_Combine( const xString& left, const xString& right1, const xString& right2 )
-{
-    return xPath_Combine( xPath_Combine(left, right1), right2);
 }
 
 // --------------------------------------------------------------------------------------

@@ -28,7 +28,6 @@ enum {
     AudioGroup_UI,
 };
 
-DECLARE_MODULE_NAME("fmod");
 DECLARE_MODULE_THROW(xThrowModule_FMOD);
 
 #define check_result(res)   res && bug("FMOD Error 0x%08x: %s", res, fmod_result_toString(res))
@@ -222,6 +221,22 @@ void fmod_SetVolume(const FmodMusic& stream, float vol)
     if (!stream.channel) return;
     auto result = FMOD_Channel_SetVolume(stream.channel, vol);
     check_result(result);
+}
+
+void fmod_SetMute(const FmodMusic& stream, bool is_muted)
+{
+    if (!stream.channel) return;
+    auto result = FMOD_Channel_SetMute(stream.channel, is_muted);
+    check_result(result);
+}
+
+bool fmod_GetMute(const FmodMusic& stream)
+{
+    if (!stream.channel) return true;
+    FMOD_BOOL is_muted;
+    auto result = FMOD_Channel_GetMute(stream.channel, &is_muted);
+    check_result(result);
+    return bool(is_muted);
 }
 
 FMOD_CHANNEL* fmod_PlaySound(const FmodSound& sound)

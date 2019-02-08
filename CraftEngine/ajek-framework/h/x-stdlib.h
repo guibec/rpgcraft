@@ -4,10 +4,10 @@
 #include "x-types.h"
 #include "x-simd.h"
 #include "x-stl.h"
+#include "x-unipath.h"
 
 #include <cstring>      // needed for memset
 #include <type_traits>
-#include <cstdio>
 
 #define serialization_assert(T) \
     static_assert(xIs_trivially_copyable(T), "Cannot serialize non-POD object.")
@@ -51,213 +51,24 @@ public:
     }
 };
 
-
-
-// ======================================================================================
-//  xCustomAllocator  (interface)
-// ======================================================================================
-class xCustomAllocator {
-public:
-    virtual void*       alloc       (size_t size)               =0;
-    virtual void*       realloc     (void* ptr, size_t size)    =0;
-    virtual void        free        (void* ptr)                 =0;
-};
-
-class xDefaultCustomAllocator : public xCustomAllocator {
-public:
-    void*       alloc       (size_t size)               override;
-    void*       realloc     (void* ptr, size_t size)    override;
-    void        free        (void* ptr)                 override;
-};
-
-extern xDefaultCustomAllocator  g_DefaultCustomAllocator;
-
-// ======================================================================================
-//  xBaseStream (abstract class)
-// ======================================================================================
-class xBaseStream
-{
-    NONCOPYABLE_OBJECT( xBaseStream );
-
-protected:
-    union {
-        // We cheat her a bit -- m_fd strictly speaking should be -1 for an empty descriptor.
-        // The API manually sets -1 to zero (0) within OpenFile() to allow !nullptr checks
-        // against m_fp to satisfy either underlying file system.  This is ok because posix
-        // fd==0 is reserved as stdin anyway, and will never be returned from open(). --jstine
-
-        FILE*       m_fp;               // non-NULL implies data is sourced from file
-        int         m_fd;
-    };
-
-    size_t              m_dataPos       = 0;
-    size_t              m_dataLength    = 0;
-    bool                m_isBuffered    = false;            // if TRUE, use m_fp else use m_fd
-    xCustomAllocator*   m_allocator     = &g_DefaultCustomAllocator;
-
-protected:
-    xBaseStream() {
-        m_fp            = nullptr;
-    }
-
-public:
-    virtual             ~xBaseStream    () throw()=0;
-    virtual void        Close           ();
-    virtual const void* GetBufferPtr    (size_t size) const=0;
-    virtual void*       GetBufferPtr    (size_t size)=0;
-            x_off_t     Seek            (x_off_t pos, int whence);
-            x_off_t     Tell            ()              const;
-
-            void        SetCustomAlloc  (xCustomAllocator& allocator)   { m_allocator = &allocator; }
-            bool        IsMemory        ()              const   { return  !m_fp;  }
-            bool        IsFile          ()              const   { return !!m_fp; }
-            bool        IsOK            ()              const   { return !!m_fp || !!m_dataLength; }
-            FILE*       GetFILE         ()                      { return m_isBuffered ? m_fp : nullptr; }
-};
-
-inline xBaseStream::~xBaseStream() throw() {}
-
-
-// ======================================================================================
-//  xStreamReader (class)
-// ======================================================================================
-class xStreamReader : public xBaseStream
-{
-    typedef xBaseStream __parent;
-
-protected:
-    const u8*   m_data;
-
-public:
-                        xStreamReader   ()          { }
-    virtual             ~xStreamReader  () throw() { Close(); }
-    virtual void        Close           ()                          override;
-    virtual const void* GetBufferPtr    (size_t size) const         override;
-    virtual void*       GetBufferPtr    (size_t size)               override;
-            bool        OpenFile        ( const xString& filename );
-            bool        OpenFileBuffered( const xString& filename );
-            bool        OpenMem         ( const void* mem, size_t buffer_length );
-            bool        Read            ( void* dest, ssize_t bytes );
-
-    // Valid for both file and data streams in xStreamReader.
-            size_t      GetLength       ()              const   { return m_dataLength; }
-
-    template< typename T >
-    bool Read( T& dest )
-    {
-        serialization_assert(T);
-        return Read( &dest, sizeof(T) );
-    }
-};
-
-
-// ======================================================================================
-//  xStreamWriter (class)
-// ======================================================================================
-class xStreamWriter : public xBaseStream
-{
-    typedef xBaseStream __parent;
-
-protected:
-    u8*         m_data;
-    size_t      m_dataReserved;
-    size_t      m_alignMask;
-    bool        m_suppress_assertions;
-
-public:
-                        xStreamWriter   ()          { m_data = nullptr; m_dataReserved = 0; }
-    virtual             ~xStreamWriter  () throw()  { Close(); }
-    virtual void        Close           ()                          override;
-    virtual const void* GetBufferPtr    (size_t size) const         override;
-    virtual void*       GetBufferPtr    (size_t size)               override;
-            bool        CreateFile      (const xString& filename);
-            bool        CreateFileBuffered(const xString& filename);
-            bool        OpenFile        (const xString& filename);
-            bool        OpenFileBuffered(const xString& filename);
-            bool        OpenMem         (size_t initial_length, size_t align_by=_64kb);
-
-            void        Flush           ();
-            bool        Write           ( const void* src, ssize_t bytes );
-            bool        WriteChars      ( const xString& src );
-            bool        CopyToStream    ( xStreamWriter& dest );
-
-    template< typename T >
-    bool Write( const T& src )
-    {
-        serialization_assert(T);
-        return Write( &src, sizeof(T) );
-    }
-
-protected:
-            void        _growPast       (size_t pos);
-};
-
-
-extern void     xMalloc_Check       ();
-extern void*    xMalloc             (size_t sz);
-extern void*    xCalloc             (size_t numItems, size_t sz);
-extern void*    xRealloc            (void* srcptr, size_t sz);
-extern void     xFree               (void *ptr);
-extern void*    xMalloc_Aligned     (size_t sz, u32 align);
-extern void*    xRealloc_Aligned    (void* srcptr, size_t sz, u32 align);
-extern void     xFree_Aligned       (void* ptr);
-extern void     xMalloc_Report      ();
-extern void     xMalloc_ReportDelta ();
-
-#define placement_new(T)        new (xMalloc(sizeof(T))) T
-
 template<typename T>
 void placement_delete(T* ptr)   { (ptr)->~T(); xFree(ptr); }
 
-extern void     xStrCopy                (char* dest, size_t destLen, const char* src);
-extern void     xStrnCopy               (char* dest, size_t destLen, const char* src, size_t srcLen);
+extern void         xStrCopy                (char* dest, size_t destLen, const char* src);
+extern void         xStrnCopy               (char* dest, size_t destLen, const char* src, size_t srcLen);
 
-extern void     xMemCopy                (void* dest, const void* src, uint len);
-extern void     xMemCopy32              (void* dest, const void* src, uint len32);
-extern void     xMemCopyQwc             (void* dest, const void* src, uint lenQwc);
-extern void     xMemCopyQwc_WrappedDest (u128* destBase,    const u128* src,        uint& destStartQwc, uint lenQwc, uint destSizeQwc);
-extern void     xMemCopyQwc_WrappedSrc  (u128* dest,        const u128* srcBase,    uint& srcStartQwc,  uint lenQwc, uint srcSizeQwc);
+extern void         xMemCopy                (void* dest, const void* src, uint len);
+extern void         xMemCopy32              (void* dest, const void* src, uint len32);
+extern void         xMemCopyQwc             (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyQwc_WrappedDest (u128* destBase,    const u128* src,        uint& destStartQwc, uint lenQwc, uint destSizeQwc);
+extern void         xMemCopyQwc_WrappedSrc  (u128* dest,        const u128* srcBase,    uint& srcStartQwc,  uint lenQwc, uint srcSizeQwc);
 
-extern void     xMemCopyShortQwc        (void* dest, const void* src, uint lenQwc);
-extern void     xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyShortQwc        (void* dest, const void* src, uint lenQwc);
+extern void         xMemCopyShortQwc_NT     (void* dest, const void* src, uint lenQwc);
 
-extern void     xFileDelete             (const xString& file);
-extern void     xFileSetSize            (int fd, size_t filesize);
-extern bool     xFileExists             (const char* fullpath);
-extern bool     xFileRename             (const xString& src, const xString& dest);
-extern bool     xFileSystematicRename   (const xString& srcFullPathname, const xString& destPathAndFileBase, const xString& ext, int checkCount);
-
-extern bool     xFgets                  (xString& dest, FILE* stream);
-extern bool     xCreateDirectory        (const xString& dir);
-extern FILE*    xFopen                  (const xString& fullpath, const char* mode);
-
-extern bool     xEnvironExists          (const xString& varname);
-extern xString  xEnvironGet             (const xString& varname);
-extern void     xEnvironSet             (const xString& varname, const xString& value, bool overwrite=1);
-
-
-// Performs cleanup of existing object pointer (if non-null) and creates a new object in its place.
-// Memory is allocated if the provided pointer is null.
-template< typename T >
-__xi T* xMallocNew(T* &ptr)
-{
-    if (ptr) {
-        ptr->~T();
-    }
-    else {
-        ptr = (T*)xMalloc(sizeof(*ptr));
-    }
-    return new (ptr) T();
-}
-
-// Memory is allocated if the provided pointer is null.  if pointer is non-null, then no action is taken.
-template< typename T >
-__xi T* xMallocT(T* &ptr)
-{
-    static_assert(!std::has_virtual_destructor<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.");
-    //static_assert(!std::is_trivially_copyable<T>::value, "Non-trivial type has meaningful destructor.  Use xMallocNew<T> instead.")
-    return ptr ? ptr : xMalloc(sizeof(*ptr));
-}
+extern bool         xEnvironExists          (const xString& varname);
+extern xString      xEnvironGet             (const xString& varname);
+extern void         xEnvironSet             (const xString& varname, const xString& value, bool overwrite=1);
 
 template< typename T >
 inline void xMemMove(T* dest, size_t destLen, const T* src, size_t srcLen)
@@ -424,7 +235,8 @@ inline __ai int xMemCmp( const void* d0, const void* d1, uint len )
     return memcmp(d0, d1, len);
 }
 
-#ifdef _MSC_VER
+// not actually sure when strtoll was added to MSVC, somewhere duing VS 2017 lifespan.
+#if defined(_MSC_VER) && (_MSC_VER < 1910)
 inline __ai s64 strtoll(const char * _Str, char ** _EndPtr, int _Radix )
 {
     return _strtoi64( _Str, _EndPtr, _Radix );
@@ -469,7 +281,6 @@ inline __ai bool i_BitScanForward( u64& result, u64 src )
 
 
 extern xString DecodeBitField(u32 bits, const char* pLegend[], u32 numEntries);
-extern xString xFixFilenameForPlatform( const xString& src );
 
 extern void Host_RemoveFolder( const char* remFolder);
 extern char xConvertBuildTargetToInt();

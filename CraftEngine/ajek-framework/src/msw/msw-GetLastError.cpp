@@ -6,11 +6,6 @@
 #include <fcntl.h>
 
 
-namespace {
-    const char* s_ModuleName = nullptr;     // this module name is not relevant to the errors it logs
-};
-
-
 // --------------------------------------------------------------------------------------
 void msw_AttachToParentConsole()
 {
@@ -113,18 +108,4 @@ bool msw_AssertLastError( const char* filepos, const char* funcname, int lastErr
     return xDebugBreak(
         DbgBreakType_Assert, {filepos, funcname}, "Windows Error #%d: %s%s", lastErrorId, t_Msg, details.c_str()
     ) == assert_break;
-}
-
-
-// ======================================================================================
-// Host_RemoveFolder
-// ======================================================================================
-// for lack of better location for now...
-
-#include <Shobjidl.h>
-#include <direct.h>
-
-void xFileDelete( const xString& file )
-{
-    DeleteFileW( toUTF16(file).wc_str() );
 }

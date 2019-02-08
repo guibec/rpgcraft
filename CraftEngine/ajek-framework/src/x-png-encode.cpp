@@ -1,6 +1,7 @@
 
 #include "PCH-framework.h"
 #include "x-assertion.h"
+#include "x-stdfile.h"
 #include "x-png-encode.h"
 #include "png.h"
 

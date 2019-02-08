@@ -3,8 +3,6 @@
 #include "msw-redtape.h"
 #include "x-host-ifc.h"
 
-DECLARE_MODULE_NAME("x-kbd");
-
 extern HWND g_hWnd;     // must be provided by application's msw-WinMain.cpp
 
 // ConvertFromMswVK

@@ -14,7 +14,7 @@
 // the base offset of the tile, and then adds the VS-interpolated value range 0.0f - 1.0f to that
 // to smaple the texture.
 //
-// Note: Requires multi-resource support by the GPU.  No big deal for deaktops and consoles.  May
+// Note: Requires multi-resource support by the GPU.  No big deal for desktops and consoles.  May
 //       not be widely available on mobile devices; or maybe it will be by the time we're interested
 //       in considering shipping the title for mobile.  So just going to assume multi-texture support
 //       for now... --jstine
@@ -40,7 +40,7 @@ private:
     NONCOPYABLE_OBJECT(PlayerSprite);
 
 public:
-    GPU_InputDesc           gpu_layout_sprite;
+    GPU_InputDesc       gpu_layout_sprite;
 
 public:
     EntityGid_t         m_gid;

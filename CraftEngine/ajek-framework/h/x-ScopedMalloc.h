@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "x-stdlib.h"
+#include "x-stdalloc.h"
 #include "x-assertion.h"
 
 // --------------------------------------------------------------------------------------
@@ -12,6 +12,8 @@
 template< typename T >
 class BaseScopedMalloc
 {
+    NONCOPYABLE_OBJECT(BaseScopedMalloc);
+
 protected:
     T*      m_buffer;
     uint    m_size;

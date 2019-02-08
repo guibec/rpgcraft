@@ -12,11 +12,11 @@
 #include "x-png-decode.h"
 #include "v-float.h"
 
+#include "appConfig.h"
 #include "ajek-script.h"
 #include "Entity.h"
 #include "Sprites.h"
 #include "TileMapLayer.h"
-#include "DbgFont.h"
 #include "Scene.h"
 #include "UniformMeshes.h"
 
@@ -28,8 +28,6 @@
 #include "Mouse.h"
 
 using namespace DirectX;
-
-DECLARE_MODULE_NAME("main");
 
 GPU_IndexBuffer         g_idx_box2D;
 GPU_ShaderVS            g_ShaderVS_Tiler;
@@ -269,6 +267,9 @@ void GameplaySceneRender()
 
 extern void DevUI_LoadStaticAssets();
 
+// asset search paths is a NUL-delimited list of path prefixes.
+// The entire list is ended by a double-NUL.
+
 bool Scene_TryLoadInit()
 {
     s_CanRenderScene = false;
@@ -291,7 +292,7 @@ bool Scene_TryLoadInit()
 
     if (1) {
         xBitmapData  pngtex;
-        png_LoadFromFile(pngtex, ".\\Assets\\sheets\\characters\\don_collection_27_20120604_1722740153.png");
+        png_LoadFromFile(pngtex, FindAsset("./sheets/characters/don_collection_27_20120604_1722740153.png"));
         dx11_CreateTexture2D(tex_chars, pngtex.buffer.GetPtr(), pngtex.size, GPU_ResourceFmt_R8G8B8A8_UNORM);
     }
 
