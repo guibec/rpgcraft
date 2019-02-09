@@ -479,15 +479,6 @@ void dx11_InitDevice()
 
     HRESULT hr = S_OK;
 
-    if (g_hWnd) {
-        RECT rc;
-        GetClientRect(g_hWnd, &rc);
-        g_client_size_pix = {
-            rc.right - rc.left,
-            rc.bottom - rc.top
-        };
-    }
-
     x_abort_on(g_client_size_pix.cmp_any() <= 0,
         "Invalid client size. Please create a window prior to dx11_InitDevice(). If not running in windowed mode then please "
         "initialize g_client_size_pix prior to dx11_InitDevice()."

@@ -141,6 +141,7 @@ UINT ConvertToMswVK( VirtKey_t ours )
 
 bool Host_HasWindowFocus()
 {
+    if (!g_hWnd) return false;
     HWND fore = GetForegroundWindow();
     return (g_hWnd == fore || g_hWnd == ::GetParent(fore));;
 }
@@ -232,6 +233,7 @@ void Host_ReleaseMouse()
 HostMouseState HostMouseImm_GetState()
 {
     HostMouseState result = {};
+    if (!g_hWnd) return result;
 
     POINT meh;
 

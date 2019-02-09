@@ -268,6 +268,12 @@ static const CliOptionDesc s_valid_options_list[] = {
         g_settings_hostwnd.has_client_size |= to_int2(g_settings_hostwnd.client_size, value);
     }},
 
+    { "backbuffer-size"             ,[](const xString& value){
+        g_settings_app.has_backbuffer_size |= to_int2(g_settings_app.backbuffer_size, value);
+    }},
+    { "windowless-mode"             ,[](const xString& value){ to_bool(g_settings_app.windowless_mode, value); }},
+    { "process-auto-kill"           ,[](const xString& value){ to_any_int(g_settings_app.kill_at_frame_number, value); }},
+
     { "audio-global-volume"         ,[](const xString& value){ to_float(g_settings_audio.glo_volume, value); }},
     { "audio-bgm-volume"            ,[](const xString& value){ to_float(g_settings_audio.bgm_volume, value); }},
     { "audio-sfx-volume"            ,[](const xString& value){ to_float(g_settings_audio.sfx_volume, value); }},

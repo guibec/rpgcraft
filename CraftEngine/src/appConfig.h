@@ -7,10 +7,18 @@
 //  - use HostwindowSettings().client_size to get the original defalut value.
 struct HostwindowSettings
 {
-    int2    client_pos      = {   64,   64 };
-    int2    client_size     = { 1280,  720 };
-    bool    has_client_pos  = false;
-    bool    has_client_size = false;
+    int2    client_pos              = {   64,   64 };
+    int2    client_size             = { 1280,  720 };
+    bool    has_client_pos          = false;
+    bool    has_client_size         = false;
+};
+
+struct HostAppSettings
+{
+    int2    backbuffer_size         = { 1280,  720 };
+    bool    has_backbuffer_size     = false;
+    bool    windowless_mode         = false;
+    int     kill_at_frame_number    = 0;
 };
 
 struct AudioSettings
@@ -44,6 +52,7 @@ struct AudioSettings
 };
 
 
+extern HostAppSettings      g_settings_app;
 extern HostwindowSettings   g_settings_hostwnd;
 extern AudioSettings        g_settings_audio;
 
