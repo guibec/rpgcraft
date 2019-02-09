@@ -209,7 +209,7 @@ public class UIManager : MonoSingleton<UIManager>
 
         if (m_displayTravel)
         {
-            GUI.Window((int)DebugWindowsID.TravelMenu, new Rect(Screen.width / 8, Screen.height / 16, Screen.width * 6 / 8, Screen.height * 15 / 16), DoTravelWindow, "Travel menu");
+            GUI.Window((int)DebugWindowsID.TravelMenu, new Rect(Screen.width / 8, Screen.height / 32, Screen.width * 6 / 8, Screen.height * 31 / 32), DoTravelWindow, "Travel menu");
         }
     }
 
@@ -222,7 +222,10 @@ public class UIManager : MonoSingleton<UIManager>
             "Mercury",
             "Venus",
             "Earth",
+            "Moon",
             "Mars",
+            "Phobos",
+            "Deimos",
             "Ceres",
             "Jupiter",
             "Saturn",
@@ -270,7 +273,7 @@ public class UIManager : MonoSingleton<UIManager>
         }
     }
 
-    private bool[] m_planets = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+    private bool[] m_planets = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     public Texture[] m_planetTextures;
     private int GetSelectedPlanet()
     {
