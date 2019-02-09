@@ -15,10 +15,22 @@ x_png_enc& x_png_enc::WriteImage(const xBitmapDataRO& bitmap, bool reverseRGB_)
     return WriteImage(bitmap.buffer, bitmap.size.x, bitmap.size.y, 32);
 }
 
-x_png_enc& x_png_enc::WriteImage(const void* data, s32 width_, s32 height_, u32 bpp_, bool reverseRGB_)
+// Writes image data into a heap-allocated buffer.  This function is meant to provide a means by which image
+// data can be off-loaded onto a separate thread for processing and then encoding.
+x_png_enc& x_png_enc::WriteImage(const void* data, s32 width_, s32 height_, s32 bpp_, bool reverseRGB_)
 {
-    if (bpp_ != 24 && bpp_ != 32 && bpp_ != 48 && bpp_ != 64) {
-        bug("Unsupported bpp=%d, valid formats are 24, 32, 48, and 64 bits-per-pixel.", bpp_);
+    bug_on(width_ <= 0 || height_ <= 0 || bpp_ <= 0, "WriteImage(width=%d, height=%d, bpp=%d): one or more invalid parameters.", width_, height_, bpp_);
+    switch(bpp_) {
+        case 64: break;
+        case 48: break;
+        case 32: break;
+        case 24: break;
+
+        // TODO: Add support for grayscale formats, which would be described as 8 and 16 bits per pixel.
+        //       Grayscale formats would be ideal for dumping alpha channels and depth stencils.
+
+        default:
+            bug("Unsupported bpp=%d, valid formats are 24, 32, 48, and 64 bits-per-pixel.", bpp_);
         return *this;
     }
 
@@ -45,24 +57,34 @@ x_png_enc& x_png_enc::WriteImage(const void* data, s32 width_, s32 height_, u32 
     return *this;
 }
 
-x_png_enc& x_png_enc::Cvt64to32()
+// Converts 64 or 48 bit source data to 32 or 24 bit source data
+// If the src format is know to be 64 bit and the alpha channel also needs to be removed then
+// it's better to use CvtTo24(), which both downsamples and strips the alpha channel in
+// a single operation.
+x_png_enc& x_png_enc::DownSample()
 {
     if (bpp == 32) return *this;
+    if (bpp == 24) return *this;
 
+    auto compsPerPixel = (bpp / 16);
     for(int y = 0; y < height; y++) {
         const auto* bmp_src = (u16*)(lines[y]);
               auto* bmp_dst = (u8*) (lines[y]);
-        for(int x = 0; x < width*4;  x++) {
+        for(int x = 0; x < width*compsPerPixel;  x++) {
             bmp_dst[x] = bmp_src[x] >> 8;
         }
     }
-    bpp = 32;
+    bpp /= 2;
     return *this;
 }
 
 x_png_enc& x_png_enc::Cvt64to48()
 {
     if (bpp == 48) return *this;
+    if (bpp != 64) {
+        bug("Invalid x_png_enc object state, expected bpp=32 but bpp=%d", bpp);
+        return *this;
+    }
 
     for(int y = 0; y < height; y++) {
         const auto* bmp_src = (u16*)(lines[y]);
@@ -77,26 +99,13 @@ x_png_enc& x_png_enc::Cvt64to48()
     return *this;
 }
 
-x_png_enc& x_png_enc::Cvt64to24()
-{
-    if (bpp == 24) return *this;
-
-    for(int y = 0; y < height; y++) {
-        const auto* bmp_src = (u16*)(lines[y]);
-              auto* bmp_dst = (u8*) (lines[y]);
-        for(int x = 0; x < width;  x++) {
-            bmp_dst[(x*3)+0] = bmp_src[(x*4)+0] >> 8;
-            bmp_dst[(x*3)+1] = bmp_src[(x*4)+1] >> 8;
-            bmp_dst[(x*3)+2] = bmp_src[(x*4)+2] >> 8;
-        }
-    }
-    bpp = 24;
-    return *this;
-}
-
 x_png_enc& x_png_enc::Cvt32to24()
 {
     if (bpp == 24) return *this;
+    if (bpp != 32) {
+        bug("Invalid x_png_enc object state, expected bpp=32 but bpp=%d", bpp);
+        return *this;
+    }
 
     for(int y = 0; y < height; y++) {
         const auto* bmp_src = (u8*)(lines[y]);
@@ -111,7 +120,59 @@ x_png_enc& x_png_enc::Cvt32to24()
     return *this;
 }
 
+x_png_enc& x_png_enc::Cvt64to24()
+{
+    if (bpp == 24) return *this;
+    if (bpp != 64) {
+        bug("Invalid x_png_enc object state, expected bpp=64 but bpp=%d", bpp);
+        return *this;
+    }
 
+    auto compsPerPixel = bpp / 8;
+    for(int y = 0; y < height; y++) {
+        const auto* bmp_src = (u16*)(lines[y]);
+              auto* bmp_dst = (u8*) (lines[y]);
+        for(int x = 0; x < width;  x++) {
+            bmp_dst[(x*3)+0] = bmp_src[(x*4)+0] >> 8;
+            bmp_dst[(x*3)+1] = bmp_src[(x*4)+1] >> 8;
+            bmp_dst[(x*3)+2] = bmp_src[(x*4)+2] >> 8;
+        }
+    }
+    bpp = 24;
+    return *this;
+}
+
+// Minimizes the operational size of input data, by ensuring 8 bits per color and no alpha
+// channel data.  This is typically the best option to use when saving non-grayscale texture
+// data.
+x_png_enc& x_png_enc::CvtTo24()
+{
+    if (bpp == 24) return *this;
+    if (bpp == 32) return Cvt32to24();
+    if (bpp == 48) return DownSample();
+    if (bpp == 64) return Cvt64to24();
+
+    bug("Unsupported image type bpp=%d", bpp);
+    return *this;
+}
+
+x_png_enc& x_png_enc::StripAlphaChannel()
+{
+    if (bpp == 48 || bpp == 24) return *this;
+
+    if (bpp == 64) return Cvt64to48();
+    if (bpp == 32) return Cvt32to24();
+
+    bug("Don't know how to strip alpha from image when bpp=%d", bpp);
+    return *this;
+}
+
+
+// Clears alpha channel without deleting it outright.
+// The function is grandfathered in for now, but might get removed in the future.
+// This is of limited use, since it's almost always better to strip the alpha channel completely,
+// since that results in faster encoding time and smaller png files, and it's trivial to re-insert
+// the alpha channel later on load.
 x_png_enc& x_png_enc::ClearAlphaChannel(u8 alpha)
 {
     if (bpp == 24 || bpp == 48) {
