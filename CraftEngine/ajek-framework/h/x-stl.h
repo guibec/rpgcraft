@@ -81,7 +81,14 @@ struct Defer_t {
     }
 };
 
-#define Defer(func)   Defer_t defer_anon_##__COUNTER__( [&]() { func; } )
+// Defer Macro
+// This has the lambda syntax and semi-colon baked-in on purpose.  The point of this macro is maximum
+// brevity for the most common case usage, which is to free a single pointer.  It is meant as an alternative
+// to unique_ptr<> mess.  If you want a long-winded version, then use Defer_t directly.
+
+#define _defer_expand_counter_2(func,count) Defer_t defer_anon_ ## count( [&]() { func; } )
+#define _defer_expand_counter_1(func,count) _defer_expand_counter_2(func, count)
+#define Defer(func) _defer_expand_counter_1(func, __COUNTER__)
 
 #ifdef _MSC_VER
 #   pragma warning(default: 4275)
