@@ -46,6 +46,9 @@ static bool s_isMaximized = false;
 static bool s_msg_moved   = false;
 static bool s_msg_sized   = false;
 
+static DWORD s_thr_winmain = 0;
+
+
 extern bool SaveDesktopSettings(bool isMarkedDirty);
 
 //--------------------------------------------------------------------------------------
@@ -153,12 +156,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 bool Msw_DrainMsgQueue()
 {
+    //if (!g_hWnd) {
+    //    return true;
+    //}
+
     MSG msg = { 0 };
 
     while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        if (g_hWnd) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
 
         if (msg.message == WM_QUIT) {
             return false;
@@ -223,6 +232,8 @@ static RECT s_lastknown_window_rect     = { };
 
 static bool validate_window_pos(RECT& window, bool tryFix)
 {
+    if (!g_hWnd) return true;
+
     // This logic mimics Win10's built-in movement restrictions, which aren't applied when using
     // ::ShowWindow() -- so we have to do it manually in case the inputs from the config file are
     // garbage.
@@ -295,6 +306,15 @@ void ApplyDesktopSettings()
         }
     }
 
+    if (!g_settings_hostwnd.has_client_size) {
+        client_size = g_client_size_pix;
+    }
+    else {
+        // probably we want to make sure the window size is an even multiple of the client size, and either
+        // auto-correct it if not, or issue a warning.  The game will _not_ look very good if the scale is
+        // not a nice round number.
+    }
+
     // always good idea to make sure window startup / init messages have been processed before reading
     // or setting the window size/pos.
     Msw_DrainMsgQueue();
@@ -311,6 +331,8 @@ void ApplyDesktopSettings()
 
 static void UpdateLastKnownWindowPosition()
 {
+    if (!g_hWnd) return;
+
     if (!s_isMinimized && !s_isMaximized) {
         RECT rc;
         ::GetClientRect(g_hWnd, &rc);
@@ -331,9 +353,27 @@ static void UpdateLastKnownWindowPosition()
 
 void Cli_SaveDesktopSettings(xString& dest)
 {
+    // don't bother saving host window settings if there's no host window and no previous
+    // host window settings to preserve either.
+
+    if (!g_hWnd && !g_settings_hostwnd.has_client_pos && !g_settings_hostwnd.has_client_size) return;
+
     dest.Append   ("\n# Host Window\n");
-    CliSaveSettingFmt(dest, "window-client-pos"     , "%d,%d", s_lastknown_window_rect.left, s_lastknown_window_rect.top);
-    CliSaveSettingFmt(dest, "window-client-size"    , "%d,%d", g_client_size_pix.x, g_client_size_pix.y);
+
+    int2 pos  = g_settings_hostwnd.client_pos;
+    int2 size = g_settings_hostwnd.client_size;
+
+    // preserves user's host window settings when running in windowless mode.
+    if (g_hWnd) {
+        pos  = { s_lastknown_window_rect.left, s_lastknown_window_rect.top };
+        size = {
+            s_lastknown_window_rect.right  - s_lastknown_window_rect.left,
+            s_lastknown_window_rect.bottom - s_lastknown_window_rect.top,
+        };
+    }
+
+    if (g_hWnd || g_settings_hostwnd.has_client_pos)  { CliSaveSettingFmt(dest, "window-client-pos"     , "%d,%d", pos.x,  pos.y);  }
+    if (g_hWnd || g_settings_hostwnd.has_client_size) { CliSaveSettingFmt(dest, "window-client-size"    , "%d,%d", size.x, size.y); }
 }
 
 
@@ -400,8 +440,32 @@ void* SaveSettingsThread(void*)
     }
 }
 
+void* FramecountWatchdog(void*)
+{
+    while (1) {
+        if (cvolatize32(g_gpu_host_framecount) >= cvolatize32(g_settings_app.kill_at_frame_number)) {
+            log_host("winmain: Process-Kill frame number reached (frame=%d, kill_at=%d), posting QUIT msg...",
+                g_gpu_host_framecount, g_settings_app.kill_at_frame_number
+            );
 
-HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
+            // PostQuitMessage() doesn't work when there's no window associated with the main thread.
+            // Posting a message directly to the thread always works. :)
+            PostThreadMessage(s_thr_winmain, WM_QUIT, 0, 0);
+            break;
+        }
+        xThreadSleep(6);
+    }
+
+    // could just exit the thread here, but I have paranoia about this windows message pump.
+    // So let's loop a while and then forcibly kill the app. --jstine
+
+    xThreadSleep(5000);
+    x_abort("5-second threshold reached. Forcibly aborting application.");
+    return nullptr;
+}
+
+
+HRESULT InitWindow(HINSTANCE hInstance)
 {
     // note: current unused: MonitorFromRect() combined with GetMonitorInfo() is a much more useful
     // set of functions.
@@ -426,18 +490,17 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
     if (!RegisterClassEx(&wcex))
         return E_FAIL;
 
-    // Create window
     g_hInst = hInstance;
-    RECT rc = { 0, 0, 1280, 720 };
+    RECT rc = { 0, 0, 1280, 720 };      // window size here isn't important, it gets set up later
     AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
-    g_hWnd = CreateWindow(L"RpgCraftGame", L"RPG Craft: Bloody Spectacular Edition",
+    g_hWnd = CreateWindow(L"RpgCraftGame", L"RPGCraft native engine edition",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-        nullptr);
-    if (!g_hWnd)
-        return E_FAIL;
+        nullptr
+    );
 
-    ShowWindow(g_hWnd, nCmdShow);
+    if (!g_hWnd) return E_FAIL;
+    ShowWindow(g_hWnd, false);
 
     return S_OK;
 }
@@ -473,6 +536,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Most of these settings can be overridden by user CLI options
     ImGui::GetIO().IniFilename = ".ajek/imgui.ini";
     ImGui::GetIO().LogFilename = ".ajek/imgui.log";
+
+    s_thr_winmain = ::GetCurrentThreadId();
 
     HostClockTick::Init();
     MSW_InitChrono();
@@ -530,8 +595,25 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     Scene_InitMessages();
     // -----------------------------------------------------------
 
-    if (FAILED(InitWindow(hInstance, false)))
-        return 0;
+    g_client_size_pix = g_settings_app.backbuffer_size;
+
+    if (!g_settings_app.windowless_mode) {
+        if (FAILED(InitWindow(hInstance))) {
+            warn_host("Failed to create the host window.");
+            return 0;
+        }
+
+        RECT rc;
+        GetClientRect(g_hWnd, &rc);
+        g_client_size_pix = {
+            rc.right  - rc.left,
+            rc.bottom - rc.top
+        };
+    }
+
+    if (g_settings_app.has_backbuffer_size) {
+        g_client_size_pix = g_settings_app.backbuffer_size;
+    }
 
     ApplyDesktopSettings();
     dx11_InitDevice();
@@ -547,15 +629,21 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (!QueryPerformanceCounter((LARGE_INTEGER *)&g_Time))
         return false;
 
+    thread_t s_thr_save_settings;
+    thread_t s_thr_save_settings_ping;
+    thread_t s_thr_framecount_watchdog;
+
+    thread_create(s_thr_save_settings, SaveSettingsThread, "SaveSettings");
+    thread_create(s_thr_save_settings_ping, PingSaveSettingsThread, "PingSaveSettings");
+
+    if (g_settings_app.kill_at_frame_number > 0) {
+        thread_create(s_thr_framecount_watchdog, FramecountWatchdog, "FramecountWatchdog");
+    }
+
     // Drain the message queue first before starting game threads.
     // No especially good reason for this -- there's just a bunch of poo in the windows
     // message queue after window creation and stuff, and I like to drain it all in as
     // synchronous an environment as possible.  --jstine
-
-    thread_t s_thr_save_settings;
-    thread_t s_thr_save_settings_ping;
-    thread_create(s_thr_save_settings, SaveSettingsThread, "SaveSettings");
-    thread_create(s_thr_save_settings_ping, PingSaveSettingsThread, "PingSaveSettings");
 
     if (Msw_DrainMsgQueue()) {
 
@@ -635,10 +723,12 @@ void _hostImpl_ImGui_NewFrame()
     ImGuiIO& io = ImGui::GetIO();
 
     // Setup display size (every frame to accommodate for window resizing)
-    RECT rect;
-    GetClientRect(g_hWnd, &rect);
-    io.ImeWindowHandle  = g_hWnd;
-    io.DisplaySize      = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+    if (g_hWnd) {
+        RECT rect;
+        GetClientRect(g_hWnd, &rect);
+        io.ImeWindowHandle  = g_hWnd;
+    }
+    io.DisplaySize      = g_client_size_pix;
 
     // Setup time step
     INT64 current_time;

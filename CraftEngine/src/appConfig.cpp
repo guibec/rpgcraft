@@ -10,7 +10,8 @@
 #include "ajek-script.h"
 
 
-HostwindowSettings g_settings_hostwnd;
+HostwindowSettings  g_settings_hostwnd;
+HostAppSettings     g_settings_app;
 
 
 void CliParseFromFile(const xString& srcfullpath)
