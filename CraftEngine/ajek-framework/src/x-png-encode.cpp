@@ -134,41 +134,33 @@ x_png_enc& x_png_enc::ClearAlphaChannel(u8 alpha)
 
 int x_png_enc::SaveImage(const char* filename, int compression_level)
 {
-    if (width <= 0 || height <= 0) return false;
+    if (width <= 0 || height <= 0)  return false;
+    if (!bmp || !lines)             return false;
 
-    //if (bpp != 32) {
-    //    bug("Currently only 32bit pixels supported!");
-    //    return false;
-    //}
+    FILE* fp = xFopen(filename, "wb");  Defer(fp && (fclose(fp), fp = nullptr));
 
-    FILE* fp = xFopen(filename, "wb");
-
-    if(!fp || !bmp || !lines) {
+    if(!fp) {
         bug("ERROR: Could not open '%s'", filename);
         return 1;
     }
 
-    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 
     if (!png_ptr) {
         bug("ERROR: Could not create png_structp");
-        fclose(fp);
         return 2;
     }
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
+    Defer(png_destroy_write_struct(&png_ptr, &info_ptr));
 
     if(!info_ptr) {
         bug("ERROR: Could not create png_infop");
-        png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-        fclose(fp);
         return 3;
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         bug("ERROR: Internal error writing png");
-        png_destroy_write_struct(&png_ptr, &info_ptr);
-        fclose(fp);
         return 4;
     }
 
@@ -190,7 +182,5 @@ int x_png_enc::SaveImage(const char* filename, int compression_level)
     png_init_io  (png_ptr, fp);
     png_write_png(png_ptr, info_ptr, transform_flags, 0);
 
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    fclose(fp);
     return 0;
 }
