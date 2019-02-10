@@ -95,13 +95,11 @@ namespace LootData
     public class LootsInfo
     {
         public string version;
-        public List<LootInfo> lootsInfos;
 
         /// <summary>
         /// Built dynamically after deserializing
         /// </summary>
-        [JsonIgnore]
-        private Dictionary<string, LootInfo> m_cache = new Dictionary<string, LootInfo>();
+        public Dictionary<string, LootInfo> lootsInfos;
 
         /// <summary>
         /// Load from file 
@@ -127,8 +125,6 @@ namespace LootData
                 return null;
             }
 
-            lootsInfo.UpdateCache();
-
             return lootsInfo;
         }
 
@@ -139,22 +135,8 @@ namespace LootData
         /// <returns></returns>
         public LootInfo GetFromName(string name)
         {
-            LootInfo lootInfo = null;
-            m_cache.TryGetValue(name, out lootInfo);
+            lootsInfos.TryGetValue(name, out var lootInfo);
             return lootInfo;
-        }
-
-        private void UpdateCache()
-        {
-            m_cache.Clear();
-
-            if (lootsInfos == null)
-                return;
-
-            foreach (var keyValue in lootsInfos)
-            {
-                m_cache[keyValue.name] = keyValue;
-            }
         }
     }
 }
