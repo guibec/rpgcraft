@@ -14,7 +14,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return null;
         }
 
-        TileResourceDef tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
+        var tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
         if (tileResourceDef == null)
         {
             return null;

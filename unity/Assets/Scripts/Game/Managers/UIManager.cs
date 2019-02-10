@@ -393,7 +393,7 @@ public class UIManager : MonoSingleton<UIManager>
             {
                 if (isu.m_icon.sprite == null)
                 {
-                    TileResourceDef tileResourceDef = TileMapping.GetTileResourceDef((ETile) ic.Item);
+                    var tileResourceDef = TileMapping.GetTileResourceDef((ETile) ic.Item);
                     Texture2D tex = tileResourceDef != null
                         ? Resources.Load(tileResourceDef.Filename) as Texture2D
                         : null;

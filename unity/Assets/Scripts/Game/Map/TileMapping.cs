@@ -10,18 +10,18 @@ namespace TileData
 {
     public class TileResourceDef
     {
-        public string Filename { private set; get; }
-        public Rect Rect { private set; get; }
-        public int Count { private set; get; }
+        public string Filename { set; get; }
+        public Rect Rect { set; get; }
+        public int Count { set; get; }
     }
 
     public class TileDef
     {
-        public ETile Id { get; }
-        public string Name { get; }
-        public TileResourceDef Resource { get; }
+        public ETile Id { get; set; }
+        public string Name { get; set; }
+        public TileResourceDef Resource { get; set; }
 
-        public TileProperties Properties { get; }
+        public TileProperties Properties { get; set; }
     }
 
     public class TilesInfo
@@ -50,49 +50,7 @@ public static class TileMapping
         m_tilesInfo = JSONUtils.LoadJSON<TileData.TilesInfo>(filename);
         return m_tilesInfo != null;
     }
-
-    private static bool BuildFromJSON(JSONNode rootNode)
-    {
-        m_tilesDef.Clear();
-
-        JSONNode tilesInfo = rootNode["tilesInfo"];
-        if (tilesInfo == null)
-            return false;
-
-        foreach (var tileNode in tilesInfo.Childs)
-        {
-            JSONNode resNode = tileNode["resource"];
-            if (resNode == null)
-                continue;
-
-            string filename = resNode["file"];
-            int x = resNode["x"].AsInt;
-            int y = resNode["y"].AsInt;
-            int w = resNode["w"].AsInt;
-            int h = resNode["h"].AsInt;
-            int count = resNode["count"].AsInt;
-
-            TileResourceDef trd = new TileResourceDef(filename, new Rect(x, y, w, h), count);
-
-            ETile id = (ETile)tileNode["id"].AsInt;
-            string name = tileNode["name"];
-
-            TileProperties tileProperties = new TileProperties(tileNode["properties"]);
-
-            TileDef td = new TileDef(id, name, trd, tileProperties);
-
-            if (m_tilesDef.ContainsKey(id))
-            {
-                Debug.Log(string.Format("Ignoring duplicate id {0}", id));
-                continue;
-            }
-
-            m_tilesDef.Add(id, td);
-        }
-
-        return true;
-    }
-
+    
     public static void GetUVFromTile(TileInfo tileInfo, out Vector2 ul, out Vector2 ur, out Vector2 bl, out Vector2 br)
     {
         if (m_tilesInfo.tilesInfo.TryGetValue(tileInfo.Tile, out var tileDef))
