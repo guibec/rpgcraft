@@ -6,7 +6,7 @@ using System.Collections;
 /// </summary>
 public class ItemInstance : Entity
 {
-    public EItem Item { get; private set; }
+    public ETile Item { get; private set; }
 
     // Use this for initialization
     protected override void OnStart ()
@@ -25,7 +25,7 @@ public class ItemInstance : Entity
         RequestDestroy();
     }
 
-    public void SetType(EItem itemType)
+    public void SetType(ETile itemType)
     {
         Item = itemType;
     }
@@ -35,15 +35,15 @@ public class ItemInstance : Entity
         base.OnUpdate();
     }
 
-    public static Color32 GetColor32ForItem(EItem item)
+    public static Color32 GetColor32ForItem(ETile item)
     {
-        if (item == EItem.Gel)
+        if (item == ETile.Gel)
             return new Color32(9, 129, 248, 255);
         else
             return new Color32(255, 255, 255, 255);
     }
 
-    public static Color GetColorForItem(EItem item)
+    public static Color GetColorForItem(ETile item)
     {
         return GetColor32ForItem(item); // Cast operation is overloaded: http://answers.unity3d.com/questions/634208/convert-color32-to-color.html
     }

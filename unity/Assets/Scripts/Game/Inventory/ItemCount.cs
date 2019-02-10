@@ -5,12 +5,12 @@ using System.Text;
 
     public struct ItemCount
     {
-        public ItemCount(EItem item_, int count_) : this()
+        public ItemCount(ETile item_, int count_) : this()
         {
             Item = item_;
             Count = count_;
         }
 
-        public EItem Item { get; set; }
+        public ETile Item { get; set; }
         public int Count { get; set; }
     }

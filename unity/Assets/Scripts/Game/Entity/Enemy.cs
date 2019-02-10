@@ -77,7 +77,7 @@ public class Enemy : Entity
 
         if (lootInfo != null)
         {
-            foreach (EItem item in lootInfo.Random())
+            foreach (ETile item in lootInfo.Random())
             {
                 SpawnManager.Instance.SpawnLoot(item, transform.position);
             }

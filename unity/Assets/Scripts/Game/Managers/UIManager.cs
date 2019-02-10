@@ -384,7 +384,7 @@ public class UIManager : MonoSingleton<UIManager>
             : new Color(1f, 1f, 1f);
 
             // set what is owned by this inventory slot
-            if (ic.Item == EItem.None)
+            if (ic.Item == ETile.Invalid)
             {
                 isu.m_icon.sprite = null;
                 isu.m_icon.color = new Color(1f, 1f, 1f, 0f);

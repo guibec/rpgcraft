@@ -29,7 +29,7 @@ namespace LootData
 
     public class Item
     {
-        public EItem name;
+        public ETile name;
         public Count count;
     }
 
@@ -43,7 +43,7 @@ namespace LootData
         public string name;
         public List<Loot> loots;
 
-        public List<EItem> Random()
+        public List<ETile> Random()
         {
             // First, add all probability
             float totalProbability = 0;
@@ -70,7 +70,7 @@ namespace LootData
                 }
             }
 
-            List<EItem> outputLoots = new List<EItem>();
+            List<ETile> outputLoots = new List<ETile>();
             // Retrieve the items of the loot
             if (givenLoot == null)
             {
