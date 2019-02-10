@@ -663,7 +663,7 @@ void dx11_InitDevice()
         textureDesc.Height              = g_client_size_pix.y;
         textureDesc.MipLevels           = 1;
         textureDesc.ArraySize           = 1;
-        textureDesc.Format              = DXGI_FORMAT_R16G16B16A16_UNORM;
+        textureDesc.Format              = DXGI_FORMAT_R8G8B8A8_UNORM;
         textureDesc.SampleDesc.Count    = 1;
         textureDesc.Usage               = D3D11_USAGE_DEFAULT;
         textureDesc.BindFlags           = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -1169,8 +1169,8 @@ void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcDat
     auto&   simple      = g_DynVertBuffers[g_curBufferIdx][src.m_buffer_idx];
 
     if (simple.m_updated_this_frame) {
-        log_perf("[dx11] Dynamic buffer data was already updated this frame [size=%d%s%s%d]", sizeInBytes,
-           simple.m_name[0] ? "name="       : "",
+        log_perf("[dx11] Dynamic buffer data was already updated this frame [size=%d%s%s]", sizeInBytes,
+           simple.m_name[0] ? " name="      : "",
            simple.m_name[0] ? simple.m_name : ""
         );
     }
@@ -1350,9 +1350,10 @@ static void dx11_SaveTextureToPng(GPU_RenderTarget& renderTarget, const xString&
     x_png_enc pngenc;
     pngenc.WriteImage(subres.pData, desc.Width, desc.Height, 32);
 
-    // todo: create a worker thread for this job.
+    // todo: create a couple worker threads for this job.
+    log_host("dx11: Writing texture to disk: %s", filename.c_str());
     pngenc.StripAlphaChannel();
-    pngenc.SaveImage(filename);
+    pngenc.SaveImage(filename, 1);
 }
 
 extern xString xGetTempDir();
