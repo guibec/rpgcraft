@@ -1,10 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using SimpleJSON;
 using TileData;
-
-// TODO: Add https://www.newtonsoft.com/json/help/html/NamingStrategyCamelCase.htm
 
 namespace TileData
 {

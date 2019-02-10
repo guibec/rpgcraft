@@ -1,23 +1,7 @@
-﻿#define DEBUG
-#define TRACE
-
-using UnityEngine;
-using SimpleJSON;
+﻿using UnityEngine;
 using Newtonsoft.Json;
 
 public class JSONUtils { 
-
-    public static JSONNode ParseJSON(string filename)
-    {
-        TextAsset textAsset = Resources.Load(filename) as TextAsset;
-        if (textAsset != null)
-        {
-            return JSON.Parse(textAsset.text);
-        }
-
-        return null;
-    }
-
     public static T LoadJSON<T>(string filename)
     {
         TextAsset textAsset = Resources.Load(filename) as TextAsset;
@@ -26,8 +10,10 @@ public class JSONUtils {
         Newtonsoft.Json.Serialization.ITraceWriter traceWriter = new Newtonsoft.Json.Serialization.MemoryTraceWriter
             { LevelFilter = System.Diagnostics.TraceLevel.Verbose };
 
+        var resolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+
         var settings = new JsonSerializerSettings
-            { TraceWriter = traceWriter };
+            { TraceWriter = traceWriter, ContractResolver = resolver };
 
         T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
 

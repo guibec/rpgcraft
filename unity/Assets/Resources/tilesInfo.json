@@ -4,7 +4,7 @@
     "Grass": {
       "id": 1,
       "resource": {
-        "file": "terrain",
+        "filename": "terrain",
         "rect": {
           "x": 0,
           "y": 0,
@@ -17,7 +17,7 @@
     "Dirt": {
       "id": 2,
       "resource": {
-        "file": "terrain",
+        "filename": "terrain",
         "rect": {
           "x": 32,
           "y": 0,
@@ -26,199 +26,198 @@
         }
       },
       "world": {}
-    }
-
-  },
-  "Mountain": {
-    "id": 3,
-    "resource": {
-      "file": "terrain",
-      "rect": {
-        "x": 0,
-        "y": 240,
-        "width": 16,
-        "height": 16
+    },
+    "Mountain": {
+      "id": 3,
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 0,
+          "y": 240,
+          "width": 16,
+          "height": 16
+        },
+        "count": 11
       },
-      "count": 11
+      "world": {}
     },
-    "world": {}
-  },
-  "Desert": {
-    "id": 4,
-    "resource": {
-      "file": "terrain",
-      "rect": {
-        "x": 32,
-        "y": 16,
-        "width": 16,
-        "height": 16
+    "Desert": {
+      "id": 4,
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 32,
+          "y": 16,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Tree": {
+      "id": 5,
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 240,
+          "y": 80,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Forest": {
+      "id": 6,
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 240,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Water": {
+      "id": 7,
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 208,
+          "y": 192,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "properties": {
+        "speedfactor": 0.5
       }
     },
-    "world": {}
-  },
-  "Tree": {
-    "id": 5,
-    "resource": {
-      "file": "terrain",
-      "rect": {
-        "x": 240,
-        "y": 80,
-        "width": 16,
-        "height": 16
-      }
+    "Stone": {
+      "id": 256,
+      "resource": {
+        "filename": "Item_3",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
     },
-    "world": {}
-  },
-  "Forest": {
-    "id": 6,
-    "resource": {
-      "file": "terrain",
-      "rect": {
-        "x": 240,
-        "y": 0,
-        "width": 16,
-        "height": 16
-      }
+    "PickAxe": {
+      "id": 257,
+      "resource": {
+        "filename": "Item_1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {}
     },
-    "world": {}
-  },
-  "Water": {
-    "id": 7,
-    "resource": {
-      "file": "terrain",
-      "rect": {
-        "x": 208,
-        "y": 192,
-        "width": 16,
-        "height": 16
-      }
+    "Sword": {
+      "id": 258,
+      "resource": {
+        "filename": "Swords",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
     },
-    "properties": {
-      "speedfactor": 0.5
+    "Gel": {
+      "id": 259,
+      "resource": {
+        "filename": "Item_23",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Copper Axe": {
+      "id": 260,
+      "resource": {
+        "filename": "Item_10",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Wood": {
+      "id": 261,
+      "resource": {
+        "filename": "Item_94",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 24,
+          "height": 14
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Heart": {
+      "id": 262,
+      "resource": {
+        "filename": "heart",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Bomb": {
+      "id": 263,
+      "resource": {
+        "filename": "bomb",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Arrow": {
+      "id": 264,
+      "resource": {
+        "filename": "arrow",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        }
+      },
+      "item": {},
+      "weapon": {}
     }
-  },
-  "Stone": {
-    "id": 256,
-    "resource": {
-      "file": "Item_3",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 16,
-        "height": 16
-      }
-    },
-    "item": {}
-  },
-  "PickAxe": {
-    "id": 257,
-    "resource": {
-      "file": "Item_1",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 32,
-        "height": 32
-      }
-    },
-    "item": {}
-  },
-  "Sword": {
-    "id": 258,
-    "resource": {
-      "file": "Swords",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 32,
-        "height": 32
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Gel": {
-    "id": 259,
-    "resource": {
-      "file": "Item_23",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 16,
-        "height": 16
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Copper Axe": {
-    "id": 260,
-    "resource": {
-      "file": "Item_10",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 32,
-        "height": 32
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Wood": {
-    "id": 261,
-    "resource": {
-      "file": "Item_94",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 24,
-        "height": 14
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Heart": {
-    "id": 262,
-    "resource": {
-      "file": "heart",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 32,
-        "height": 32
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Bomb": {
-    "id": 263,
-    "resource": {
-      "file": "bomb",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 32,
-        "height": 32
-      }
-    },
-    "item": {},
-    "weapon": {}
-  },
-  "Arrow": {
-    "id": 264,
-    "resource": {
-      "file": "arrow",
-      "rect": {
-        "x": 0,
-        "y": 0,
-        "width": 256,
-        "height": 256
-      }
-    },
-    "item": {},
-    "weapon": {}
   }
 }
