@@ -523,13 +523,13 @@ union float2 {
 
     u64         _i64val;
 
-    float2() :
-        x(0), y(0)
-    {}
-
-    float2(float x, float y)
-        : x(x), y(y)
-    {}
+    // CONSTRUCTORS ARE INTENTIONALLY OMITTED
+    //   Constructors in POD-unions cause problems when those unions are embedded inside other POD-unions.
+    //   Since a main benefit of POD-unions is the ability to build larger/fancier POD-unions from them,
+    //   it becomes important to avoid constructors in them, as a strict rule.
+    //
+    // Use C++14 style initializer lists for constructing this union.  example:
+    //   float2 foobar = { some_val, other_val };
 
     explicit operator int2() const;
 
@@ -598,26 +598,14 @@ union float4 {
 
     __m128  q;
 
-    float4()
-        : x(0), y(0), z(0), w(0)
-    {}
-
-    float4(float x, float y, float z, float w)
-        : x(x), y(y), z(z), w(w)
-    {}
-
-    float4(float x, float y, float z)
-        : x(x), y(y), z(z), w(0)
-    {}
-
-    float4(float x, float y)
-        : x(x), y(y), z(0), w(0)
-    {}
-
-    float4(float x)
-        : x(x), y(0), z(0), w(0)
-    {}
-
+    // CONSTRUCTORS ARE INTENTIONALLY OMITTED
+    //   Constructors in POD-unions cause problems when those unions are embedded inside other POD-unions.
+    //   Since a main benefit of POD-unions is the ability to build larger/fancier POD-unions from them,
+    //   it becomes important to avoid constructors in them, as a strict rule.
+    //
+    // Use C++14 style initializer lists for constructing this union.  example:
+    //   float4 foobar = { some_val, other_val, z, w };
+    //   float4 foobar = { some_val, other_val };       // z and w will be auto-initialized to zero
 
     bool isEmpty() const {
         return i_ptestz(q);
@@ -762,6 +750,14 @@ union uint2 {
     };
 
     u64         _i64val;
+
+    // CONSTRUCTORS ARE INTENTIONALLY OMITTED
+    //   Constructors in POD-unions cause problems when those unions are embedded inside other POD-unions.
+    //   Since a main benefit of POD-unions is the ability to build larger/fancier POD-unions from them,
+    //   it becomes important to avoid constructors in them, as a strict rule.
+    //
+    // Use C++14 style initializer lists for constructing this union.  example:
+    //   int2 foobar = { some_val, other_val };
 
     explicit operator float2 () const;
     explicit operator vFloat2() const;
