@@ -92,7 +92,7 @@
         }
       },
       "properties": {
-        "speedfactor": 0.5
+        "speedFactor": 0.5
       }
     },
     "Stone": {
