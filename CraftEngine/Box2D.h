@@ -2,7 +2,7 @@
 class Box2D
 {
 public:
-    Box2D(float2 topLeft, float2 bottomRight) 
+    Box2D(float2 topLeft, float2 bottomRight)
         : m_topLeft(topLeft)
         , m_bottomRight(bottomRight)
     {
@@ -16,7 +16,7 @@ public:
 	}
 
 	Box2D(float left, float top, float right, float bottom)
-		: m_topLeft(left, top), m_bottomRight(right, bottom)
+		: m_topLeft({left, top}), m_bottomRight({right, bottom})
 	{
 		normalize();
 	}
