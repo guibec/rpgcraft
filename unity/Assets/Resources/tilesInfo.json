@@ -2,7 +2,6 @@
   "version": "1.0",
   "tilesInfo": {
     "Grass": {
-      "id": 1,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -15,7 +14,6 @@
       "world": {}
     },
     "Dirt": {
-      "id": 2,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -28,7 +26,6 @@
       "world": {}
     },
     "Mountain": {
-      "id": 3,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -42,7 +39,6 @@
       "world": {}
     },
     "Desert": {
-      "id": 4,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -55,7 +51,6 @@
       "world": {}
     },
     "Tree": {
-      "id": 5,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -68,7 +63,6 @@
       "world": {}
     },
     "Forest": {
-      "id": 6,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -81,7 +75,6 @@
       "world": {}
     },
     "Water": {
-      "id": 7,
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -96,7 +89,6 @@
       }
     },
     "Stone": {
-      "id": 256,
       "resource": {
         "filename": "Item_3",
         "rect": {
@@ -109,7 +101,6 @@
       "item": {}
     },
     "PickAxe": {
-      "id": 257,
       "resource": {
         "filename": "Item_1",
         "rect": {
@@ -122,7 +113,6 @@
       "item": {}
     },
     "Sword": {
-      "id": 258,
       "resource": {
         "filename": "Swords",
         "rect": {
@@ -136,7 +126,6 @@
       "weapon": {}
     },
     "Gel": {
-      "id": 259,
       "resource": {
         "filename": "Item_23",
         "rect": {
@@ -150,7 +139,6 @@
       "weapon": {}
     },
     "Copper_Axe": {
-      "id": 260,
       "resource": {
         "filename": "Item_10",
         "rect": {
@@ -164,7 +152,6 @@
       "weapon": {}
     },
     "Wood": {
-      "id": 261,
       "resource": {
         "filename": "Item_94",
         "rect": {
@@ -178,7 +165,6 @@
       "weapon": {}
     },
     "Heart": {
-      "id": 262,
       "resource": {
         "filename": "heart",
         "rect": {
@@ -192,7 +178,6 @@
       "weapon": {}
     },
     "Bomb": {
-      "id": 263,
       "resource": {
         "filename": "bomb",
         "rect": {
@@ -206,7 +191,6 @@
       "weapon": {}
     },
     "Arrow": {
-      "id": 264,
       "resource": {
         "filename": "arrow",
         "rect": {

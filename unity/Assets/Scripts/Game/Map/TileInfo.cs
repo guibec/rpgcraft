@@ -6,7 +6,7 @@ using System.Text;
 // TODO: Would be nicer to self-generate
 public enum ETile
 {
-    Invalid = 0,
+    Invalid,
     Grass,
     Dirt,
     Mountain,

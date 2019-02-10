@@ -13,7 +13,6 @@ namespace TileData
 
     public class TileDef
     {
-        public ETile Id { get; set; }
         public string Name { get; set; }
         public TileResourceDef Resource { get; set; }
 
