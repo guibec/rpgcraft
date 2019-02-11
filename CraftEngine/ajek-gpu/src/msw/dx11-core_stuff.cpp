@@ -54,6 +54,10 @@ static IDXGISwapChain1*         g_pSwapChain1           = nullptr;
 GPU_RenderTarget        g_gpu_BackBuffer;
 int                     g_curBufferIdx = 0;
 
+// number of frames rendered (flips) for the entire process. This is not representitive of the game's
+// frame count, which might be less due to game engine pause/stop actions.
+int                     g_gpu_host_framecount = 0;
+
 // -----------------------------------------------------------------------------------------------
 // DX11_DEBUG_FLAG_SUPPORT
 //
@@ -475,12 +479,19 @@ void dx11_InitDevice()
 
     HRESULT hr = S_OK;
 
-    RECT rc;
-    GetClientRect(g_hWnd, &rc);
-    g_client_size_pix = {
-        rc.right - rc.left,
-        rc.bottom - rc.top
-    };
+    if (g_hWnd) {
+        RECT rc;
+        GetClientRect(g_hWnd, &rc);
+        g_client_size_pix = {
+            rc.right - rc.left,
+            rc.bottom - rc.top
+        };
+    }
+
+    x_abort_on(g_client_size_pix.cmp_any() <= 0,
+        "Invalid client size. Please create a window prior to dx11_InitDevice(). If not running in windowed mode then please "
+        "initialize g_client_size_pix prior to dx11_InitDevice()."
+    );
 
     g_client_aspect_ratio = float(g_client_size_pix.x) / float(g_client_size_pix.y);
 
@@ -588,69 +599,94 @@ void dx11_InitDevice()
     }
     x_abort_on (hr);
 
-    // Create swap chain
-    IDXGIFactory2* dxgiFactory2 = nullptr;
-    hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), ptr_cast<void**>(&dxgiFactory2));
-    if (dxgiFactory2)
+    if (g_hWnd)
     {
-        // DirectX 11.1 or later
-        hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), ptr_cast<void**>(&g_pd3dDevice1));
-        if (SUCCEEDED(hr))
+        // Create swap chain
+        IDXGIFactory2* dxgiFactory2 = nullptr;
+        hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), ptr_cast<void**>(&dxgiFactory2));
+        if (dxgiFactory2)
         {
-            (void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), ptr_cast<void**>(&g_pImmediateContext1));
-        }
+            // DirectX 11.1 or later
+            hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), ptr_cast<void**>(&g_pd3dDevice1));
+            if (SUCCEEDED(hr)) {
+                (void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), ptr_cast<void**>(&g_pImmediateContext1));
+            }
 
-        DXGI_SWAP_CHAIN_DESC1 sd = {};
-        sd.Width                = g_client_size_pix.x;
-        sd.Height               = g_client_size_pix.y;
-        sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
-        sd.SampleDesc.Count     = 1;
-        sd.SampleDesc.Quality   = 0;
-        sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.BufferCount          = 1;
+            DXGI_SWAP_CHAIN_DESC1 sd = {};
+            sd.BufferCount          = 1;
+            sd.Width                = g_client_size_pix.x;
+            sd.Height               = g_client_size_pix.y;
+            sd.Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
+            sd.SampleDesc.Count     = 1;
+            sd.SampleDesc.Quality   = 0;
+            sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 
-        hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
-        if (SUCCEEDED(hr))
+            hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
+            if (SUCCEEDED(hr)) {
+                hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), ptr_cast<void**>(&g_pSwapChain));
+            }
+
+            dx11_ReleaseLocal(dxgiFactory2);
+        } else
         {
-            hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), ptr_cast<void**>(&g_pSwapChain));
+            // DirectX 11.0 systems
+            DXGI_SWAP_CHAIN_DESC sd = {};
+            sd.BufferCount          = 1;
+            sd.BufferDesc.Width     = g_client_size_pix.x;
+            sd.BufferDesc.Height    = g_client_size_pix.y;
+            sd.BufferDesc.Format    = DXGI_FORMAT_R8G8B8A8_UNORM;
+            sd.BufferDesc.RefreshRate.Numerator = 60;
+            sd.BufferDesc.RefreshRate.Denominator = 1;
+            sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            sd.OutputWindow         = g_hWnd;
+            sd.SampleDesc.Count     = 1;
+            sd.SampleDesc.Quality   = 0;
+            sd.Windowed             = TRUE;
+
+            hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
         }
+        x_abort_on(FAILED(hr));
 
-        dx11_ReleaseLocal(dxgiFactory2);
-    } else
-    {
-        // DirectX 11.0 systems
-        DXGI_SWAP_CHAIN_DESC sd = {};
-        sd.BufferCount          = 1;
-        sd.BufferDesc.Width     = g_client_size_pix.x;
-        sd.BufferDesc.Height    = g_client_size_pix.y;
-        sd.BufferDesc.Format    = DXGI_FORMAT_R8G8B8A8_UNORM;
-        sd.BufferDesc.RefreshRate.Numerator = 60;
-        sd.BufferDesc.RefreshRate.Denominator = 1;
-        sd.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.OutputWindow         = g_hWnd;
-        sd.SampleDesc.Count     = 1;
-        sd.SampleDesc.Quality   = 0;
-        sd.Windowed             = TRUE;
+        // When it comes time to handle ALT-ENTER, we'll do it by blowing the GDI window up to full-screen
+        // and removing all decorations, vs. the dodgy microsoft built-into-the-driver hack. --jstine
 
-        hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
+        dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
+        dx11_ReleaseLocal(dxgiFactory);
     }
-    x_abort_on(FAILED(hr));
-
-    // Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
-    dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
-    dx11_ReleaseLocal(dxgiFactory);
 
     ID3D11Texture2D* pBackBuffer = nullptr;
-    hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), ptr_cast<void**>(&pBackBuffer));
-    x_abort_on(FAILED(hr));
+    if (g_pSwapChain) {
+        hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), ptr_cast<void**>(&pBackBuffer));
+        x_abort_on(FAILED(hr));
+    }
+    else {
+        // Setup the render target texture description.
+        D3D11_TEXTURE2D_DESC textureDesc = {};
+        textureDesc.Width               = g_client_size_pix.x;
+        textureDesc.Height              = g_client_size_pix.y;
+        textureDesc.MipLevels           = 1;
+        textureDesc.ArraySize           = 1;
+        textureDesc.Format              = DXGI_FORMAT_R8G8B8A8_UNORM;
+        textureDesc.SampleDesc.Count    = 1;
+        textureDesc.Usage               = D3D11_USAGE_DEFAULT;
+        textureDesc.BindFlags           = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        textureDesc.CPUAccessFlags      = 0;
+        textureDesc.MiscFlags           = 0;
+
+        // Create the render target texture.
+        hr = g_pd3dDevice->CreateTexture2D(&textureDesc, NULL, &pBackBuffer);
+        x_abort_on(FAILED(hr));
+    }
 
     pragma_todo("Implement and expose render target API.");
+
     auto&   rtView  = ptr_cast<ID3D11RenderTargetView*&>(g_gpu_BackBuffer.m_driverData);
     hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &rtView);
     dx11_ManageObject(rtView);      // rtView is managed due to OMSetRenderTargets
     dx11_ReleaseLocal(pBackBuffer);
     x_abort_on(FAILED(hr));
 
+    pragma_todo("Create more than one backbuffer and create rendertargets and rendertargetviews for them");
     g_pImmediateContext->OMSetRenderTargets(1, &rtView, nullptr);
 
     // TODO : Implement Sampler Binding API?  The most liekly variances are LINEAR/POINT sampling
@@ -1136,7 +1172,10 @@ void dx11_UploadDynamicBufferData(const GPU_DynVsBuffer& src, const void* srcDat
     auto&   simple      = g_DynVertBuffers[g_curBufferIdx][src.m_buffer_idx];
 
     if (simple.m_updated_this_frame) {
-        log_perf("[dx11] Dynamic buffer data was already updated this frame [src.m_buffer_idx=%d, size=%d]", src.m_buffer_idx, sizeInBytes);
+        log_perf("[dx11] Dynamic buffer data was already updated this frame [size=%d%s%s]", sizeInBytes,
+           simple.m_name[0] ? " name="      : "",
+           simple.m_name[0] ? simple.m_name : ""
+        );
     }
 
     simple.m_updated_this_frame = 1;
@@ -1269,14 +1308,74 @@ void dx11_UpdateConstantBuffer(const GPU_ConstantBuffer& buffer, const void* dat
     // of the input data.
 }
 
+pragma_todo("Relocate SaveTextureToPng into a different module.");
+#include "x-png-encode.h"
+
+static void dx11_SaveTextureToPng(GPU_RenderTarget& renderTarget, const xString& filename)
+{
+    HRESULT hr;
+    ID3D11Resource* texres = nullptr;  Defer(texres && texres->Release());
+    auto& rtView = ptr_cast<ID3D11RenderTargetView*&>(renderTarget.m_driverData);
+    rtView->GetResource(&texres);
+
+    if (!texres) {
+        warn_host("texture capture failure: GetResource() returned nullptr.");
+        return;
+    }
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    ((ID3D11Texture2D*)(texres))->GetDesc( &desc );
+    desc.BindFlags          = 0;
+    desc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.MiscFlags         &= D3D11_RESOURCE_MISC_TEXTURECUBE;
+    desc.CPUAccessFlags     = D3D11_CPU_ACCESS_READ;
+    desc.Usage              = D3D11_USAGE_STAGING;
+
+    ID3D11Texture2D* pStaging = nullptr;  Defer(pStaging && pStaging->Release());
+    hr = g_pd3dDevice->CreateTexture2D( &desc, 0, &pStaging); x_abort_on(FAILED(hr));
+
+    if (!pStaging) {
+        warn_host ("Texture capture failure: CreateTexture2D() returned nullptr.");
+        return;
+    }
+
+    g_pImmediateContext->CopyResource( pStaging, texres );
+
+    D3D11_MAPPED_SUBRESOURCE subres;
+    hr = g_pImmediateContext->Map(pStaging, 0, D3D11_MAP_READ, 0, &subres); x_abort_on(FAILED(hr));
+    Defer(g_pImmediateContext->Unmap(pStaging, 0));
+
+    if (!subres.pData) {
+        warn_host ("Texture capture failure: context->Map() returned pData=nullptr.");
+        return;
+    }
+
+    x_png_enc pngenc;
+    pngenc.WriteImage(subres.pData, desc.Width, desc.Height, 32);
+
+    // todo: create a couple worker threads for this job.
+    log_host("dx11: Writing texture to disk: %s", filename.c_str());
+    pngenc.StripAlphaChannel();
+    pngenc.SaveImage(filename, 1);
+}
+
+extern xString xGetTempDir();
+
 void dx11_SubmitFrameAndSwap()
 {
     // Keyboard poll runs async currently along with pads, so there's a slim chance
     // the ImGui focus state would be out of sync for a single frame.  Probably OK.
     KPad_SetKeyboardFocus(!ImGui::GetIO().WantCaptureKeyboard);
 
-    g_pSwapChain->Present(0, 0);
+    if (g_pSwapChain) {
+        g_pSwapChain->Present(0, 0);
+    }
+    else {
+        g_pImmediateContext->Flush();
+        dx11_SaveTextureToPng(g_gpu_BackBuffer, xGetTempDir() + xFmtStr("/screen%d.png", g_gpu_host_framecount));
+    }
     g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
+    ++g_gpu_host_framecount;
 }
 
 void dx11_SetPrimType(GpuPrimitiveType primType)
