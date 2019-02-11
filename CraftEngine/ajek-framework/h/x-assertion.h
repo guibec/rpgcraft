@@ -212,13 +212,10 @@ struct AssertContextInfoTriad {
 };
 
 
-extern void     vlog_append_host_clock  (xString& dest);
-extern void     vlog_append_prefix      (xString& buffer, const char* moduleName);
-
-extern void     log_host           (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
-extern void     warn_host          (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
-extern void     log_host_v         (const char* fmt, va_list params);
-extern void     warn_host_v        (const char* fmt = nullptr, ...)    __verify_fmt(3, 4);
+extern void     log_host           (_Printf_format_string_ const char* fmt = nullptr, ...)    __verify_fmt(1, 2);
+extern void     warn_host          (_Printf_format_string_ const char* fmt = nullptr, ...)    __verify_fmt(1, 2);
+extern void     log_host_v         (_Printf_format_string_ const char* fmt, va_list params)   __verify_fmt(1, 0);
+extern void     warn_host_v        (_Printf_format_string_ const char* fmt, va_list params)   __verify_fmt(1, 0);
 
 extern void     xPrintLn            (const xString& msg);
 extern void     flush_log           ();
@@ -370,8 +367,6 @@ extern bool     xIsDebuggerAttached ();
 //  * Clicking "Ignore All" on an assertion while another thread is generating the very
 //    same assertion may not immediately take effect, since the assertion recursion check
 //    occurs after the Ignore-All check.  Not worth fixing, we assume...
-
-#define EXPAND( x ) x
 
 namespace
 {

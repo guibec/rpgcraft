@@ -279,7 +279,7 @@ void OrderedDrawList::Add(EntityGid_t entityGid, float zorder, EntityFn_Draw* dr
         _Add( { entityPtr, draw }, zorder );
     }
     else {
-        EntityLog("DrawList: ignoring nil entity, gid=0x%08x.");
+        EntityLog("DrawList: ignoring nil entity, gid=0x%08x.", entityGid.val);
     }
 }
 

@@ -43,17 +43,17 @@ xString xEnvironGet(const xString& varname)
     int err;
 
     err = getenv_s(&reqlen, NULL, 0, varname);
-    x_abort_on(err, "getenv_s(%s) failed with code %d(%s)", varname.c_str(), err, xPosixErrorStr(err));
+    x_abort_on(err, "getenv_s(%s) failed with code %d(%s)", varname.c_str(), err, cPosixErrorStr(err));
     if (!reqlen) { return xString(); }
 
     result.Resize(reqlen);
     err = getenv_s(&reqlen, result.data(), reqlen, varname);
-    x_abort_on(err, "getenv_s(%s) failed with code %d(%s)", varname.c_str(), err, xPosixErrorStr(err));
+    x_abort_on(err, "getenv_s(%s) failed with code %d(%s)", varname.c_str(), err, cPosixErrorStr(err));
     return result;
 }
 
 void xEnvironSet(const xString& varname, const xString& value, bool overwrite)
 {
     int err = setenv(varname, value, overwrite);
-    x_abort_on(err, "setenv(%s, %s) failed with code %d(%s)", varname.c_str(), value.c_str(), err, xPosixErrorStr(err));
+    x_abort_on(err, "setenv(%s, %s) failed with code %d(%s)", varname.c_str(), value.c_str(), err, cPosixErrorStr(err));
 }

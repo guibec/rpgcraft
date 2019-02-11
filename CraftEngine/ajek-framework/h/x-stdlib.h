@@ -9,9 +9,6 @@
 #include <cstring>      // needed for memset
 #include <type_traits>
 
-#define serialization_assert(T) \
-    static_assert(xIs_trivially_copyable(T), "Cannot serialize non-POD object.")
-
 #if TARGET_LINUX
 #   define printf_s         printf
 #   define fprintf_s        fprintf

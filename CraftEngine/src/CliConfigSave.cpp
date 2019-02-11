@@ -6,7 +6,7 @@
 
 #include "appConfig.h"
 
-void CliSaveSettingFmt(xString& dest, const char* option_name, const char* fmt, ...)
+void CliSaveSettingFmt(xString& dest, const char* option_name, _Printf_format_string_ const char* fmt, ...)
 {
     if (!cli_bug_chk_option_exists(option_name)) {
         bug_qa("cli save-settings: no parse handler exists for option '%s'", option_name);

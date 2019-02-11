@@ -63,7 +63,7 @@ extern xString      FindAsset               (const xString& src);
 extern void         CliParseOption          (const xString& utf8);
 extern void         CliParseOptionRaw       (const xString& utf8, const std::function<xString()>& file_line_no, int startpos=0);
 extern void         CliParseFromFile        (const xString& srcfullpath);
-extern void         CliSaveSettingFmt       (xString& dest, const char* option_name, const char* fmt, ...);
+extern void         CliSaveSettingFmt       (xString& dest, const char* option_name, _Printf_format_string_ const char* fmt, ...) __verify_fmt(3, 4);
 
 extern xString      Host_GetFullPathName    (const xString& relpath);
 

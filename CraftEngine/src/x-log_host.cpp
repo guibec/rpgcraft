@@ -168,7 +168,7 @@ static void _host_log_v(FILE* std_fp, const char* fmt, va_list list)
     //spamAbortCheck(buffer.GetLength() + 10);
 }
 
-void log_host(const char* fmt, ...)
+void log_host(_Printf_format_string_ const char* fmt, ...)
 {
     va_list list;
     va_start(list, fmt);
@@ -176,12 +176,12 @@ void log_host(const char* fmt, ...)
     va_end(list);
 }
 
-void log_host_v(const char* fmt, va_list list)
+void log_host_v(_Printf_format_string_ const char* fmt, va_list list)
 {
     _host_log_v(stdout, fmt, list);
 }
 
-void warn_host(const char* fmt, ...)
+void warn_host(_Printf_format_string_ const char* fmt, ...)
 {
     va_list list;
     va_start(list, fmt);
@@ -189,7 +189,7 @@ void warn_host(const char* fmt, ...)
     va_end(list);
 }
 
-void warn_host_v(const char* fmt, va_list list)
+void warn_host_v(_Printf_format_string_ const char* fmt, va_list list)
 {
     _host_log_v(stderr, fmt, list);
 }

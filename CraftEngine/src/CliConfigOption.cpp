@@ -29,7 +29,7 @@ struct CliParseState {
 
     std::function<xString()>  diag_filepos;       // filename and line, pre-formatted for diagnostic printout
 
-    void        log_problem(const char* fmt, ...);
+    void        log_problem(_Printf_format_string_ const char* fmt, ...) __verify_fmt(2, 3);
     bool        boundscheck_int(int input, int lower, int upper);
 };
 
@@ -81,7 +81,7 @@ bool CliParseState::boundscheck_int(int input, int lower, int upper)
     return false;
 }
 
-void CliParseState::log_problem(const char* fmt, ...)
+void CliParseState::log_problem(_Printf_format_string_ const char* fmt, ...)
 {
     va_list arglist;
     va_start(arglist,fmt);
@@ -118,7 +118,7 @@ bool _cli_strtoi64(s64& dest, const char* src, char** endpos=nullptr, int radix=
     errno = 0;
     auto result = strtoll(src, endpos, radix);
     if (errno) {
-        s_cli->log_problem("toInt64(src='%s') failed: %s", src, strerror(errno));
+        s_cli->log_problem("toInt64(src='%s') failed: %s", src, cPosixErrorStr());
         return false;
     }
     if (local_endpos && (local_endpos[0] == '.')) {
@@ -126,7 +126,7 @@ bool _cli_strtoi64(s64& dest, const char* src, char** endpos=nullptr, int radix=
         auto result_f = strtof(src, endpos);
         if (errno) {
             // as far as I know, this shouldn't really happen (?)
-            s_cli->log_problem("toInt64(src='%s') strtof failed: %s", src, strerror(errno));
+            s_cli->log_problem("toInt64(src='%s') strtof failed: %s", src, cPosixErrorStr());
         }
         elif (result != (s64)result_f) {
             s_cli->log_problem("toInt64(src='%s') floating point value will be truncated", src, result);

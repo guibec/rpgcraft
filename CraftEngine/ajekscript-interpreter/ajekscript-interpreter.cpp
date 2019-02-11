@@ -60,7 +60,7 @@ assert_t xDebugBreak_v( DbgBreakType breakType, const AssertContextInfoTriad& tr
     return assert_break;
 }
 
-void log_host(const char* fmt, ...)
+void log_host(_Printf_format_string_ const char* fmt, ...)
 {
     if (fmt && fmt[0])
     {
@@ -72,7 +72,7 @@ void log_host(const char* fmt, ...)
     }
 }
 
-void log_host_v(const char* fmt, va_list list)
+void log_host_v(_Printf_format_string_ const char* fmt, va_list list)
 {
     if (fmt && fmt[0])
     {
