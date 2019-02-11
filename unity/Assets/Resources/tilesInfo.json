@@ -1,207 +1,207 @@
 {
-	"version" : "1.0",
-    "tilesInfo": [
-        {
-            "id": 1,
-            "name": "Grass",
-            "resource": {
-                "file": "terrain",
-                "x": 0,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            },
-            "world": {}
-        },
-        {
-            "id": 2,
-            "name": "Dirt",
-            "resource": {
-                "file": "terrain",
-                "x": 32,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            },
-            "world": {}
-        },
-        {
-            "id": 3,
-            "name": "Mountain",
-            "resource": {
-                "file": "terrain",
-                "x": 0,
-                "y": 240,
-                "w": 16,
-                "h": 16,
-                "count": 11
-            },
-            "world": {}
-        },
-        {
-            "id": 4,
-            "name": "Desert",
-            "resource": {
-                "file": "terrain",
-                "x": 32,
-                "y": 16,
-                "w": 16,
-                "h": 16
-            },
-            "world": {}
-        },
-        {
-            "id": 5,
-            "name": "Tree",
-            "resource": {
-                "file": "terrain",
-                "x": 240,
-                "y": 80,
-                "w": 16,
-                "h": 16
-            },
-            "world": {}
-        },
-        {
-            "id": 6,
-            "name": "Forest",
-            "resource": {
-                "file": "terrain",
-                "x": 240,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            },
-            "world": {}
-        },
-        {
-            "id": 7,
-            "name": "Water",
-            "resource": {
-                "file": "terrain",
-                "x": 208,
-                "y": 192,
-                "w": 16,
-                "h": 16
-            },
-            "properties": {
-                "speedfactor" : 0.5
-            }
-        },
-        {
-            "id": 256,
-            "name": "Stone",
-            "resource": {
-                "file": "Item_3",
-                "x": 0,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            },
-            "item": {}
-        },
-        {
-            "id": 257,
-            "name": "PickAxe",
-            "resource": {
-                "file": "Item_1",
-                "x": 0,
-                "y": 0,
-                "w": 32,
-                "h": 32
-            },
-            "item": {}
-        },
-        {
-            "id": 258,
-            "name": "Sword",
-            "resource": {
-                "file": "Swords",
-                "x": 0,
-                "y": 0,
-                "w": 32,
-                "h": 32
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 259,
-            "name": "Gel",
-            "resource": {
-                "file": "Item_23",
-                "x": 0,
-                "y": 0,
-                "w": 16,
-                "h": 16
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 260,
-            "name": "Copper Axe",
-            "resource": {
-                "file": "Item_10",
-                "x": 0,
-                "y": 0,
-                "w": 32,
-                "h": 32
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 261,
-            "name": "Wood",
-            "resource": {
-                "file": "Item_94",
-                "x": 0,
-                "y": 0,
-                "w": 24,
-                "h": 14
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 262,
-            "name": "Heart",
-            "resource": {
-                "file": "heart",
-                "x": 0,
-                "y": 0,
-                "w": 32,
-                "h": 32
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 263,
-            "name": "Bomb",
-            "resource": {
-                "file": "bomb",
-                "x": 0,
-                "y": 0,
-                "w": 32,
-                "h": 32
-            },
-            "item": {},
-            "weapon": {}
-        },
-        {
-            "id": 264,
-            "name": "Arrow",
-            "resource": {
-                "file": "arrow",
-                "x": 0,
-                "y": 0,
-                "w": 256,
-                "h": 256
-            },
-            "item": {},
-            "weapon": {}
+  "version": "1.0",
+  "tilesInfo": {
+    "Grass": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
         }
-    ]
+      },
+      "world": {}
+    },
+    "Dirt": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 32,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Mountain": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 0,
+          "y": 240,
+          "width": 16,
+          "height": 16
+        },
+        "count": 11
+      },
+      "world": {}
+    },
+    "Desert": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 32,
+          "y": 16,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Tree": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 240,
+          "y": 80,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Forest": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 240,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {}
+    },
+    "Water": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 208,
+          "y": 192,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "properties": {
+        "speedFactor": 0.5
+      }
+    },
+    "Stone": {
+      "resource": {
+        "filename": "Item_3",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
+    },
+    "PickAxe": {
+      "resource": {
+        "filename": "Item_1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {}
+    },
+    "Sword": {
+      "resource": {
+        "filename": "Swords",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Gel": {
+      "resource": {
+        "filename": "Item_23",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Copper_Axe": {
+      "resource": {
+        "filename": "Item_10",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Wood": {
+      "resource": {
+        "filename": "Item_94",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 24,
+          "height": 14
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Heart": {
+      "resource": {
+        "filename": "heart",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Bomb": {
+      "resource": {
+        "filename": "bomb",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      "item": {},
+      "weapon": {}
+    },
+    "Arrow": {
+      "resource": {
+        "filename": "arrow",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        }
+      },
+      "item": {},
+      "weapon": {}
+    }
+  }
 }

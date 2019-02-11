@@ -7,14 +7,14 @@ public class SpawnManager : MonoSingleton<SpawnManager>
     public GameObject m_slimePrefab;
     public GameObject m_bossSlimePrefab;
 
-    private ItemInstance SpawnItem(EItem item)
+    private ItemInstance SpawnItem(ETile item)
     {
         if (!m_itemInstancePrefab)
         {
             return null;
         }
 
-        TileResourceDef tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
+        var tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
         if (tileResourceDef == null)
         {
             return null;
@@ -52,13 +52,13 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
     public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
     {
-        EItem toSpawn = EItem.None;
+        ETile toSpawn = ETile.Invalid;
         if (tile_ == ETile.Mountain)
-            toSpawn = EItem.Stone;
+            toSpawn = ETile.Stone;
         else if (tile_ == ETile.Tree)
-            toSpawn = EItem.Wood;
+            toSpawn = ETile.Wood;
 
-        if (toSpawn == EItem.None)
+        if (toSpawn == ETile.Invalid)
         {
             return null;
         }
@@ -75,7 +75,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         return ii.gameObject;
     }
 
-    public void SpawnLoot(EItem item, Vector2 worldPos)
+    public void SpawnLoot(ETile item, Vector2 worldPos)
     {
         ItemInstance ii = SpawnItem(item);
         if (!ii)

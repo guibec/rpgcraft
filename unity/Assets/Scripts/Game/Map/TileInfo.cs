@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-// Next time another entry is added here, we need to make this enum self-generated
+// TODO: Would be nicer to self-generate
 public enum ETile
 {
-    Invalid = 0,
+    Invalid,
     Grass,
     Dirt,
     Mountain,
@@ -14,6 +14,15 @@ public enum ETile
     Tree,
     Forest,
     Water,
+    Stone,
+    PickAxe,
+    Sword,
+    Gel,
+    Copper_Axe,
+    Wood,
+    Heart,
+    Bomb,
+    Arrow,
 }
 
 // describe a specific tile
@@ -73,7 +82,7 @@ public struct TileInfo
         return newTileInfo;
     }
 
-    static public TileInfo GetInvalid()
+    public static TileInfo GetInvalid()
     {
         return Invalid;
     }

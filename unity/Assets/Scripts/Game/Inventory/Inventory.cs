@@ -34,19 +34,19 @@ public class Inventory
 
         // default inventory
         inventoryData.m_itemSlots[0].Count = 1;
-        inventoryData.m_itemSlots[0].Item = EItem.PickAxe;
+        inventoryData.m_itemSlots[0].Item = ETile.PickAxe;
 
         inventoryData.m_itemSlots[1].Count = 1;
-        inventoryData.m_itemSlots[1].Item = EItem.Sword;
+        inventoryData.m_itemSlots[1].Item = ETile.Sword;
 
         inventoryData.m_itemSlots[2].Count = 1;
-        inventoryData.m_itemSlots[2].Item = EItem.Copper_Axe;
+        inventoryData.m_itemSlots[2].Item = ETile.Copper_Axe;
 
         inventoryData.m_itemSlots[3].Count = 10;
-        inventoryData.m_itemSlots[3].Item = EItem.Bomb;
+        inventoryData.m_itemSlots[3].Item = ETile.Bomb;
 
         inventoryData.m_itemSlots[4].Count = 10;
-        inventoryData.m_itemSlots[4].Item = EItem.Arrow;
+        inventoryData.m_itemSlots[4].Item = ETile.Arrow;
 
         InventoryData = inventoryData;
     }
@@ -56,7 +56,7 @@ public class Inventory
         OnChanged();
     }
 
-    public bool Carry(EItem item)
+    public bool Carry(ETile item)
     {
         int index = FindBestSlotFor(item);
 
@@ -79,7 +79,7 @@ public class Inventory
             InventoryData.m_itemSlots[slotIndex].Count--;
             if (InventoryData.m_itemSlots[slotIndex].Count == 0)
             {
-                InventoryData.m_itemSlots[slotIndex].Item = EItem.None;
+                InventoryData.m_itemSlots[slotIndex].Item = ETile.Invalid;
             }
 
             OnChanged();
@@ -89,7 +89,7 @@ public class Inventory
         return false;
     }
 
-    private int FindBestSlotFor(EItem item)
+    private int FindBestSlotFor(ETile item)
     {
         // look for existing slot
         for (int i = 0; i < InventoryData.m_itemSlots.Length; ++i)
@@ -101,7 +101,7 @@ public class Inventory
         // try to find an empty slot
         for (int i = 0; i < InventoryData.m_itemSlots.Length; ++i)
         {
-            if (InventoryData.m_itemSlots[i].Item == EItem.None)
+            if (InventoryData.m_itemSlots[i].Item == ETile.Invalid)
                 return i;
         }
 

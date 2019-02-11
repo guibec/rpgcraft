@@ -32,7 +32,7 @@ public class DebugManager : MonoSingleton<DebugManager>
         Player.Save_Data toSave = GameManager.Instance.MainPlayer.Save();
         string serializedData = JsonConvert.SerializeObject(toSave, Formatting.Indented, jsonSettings);
 
-        Debug.Log(string.Format("Saving: \"{0}\" to file {1}", serializedData, PathToCharacterSave));
+        Debug.Log($"Saving: \"{serializedData}\" to file {PathToCharacterSave}");
 
         StreamWriter writer = new StreamWriter(PathToCharacterSave, false);
         writer.Write(serializedData);
@@ -47,7 +47,7 @@ public class DebugManager : MonoSingleton<DebugManager>
             serializedData = reader.ReadToEnd();
         }
 
-        Debug.Log(string.Format("Loading: \"{0}\" from file {1}", serializedData, PathToCharacterSave));
+        Debug.Log($"Loading: \"{serializedData}\" from file {PathToCharacterSave}");
 
         if (serializedData.Length == 0)
         {
@@ -58,6 +58,11 @@ public class DebugManager : MonoSingleton<DebugManager>
         GameManager.Instance.MainPlayer.Load(saveData);
 
         return true;
+    }
+
+    private void ReloadConfiguration()
+    {
+        DataManager.Instance.Reload();
     }
 
     // Make the contents of the window.
@@ -82,6 +87,11 @@ public class DebugManager : MonoSingleton<DebugManager>
         if (GUI.Button(new Rect(10, 180, 200, 20), "(Debug) Load character..."))
         {
             LoadCharacter();
+        }
+
+        if (GUI.Button(new Rect(10, 210, 200, 20), "(Debug) Reload configuration files"))
+        {
+            ReloadConfiguration();
         }
 
         if (GUI.Button(new Rect(10, 240, 200, 20), "Back to game"))

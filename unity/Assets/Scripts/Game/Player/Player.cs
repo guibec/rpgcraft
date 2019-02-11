@@ -192,7 +192,7 @@ public class Player : Entity, ISave<Player.Save_Data>
         if (ii != null)
         {
             // Quick hack for Hearth
-            if (ii.Item == EItem.Heart)
+            if (ii.Item == ETile.Heart)
             {
                 // Hard-coded for now
                 ReceiveHeal(RandomManager.Next(4,8));
@@ -382,9 +382,9 @@ public class Player : Entity, ISave<Player.Save_Data>
     public bool SkillActionAt(Vector3 worldPos)
     {
         int selectedIndex = UIManager.Instance.SelectedInventorySlot;
-        EItem selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
+        ETile selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
 
-        if (selectedItem == EItem.Sword)
+        if (selectedItem == ETile.Sword)
         {
             if (EntityManager.Instance.Count<SwordAttack>() > 0)
             {
@@ -394,14 +394,14 @@ public class Player : Entity, ISave<Player.Save_Data>
             SpawnAttackToward(gameObject.transform.position, worldPos);
             return true;
         }
-        else if (selectedItem == EItem.Bomb)
+        else if (selectedItem == ETile.Bomb)
         {
             worldPos.z = gameObject.transform.position.z;
             SpawnBombToward(gameObject.transform.position, worldPos);
             Inventory.Use(selectedIndex); // TODO: If the index change, this will remove the wrong object. :P
             return true;
         }
-        else if (selectedItem == EItem.Arrow)
+        else if (selectedItem == ETile.Arrow)
         {
             worldPos.z = gameObject.transform.position.z;
             SpawnArrowToward(gameObject.transform.position, worldPos);
@@ -416,7 +416,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     public bool ActionAt(Vector3 worldPos)
     {
         int selectedIndex = UIManager.Instance.SelectedInventorySlot;
-        EItem selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
+        ETile selectedItem = Inventory.GetSlotInformation(selectedIndex).Item;
 
         if (HasAction)
             return false;
@@ -437,7 +437,7 @@ public class Player : Entity, ISave<Player.Save_Data>
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)
             {
-                if (selectedItem == EItem.PickAxe && tileInfo.Tile == ETile.Mountain)
+                if (selectedItem == ETile.PickAxe && tileInfo.Tile == ETile.Mountain)
                 {
                     // Try to dig ! Start an action
                     StartAction(EAction.Dig, 0.05f, worldPos, actionCompleted_ =>
@@ -459,7 +459,7 @@ public class Player : Entity, ISave<Player.Save_Data>
 
                     return true;
                 }
-                else if (selectedItem == EItem.Copper_Axe && tileInfo.Tile == ETile.Tree)
+                else if (selectedItem == ETile.Copper_Axe && tileInfo.Tile == ETile.Tree)
                 {
                     // Try to dig ! Start an action
                     StartAction(EAction.Cut, 0.05f, worldPos, actionCompleted_ =>
@@ -479,7 +479,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     }
                     );
                 }
-                else if (selectedItem == EItem.Stone && tileInfo.Tile != ETile.Mountain)
+                else if (selectedItem == ETile.Stone && tileInfo.Tile != ETile.Mountain)
                 {
                     if (CollisionManager.Instance.HasCollision(chunkInfo, x, y))
                         return false;

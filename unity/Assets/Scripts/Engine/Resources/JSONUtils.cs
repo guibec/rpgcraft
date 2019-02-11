@@ -1,18 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using SimpleJSON;
+﻿using UnityEngine;
+using Newtonsoft.Json;
 
 public class JSONUtils { 
-
-    public static JSONNode ParseJSON(string filename)
+    public static T LoadJSON<T>(string filename)
     {
         TextAsset textAsset = Resources.Load(filename) as TextAsset;
-        if (textAsset != null)
-        {
-            return JSON.Parse(textAsset.text);
-        }
+        if (textAsset == null) return default;
 
-        return null;
+        Newtonsoft.Json.Serialization.ITraceWriter traceWriter = new Newtonsoft.Json.Serialization.MemoryTraceWriter
+            { LevelFilter = System.Diagnostics.TraceLevel.Verbose };
+
+        var resolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+
+        var settings = new JsonSerializerSettings
+            { TraceWriter = traceWriter, ContractResolver = resolver };
+
+        T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
+
+        UnityEngine.Debug.Log($"Deserialize trace output {traceWriter.ToString()}");
+
+        return obj;
+
     }
+
 }

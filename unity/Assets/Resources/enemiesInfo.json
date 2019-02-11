@@ -1,54 +1,92 @@
 {
-	"version": "1.0",
-	"enemiesInfo": [{
-			"name": "Slime",
-			"loot": [{
-					"probability": 0.30,
-					"item": "bomb"
-				}, {
-					"probability": 0.05,
-					"item": "heart",
-					"count": 1
-				}, {
-					"probability": 0.10,
-					"item": "heart"
-				}, {
-					"probability": 0.75,
-					"item": "gel",
-					"count": 2
-				}, {
-					"probability": 0.15,
-					"item": "stone",
-					"count": {
-						"min": 2,
-                        "max": 4
-					}
-				}, {
-					"probability": 0.15,
-					"item": "stone",
-					"count": {
-						"min": 2,
-                        "max": 4
-					}
-				}, {
-					"probability": 0.30,
-					"item": "arrow"
-				}
-			]
-		}, {
-			"name": "BossSlime",
-			"loot": [{
-					"probability": 1.0,
-					"item": [{
-							"item": "heart",
-							"count": 8
-						}, {
-							"item": "gel",
-							"count": 20
-						}
-					]
-				}
-			]
-		}
-	]
+  "version": "1.0",
+  "lootsInfos": {
+    "Slime": {
+      "loots": [
+        {
+          "probability": 0.30,
+          "items": [
+            {
+              "name": "bomb",
+              "count": {
+                "min": 1,
+                "max": 1
+              }
+            }
+          ]
+        },
+        {
+          "probability": 0.05,
+          "items": [
+            {
+              "name": "heart",
+              "count": {
+                "min": 1,
+                "max": 1
+              }
+            }
+          ]
+        },
+        {
+          "probability": 0.75,
+          "items": [
+            {
+              "name": "gel",
+              "count": {
+                "min": 2,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "probability": 0.15,
+          "items": [
+            {
+              "name": "stone",
+              "count": {
+                "min": 2,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "probability": 0.30,
+          "items": [
+            {
+              "name": "arrow",
+              "count": {
+                "min": 1,
+                "max": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "BossSlime": {
+      "loots": [
+        {
+          "probability": 1.0,
+          "items": [
+            {
+              "name": "heart",
+              "count": {
+                "min": 6,
+                "max": 10
+              }
+            },
+            {
+              "name": "gel",
+              "count": {
+                "min": 15,
+                "max": 25
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
 }

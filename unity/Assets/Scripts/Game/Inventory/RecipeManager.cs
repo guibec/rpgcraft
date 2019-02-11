@@ -56,7 +56,7 @@ using System.Xml;
         //        IEnumerable<XElement> sources = (from xml2 in recipes.Elements("source") select xml2);
         //        foreach (var source in sources)
         //        {
-        //            //XAttribute sourceItem = (from xml2 in source.Attributes("item") select xml2).FirstOrDefault();
+        //            //XAttribute sourcETile = (from xml2 in source.Attributes("item") select xml2).FirstOrDefault();
         //            XAttribute sourceCount = (from xml2 in source.Attributes("count") select xml2).FirstOrDefault();
 
         //            int numSource;
@@ -67,7 +67,7 @@ using System.Xml;
         //                return false;
         //            }
 
-        //            //newRecipe.Sources.Add(new ItemCount(sourceItem.Value, numSource));
+        //            //newRecipe.Sources.Add(new ItemCount(sourcETile.Value, numSource));
         //        }
 
 

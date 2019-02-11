@@ -15,6 +15,12 @@ public class Range<T> where T : IComparable<T>
     /// <summary>Maximum value of the range.</summary>
     public T Maximum { get; set; }
 
+    public Range(T min, T max)
+    {
+        Minimum = min;
+        Maximum = max;
+    }
+
     /// <summary>Presents the Range in readable format.</summary>
     /// <returns>String representation of the Range</returns>
     public override string ToString()

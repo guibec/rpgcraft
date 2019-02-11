@@ -37,7 +37,7 @@ namespace IronExtension
         }
         public static int RandomValue(this Range<int> range)
         {
-            return RandomManager.Next(range.Minimum, range.Maximum);
+            return RandomManager.Next(range.Minimum, range.Maximum + 1);
         }
 
         public static float RandomValue(this Range<float> range)
