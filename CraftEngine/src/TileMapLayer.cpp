@@ -15,12 +15,7 @@
 
 u32*                g_ViewTileID    = nullptr;  // temporarily global - will localize later.
 
-static const int TerrainTileW = 256;
-static const int TerrainTileH = 256;
-
 GPU_ConstantBuffer      g_cnstbuf_TileMap;
-
-
 
 TileMapLayer::TileMapLayer() {
 }
@@ -35,9 +30,6 @@ void TileMapLayer::PopulateUVs(const void* terrain_data, int stride_in_words, co
     g_ViewTileID = (u32*)xRealloc(g_ViewTileID, ViewInstanceCount * sizeof(u32));
 
     // Populate view mesh according to world map information:
-
-    vFloat2 incr_set_uv = vFloat2(1.0f / m_setCount);
-    vFloat2 t16uv = incr_set_uv / vFloat2(2.0f, 3.0f);
 
     for (int yl=0; yl<ViewMeshSize.y; ++yl) {
         for (int xl=0; xl<ViewMeshSize.x; ++xl) {
@@ -123,7 +115,7 @@ void TileMapLayer::InitScene(const char* script_objname)
     dx11_CreateConstantBuffer(g_cnstbuf_TileMap,    sizeof(GPU_TileMapConstants));
 
     dx11_CreateStaticMesh(gpu.mesh_tile, g_mesh_UniformQuad, sizeof(g_mesh_UniformQuad[0]), bulkof(g_mesh_UniformQuad));
-    dx11_CreateDynamicVertexBuffer(gpu.mesh_worldViewTileID, sizeof(g_ViewTileID[0]) * ViewInstanceCount);
+    dx11_CreateDynamicVertexBuffer(gpu.mesh_worldViewTileID, sizeof(g_ViewTileID[0]) * ViewInstanceCount, script_objname);
 
     dx11_LoadShaderVS(g_ShaderVS_Tiler, "TileMap.fx", "VS");
     dx11_LoadShaderFS(g_ShaderFS_Tiler, "TileMap.fx", "PS");
@@ -132,18 +124,6 @@ void TileMapLayer::InitScene(const char* script_objname)
 }
 
 #include "Mouse.h"
-
-// 8x9 .. TODO: convert this into a texture given a simple legend.
-const char* TestDot[] = {
-    "---------",
-    "----+----",
-    "--+++++--",
-    "+++++++++",
-    "+++++++++",
-    "--+++++--",
-    "----+----",
-    "---------",
-};
 
 void TileMapLayer::SetSourceTexture(const TextureAtlas& atlas)
 {
