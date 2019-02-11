@@ -52,8 +52,11 @@ static IDXGISwapChain1*         g_pSwapChain1           = nullptr;
 
 
 GPU_RenderTarget        g_gpu_BackBuffer;
-
 int                     g_curBufferIdx = 0;
+
+// number of frames rendered (flips) for the entire process. This is not representitive of the game's
+// frame count, which might be less due to game engine pause/stop actions.
+int                     g_gpu_host_framecount = 0;
 
 // -----------------------------------------------------------------------------------------------
 // DX11_DEBUG_FLAG_SUPPORT
@@ -1369,11 +1372,10 @@ void dx11_SubmitFrameAndSwap()
     }
     else {
         g_pImmediateContext->Flush();
-
-        static int count = 0;
-        dx11_SaveTextureToPng(g_gpu_BackBuffer, xGetTempDir() + xFmtStr("/screen%d.png", count++));
+        dx11_SaveTextureToPng(g_gpu_BackBuffer, xGetTempDir() + xFmtStr("/screen%d.png", g_gpu_host_framecount));
     }
     g_curBufferIdx = (g_curBufferIdx+1) % BackBufferCount;
+    ++g_gpu_host_framecount;
 }
 
 void dx11_SetPrimType(GpuPrimitiveType primType)

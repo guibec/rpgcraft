@@ -296,5 +296,7 @@ extern void                 dx11_InputLayoutCache_DisposeAll();
 
 extern bool                 g_gpu_ForceWireframe;
 extern GPU_RenderTarget     g_gpu_BackBuffer;
+extern int                  g_gpu_host_framecount;
+
 extern int2                 g_client_size_pix;
 extern float                g_client_aspect_ratio;
