@@ -428,7 +428,7 @@ public class GameManager : MonoSingleton<GameManager>
 
                     // TODO - Since UpdateCollisionInternal is called multiple times per frame, also when checking potential collision detection, we need a way to turn it on and off
                     // to avoid sending false positive, also to avoid sending multiple touches on the same frame
-                    if (entity2 != null)
+                    if (entity2 != null && !entity2.IsDestroying())
                     {
                         entity.OnTouch(entity2);
                         entity2.OnTouch(entity);

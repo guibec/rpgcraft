@@ -191,7 +191,7 @@ public class Player : Entity, ISave<Player.Save_Data>
         ItemInstance ii = other as ItemInstance;
         if (ii != null)
         {
-            // Quick hack for Hearth
+            // Quick hack for Heart
             if (ii.Item == ETile.Heart)
             {
                 // Hard-coded for now
