@@ -116,6 +116,32 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         return SpawnEnemy(m_bossSlimePrefab);
     }
 
+    private Vector2? FindValidSpawnPosition(Vector2 origin)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            bool xSign = RandomManager.Boolean();
+            bool ySign = RandomManager.Boolean();
+
+            float xDistance = RandomManager.Next(0.0f, m_spawnVariableDistance);
+            float yDistance = RandomManager.Next(0.0f, m_spawnVariableDistance);
+
+            Vector2 spawnPosition = origin +
+                                    new Vector2(xSign ? m_spawnMinDistance + xDistance : -m_spawnMinDistance - xDistance,
+                                        ySign ? m_spawnMinDistance + yDistance : -m_spawnMinDistance - yDistance);
+
+            // Check if valid
+            TileInfo ti = GameManager.Instance.GetTileFromWorldPos(spawnPosition);
+            ETile tile = ti.Tile;
+            if (!WorldTile.IsCollision(tile))
+            {
+                return spawnPosition;
+            }
+        }
+
+        return null;
+    }
+
     private GameObject SpawnEnemy(GameObject enemyPrefab)
     {
         if (enemyPrefab == null)
@@ -125,20 +151,16 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
         Vector2 position = GameManager.Instance.MainPlayer.transform.position;
 
-        // also we should spawn them so we don't see them appearing
+        // TODO: We should spawn them so we don't see them appearing
         // from a x-axis point of view
         // assuming we can see from [ -1 ... 1 ]
         // that means we are interested in spawning them from [ -2 ... -1 , 1 ... 2 ]
 
-        bool xSign = RandomManager.Boolean();
-        bool ySign = RandomManager.Boolean();
-
-        float xDistance = RandomManager.Next(0.0f, m_spawnVariableDistance);
-        float yDistance = RandomManager.Next(0.0f, m_spawnVariableDistance);
-
-        Vector2 spawnPosition = position +
-                                new Vector2(xSign ? m_spawnMinDistance + xDistance : -m_spawnMinDistance - xDistance,
-                                    ySign ? m_spawnMinDistance + yDistance : -m_spawnMinDistance - yDistance);
+        Vector2? spawnPosition = FindValidSpawnPosition(position);
+        if (spawnPosition == null)
+        {
+            return null;
+        }
 
         GameObject obj = Instantiate(enemyPrefab);
 
@@ -147,7 +169,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return null;
         }
 
-        obj.transform.position = spawnPosition;
+        obj.transform.position = spawnPosition.Value;
 
         return obj;
     }
