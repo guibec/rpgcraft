@@ -118,7 +118,7 @@ public class Entity : MonoBehaviourEx
     /// <summary>
     /// Teleport Entity to position newPosition. No collision and no events are triggered by this move.
     /// </summary>
-    /// <param name="newPosition">New position of eneity</param>
+    /// <param name="newPosition">New position of entity</param>
     public void TeleportToPosition(Vector3 newPosition)
     {
         transform.position = newPosition;
