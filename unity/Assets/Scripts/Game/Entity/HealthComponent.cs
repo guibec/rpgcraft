@@ -19,7 +19,7 @@ public class HealthComponent : MonoBehaviourEx
     /// how much time you are invincible between attack
     /// </summary>
     [/*Inspect,*/ SerializeField]
-    private float m_interdamageTime = 0f;
+    private float m_interdamageTime = 2.0f;
 
     /// <summary>
     /// prevent multiple hits when touching enemies
