@@ -65,6 +65,7 @@ public class GameManager : MonoSingleton<GameManager>
     public void Start()
     {
         MainPlayer = m_mainCharacter.GetComponent<Player>();
+        MainPlayer.TeleportToPosition(Vector3.zero);
         m_worldMap.Generate();
     }
 
