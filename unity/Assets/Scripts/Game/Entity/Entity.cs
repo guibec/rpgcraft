@@ -92,7 +92,7 @@ public class Entity : MonoBehaviourEx
     }
 
     // This is Unity destroy method.
-    // I would much prefer we alway control our life-span through our function that be "surprised" my object is now dead
+    // I would much prefer we always control our life-span through our function that be "surprised" my object is now dead
     // should be called after everything have been taken care of
     private void OnDestroy()
     {
@@ -106,22 +106,29 @@ public class Entity : MonoBehaviourEx
         EntityManager.Instance.Unregister(this);
     }
 
+    /// <summary>
+    /// Set the position of the Entity. Entity will go through normal collision code and may refuse to be set to this position
+    /// </summary>
+    /// <param name="newPosition">New position of entity</param>
     public void SetPosition(Vector3 newPosition)
     {
         transform.position = newPosition;
     }
 
+    /// <summary>
+    /// Teleport Entity to position newPosition. No collision and no events are triggered by this move.
+    /// </summary>
+    /// <param name="newPosition">New position of entity</param>
+    public void TeleportToPosition(Vector3 newPosition)
+    {
+        transform.position = newPosition;
+        m_lastPosition = newPosition;
+    }
+
     public Vector3 LastPosition
     {
-        get
-        {
-            return m_lastPosition;
-        }
-
-        private set
-        {
-            m_lastPosition = value;
-        }
+        get => m_lastPosition;
+        private set => m_lastPosition = value;
     }
 
     [SerializeField]
