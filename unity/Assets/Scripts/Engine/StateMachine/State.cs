@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
+﻿using System;
 
 /// <summary>
 /// Derive each state of your machine from this.

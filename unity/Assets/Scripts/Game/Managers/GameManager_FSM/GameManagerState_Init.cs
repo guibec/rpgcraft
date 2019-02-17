@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
-
-public class GameManagerState_Init : State
+﻿public class GameManagerState_Init : State
 {
     public GameManagerState_Init(GameManagerState_Machine machine) : base(machine)
     {

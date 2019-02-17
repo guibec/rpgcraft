@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 // Poor man's SortedSet implementation using a SortedDictionary

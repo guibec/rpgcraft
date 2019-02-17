@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 class Vector2Comparer : IComparer<Vector2>, IEqualityComparer<Vector2>

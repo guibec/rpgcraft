@@ -1,7 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
-using System.Runtime.InteropServices;
 
 public class RandomManager : MonoSingleton<RandomManager> 
 {

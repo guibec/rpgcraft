@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-public class GameManagerState_Battle : State
+﻿public class GameManagerState_Battle : State
 {
     public GameManagerState_Battle(StateMachine sm) : base(sm) { }
 

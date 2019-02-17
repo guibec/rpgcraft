@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-/// <summary>
+﻿/// <summary>
 /// Represent an information about a collision
 /// </summary>
 public struct CollisionInfo

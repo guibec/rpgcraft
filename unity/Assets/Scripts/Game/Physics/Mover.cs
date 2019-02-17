@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
 
 /// <summary>
 /// Move toward a definitive 2d position

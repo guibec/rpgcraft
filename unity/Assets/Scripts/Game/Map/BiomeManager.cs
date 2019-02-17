@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
-
-using IronExtension;
 using Debug = UnityEngine.Debug;
 
 public class BiomeMap

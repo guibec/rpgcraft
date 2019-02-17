@@ -1,12 +1,9 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Random = UnityEngine.Random;
-
-using IronExtension;
 using Debug = UnityEngine.Debug;
 
 public struct PatchTemplate

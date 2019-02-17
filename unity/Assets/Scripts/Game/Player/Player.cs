@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 
 public class Player : Entity, ISave<Player.Save_Data>
 {

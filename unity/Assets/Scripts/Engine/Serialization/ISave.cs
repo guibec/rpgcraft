@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public interface ISave<SaveDataType>
+﻿public interface ISave<SaveDataType>
 {
     /**
      * Loads from persistent storage

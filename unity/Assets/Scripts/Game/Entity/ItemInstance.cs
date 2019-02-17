@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 /// <summary>
 /// ItemInstance is a concrete Item spawned in the map. It contains the actual Item information + whatever logic is required for the item (collision, rendering, sfx, etc.)

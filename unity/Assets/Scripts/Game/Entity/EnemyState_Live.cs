@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-public class EnemyState_Live : EntityState_Live
+﻿public class EnemyState_Live : EntityState_Live
 {
     private Enemy m_enemy;
 

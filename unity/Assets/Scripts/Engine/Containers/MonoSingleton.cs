@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-public class MonoSingleton<T> : MonoBehaviourEx where T : MonoBehaviourEx
+﻿public class MonoSingleton<T> : MonoBehaviourEx where T : MonoBehaviourEx
 {
     private static T m_instance;
 
