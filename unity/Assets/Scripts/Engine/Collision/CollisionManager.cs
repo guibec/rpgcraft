@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// </summary>
 public class CollisionManager : MonoSingleton<CollisionManager> 
 {
-    public bool HasCollision(ChunkInfo ci, int x, int y)
+    public bool HasPlayerCollision(ChunkInfo ci, int x, int y)
     {
         Vector2 worldPos = WorldMap.Chunk2World(ci, x, y);
 
@@ -91,14 +91,8 @@ public class CollisionManager : MonoSingleton<CollisionManager>
     {
         for (int i = 0; i < 9; i++)
         {
-            ChunkInfo chunkInfo;
-            int x, y;
-            GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out chunkInfo, out x, out y);
-
-            if (chunkInfo != null)
-            {
-                chunkInfo.AddEntity(entity, x, y);
-            }
+            GameManager.Instance.GetTileDataFromWorldPos(newPosition + neighbors[i], out ChunkInfo chunkInfo, out int x, out int y);
+            chunkInfo?.AddEntity(entity, x, y);
         }
     }
 
