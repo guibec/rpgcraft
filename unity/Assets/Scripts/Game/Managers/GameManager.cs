@@ -109,14 +109,6 @@ public class GameManager : MonoSingleton<GameManager>
         return m_worldMap.GetTileDataFromWorldPos(worldPos, out chunk, out x, out y);
     }
 
-    public bool GetTileDataFromWorldPos(Vector2 worldPos, out ChunkInfo chunk, out Vector2 chunkPos)
-    {
-        bool result = GetTileDataFromWorldPos(worldPos, out chunk, out int x, out int y);
-        chunkPos.x = x;
-        chunkPos.y = y;
-        return result;
-    }
-
     private Vector2 OnSideStep( Vector2 afterColPosition, Vector2 beforeInputPosition, Vector2 afterInputPosition)
     {
         // not sure if this code should go here or within UpdateCollision

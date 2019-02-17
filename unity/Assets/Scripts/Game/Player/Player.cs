@@ -481,14 +481,14 @@ public class Player : Entity, ISave<Player.Save_Data>
                 }
                 else if (selectedItem == ETile.Stone && tileInfo.Tile != ETile.Mountain)
                 {
-                    if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
+                    if (CollisionManager.Instance.HasCollision(chunkInfo, x, y))
                         return false;
 
                     // Try to place a stone
                     StartAction(EAction.Build, 0.1f, worldPos, actionCompleted_ =>
                     {
                         // Make sure we can still perform action
-                        if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
+                        if (CollisionManager.Instance.HasCollision(chunkInfo, x, y))
                             return;
 
                         AudioManager.Instance.PlayDig();
