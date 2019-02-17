@@ -29,8 +29,9 @@ public class EntityManager : MonoSingleton<EntityManager>
 
     public int Register(Entity entity_)
     {
-        if (entity_ is Player)
-            RegisterPlayer(entity_ as Player);
+        var player = entity_ as Player;
+        if (player != null)
+            RegisterPlayer(player);
 
         //Debug.Assert(!m_entities.Contains(entity_), String.Format("Entity {0} is already registered.", entity_));
         m_entities.Add(entity_);
@@ -43,8 +44,9 @@ public class EntityManager : MonoSingleton<EntityManager>
         //Debug.Assert(m_entities.Contains(entity_), String.Format("Entity {0} is not registered.", entity_));
         m_entities.Remove(entity_);
 
-        if (entity_ is Player)
-            UnregisterPlayer(entity_ as Player);
+        var player = entity_ as Player;
+        if (player != null)
+            UnregisterPlayer(player);
 
         //OnDestroy.Invoke(entity_);
     }

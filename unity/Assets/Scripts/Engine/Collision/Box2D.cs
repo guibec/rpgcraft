@@ -50,86 +50,44 @@ public struct Box2D
 
     public Vector2 Center
     {
-        get
-        {
-            return ((m_topLeft + m_bottomRight) / 2);
-        }
-        set
-        {
-            BuildFrom(value, Width/2, Height/2);
-        }
+        get => ((m_topLeft + m_bottomRight) / 2);
+        set => BuildFrom(value, Width/2, Height/2);
     }
 
     public float Width
     {
-        get
-        {
-            return m_bottomRight.x - m_topLeft.x;
-        }
-        set
-        {
-            BuildFrom(Center, Width/2, Height);
-        }
+        get => m_bottomRight.x - m_topLeft.x;
+        set => BuildFrom(Center, value/2, Height);
     }
 
     public float Height
     {
-        get
-        {
-            return m_topLeft.y - m_bottomRight.y;
-        }
-        set
-        {
-            BuildFrom(Center, Width, Height/2);
-        }
+        get => m_topLeft.y - m_bottomRight.y;
+        set => BuildFrom(Center, Width, value/2);
     }
 
     public float Left
     {
-        get
-        {
-            return m_topLeft.x;
-        }
-        set
-        {
-            m_topLeft.x = value;
-        }
+        get => m_topLeft.x;
+        set => m_topLeft.x = value;
     }
 
     public float Right
     {
-        get
-        {
-            return m_bottomRight.x;
-        }
-        set
-        {
-            m_bottomRight.x = value;
-        }
+        get => m_bottomRight.x;
+        set => m_bottomRight.x = value;
     }
 
     public float Top
     {
-        get
-        {
-            return m_topLeft.y;
-        }
-        set
-        {
-            m_topLeft.y = value;
-        }
+        get => m_topLeft.y;
+        set => m_topLeft.y = value;
     }
 
     public float Bottom
     {
-        get
-        {
-            return m_bottomRight.y;
-        }
-        set
-        {
-            m_bottomRight.y = value;
-        }
+        get => m_bottomRight.y;
+        set => m_bottomRight.y = value;
     }
 
     public void Draw(Color c)
