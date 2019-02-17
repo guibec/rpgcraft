@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class ItemManager : MonoSingleton<ItemManager>, IEnumerable
 {
-    private HashSet<ItemInstance> m_items = new HashSet<ItemInstance>();
+    private readonly HashSet<ItemInstance> m_items = new HashSet<ItemInstance>();
 
     public void Register(ItemInstance _item)
     {

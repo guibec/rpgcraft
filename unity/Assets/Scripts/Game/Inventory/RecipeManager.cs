@@ -4,13 +4,7 @@
     public class RecipeManager
     {
         private static readonly RecipeManager instance = new RecipeManager();
-        public static RecipeManager Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public static RecipeManager Instance => instance;
 
         private RecipeManager()
         {

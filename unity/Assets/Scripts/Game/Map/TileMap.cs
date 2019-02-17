@@ -14,7 +14,7 @@ public class TileMap : MonoBehaviourEx
 
     private Vector3? m_currentSelection;
 
-    private bool m_dirty = false;
+    private bool m_dirty;
 
     // Use this for initialization
     void Start () 
@@ -24,23 +24,14 @@ public class TileMap : MonoBehaviourEx
 
     public Vector3? SelectedTile
     {
-        get
-        {
-            return m_currentSelection;
-        }
-        set
-        {
-            m_currentSelection = value;
-        }
+        get => m_currentSelection;
+        set => m_currentSelection = value;
     }
 
     private ChunkInfo m_sourceChunk;
     public ChunkInfo SourceChunk
     {
-        get
-        {
-            return m_sourceChunk;
-        }
+        get => m_sourceChunk;
         set
         {
             if (m_sourceChunk != value)
@@ -137,7 +128,7 @@ public class TileMap : MonoBehaviourEx
         Shader shader = Shader.Find("dig");
         if (shader == null)
         {
-            UnityEngine.Debug.Log("Could not find shader");
+            Debug.Log("Could not find shader");
         }
 
         int numVertices = m_width*m_height*4;

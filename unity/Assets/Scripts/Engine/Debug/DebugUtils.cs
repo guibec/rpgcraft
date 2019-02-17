@@ -7,7 +7,7 @@ public class DebugUtils
     { 
         if (!condition)
         {
-            UnityEngine.Debug.LogError("Assert!");
+            Debug.LogError("Assert!");
         }
     }
 
@@ -19,9 +19,9 @@ public class DebugUtils
         Vector3 bottomLeft3D = new Vector3(topLeft.x, bottomRight.y, 0.0f);
         Vector3 bottomRight3D = new Vector3(bottomRight.x, bottomRight.y, 0.0f);
 
-        UnityEngine.Debug.DrawLine(topLeft3D, topRight3D, c, 0.0f, false);
-        UnityEngine.Debug.DrawLine(topRight3D, bottomRight3D, c, 0.0f, false);
-        UnityEngine.Debug.DrawLine(bottomRight3D, bottomLeft3D, c, 0.0f, false);
-        UnityEngine.Debug.DrawLine(bottomLeft3D, topRight3D, c, 0.0f, false);
+        Debug.DrawLine(topLeft3D, topRight3D, c, 0.0f, false);
+        Debug.DrawLine(topRight3D, bottomRight3D, c, 0.0f, false);
+        Debug.DrawLine(bottomRight3D, bottomLeft3D, c, 0.0f, false);
+        Debug.DrawLine(bottomLeft3D, topRight3D, c, 0.0f, false);
     } 
 }

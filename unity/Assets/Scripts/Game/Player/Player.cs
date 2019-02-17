@@ -35,10 +35,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     private Player_Data m_playerData;
     public Player_Data PlayerData
     {
-        private set
-        {
-            m_playerData = value;
-        }
+        private set => m_playerData = value;
         get
         {
             m_playerData.position = gameObject.transform.position;
@@ -81,7 +78,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     }
 
     public EntityAction CurrentAction { get; private set; }
-    public bool HasAction { get { return CurrentAction != null && CurrentAction.m_action != EAction.None; } }
+    public bool HasAction => CurrentAction != null && CurrentAction.m_action != EAction.None;
 
     private EntityRender m_entityRender;
 
@@ -107,10 +104,7 @@ public class Player : Entity, ISave<Player.Save_Data>
             m_playerData.characterClass = value;
             SetRenderInfo();
         }
-        get
-        {
-            return m_playerData.characterClass;
-        }
+        get => m_playerData.characterClass;
     }
 
     protected override void OnAwake()
@@ -123,7 +117,7 @@ public class Player : Entity, ISave<Player.Save_Data>
         HealthComponent = GetComponent<HealthComponent>();
     }
 
-    private string[] frameGroups = 
+    private readonly string[] frameGroups = 
     {
         "Up",
         "Down",
@@ -222,8 +216,7 @@ public class Player : Entity, ISave<Player.Save_Data>
 
             if (currentAction.m_durationLeft == 0.0f)
             {
-                if (currentAction.m_completedDelegate != null)
-                    currentAction.m_completedDelegate(currentAction);
+                currentAction.m_completedDelegate?.Invoke(currentAction);
                 currentAction = null;
             }
 
@@ -305,7 +298,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     {
         if (prefab == null)
         {
-            UnityEngine.Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
+            Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
             return null;
         }
 
@@ -428,9 +421,7 @@ public class Player : Entity, ISave<Player.Save_Data>
         float sqrDistance = (worldPos - gameObject.transform.position).sqrMagnitude;
         if (sqrDistance <= 6.0 * 6.0)
         {
-            ChunkInfo chunkInfo;
-            int x, y;
-            bool success = GameManager.Instance.GetTileDataFromWorldPos(worldPos, out chunkInfo, out x, out y);
+            bool success = GameManager.Instance.GetTileDataFromWorldPos(worldPos, out var chunkInfo, out var x, out var y);
 
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)

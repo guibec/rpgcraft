@@ -30,25 +30,16 @@ public class TimeManager : MonoSingleton<TimeManager>
         }
     }
 
-    public static float Now
-    {
-        get { return Time.time; }
-    }
+    public static float Now => Time.time;
 
     public static float Dt
     {
-        get
-        {
-            return Instance.m_dt;
-        }
-        set
-        {
-            Instance.m_dt = value;
-        }
+        get => Instance.m_dt;
+        set => Instance.m_dt = value;
     }
 
     // dt info
     private long m_lastTick, m_currentTick;
-    private float m_dt = 0.0f;
-    private long m_frameCount = 0;
+    private float m_dt;
+    private long m_frameCount;
 }

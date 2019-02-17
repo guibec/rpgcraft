@@ -34,29 +34,17 @@ public class ChunkInfo
     public const int m_width = 64;
     public const int m_height = 64;
 
-    static public int Width
-    {
-        get
-        {
-            return m_width;
-        }
-    }
+    static public int Width => m_width;
 
-    static public int Height
-    {
-        get
-        {
-            return m_height;
-        }
-    }
+    static public int Height => m_height;
 
     public event ChunkChangedEventHandler Changed;
 
-    private TileInfo[,] m_data;
+    private readonly TileInfo[,] m_data;
 
     // Linked list of potentially occupying entities
     // TODO: See Real Time Collision Detection Chapter 7.1.6 for optimization using a static array instead
-    private List<Entity>[,] m_entities;
+    private readonly List<Entity>[,] m_entities;
 
     enum Direction
     {
@@ -70,7 +58,7 @@ public class ChunkInfo
         NortWest,
     }
 
-    private Vector2[] m_directionVectors = 
+    private readonly Vector2[] m_directionVectors = 
         {
             new Vector2(0, 1),
             new Vector2(1, 1),
@@ -84,71 +72,23 @@ public class ChunkInfo
 
     // Each ChunkInfo will keep a list of its neighbors as it makes it easier to navigate between them and
     // have contiguous regions
-    private List<ChunkInfo> m_neighbors = new List<ChunkInfo>(Enum.GetNames(typeof(Direction)).Length);
+    private readonly List<ChunkInfo> m_neighbors = new List<ChunkInfo>(Enum.GetNames(typeof(Direction)).Length);
 
-    public ChunkInfo NorthNeighbor
-    {
-        get
-        {
-            return m_neighbors[0];
-        }
-    }
+    public ChunkInfo NorthNeighbor => m_neighbors[0];
 
-    public ChunkInfo NorthEastNeighbor
-    {
-        get
-        {
-            return m_neighbors[1];
-        }
-    }
+    public ChunkInfo NorthEastNeighbor => m_neighbors[1];
 
-    public ChunkInfo EastNeighbor
-    {
-        get
-        {
-            return m_neighbors[2];
-        }
-    }
+    public ChunkInfo EastNeighbor => m_neighbors[2];
 
-    public ChunkInfo SouthEastNeighbor
-    {
-        get
-        {
-            return m_neighbors[3];
-        }
-    }
+    public ChunkInfo SouthEastNeighbor => m_neighbors[3];
 
-    public ChunkInfo SouthNeighbor
-    {
-        get
-        {
-            return m_neighbors[4];
-        }
-    }
+    public ChunkInfo SouthNeighbor => m_neighbors[4];
 
-    public ChunkInfo SouthWestNeighbor
-    {
-        get
-        {
-            return m_neighbors[5];
-        }
-    }
+    public ChunkInfo SouthWestNeighbor => m_neighbors[5];
 
-    public ChunkInfo WestNeighbor
-    {
-        get
-        {
-            return m_neighbors[6];
-        }
-    }
+    public ChunkInfo WestNeighbor => m_neighbors[6];
 
-    public ChunkInfo NorthWestNeighbor
-    {
-        get
-        {
-            return m_neighbors[7];
-        }
-    }
+    public ChunkInfo NorthWestNeighbor => m_neighbors[7];
 
     public Vector2 ChunkPos { get; private set; }
 
@@ -168,12 +108,11 @@ public class ChunkInfo
         }
     }
 
-    private TileInfo[,] Data { get { return m_data; } }
+    private TileInfo[,] Data => m_data;
 
     protected void OnChanged(EventArgs e)
     {
-        if (Changed != null)
-            Changed(this, e);
+        Changed?.Invoke(this, e);
     }
 
     public void PostInitialize()
@@ -257,7 +196,7 @@ public class ChunkInfo
         }
 
         sw.Stop();
-        Debug.Log(string.Format("ChunkInfo::Generate took {0}ms", sw.ElapsedMilliseconds));
+        Debug.Log($"ChunkInfo::Generate took {sw.ElapsedMilliseconds}ms");
 
         string fullDump = "";
         for (int j = 0; j < Width; ++j)
@@ -489,12 +428,12 @@ public class ChunkInfo
         //Debug.Log(string.Format("Creating {0} patch for {1}% at {2} tightness", tt, percent, tightness));
 
         Stopwatch sw = Stopwatch.StartNew();
-        int howMany = (int)(percent * (float)Width * (float)Height);
+        int howMany = (int)(percent * Width * Height);
 
         if (howMany == 0)
         {
             sw.Stop();
-            Debug.Log(string.Format("ChunkInfo::AddPatches took {0}ms", sw.ElapsedMilliseconds));
+            Debug.Log($"ChunkInfo::AddPatches took {sw.ElapsedMilliseconds}ms");
             return;
         }
             

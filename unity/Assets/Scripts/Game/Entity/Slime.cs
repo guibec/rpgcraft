@@ -6,7 +6,7 @@ public class Slime : Enemy
     public float m_idleTime = 5.0f;
     public float m_seekTime = 3.0f;
 
-    private float m_time = 0;
+    private float m_time;
 
     public float m_doubleHeartSpawnChance = 0.05f;
     public float m_heartSpawnChance = 0.10f;
@@ -18,7 +18,7 @@ public class Slime : Enemy
 
     private EntityRender m_er;
 
-    private string[] frameGroups = 
+    private readonly string[] frameGroups = 
     {
         "Left",
         "Down",
@@ -149,7 +149,7 @@ public class Slime : Enemy
         else
         {
             preferVertical = RandomManager.Boolean();
-            Debug.Log("Slime perfer vertical is " + preferVertical.ToString());
+            Debug.Log("Slime perfer vertical is " + preferVertical);
         }
 
         // TODO: Extract into functions to avoid this copy pasta between preferVertical and non perferVertical

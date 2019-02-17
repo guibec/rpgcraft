@@ -8,12 +8,12 @@ public class EntityManager : MonoSingleton<EntityManager>
     public GameObject m_bombPrefab;
     public GameObject m_arrowPrefab;
 
-    private static int m_nextId = 0;
+    private static int m_nextId;
 
-    List<Entity> m_entities = new List<Entity>();
+    readonly List<Entity> m_entities = new List<Entity>();
 
     // All known players (cache of m_entities)
-    List<Player> m_players = new List<Player>();
+    readonly List<Player> m_players = new List<Player>();
 
     private void RegisterPlayer(Player player_)
     {
@@ -89,10 +89,7 @@ public class EntityManager : MonoSingleton<EntityManager>
         m_entities.RemoveAll(entity => entity is T);
     }
 
-    public IEnumerable<Entity> Entities
-    {
-        get { return m_entities.AsReadOnly(); }
-    }
+    public IEnumerable<Entity> Entities => m_entities.AsReadOnly();
 
     public IEnumerable<Enemy> Enemies
     {

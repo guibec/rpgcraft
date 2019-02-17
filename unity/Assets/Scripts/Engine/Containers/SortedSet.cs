@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // Poor man's SortedSet implementation using a SortedDictionary
 public class SortedSet<T> : IEnumerable<T>, IEnumerable
 {
-    private SortedDictionary<T, bool> m_sortedList;
+    private readonly SortedDictionary<T, bool> m_sortedList;
 
     public SortedSet(IComparer<T> comp)
     {
@@ -36,10 +36,7 @@ public class SortedSet<T> : IEnumerable<T>, IEnumerable
         m_sortedList.Remove((T) key);
     }
 
-    public bool IsFixedSize
-    {
-        get { return false; }
-    }
+    public bool IsFixedSize => false;
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {

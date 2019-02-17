@@ -13,7 +13,7 @@ public class AutoSaveOnRunMenuItem
         EditorApplication.delayCall += () =>
         {
             isToggled = EditorPrefs.GetBool(MenuName, false);
-            UnityEditor.Menu.SetChecked(MenuName, isToggled);
+            Menu.SetChecked(MenuName, isToggled);
             SetMode();
         };
     }
@@ -22,7 +22,7 @@ public class AutoSaveOnRunMenuItem
     private static void ToggleMode()
     {
         isToggled = !isToggled;
-        UnityEditor.Menu.SetChecked(MenuName, isToggled);
+        Menu.SetChecked(MenuName, isToggled);
         EditorPrefs.SetBool(MenuName, isToggled);
         SetMode();
     }

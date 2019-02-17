@@ -31,7 +31,7 @@ public abstract class StateMachine
     /// </summary>
     public State NextState { get; private set; }
 
-    private bool forced = false;
+    private bool forced;
 
     /// <summary>
     /// Prevent the machine from switching state.
@@ -47,11 +47,11 @@ public abstract class StateMachine
     /// <summary>
     /// Registered states
     /// </summary>
-    private Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
+    private readonly Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
 
     protected void RegisterState(Type state)
     {
-        State stateInstance = System.Activator.CreateInstance(state, this) as State;
+        State stateInstance = Activator.CreateInstance(state, this) as State;
         m_states[state] = stateInstance;
     }
 
@@ -79,7 +79,7 @@ public abstract class StateMachine
     protected StateMachine(MonoBehaviour mb)
     {
         Locked = false;
-        this.MonoBehaviour = mb;
+        MonoBehaviour = mb;
     }
 
     public void Update()
@@ -91,8 +91,7 @@ public abstract class StateMachine
                 PreviousState = CurrentState;
                 PreviousState.Destructor();
 
-                if (OnStateDestructor != null)
-                    OnStateDestructor(this, PreviousState);
+                OnStateDestructor?.Invoke(this, PreviousState);
             }
 
             CurrentState = NextState;
@@ -100,14 +99,12 @@ public abstract class StateMachine
             NextState = null;
             CurrentState.Constructor();
 
-            if (OnStateConstructor != null)
-                OnStateConstructor(this, CurrentState);
+            OnStateConstructor?.Invoke(this, CurrentState);
 
             forced = false;
         }
 
-        if (CurrentState != null)
-            CurrentState.Update();
+        CurrentState?.Update();
     }
 
     public void SetInitialState(Type state)
@@ -132,13 +129,12 @@ public abstract class StateMachine
         if (forced || Locked)
             return;
 
-        if (nextState == null || (this.NextState != null))
+        if (nextState == null || (NextState != null))
             return;
 
-        this.NextState = nextState;
+        NextState = nextState;
 
-        if (OnStateChanged != null)
-            OnStateChanged(this, nextState);
+        OnStateChanged?.Invoke(this, nextState);
     }
 
     public void SwitchState(Type state)
@@ -161,11 +157,10 @@ public abstract class StateMachine
         if (forced || Locked)
             return;
 
-        this.NextState = nextState;
+        NextState = nextState;
         forced = true;
 
-        if (OnStateForcedChanged != null)
-            OnStateForcedChanged(this, nextState);
+        OnStateForcedChanged?.Invoke(this, nextState);
     }
 
     /// <summary>
@@ -180,8 +175,7 @@ public abstract class StateMachine
         CurrentState.Destructor();
         CurrentState.Constructor();
 
-        if (OnStateReload != null)
-            OnStateReload(this, CurrentState);
+        OnStateReload?.Invoke(this, CurrentState);
     }
 
     /// <summary>

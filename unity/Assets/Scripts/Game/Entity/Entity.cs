@@ -3,7 +3,7 @@
 [System.Serializable]
 public class Entity : MonoBehaviourEx 
 {
-    private bool m_destroying = false;
+    private bool m_destroying;
     private Vector3 m_lastPosition = Vector3.zero;
     protected StateMachine m_fsm;
 
@@ -68,11 +68,8 @@ public class Entity : MonoBehaviourEx
 
     protected virtual void OnUpdate()
     {
-        if (m_fsm != null)
-        {
-            m_fsm.Update();    
-        }
-        
+        m_fsm?.Update();
+
 
         if (m_destroying)
         {
@@ -101,7 +98,7 @@ public class Entity : MonoBehaviourEx
     protected virtual void OnEntityDestroy()
     {
         CollisionManager.Instance.OnDestroy(this);
-        UnityEngine.Object.Destroy(gameObject);
+        Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }
 
@@ -133,15 +130,9 @@ public class Entity : MonoBehaviourEx
     [SerializeField]
     private bool m_canBeKnockedBack = true;
     public bool CanBeKnockedBack
-    {   get
-        {
-            return m_canBeKnockedBack;
-        }
+    {   get => m_canBeKnockedBack;
 
-        set
-        {
-            m_canBeKnockedBack = value;
-        }
+        set => m_canBeKnockedBack = value;
     }
 
     public void KnockBack(Vector2 dir, float force, float time)
@@ -154,28 +145,13 @@ public class Entity : MonoBehaviourEx
         if (m_fsm.IsInState<EntityState_Live>())
         {
             EntityState_Live psl = m_fsm.FindStateByType<EntityState_Live>();
-            if (psl != null)
-            {
-                psl.KnockBack(dir * force, time);
-            }
+            psl?.KnockBack(dir * force, time);
         }
     }
 
-    public virtual Box2D Box
-    {
-        get
-        {
-            return new Box2D(transform.position, 0.5f, 0.5f);    
-        }
-    }
+    public virtual Box2D Box => new Box2D(transform.position, 0.5f, 0.5f);
 
-    protected StateMachine FSM
-    {
-        get
-        {
-            return m_fsm;
-        }
-    }
+    protected StateMachine FSM => m_fsm;
 }
 
 

@@ -92,7 +92,7 @@ public class EntityRender : MonoBehaviourEx
 
             while (m_consumedDt >= m_globalFrameDelay)
             {
-                if (m_currentFrame != null && m_currentFrame.m_nextFrame != null)
+                if (m_currentFrame?.m_nextFrame != null)
                 {
                     int newIndex = m_currentFrame.m_nextFrame.m_frameIndex;
                     ChangeFrame(newIndex);
@@ -109,8 +109,7 @@ public class EntityRender : MonoBehaviourEx
     public void SetFrameInfo(string groupName, int px, int py, int width, int height)
     {
         // add/update from dictionary
-        FrameGroup frameGroup;
-        if (!m_frameGroups.TryGetValue(groupName, out frameGroup))
+        if (!m_frameGroups.TryGetValue(groupName, out var frameGroup))
         {
             frameGroup = new FrameGroup(groupName);
             m_frameGroups.Add(groupName, frameGroup);
@@ -127,8 +126,7 @@ public class EntityRender : MonoBehaviourEx
 
     public bool LinkNextFrame(string group, int frame, int nextFrame)
     {
-        FrameGroup frameGroup;
-        if (!m_frameGroups.TryGetValue(group, out frameGroup))
+        if (!m_frameGroups.TryGetValue(group, out var frameGroup))
         {
             return false;
         }

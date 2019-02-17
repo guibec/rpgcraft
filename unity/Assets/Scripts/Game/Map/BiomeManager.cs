@@ -10,21 +10,9 @@ public class BiomeMap
     private const int m_height = 1024;
     private readonly EBiome[,] m_biomes = new EBiome[m_width, m_height];
 
-    public int Width
-    {
-        get
-        {
-            return m_width;
-        }
-    }
+    public int Width => m_width;
 
-    public int Height
-    {
-        get
-        {
-            return m_height;
-        }
-    }
+    public int Height => m_height;
 
     public EBiome this[int x, int y]
     {
@@ -34,10 +22,7 @@ public class BiomeMap
             Debug.Assert(y >= 0 && y < Height);
             return m_biomes[x, y];
         }
-        set
-        {
-            m_biomes[x, y] = value;
-        }
+        set => m_biomes[x, y] = value;
     }
 
     public void Clear()
@@ -52,36 +37,18 @@ public class BiomeManager
 
     List<Vector2> m_points;
     Texture m_debugTexture;
-    BiomeMap m_biomeMap = new BiomeMap();
+    readonly BiomeMap m_biomeMap = new BiomeMap();
 
     /// <summary>
     /// How each Biome map to a generation template tells us how this area will be generated
     /// </summary>
-    private Dictionary<EBiome, GenerationTemplate> m_biomeToGeneration = new Dictionary<EBiome, GenerationTemplate>(10);
+    private readonly Dictionary<EBiome, GenerationTemplate> m_biomeToGeneration = new Dictionary<EBiome, GenerationTemplate>(10);
 
-    public BiomeMap Map
-    {
-        get
-        {
-            return m_biomeMap;
-        }
-    }
+    public BiomeMap Map => m_biomeMap;
 
-    public int Width
-    {
-        get
-        {
-            return Map.Width;
-        }
-    }
+    public int Width => Map.Width;
 
-    public int Height
-    {
-        get
-        {
-            return Map.Height;
-        }
-    }
+    public int Height => Map.Height;
 
     public Texture DebugTexture
     {
@@ -166,10 +133,7 @@ public class BiomeManager
     public void Clear()
     {
         Map.Clear();
-        if (m_points != null)
-        {
-            m_points.Clear();
-        }
+        m_points?.Clear();
         m_debugTexture = null;
     }
 
@@ -287,9 +251,9 @@ public class BiomeManager
 
         GenerateDebugTexture();
         sw.Stop();
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation min distance took {0} ms", minDistance.ElapsedMilliseconds));
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation remap took {0} ms", remap.ElapsedMilliseconds));
+        Debug.Log($"BiomeManager: Voronoi tessellation took {sw.ElapsedMilliseconds} ms");
+        Debug.Log($"BiomeManager: Voronoi tessellation min distance took {minDistance.ElapsedMilliseconds} ms");
+        Debug.Log($"BiomeManager: Voronoi tessellation remap took {remap.ElapsedMilliseconds} ms");
     }
 
     private void GenerateDebugTexture()

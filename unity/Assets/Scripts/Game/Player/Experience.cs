@@ -8,7 +8,7 @@ public struct Experience_Data
 
 public class Experience
 {
-    public delegate void XPChangedEventHandler(object sender, System.EventArgs e);
+    public delegate void XPChangedEventHandler(object sender, EventArgs e);
     public event XPChangedEventHandler Changed;
 
     public Experience()
@@ -34,10 +34,7 @@ public class Experience
     private Experience_Data m_experienceData;
     public Experience_Data ExperienceData
     {
-        get
-        {
-            return m_experienceData;
-        }
+        get => m_experienceData;
 
         set
         {
@@ -48,10 +45,7 @@ public class Experience
 
     public int XP
     {
-        get
-        {
-            return ExperienceData.xp;
-        }
+        get => ExperienceData.xp;
         private set
         {
             if (value !=  ExperienceData.xp)
@@ -77,15 +71,10 @@ public class Experience
         return NextLevels[Level - 1];
     }
 
-    public int MaxLevel
-    {
-        get
-        {
-            return NextLevels.Length;
-        }
-    } 
-                               // How much you need to achieve Level1, Level2, ...
-    private int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
+    public int MaxLevel => NextLevels.Length;
+
+    // How much you need to achieve Level1, Level2, ...
+    private readonly int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
 
     public void AddXP(int amount)
     {

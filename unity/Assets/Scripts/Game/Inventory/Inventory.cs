@@ -5,10 +5,7 @@ public class Inventory
     private Inventory_Data m_inventoryData;
     public Inventory_Data InventoryData
     {
-        get
-        {
-            return m_inventoryData;
-        }
+        get => m_inventoryData;
         set
         {
             m_inventoryData = value;

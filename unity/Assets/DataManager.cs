@@ -12,11 +12,5 @@
         OnInit();
     }
 
-    public LootData.LootsInfo LootData
-    {
-        get
-        {
-            return m_enemiesInfo.Data;
-        }
-    }
+    public LootData.LootsInfo LootData => m_enemiesInfo.Data;
 }

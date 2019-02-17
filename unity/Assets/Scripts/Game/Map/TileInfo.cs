@@ -86,6 +86,6 @@ public struct TileInfo
 
     public override string ToString()
     {
-        return base.ToString() + " " + Tile.ToString();
+        return base.ToString() + " " + Tile;
     }
 }

@@ -15,13 +15,7 @@ public class Bomb : Entity
 
     private readonly Hashtable m_hitEntities = new Hashtable();
 
-    public float ThrowSpeed
-    {
-        get
-        {
-            return m_throwSpeed;
-        }
-    }
+    public float ThrowSpeed => m_throwSpeed;
 
     public IEnumerator Explode()
     {
@@ -49,7 +43,7 @@ public class Bomb : Entity
                     healthComponent.ReceiveDamage(damage);
                     m_hitEntities.Add(enemy, true);
 
-                    Vector2 relativeDir = enemy.transform.position - this.transform.position;
+                    Vector2 relativeDir = enemy.transform.position - transform.position;
                     enemy.KnockBack(relativeDir.normalized, 3f, 0.05f);
                 }
             }

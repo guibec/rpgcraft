@@ -9,13 +9,7 @@ namespace LootData
         public int min;
         public int max;
 
-        public Range<int> Range
-        {
-            get
-            {
-                return new Range<int>(min, max);
-            }
-        }
+        public Range<int> Range => new Range<int>(min, max);
 
         public int Random()
         {
@@ -110,7 +104,7 @@ namespace LootData
 
             try
             {
-                lootsInfo = JSONUtils.LoadJSON<LootData.LootsInfo>(filename);
+                lootsInfo = JSONUtils.LoadJSON<LootsInfo>(filename);
             }
             catch (Exception e)
             {
@@ -145,13 +139,7 @@ public class EnemiesInfo
 {
     public LootData.LootsInfo m_lootsInfo;
 
-    public LootData.LootsInfo Data
-    {
-        get
-        {
-            return m_lootsInfo;
-        }
-    }
+    public LootData.LootsInfo Data => m_lootsInfo;
 
 
     public EnemiesInfo()

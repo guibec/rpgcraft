@@ -22,7 +22,7 @@ public class Mover : MonoBehaviourEx
 
     private Vector2 OriginPosition;
     private float m_currentTime;
-    private bool Enabled = false;
+    private bool Enabled;
     private InterpolationCompletedDelegate m_onCompleted;
 
     // Use this for initialization
@@ -87,7 +87,6 @@ public class Mover : MonoBehaviourEx
     private void OnCompleted()
     {
         Enabled = false;
-        if (m_onCompleted != null)
-            m_onCompleted();
+        m_onCompleted?.Invoke();
     }
 }

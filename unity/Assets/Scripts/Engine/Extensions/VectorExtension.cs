@@ -4,12 +4,12 @@ public static class VectorExtension
 {
     public static Vector2[] ToVector2Array(this Vector3[] v3)
     {
-        return System.Array.ConvertAll<Vector3, Vector2>(v3, GetV2fromV3);
+        return System.Array.ConvertAll(v3, GetV2fromV3);
     }
 
     public static Vector3[] ToVector3Array(this Vector2[] v2)
     {
-        return System.Array.ConvertAll<Vector2, Vector3>(v2, GetV3fromV2);
+        return System.Array.ConvertAll(v2, GetV3fromV2);
     }
 
     public static Vector2 GetV2fromV3(Vector3 v3)

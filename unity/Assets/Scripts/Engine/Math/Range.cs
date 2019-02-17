@@ -22,14 +22,14 @@ public class Range<T> where T : IComparable<T>
     /// <returns>String representation of the Range</returns>
     public override string ToString()
     {
-        return string.Format("[{0} - {1}]", this.Minimum, this.Maximum);
+        return $"[{Minimum} - {Maximum}]";
     }
 
     /// <summary>Determines if the range is valid.</summary>
     /// <returns>True if range is valid, else false</returns>
     public bool IsValid()
     {
-        return this.Minimum.CompareTo(this.Maximum) <= 0;
+        return Minimum.CompareTo(Maximum) <= 0;
     }
 
     /// <summary>Determines if the provided value is inside the range.</summary>
@@ -37,7 +37,7 @@ public class Range<T> where T : IComparable<T>
     /// <returns>True if the value is inside Range, else false</returns>
     public bool ContainsValue(T value)
     {
-        return (this.Minimum.CompareTo(value) <= 0) && (value.CompareTo(this.Maximum) <= 0);
+        return (Minimum.CompareTo(value) <= 0) && (value.CompareTo(Maximum) <= 0);
     }
 
     /// <summary>Determines if this Range is inside the bounds of another range.</summary>
@@ -45,7 +45,7 @@ public class Range<T> where T : IComparable<T>
     /// <returns>True if range is inclusive, else false</returns>
     public bool IsInsideRange(Range<T> range)
     {
-        return this.IsValid() && range.IsValid() && range.ContainsValue(this.Minimum) && range.ContainsValue(this.Maximum);
+        return IsValid() && range.IsValid() && range.ContainsValue(Minimum) && range.ContainsValue(Maximum);
     }
 
     /// <summary>Determines if another range is inside the bounds of this range.</summary>
@@ -53,6 +53,6 @@ public class Range<T> where T : IComparable<T>
     /// <returns>True if range is inside, else false</returns>
     public bool ContainsRange(Range<T> range)
     {
-        return this.IsValid() && range.IsValid() && this.ContainsValue(range.Minimum) && this.ContainsValue(range.Maximum);
+        return IsValid() && range.IsValid() && ContainsValue(range.Minimum) && ContainsValue(range.Maximum);
     }
 }

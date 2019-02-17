@@ -4,14 +4,8 @@ class Recipe
     {
         public List<ItemCount> Sources
         {
-            get
-            {
-                return m_sources;
-            }
-            set
-            {
-                m_sources = value;
-            }
+            get => m_sources;
+            set => m_sources = value;
         }
 
         public ItemCount Destination { get; set; }

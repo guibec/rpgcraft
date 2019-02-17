@@ -10,10 +10,7 @@ public class ScreenFollowWorld : MonoBehaviourEx
 
     public GameObject Target 
     { 
-        get
-        {
-            return m_target;
-        }
+        get => m_target;
 
         set
         {

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 public class DebugManager : MonoSingleton<DebugManager>
 {
-    private bool m_displayDebug = false;
+    private bool m_displayDebug;
     private Texture m_biomeTexture;
 
     protected override void OnUpdate()
@@ -17,15 +17,9 @@ public class DebugManager : MonoSingleton<DebugManager>
         }
     }
 
-    public string PathToCharacterSave
-    {
-        get
-        {
-            return Application.persistentDataPath + "main.chr";
-        }
-    }
+    public string PathToCharacterSave => Application.persistentDataPath + "main.chr";
 
-    JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    readonly JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
 
     private void SaveCharacter()
     {

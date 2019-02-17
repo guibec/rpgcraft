@@ -15,13 +15,7 @@
             Destroy(gameObject);
         }
     }
-    public static T Instance
-    {
-        get
-        {
-            return m_instance;
-        }
-    }
+    public static T Instance => m_instance;
 
     protected virtual void OnInit()
     {

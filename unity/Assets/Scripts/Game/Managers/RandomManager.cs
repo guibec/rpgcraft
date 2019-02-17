@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class RandomManager : MonoSingleton<RandomManager> 
 {
-    private static System.Random m_random = new System.Random();
+    private static readonly System.Random m_random = new System.Random();
 
     public static bool Boolean()
     {

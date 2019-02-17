@@ -21,32 +21,20 @@ public class GameManager : MonoSingleton<GameManager>
 
     public float PlayerDeathTime
     {
-        get { return m_playerDeathTime; }
-        set { m_playerDeathTime = value; }
+        get => m_playerDeathTime;
+        set => m_playerDeathTime = value;
     }
 
-    public WorldMap WorldMap
-    {
-        get
-        {
-            return m_worldMap;
-        }
-    }
+    public WorldMap WorldMap => m_worldMap;
 
     // Map each Planet to a world.
     private string m_currentPlanet = "Earth";
 
     public string CurrentPlanet
     {
-        get
-        {
-            return m_currentPlanet;
-        }
+        get => m_currentPlanet;
 
-        private set
-        {
-            m_currentPlanet = value;
-        }
+        private set => m_currentPlanet = value;
     }
 
     public GameManager()
@@ -418,8 +406,7 @@ public class GameManager : MonoSingleton<GameManager>
         foreach (CollisionInfo ci in broadPhase)
         {
             // now for each collision potential collision, figure out at which 't' we hit the box, return the shortest t in case of multiple collision
-            float tFirst, tLast;
-            bool collide = CollisionCode.IntersectMovingBox2DBox2D(originalBox, ci.Box, displacement, new Vector2(0, 0), out tFirst, out tLast);
+            bool collide = CollisionCode.IntersectMovingBox2DBox2D(originalBox, ci.Box, displacement, new Vector2(0, 0), out var tFirst, out var tLast);
 
             if (collide)
             {
@@ -519,9 +506,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public List<Entity> GetEntitiesFromWorldPos(Vector2 worldPos)
     {
-        ChunkInfo info;
-        int x, y;
-        if (GetTileDataFromWorldPos(worldPos, out info, out x, out y))
+        if (GetTileDataFromWorldPos(worldPos, out var info, out var x, out var y))
         {
             return info.GetEntities(x, y);
         }

@@ -13,7 +13,7 @@ public static class CollisionCode
         DrawCollision = false;
     }
 
-    private static List<CollisionInfo> m_cachedList = new List<CollisionInfo>();
+    private static readonly List<CollisionInfo> m_cachedList = new List<CollisionInfo>();
 
     // return a list of all potential collision you may be going through
     public static CollisionInfo[] BroadPhase(Entity owner, Box2D sweep)

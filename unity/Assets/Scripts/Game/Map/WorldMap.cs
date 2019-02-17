@@ -28,13 +28,7 @@ public class WorldMap : MonoBehaviourEx
     /// </summary>
     private BiomeManager m_biomeManager;
 
-    public Texture BiomeTexture
-    {
-        get
-        {
-            return m_biomeManager.DebugTexture;
-        }
-    }
+    public Texture BiomeTexture => m_biomeManager.DebugTexture;
 
     public void Awake()
     {
@@ -68,7 +62,7 @@ public class WorldMap : MonoBehaviourEx
         }
 
         sw.Stop();
-        Debug.Log(string.Format("WorldMap: Initial map generation took {0} ms", sw.ElapsedMilliseconds));
+        Debug.Log($"WorldMap: Initial map generation took {sw.ElapsedMilliseconds} ms");
     }
 
     private void ClearMap()
@@ -108,11 +102,11 @@ public class WorldMap : MonoBehaviourEx
         int x = (int)chunkPos.x;
         int y = (int)chunkPos.y;
 
-        GameObject chunkObj = (GameObject)Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
+        GameObject chunkObj = Instantiate(m_worldMapChunkPrefab, spawnPos, spawnRot);
         chunkObj.GetComponent<Renderer>().material.mainTexture = m_tileTextureMap;
-        chunkObj.name = string.Format("Chunk({0},{1})", x, y);
+        chunkObj.name = $"Chunk({x},{y})";
         sw.Stop();
-        UnityEngine.Debug.Log(string.Format("Mesh Instanciation in {0}ms", sw.ElapsedMilliseconds));
+        Debug.Log($"Mesh Instanciation in {sw.ElapsedMilliseconds}ms");
 
         ChunkInfo chunkInfo = new ChunkInfo(chunkPos, chunkObj);
         // update all mapping
@@ -178,8 +172,7 @@ public class WorldMap : MonoBehaviourEx
 
     public ChunkInfo GetChunkFromChunkPos(Vector2 chunkPos)
     {
-        ChunkInfo chunkInfo;
-        if (m_posToChunks.TryGetValue(chunkPos, out chunkInfo))
+        if (m_posToChunks.TryGetValue(chunkPos, out var chunkInfo))
         {
             return chunkInfo;
         }
@@ -248,9 +241,7 @@ public class WorldMap : MonoBehaviourEx
 
     public TileInfo GetTileFromWorldPos(Vector2 worldPos)
     {
-        ChunkInfo info;
-        int x, y;
-        if (GetTileDataFromWorldPos(worldPos, out info, out x, out y))
+        if (GetTileDataFromWorldPos(worldPos, out var info, out var x, out var y))
         {
             return info.ReadSlotValue(x, y);
         }

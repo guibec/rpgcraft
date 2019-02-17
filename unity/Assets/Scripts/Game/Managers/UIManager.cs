@@ -83,10 +83,7 @@ public class UIManager : MonoSingleton<UIManager>
             }
         }
 
-        public Text Text
-        {
-            get { return Object.GetComponent<Text>(); }
-        }
+        public Text Text => Object.GetComponent<Text>();
     }
 
     private const int NumInventorySlots = 10;
@@ -101,9 +98,9 @@ public class UIManager : MonoSingleton<UIManager>
 
     private GameObject m_canvas;
 
-    private List<DynamicText> m_dynamicTexts = new List<DynamicText>(10);
+    private readonly List<DynamicText> m_dynamicTexts = new List<DynamicText>(10);
 
-    private bool m_initialized = false;
+    private bool m_initialized;
 
     protected override void Awake()
     {
@@ -114,12 +111,12 @@ public class UIManager : MonoSingleton<UIManager>
 
         if (m_canvas == null)
         {
-            UnityEngine.Debug.LogWarning("Could not find canvas");
+            Debug.LogWarning("Could not find canvas");
         }
 
         if (masterSlot == null)
         {
-            UnityEngine.Debug.LogWarning("Could not find inventory slot");
+            Debug.LogWarning("Could not find inventory slot");
         }
         else
         {
@@ -135,13 +132,10 @@ public class UIManager : MonoSingleton<UIManager>
         m_txtLevel = GameObject.Find("Canvas/txt_Level").GetComponent<Text>();
     }
 
-    private int m_selectSlotIndex = 0;
+    private int m_selectSlotIndex;
     public int SelectedInventorySlot
     {
-        get
-        {
-            return m_selectSlotIndex;
-        }
+        get => m_selectSlotIndex;
         set
         {
             m_selectSlotIndex = value;
@@ -155,13 +149,13 @@ public class UIManager : MonoSingleton<UIManager>
         if (GameManager.Instance != null)
         {
             GameManager.Instance.MainPlayer.Inventory.Changed +=
-                new Inventory.InventoryChangedEventHandler(OnInventoryChanged);
+                OnInventoryChanged;
 
             GameManager.Instance.MainPlayer.HealthComponent.HealthChanged +=
-                new HealthComponent.HealthChangedEventHandler(OnHealthChanged);
+                OnHealthChanged;
 
             GameManager.Instance.MainPlayer.Experience.Changed +=
-                new Experience.XPChangedEventHandler(OnXPChanged);
+                OnXPChanged;
 
 
             UpdateHealth();
@@ -188,7 +182,7 @@ public class UIManager : MonoSingleton<UIManager>
             textObject.DisplayTime -= TimeManager.Dt;
             if (textObject.DisplayTime <= 0)
             {
-                UnityEngine.Object.Destroy(textObject.Object);
+                Destroy(textObject.Object);
                 m_dynamicTexts.RemoveAt(i);
             }
         }
@@ -198,10 +192,10 @@ public class UIManager : MonoSingleton<UIManager>
     {
         base.OnInit();
 
-        UnityEngine.Debug.Log("UIManager::Init");
+        Debug.Log("UIManager::Init");
     }
 
-    private bool m_displayTravel = false;
+    private bool m_displayTravel;
     void OnGUI()
     {
         m_displayTravel = GUI.Toggle(new Rect(Screen.width - 100, 50, 100, 20), m_displayTravel, "Travel");
@@ -272,7 +266,7 @@ public class UIManager : MonoSingleton<UIManager>
         }
     }
 
-    private bool[] m_planets = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+    private readonly bool[] m_planets = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     public Texture[] m_planetTextures;
     private int GetSelectedPlanet()
     {
@@ -289,10 +283,10 @@ public class UIManager : MonoSingleton<UIManager>
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.MainPlayer.Inventory.Changed -= new Inventory.InventoryChangedEventHandler(OnInventoryChanged);
-            GameManager.Instance.MainPlayer.HealthComponent.HealthChanged -= new HealthComponent.HealthChangedEventHandler(OnHealthChanged);
+            GameManager.Instance.MainPlayer.Inventory.Changed -= OnInventoryChanged;
+            GameManager.Instance.MainPlayer.HealthComponent.HealthChanged -= OnHealthChanged;
             GameManager.Instance.MainPlayer.Experience.Changed -=
-                new Experience.XPChangedEventHandler(OnXPChanged);
+                OnXPChanged;
         }
     }
 
@@ -392,7 +386,7 @@ public class UIManager : MonoSingleton<UIManager>
             {
                 if (isu.m_icon.sprite == null)
                 {
-                    var tileResourceDef = TileMapping.GetTileResourceDef((ETile) ic.Item);
+                    var tileResourceDef = TileMapping.GetTileResourceDef(ic.Item);
                     Texture2D tex = tileResourceDef != null
                         ? Resources.Load(tileResourceDef.Filename) as Texture2D
                         : null;
@@ -433,7 +427,7 @@ public class UIManager : MonoSingleton<UIManager>
 
         for (int i = 1; i < NumInventorySlots; ++i)
         {
-            GameObject clone = (GameObject)Instantiate(m_inventorySlot[0].m_parent, m_inventorySlot[0].m_parent.transform.position, m_inventorySlot[0].m_parent.transform.rotation);
+            GameObject clone = Instantiate(m_inventorySlot[0].m_parent, m_inventorySlot[0].m_parent.transform.position, m_inventorySlot[0].m_parent.transform.rotation);
             if (clone != null)
             {
                 clone.name = "btn_inv (" + i + ")";
@@ -470,7 +464,7 @@ public class UIManager : MonoSingleton<UIManager>
         if (!m_txtDynamicPrefab)
             return null;
 
-        GameObject newTxt = (GameObject) Instantiate(m_txtDynamicPrefab, position, Quaternion.identity);
+        GameObject newTxt = Instantiate(m_txtDynamicPrefab, position, Quaternion.identity);
         if (!newTxt)
         {
             Debug.Log("Could not instantiate {0} in DisplayTextWithDuration", m_txtDynamicPrefab);
