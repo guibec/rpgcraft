@@ -133,17 +133,17 @@ public class BiomeManager
         switch (biome)
         {
             case EBiome.Plain:
-                return ETile.Grass;
+                return ETile.Mountain;
             case EBiome.Ocean:
-                return ETile.Water;
+                return ETile.Mountain;
             case EBiome.Forest:
-                return ETile.Tree;
+                return ETile.Mountain;
             case EBiome.Desert:
-                return ETile.Desert;
+                return ETile.Mountain;
             case EBiome.Mountain:
                 return ETile.Mountain;
             default:
-                return ETile.Grass;
+                return ETile.Mountain;
         }
     }
 
