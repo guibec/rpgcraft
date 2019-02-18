@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework;
 
 /// <summary>
 /// Basic state machine.
@@ -18,23 +16,23 @@ public abstract class StateMachine
     public MonoBehaviour MonoBehaviour { get; private set; }
 
     /// <summary>
-    /// The older destroyed state that was playing previous to the current state.
-    /// </summary>
-    public State PreviousState { get; private set; }
-
-    /// <summary>
-    /// Currently updated state.
+    /// Current state.
     /// </summary>
     public State CurrentState { get; private set; }
 
     /// <summary>
-    /// Next State.
-    /// This will be this machine current state next frame.
+    /// Fired when the state is changed
     /// </summary>
-    public State NextState { get; private set; }
-
     public event StateEventHandler OnStateChanged;
+
+    /// <summary>
+    /// Fired after the constructor of the new state has been called
+    /// </summary>
     public event StateEventHandler OnStateConstructor;
+
+    /// <summary>
+    /// Fired after the destructor of the new state has been called
+    /// </summary>
     public event StateEventHandler OnStateDestructor;
 
     /// <summary>
@@ -42,23 +40,7 @@ public abstract class StateMachine
     /// </summary>
     private readonly Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
 
-    public State FindStateByType(Type stateType)
-    {
-        foreach (KeyValuePair<Type, State> test in m_states)
-        {
-            if (stateType.IsAssignableFrom(test.Key))
-                return test.Value;
-        }
-
-        return null;
-    }
-
-    public T FindStateByType<T>() where T : State
-    {
-        return FindStateByType(typeof(T)) as T;
-    }
-
-    protected StateMachine(MonoBehaviour mb, Type[] states, Type initialState=null)
+    protected StateMachine(MonoBehaviour mb, Type[] states, Type initialState = null)
     {
         MonoBehaviour = mb;
 
@@ -79,34 +61,30 @@ public abstract class StateMachine
         }
         else
         {
-            Assert.Fail("State machine does not have any state.");
+            DebugUtils.Assert(false);
         }
+    }
+
+    public State FindStateByType(Type stateType)
+    {
+        foreach (KeyValuePair<Type, State> test in m_states)
+        {
+            if (stateType.IsAssignableFrom(test.Key))
+                return test.Value;
+        }
+
+        return null;
+    }
+
+    public T FindStateByType<T>() where T : State
+    {
+        return FindStateByType(typeof(T)) as T;
     }
 
     public void Update()
     {
-        if (NextState != null)
-        {
-            if (CurrentState != null)
-            {
-                PreviousState = CurrentState;
-                PreviousState.Destructor();
-
-                if (OnStateDestructor != null)
-                    OnStateDestructor(this, PreviousState);
-            }
-
-            CurrentState = NextState;
-
-            NextState = null;
-            CurrentState.Constructor();
-
-            if (OnStateConstructor != null)
-                OnStateConstructor(this, CurrentState);
-        }
-
-        if (CurrentState != null)
-            CurrentState.Update();
+        DebugUtils.Assert(CurrentState != null);
+        CurrentState.Update();
     }
 
     /// <summary>
@@ -122,9 +100,7 @@ public abstract class StateMachine
 
     private void SetInitialState(State initialState)
     {
-        CurrentState = null;
-        PreviousState = null;
-        NextState = initialState;
+        SwitchState(initialState);
     }
 
     /// <summary>
@@ -133,13 +109,21 @@ public abstract class StateMachine
     /// </summary>
     private void SwitchState(State nextState)
     {
-        if (nextState == null || (this.NextState != null))
+        if (nextState == null)
             return;
 
-        this.NextState = nextState;
+        // This check is only needed for the initial state
+        if (CurrentState != null)
+        {
+            CurrentState.Destructor();
+            OnStateDestructor?.Invoke(this, CurrentState);
+        }
 
-        if (OnStateChanged != null)
-            OnStateChanged(this, nextState);
+        CurrentState = nextState;
+        CurrentState.Constructor();
+        OnStateConstructor?.Invoke(this, CurrentState);
+
+        OnStateChanged?.Invoke(this, nextState);
     }
 
     public void SwitchState(Type state)

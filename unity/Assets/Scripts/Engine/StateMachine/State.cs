@@ -14,7 +14,7 @@ public abstract class State
 
     protected State(StateMachine machine)
     {
-        this.FSM = machine;
+        FSM = machine;
     }
 
     protected void SwitchState(Type newState)
