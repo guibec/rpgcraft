@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework;
 
 /// <summary>
 /// Basic state machine.
@@ -32,34 +33,14 @@ public abstract class StateMachine
     /// </summary>
     public State NextState { get; private set; }
 
-    private bool forced = false;
-
-    /// <summary>
-    /// Prevent the machine from switching state.
-    /// </summary>
-    public bool Locked { get; set; }
-
     public event StateEventHandler OnStateChanged;
-    public event StateEventHandler OnStateForcedChanged;
     public event StateEventHandler OnStateConstructor;
     public event StateEventHandler OnStateDestructor;
-    public event StateEventHandler OnStateReload;
 
     /// <summary>
     /// Registered states
     /// </summary>
-    private Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
-
-    protected void RegisterState(Type state)
-    {
-        State stateInstance = System.Activator.CreateInstance(state, this) as State;
-        m_states[state] = stateInstance;
-    }
-
-    private void RegisterState(State stateInstance)
-    {
-        m_states.Add(stateInstance.GetType(), stateInstance);
-    }
+    private readonly Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
 
     public State FindStateByType(Type stateType)
     {
@@ -77,10 +58,29 @@ public abstract class StateMachine
         return FindStateByType(typeof(T)) as T;
     }
 
-    protected StateMachine(MonoBehaviour mb)
+    protected StateMachine(MonoBehaviour mb, Type[] states, Type initialState=null)
     {
-        Locked = false;
-        this.MonoBehaviour = mb;
+        MonoBehaviour = mb;
+
+        foreach (Type state in states)
+        {
+            State stateInstance = System.Activator.CreateInstance(state, this) as State;
+            m_states[state] = stateInstance;
+        }
+
+        // Set the initial state
+        if (initialState != null)
+        {
+            SetInitialState(initialState);
+        }
+        else if (states.Length > 0)
+        {
+            SetInitialState(states[0]);
+        }
+        else
+        {
+            Assert.Fail("State machine does not have any state.");
+        }
     }
 
     public void Update()
@@ -103,15 +103,18 @@ public abstract class StateMachine
 
             if (OnStateConstructor != null)
                 OnStateConstructor(this, CurrentState);
-
-            forced = false;
         }
 
         if (CurrentState != null)
             CurrentState.Update();
     }
 
-    public void SetInitialState(Type state)
+    /// <summary>
+    /// Set the initial state of the state machine.
+    /// This method will do nothing if called again after being initialized
+    /// </summary>
+    /// <param name="state">The starting state</param>
+    private void SetInitialState(Type state)
     {
         State initialState = FindStateByType(state);
         SetInitialState(initialState);
@@ -130,9 +133,6 @@ public abstract class StateMachine
     /// </summary>
     private void SwitchState(State nextState)
     {
-        if (forced || Locked)
-            return;
-
         if (nextState == null || (this.NextState != null))
             return;
 
@@ -154,44 +154,17 @@ public abstract class StateMachine
     }
 
     /// <summary>
-    /// Forces the state to change, bypassing priorities.
-    /// Any other following request will be ignored. Use with care.
-    /// </summary>
-    public void ForceSwitchState(State nextState)
-    {
-        if (forced || Locked)
-            return;
-
-        this.NextState = nextState;
-        forced = true;
-
-        if (OnStateForcedChanged != null)
-            OnStateForcedChanged(this, nextState);
-    }
-
-    /// <summary>
-    /// Force the current state to be reloaded.
-    /// Simply call the destructor and recall the constructor.
-    /// </summary>
-    public void ReloadState()
-    {
-        if (CurrentState == null)
-            return;
-
-        CurrentState.Destructor();
-        CurrentState.Constructor();
-
-        if (OnStateReload != null)
-            OnStateReload(this, CurrentState);
-    }
-
-    /// <summary>
     /// Return true is the current state is of the type
     /// </summary>
     public bool IsInState(Type type)
     {
         if (type == null)
             return false;
+
+        if (CurrentState == null || CurrentState.GetType() == null)
+        {
+            Debug.Log("Break here!");
+        }
 
         return type.IsAssignableFrom(CurrentState.GetType());
     }
