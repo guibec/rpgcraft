@@ -145,11 +145,6 @@ public abstract class StateMachine
         if (type == null)
             return false;
 
-        if (CurrentState == null || CurrentState.GetType() == null)
-        {
-            Debug.Log("Break here!");
-        }
-
         return type.IsAssignableFrom(CurrentState.GetType());
     }
 
