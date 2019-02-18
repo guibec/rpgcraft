@@ -3,17 +3,14 @@ using System.Collections;
 
 public class Enemy : Entity
 {
-    public Enemy()
-    {
-        m_fsm = new EnemyStateMachine(this);
-    }
-
     public HealthComponent HealthComponent { get; private set; }
     public bool IsBoss = false;
 
     protected override void OnAwake()
     {
         base.OnAwake();
+
+        m_fsm = new EnemyStateMachine(this);
         HealthComponent = GetComponent<HealthComponent>();
     }
 

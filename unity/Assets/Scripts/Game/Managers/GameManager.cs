@@ -49,11 +49,6 @@ public class GameManager : MonoSingleton<GameManager>
         }
     }
 
-    public GameManager()
-    {
-        m_fsm = new GameManagerState_Machine(this);
-    }
-
     protected override void Awake() 
     {
         base.Awake();
@@ -64,6 +59,8 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void Start()
     {
+        m_fsm = new GameManagerState_Machine(this);
+
         MainPlayer = m_mainCharacter.GetComponent<Player>();
         MainPlayer.TeleportToPosition(Vector3.zero);
         m_worldMap.Generate();

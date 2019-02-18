@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -17,48 +16,53 @@ public abstract class StateMachine
     public MonoBehaviour MonoBehaviour { get; private set; }
 
     /// <summary>
-    /// The older destroyed state that was playing previous to the current state.
-    /// </summary>
-    public State PreviousState { get; private set; }
-
-    /// <summary>
-    /// Currently updated state.
+    /// Current state.
     /// </summary>
     public State CurrentState { get; private set; }
 
     /// <summary>
-    /// Next State.
-    /// This will be this machine current state next frame.
+    /// Fired when the state is changed
     /// </summary>
-    public State NextState { get; private set; }
-
-    private bool forced = false;
+    public event StateEventHandler OnStateChanged;
 
     /// <summary>
-    /// Prevent the machine from switching state.
+    /// Fired after the constructor of the new state has been called
     /// </summary>
-    public bool Locked { get; set; }
-
-    public event StateEventHandler OnStateChanged;
-    public event StateEventHandler OnStateForcedChanged;
     public event StateEventHandler OnStateConstructor;
+
+    /// <summary>
+    /// Fired after the destructor of the new state has been called
+    /// </summary>
     public event StateEventHandler OnStateDestructor;
-    public event StateEventHandler OnStateReload;
 
     /// <summary>
     /// Registered states
     /// </summary>
-    private Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
+    private readonly Dictionary<Type, State> m_states = new Dictionary<Type, State>(5);
 
-    protected void RegisterState(Type state)
+    protected StateMachine(MonoBehaviour mb, Type[] states, Type initialState = null)
     {
-        State stateInstance = System.Activator.CreateInstance(state, this) as State;
-        m_states[state] = stateInstance;
-    }
+        MonoBehaviour = mb;
 
-    private void RegisterState(State stateInstance)
-    {
-        m_states.Add(stateInstance.GetType(), stateInstance);
+        foreach (Type state in states)
+        {
+            State stateInstance = System.Activator.CreateInstance(state, this) as State;
+            m_states[state] = stateInstance;
+        }
+
+        // Set the initial state
+        if (initialState != null)
+        {
+            SetInitialState(initialState);
+        }
+        else if (states.Length > 0)
+        {
+            SetInitialState(states[0]);
+        }
+        else
+        {
+            DebugUtils.Assert(false);
+        }
     }
 
     public State FindStateByType(Type stateType)
@@ -77,41 +81,18 @@ public abstract class StateMachine
         return FindStateByType(typeof(T)) as T;
     }
 
-    protected StateMachine(MonoBehaviour mb)
-    {
-        Locked = false;
-        this.MonoBehaviour = mb;
-    }
-
     public void Update()
     {
-        if (NextState != null)
-        {
-            if (CurrentState != null)
-            {
-                PreviousState = CurrentState;
-                PreviousState.Destructor();
-
-                if (OnStateDestructor != null)
-                    OnStateDestructor(this, PreviousState);
-            }
-
-            CurrentState = NextState;
-
-            NextState = null;
-            CurrentState.Constructor();
-
-            if (OnStateConstructor != null)
-                OnStateConstructor(this, CurrentState);
-
-            forced = false;
-        }
-
-        if (CurrentState != null)
-            CurrentState.Update();
+        DebugUtils.Assert(CurrentState != null);
+        CurrentState.Update();
     }
 
-    public void SetInitialState(Type state)
+    /// <summary>
+    /// Set the initial state of the state machine.
+    /// This method will do nothing if called again after being initialized
+    /// </summary>
+    /// <param name="state">The starting state</param>
+    private void SetInitialState(Type state)
     {
         State initialState = FindStateByType(state);
         SetInitialState(initialState);
@@ -119,9 +100,7 @@ public abstract class StateMachine
 
     private void SetInitialState(State initialState)
     {
-        CurrentState = null;
-        PreviousState = null;
-        NextState = initialState;
+        SwitchState(initialState);
     }
 
     /// <summary>
@@ -130,16 +109,21 @@ public abstract class StateMachine
     /// </summary>
     private void SwitchState(State nextState)
     {
-        if (forced || Locked)
+        if (nextState == null)
             return;
 
-        if (nextState == null || (this.NextState != null))
-            return;
+        // This check is only needed for the initial state
+        if (CurrentState != null)
+        {
+            CurrentState.Destructor();
+            OnStateDestructor?.Invoke(this, CurrentState);
+        }
 
-        this.NextState = nextState;
+        CurrentState = nextState;
+        CurrentState.Constructor();
+        OnStateConstructor?.Invoke(this, CurrentState);
 
-        if (OnStateChanged != null)
-            OnStateChanged(this, nextState);
+        OnStateChanged?.Invoke(this, nextState);
     }
 
     public void SwitchState(Type state)
@@ -151,38 +135,6 @@ public abstract class StateMachine
     public void SwitchState<T>() where T : State
     {
         SwitchState(typeof (T));
-    }
-
-    /// <summary>
-    /// Forces the state to change, bypassing priorities.
-    /// Any other following request will be ignored. Use with care.
-    /// </summary>
-    public void ForceSwitchState(State nextState)
-    {
-        if (forced || Locked)
-            return;
-
-        this.NextState = nextState;
-        forced = true;
-
-        if (OnStateForcedChanged != null)
-            OnStateForcedChanged(this, nextState);
-    }
-
-    /// <summary>
-    /// Force the current state to be reloaded.
-    /// Simply call the destructor and recall the constructor.
-    /// </summary>
-    public void ReloadState()
-    {
-        if (CurrentState == null)
-            return;
-
-        CurrentState.Destructor();
-        CurrentState.Constructor();
-
-        if (OnStateReload != null)
-            OnStateReload(this, CurrentState);
     }
 
     /// <summary>

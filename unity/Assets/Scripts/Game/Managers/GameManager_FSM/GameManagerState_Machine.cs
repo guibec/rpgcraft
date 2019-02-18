@@ -10,12 +10,7 @@ public class GameManagerState_Machine : StateMachine
     static public readonly Type DeadState = typeof(GameManagerState_Dead);
 
     public GameManagerState_Machine(MonoBehaviour behavior)
-        : base(behavior)
+        : base(behavior, new Type[]{ InitState , PlayingState, BattleState, DeadState})
     {
-        RegisterState(InitState);
-        RegisterState(PlayingState);
-        RegisterState(BattleState);
-        RegisterState(DeadState);
-        SetInitialState(InitState);
     }
 }

@@ -6,9 +6,7 @@ public class EnemyStateMachine : StateMachine
 {
     static public readonly Type LiveState = typeof(EnemyState_Live);
 
-    public EnemyStateMachine(MonoBehaviour enemy) : base(enemy)
+    public EnemyStateMachine(MonoBehaviour enemy) : base(enemy, new Type[]{LiveState})
     {
-        RegisterState(LiveState);
-        SetInitialState(LiveState);
     }
 }

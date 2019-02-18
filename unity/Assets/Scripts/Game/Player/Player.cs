@@ -97,11 +97,6 @@ public class Player : Entity, ISave<Player.Save_Data>
 
     public HealthComponent HealthComponent { get; private set; }
 
-    public Player()
-    {
-        m_fsm = new PlayerStateMachine(this);
-    }
-
     public CharacterClass Class
     {
         private set
@@ -118,11 +113,11 @@ public class Player : Entity, ISave<Player.Save_Data>
     protected override void OnAwake()
     {
         base.OnAwake();
-        Inventory = new Inventory(this);
-        Experience = new Experience();
 
         m_entityRender = GetComponent<EntityRender>();
         HealthComponent = GetComponent<HealthComponent>();
+        Inventory = new Inventory(this);
+        Experience = new Experience();
     }
 
     private string[] frameGroups = 
@@ -145,6 +140,8 @@ public class Player : Entity, ISave<Player.Save_Data>
     protected override void OnStart() 
     {
         base.OnStart();
+
+        m_fsm = new PlayerStateMachine(this);
         SetRenderInfo();
     }
 
