@@ -147,6 +147,10 @@ public class WorldMap : MonoBehaviourEx
         {
             chunkInfo.GenerateSquare(ETile.Grass, 8, 8);
         }
+
+        // Add Ores to the world
+        DrizzleOres(chunkInfo);
+
 #else
         // Chunk goes from -Inf to + Inf
         // But biomeMap goes from 0 to Width / 2
@@ -158,6 +162,25 @@ public class WorldMap : MonoBehaviourEx
         GenerationTemplate template = m_biomeManager.GetTemplateFromBiome(biome);
         chunkInfo.Generate(template);
 #endif
+    }
+
+    // TODO: Don't do this per-chunk but globally through the world
+    // TODO2: Should draw patches, not just a probably.
+    private void DrizzleOres(ChunkInfo chunkInfo)
+    {
+        for (int j = 0; j < ChunkInfo.Height; j++)
+        {
+            for (int i = 0; i < ChunkInfo.Width; i++)
+            {
+                if (chunkInfo.ReadSlotValue(i, j).Tile == ETile.Mountain)
+                {
+                    if (RandomManager.Probability(0.02f))
+                    {
+                        chunkInfo.WriteSlotValue(i, j, ETile.Gold_Ore);
+                    }
+                }
+            }
+        }
     }
 
 

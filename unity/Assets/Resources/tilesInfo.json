@@ -38,6 +38,19 @@
       },
       "world": {}
     },
+    "Gold_Ore": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 0,
+          "y": 32,
+          "width": 16,
+          "height": 16
+        },
+        "count": 11
+      },
+      "world": {}
+    },
     "Desert": {
       "resource": {
         "filename": "terrain",
