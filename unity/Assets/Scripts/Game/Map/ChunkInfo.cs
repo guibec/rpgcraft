@@ -324,10 +324,15 @@ public class ChunkInfo
     {
         for (int patchCount = 0; patchCount < howManyPatch; patchCount++)
         {
-            AddOnePatch(tt, howManyPerPatch);    
+            AddOnePatch(tt, howManyPerPatch);
         }
     }
 
+    /// <summary>
+    /// Return a HashSet of the points in the chunk that matches the given tile type
+    /// </summary>
+    /// <param name="tile">The tile to check against</param>
+    /// <returns></returns>
     public HashSet<Vector2> GetCountOf(ETile tile)
     {
         HashSet<Vector2> found = new HashSet<Vector2>();
