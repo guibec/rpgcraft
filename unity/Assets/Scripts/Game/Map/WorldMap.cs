@@ -149,7 +149,8 @@ public class WorldMap : MonoBehaviourEx
         }
 
         // Add Ores to the world
-        DrizzleOres(chunkInfo);
+        int howMany = RandomManager.Next(5, 20);
+        DrizzleOres(chunkInfo, 0.75f, howMany);
 
 #else
         // Chunk goes from -Inf to + Inf
@@ -165,22 +166,27 @@ public class WorldMap : MonoBehaviourEx
     }
 
     // TODO: Don't do this per-chunk but globally through the world
-    // TODO2: Should draw patches, not just a probably.
-    private void DrizzleOres(ChunkInfo chunkInfo)
+
+    /// <summary>
+    /// Add ores to the chunk following a pre-set probability.
+    /// 
+    /// </summary>
+    /// <param name="chunkInfo">The chunk to add ores to</param>
+    /// <param name="probability">The probability that this chunk will contain ores (if there are stones)</param>
+    /// <param name="howMany">How many stones will have the ores</param>
+    private void DrizzleOres(ChunkInfo chunkInfo, float probability, int howMany)
     {
-        for (int j = 0; j < ChunkInfo.Height; j++)
+        // Check if we are going to add ORes
+        if (!RandomManager.Probability(probability))
         {
-            for (int i = 0; i < ChunkInfo.Width; i++)
-            {
-                if (chunkInfo.ReadSlotValue(i, j).Tile == ETile.Mountain)
-                {
-                    if (RandomManager.Probability(0.02f))
-                    {
-                        chunkInfo.WriteSlotValue(i, j, ETile.Gold_Ore);
-                    }
-                }
-            }
+            return;
         }
+
+        // We do want Ores. Count how many stones there are
+        HashSet<Vector2> stones = chunkInfo.GetCountOf(ETile.Mountain);
+
+        int numOres = Math.Min(stones.Count, howMany);
+        chunkInfo.AddOnePatchToPoints(stones, numOres, ETile.Gold_Ore);
     }
 
 
