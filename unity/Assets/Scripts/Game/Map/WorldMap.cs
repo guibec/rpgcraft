@@ -147,6 +147,11 @@ public class WorldMap : MonoBehaviourEx
         {
             chunkInfo.GenerateSquare(ETile.Grass, 8, 8);
         }
+
+        // Add Ores to the world
+        int howMany = RandomManager.Next(5, 20);
+        DrizzleOres(chunkInfo, 0.75f, howMany);
+
 #else
         // Chunk goes from -Inf to + Inf
         // But biomeMap goes from 0 to Width / 2
@@ -158,6 +163,30 @@ public class WorldMap : MonoBehaviourEx
         GenerationTemplate template = m_biomeManager.GetTemplateFromBiome(biome);
         chunkInfo.Generate(template);
 #endif
+    }
+
+    // TODO: Don't do this per-chunk but globally through the world
+
+    /// <summary>
+    /// Add ores to the chunk following a pre-set probability.
+    /// 
+    /// </summary>
+    /// <param name="chunkInfo">The chunk to add ores to</param>
+    /// <param name="probability">The probability that this chunk will contain ores (if there are stones)</param>
+    /// <param name="howMany">How many stones will have the ores</param>
+    private void DrizzleOres(ChunkInfo chunkInfo, float probability, int howMany)
+    {
+        // Check if we are going to add ORes
+        if (!RandomManager.Probability(probability))
+        {
+            return;
+        }
+
+        // We do want Ores. Count how many stones there are
+        HashSet<Vector2> stones = chunkInfo.GetCountOf(ETile.Mountain);
+
+        int numOres = Math.Min(stones.Count, howMany);
+        chunkInfo.AddOnePatchToPoints(stones, numOres, ETile.Gold_Ore);
     }
 
 

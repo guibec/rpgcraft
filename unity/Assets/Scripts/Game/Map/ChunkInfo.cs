@@ -324,7 +324,89 @@ public class ChunkInfo
     {
         for (int patchCount = 0; patchCount < howManyPatch; patchCount++)
         {
-            AddOnePatch(tt, howManyPerPatch);    
+            AddOnePatch(tt, howManyPerPatch);
+        }
+    }
+
+    /// <summary>
+    /// Return a HashSet of the points in the chunk that matches the given tile type
+    /// </summary>
+    /// <param name="tile">The tile to check against</param>
+    /// <returns></returns>
+    public HashSet<Vector2> GetCountOf(ETile tile)
+    {
+        HashSet<Vector2> found = new HashSet<Vector2>();
+        for (int j = 0; j < ChunkInfo.Height; j++)
+        {
+            for (int i = 0; i < ChunkInfo.Width; i++)
+            {
+                if (ReadSlotValue(i, j).Tile == tile)
+                {
+                    found.Add(new Vector2(i, j));
+                }
+            }
+        }
+
+        return found;
+    }
+
+    /// <summary>
+    /// Insert a contiguous patch of tiles into a set of points represented by validPoints
+    /// </summary>
+    /// <param name="validPoints">The list of points to consider</param>
+    /// <param name="howMany">How many to insert.</param>
+    /// <param name="tile">What type of tile to insert</param>
+    public void AddOnePatchToPoints(HashSet<Vector2> validPoints, int howMany, ETile tile)
+    {
+        if (validPoints.Count == 0)
+            return;
+
+        HashSet<Vector2> currents = new HashSet<Vector2>(new Vector2Comparer());
+        HashSet<Vector2> potentials = new HashSet<Vector2>();
+
+        // find a random starting point
+        int originIndex = Random.Range(0, validPoints.Count);
+        Vector2 originPoint = Enumerable.ElementAt(validPoints, originIndex);
+
+        potentials.Add(originPoint);
+
+        Vector2[] dirs = new Vector2[4];
+        dirs[0] = new Vector2(1, 0);
+        dirs[1] = new Vector2(-1, 0);
+        dirs[2] = new Vector2(0, -1);
+        dirs[3] = new Vector2(0, 1);
+        Vector2[] newPotentials = new Vector2[4];
+
+        while (howMany > 0 && potentials.Count > 0)
+        {
+            howMany--;
+
+            // Pick one guy at random in potential
+            int pickIndex = Random.Range(0, potentials.Count);
+            Vector2 picked = Enumerable.ElementAt(potentials, pickIndex);
+
+            // remove from potential, add to current
+            currents.Add(picked);
+            potentials.Remove(picked);
+            
+            WriteSlotValue(picked, tile);
+
+            // now check all 4 neighbors to see if we can add to new potential
+            int found = 0;
+
+            for (int dir = 0; dir < 4; ++dir)
+            {
+                Vector2 testNeighbor = dirs[dir] + picked;
+                if (IsValid(testNeighbor) && !currents.Contains(testNeighbor))
+                {
+                    newPotentials[found++] = testNeighbor;
+                }
+            }
+
+            for (int dir = 0; dir < found; ++dir)
+            {
+                potentials.Add(newPotentials[dir]);
+            }
         }
     }
 
