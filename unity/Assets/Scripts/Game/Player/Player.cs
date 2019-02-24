@@ -434,7 +434,7 @@ public class Player : Entity, ISave<Player.Save_Data>
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)
             {
-                if (selectedItem == ETile.PickAxe && tileInfo.Tile == ETile.Mountain || tileInfo.Tile == ETile.Gold_Ore)
+                if (selectedItem == ETile.PickAxe && tileInfo.Tile == ETile.Mountain || tileInfo.Tile == ETile.Gold_Brick)
                 {
                     // Try to dig ! Start an action
                     StartAction(EAction.Dig, 0.05f, worldPos, actionCompleted_ =>
@@ -476,7 +476,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     }
                     );
                 }
-                else if (selectedItem == ETile.Stone && tileInfo.Tile != ETile.Mountain && tileInfo.Tile != ETile.Gold_Ore)
+                else if (selectedItem == ETile.Stone && tileInfo.Tile != ETile.Mountain && tileInfo.Tile != ETile.Gold_Brick)
                 {
                     if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
                         return false;

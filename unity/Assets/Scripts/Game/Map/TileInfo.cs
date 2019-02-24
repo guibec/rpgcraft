@@ -10,7 +10,7 @@ public enum ETile
     Grass,
     Dirt,
     Mountain,
-    Gold_Ore,
+    Gold_Brick,
     Desert,
     Tree,
     Forest,
@@ -42,7 +42,7 @@ public struct TileInfo
 
     public TileInfo(ETile tile_) : this()
     {
-        if (tile_ == ETile.Mountain || Tile == ETile.Gold_Ore || tile_ == ETile.Tree)
+        if (tile_ == ETile.Mountain || Tile == ETile.Gold_Brick || tile_ == ETile.Tree)
             HP = 100.0f;
         else
             HP = 0.0f;
@@ -74,7 +74,7 @@ public struct TileInfo
     public TileInfo MaxHP()
     {
         float newHp;
-        if (Tile == ETile.Mountain || Tile == ETile.Gold_Ore)
+        if (Tile == ETile.Mountain || Tile == ETile.Gold_Brick)
             newHp = 100.0f;
         else
             newHp = 0.0f;

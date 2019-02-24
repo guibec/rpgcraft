@@ -186,7 +186,7 @@ public class WorldMap : MonoBehaviourEx
         HashSet<Vector2> stones = chunkInfo.GetCountOf(ETile.Mountain);
 
         int numOres = Math.Min(stones.Count, howMany);
-        chunkInfo.AddOnePatchToPoints(stones, numOres, ETile.Gold_Ore);
+        chunkInfo.AddOnePatchToPoints(stones, numOres, ETile.Gold_Brick);
     }
 
 
