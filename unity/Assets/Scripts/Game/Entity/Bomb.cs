@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class Bomb : Entity
 {
@@ -50,7 +49,7 @@ public class Bomb : Entity
                     healthComponent.ReceiveDamage(damage);
                     m_hitEntities.Add(enemy, true);
 
-                    Vector2 relativeDir = enemy.transform.position - this.transform.position;
+                    Vector2 relativeDir = enemy.transform.position - transform.position;
                     enemy.KnockBack(relativeDir.normalized, 3f, 0.05f);
                 }
             }

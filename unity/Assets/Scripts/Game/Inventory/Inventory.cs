@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 public class Inventory
 {
@@ -24,7 +21,7 @@ public class Inventory
     public delegate void InventoryChangedEventHandler(object sender, EventArgs e);
     public event InventoryChangedEventHandler Changed;
 
-    public Inventory(Player player_)
+    public Inventory()
     {
         Inventory_Data inventoryData;
 

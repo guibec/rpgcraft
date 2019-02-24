@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public enum E_Music
@@ -25,7 +24,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public List<AudioClip> m_hitAudio;
 
     private E_Music m_currentMusic = E_Music.None;
-    private float m_lastWorldMapMusicTime = 0;
+    private float m_lastWorldMapMusicTime;
 
     private AudioFadeInOut m_audioFadeInOut;
     protected override void Awake()
@@ -51,12 +50,12 @@ public class AudioManager : MonoSingleton<AudioManager>
         PlayAudioClip(m_hitAudio);
     }
 
-    static public void PlaySfx(AudioClip audioClip)
+    public static void PlaySfx(AudioClip audioClip)
     {
         AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position);
     }
 
-    static private void PlayAudioClip(List<AudioClip> possibilities)
+    private static void PlayAudioClip(List<AudioClip> possibilities)
     {
         int indexToPlay = 0;
         if (possibilities == null || possibilities.Count == 0)

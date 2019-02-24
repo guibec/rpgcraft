@@ -1,12 +1,9 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Random = UnityEngine.Random;
-
-using IronExtension;
 using Debug = UnityEngine.Debug;
 
 public struct PatchTemplate
@@ -37,7 +34,7 @@ public class ChunkInfo
     public const int m_width = 64;
     public const int m_height = 64;
 
-    static public int Width
+    public static int Width
     {
         get
         {
@@ -45,7 +42,7 @@ public class ChunkInfo
         }
     }
 
-    static public int Height
+    public static int Height
     {
         get
         {
@@ -55,11 +52,11 @@ public class ChunkInfo
 
     public event ChunkChangedEventHandler Changed;
 
-    private TileInfo[,] m_data;
+    private readonly TileInfo[,] m_data;
 
     // Linked list of potentially occupying entities
     // TODO: See Real Time Collision Detection Chapter 7.1.6 for optimization using a static array instead
-    private List<Entity>[,] m_entities;
+    private readonly List<Entity>[,] m_entities;
 
     enum Direction
     {
@@ -73,7 +70,7 @@ public class ChunkInfo
         NortWest,
     }
 
-    private Vector2[] m_directionVectors = 
+    private readonly Vector2[] m_directionVectors = 
         {
             new Vector2(0, 1),
             new Vector2(1, 1),
@@ -87,7 +84,7 @@ public class ChunkInfo
 
     // Each ChunkInfo will keep a list of its neighbors as it makes it easier to navigate between them and
     // have contiguous regions
-    private List<ChunkInfo> m_neighbors = new List<ChunkInfo>(Enum.GetNames(typeof(Direction)).Length);
+    private readonly List<ChunkInfo> m_neighbors = new List<ChunkInfo>(Enum.GetNames(typeof(Direction)).Length);
 
     public ChunkInfo NorthNeighbor
     {
@@ -153,9 +150,9 @@ public class ChunkInfo
         }
     }
 
-    public Vector2 ChunkPos { get; private set; }
+    public Vector2 ChunkPos { get; }
 
-    public GameObject ChunkObject { get; private set; }
+    public GameObject ChunkObject { get; }
 
     public ChunkInfo(Vector2 chunkPos, GameObject chunkObj)
     {
@@ -175,8 +172,7 @@ public class ChunkInfo
 
     protected void OnChanged(EventArgs e)
     {
-        if (Changed != null)
-            Changed(this, e);
+        Changed?.Invoke(this, e);
     }
 
     public void PostInitialize()
@@ -260,7 +256,7 @@ public class ChunkInfo
         }
 
         sw.Stop();
-        Debug.Log(string.Format("ChunkInfo::Generate took {0}ms", sw.ElapsedMilliseconds));
+        Debug.Log($"ChunkInfo::Generate took {sw.ElapsedMilliseconds}ms");
 
         string fullDump = "";
         for (int j = 0; j < Width; ++j)
@@ -336,9 +332,9 @@ public class ChunkInfo
     public HashSet<Vector2> GetCountOf(ETile tile)
     {
         HashSet<Vector2> found = new HashSet<Vector2>();
-        for (int j = 0; j < ChunkInfo.Height; j++)
+        for (int j = 0; j < Height; j++)
         {
-            for (int i = 0; i < ChunkInfo.Width; i++)
+            for (int i = 0; i < Width; i++)
             {
                 if (ReadSlotValue(i, j).Tile == tile)
                 {
@@ -366,7 +362,7 @@ public class ChunkInfo
 
         // find a random starting point
         int originIndex = Random.Range(0, validPoints.Count);
-        Vector2 originPoint = Enumerable.ElementAt(validPoints, originIndex);
+        Vector2 originPoint = validPoints.ElementAt(originIndex);
 
         potentials.Add(originPoint);
 
@@ -383,7 +379,7 @@ public class ChunkInfo
 
             // Pick one guy at random in potential
             int pickIndex = Random.Range(0, potentials.Count);
-            Vector2 picked = Enumerable.ElementAt(potentials, pickIndex);
+            Vector2 picked = potentials.ElementAt(pickIndex);
 
             // remove from potential, add to current
             currents.Add(picked);
@@ -486,7 +482,7 @@ public class ChunkInfo
 
             // Pick one guy at random in potential
             int pick = Random.Range(0, potential.Count);
-            Vector2 picked = Enumerable.ElementAt(potential, pick);
+            Vector2 picked = potential.ElementAt(pick);
 
             // remove from potential, add to current
             current.Add(picked);
@@ -574,12 +570,12 @@ public class ChunkInfo
         //Debug.Log(string.Format("Creating {0} patch for {1}% at {2} tightness", tt, percent, tightness));
 
         Stopwatch sw = Stopwatch.StartNew();
-        int howMany = (int)(percent * (float)Width * (float)Height);
+        int howMany = (int)(percent * Width * Height);
 
         if (howMany == 0)
         {
             sw.Stop();
-            Debug.Log(string.Format("ChunkInfo::AddPatches took {0}ms", sw.ElapsedMilliseconds));
+            Debug.Log($"ChunkInfo::AddPatches took {sw.ElapsedMilliseconds}ms");
             return;
         }
             

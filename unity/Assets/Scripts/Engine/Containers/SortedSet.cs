@@ -1,12 +1,10 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 // Poor man's SortedSet implementation using a SortedDictionary
-public class SortedSet<T> : IEnumerable<T>, IEnumerable
+public class SortedSet<T> : IEnumerable<T>
 {
-    private SortedDictionary<T, bool> m_sortedList;
+    private readonly SortedDictionary<T, bool> m_sortedList;
 
     public SortedSet(IComparer<T> comp)
     {

@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class DataManager : MonoSingleton<DataManager>
+﻿public class DataManager : MonoSingleton<DataManager>
 {
     private EnemiesInfo m_enemiesInfo;
 

@@ -1,6 +1,4 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 using UnityEngine.Assertions;
 
 public struct Experience_Data
@@ -10,7 +8,7 @@ public struct Experience_Data
 
 public class Experience
 {
-    public delegate void XPChangedEventHandler(object sender, System.EventArgs e);
+    public delegate void XPChangedEventHandler(object sender, EventArgs e);
     public event XPChangedEventHandler Changed;
 
     public Experience()
@@ -87,7 +85,7 @@ public class Experience
         }
     } 
                                // How much you need to achieve Level1, Level2, ...
-    private int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
+    private readonly int[] NextLevels = { 0, 50, 150, 375, 790, 1400, 2300, 3300};
 
     public void AddXP(int amount)
     {

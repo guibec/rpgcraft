@@ -1,10 +1,9 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
 
 public class HealthComponent : MonoBehaviourEx 
 {
-    public delegate void HealthChangedEventHandler(object sender, System.EventArgs e);
+    public delegate void HealthChangedEventHandler(object sender, EventArgs e);
     public event HealthChangedEventHandler HealthChanged;
 
     public int m_defaultHealth = 30;
@@ -19,12 +18,12 @@ public class HealthComponent : MonoBehaviourEx
     /// how much time you are invincible between attack
     /// </summary>
     [/*Inspect,*/ SerializeField]
-    private float m_interdamageTime = 2.0f;
+    private readonly float m_interdamageTime = 2.0f;
 
     /// <summary>
     /// prevent multiple hits when touching enemies
     /// </summary>
-    private float m_damageTimer = 0f;
+    private float m_damageTimer;
 
     //[Inspect]
     private int m_health;
@@ -46,10 +45,6 @@ public class HealthComponent : MonoBehaviourEx
         }
     }
 
-    public HealthComponent()
-    {
-    }
-
     public void Start()
     {
         Health = DefaultHealth;
@@ -57,8 +52,7 @@ public class HealthComponent : MonoBehaviourEx
 
     private void OnHealthChanged()
     {
-        if (HealthChanged != null)
-            HealthChanged(this, System.EventArgs.Empty);
+        HealthChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void ReceiveDamage(int damage)
@@ -81,7 +75,7 @@ public class HealthComponent : MonoBehaviourEx
         Vector2 screenPos = Camera.main.WorldToScreenPoint(transform.position);
         screenPos.y += 32;
 
-        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration("+" + heal.ToString(), screenPos, 2f);
+        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration("+" + heal, screenPos, 2f);
         dynamicText.ParentToWorld(gameObject);
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }

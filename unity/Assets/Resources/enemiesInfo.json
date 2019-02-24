@@ -31,10 +31,10 @@
           "probability": 0.75,
           "items": [
             {
-              "name": "gel",
+              "name": "Gel",
               "count": {
-                "min": 2,
-                "max": 2
+                "min": 1,
+                "max": 4
               }
             }
           ]

@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-[System.Flags]
+﻿[System.Flags]
 public enum CollisionFlags
 {
     None = 0x00000000,

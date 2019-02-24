@@ -17,7 +17,7 @@ public class JSONUtils {
 
         T obj = JsonConvert.DeserializeObject<T>(textAsset.text, settings);
 
-        UnityEngine.Debug.Log($"Deserialize trace output {traceWriter.ToString()}");
+        Debug.Log($"Deserialize trace output {traceWriter}");
 
         return obj;
 

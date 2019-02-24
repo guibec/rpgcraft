@@ -40,7 +40,7 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         return false;
     }
 
-    static Vector2[] neighbors = {
+    static readonly Vector2[] neighbors = {
         new Vector2(0, 0),
         new Vector2(-1, 1),
         new Vector2(0, 1),
@@ -76,14 +76,9 @@ public class CollisionManager : MonoSingleton<CollisionManager>
     {
         for (int i = 0; i < 9; i++)
         {
-            ChunkInfo chunkInfo;
-            int x, y;
-            GameManager.Instance.GetTileDataFromWorldPos(lastPosition + neighbors[i], out chunkInfo, out x, out y);
+            GameManager.Instance.GetTileDataFromWorldPos(lastPosition + neighbors[i], out var chunkInfo, out var x, out var y);
 
-            if (chunkInfo != null)
-            {
-                chunkInfo.RemoveEntity(entity, x, y);
-            }
+            chunkInfo?.RemoveEntity(entity, x, y);
         }
     }
 
@@ -117,8 +112,8 @@ public class EntitiesWithinEntityRadiusEnumerator : IEnumerable<Entity>
         m_radius = radius;
     }
 
-    private Entity m_source;
-    private float m_radius;
+    private readonly Entity m_source;
+    private readonly float m_radius;
 
     public IEnumerator<Entity> GetEnumerator()
     {

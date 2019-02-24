@@ -415,8 +415,7 @@ public class GameManager : MonoSingleton<GameManager>
         foreach (CollisionInfo ci in broadPhase)
         {
             // now for each collision potential collision, figure out at which 't' we hit the box, return the shortest t in case of multiple collision
-            float tFirst, tLast;
-            bool collide = CollisionCode.IntersectMovingBox2DBox2D(originalBox, ci.Box, displacement, new Vector2(0, 0), out tFirst, out tLast);
+            bool collide = CollisionCode.IntersectMovingBox2DBox2D(originalBox, ci.Box, displacement, new Vector2(0, 0), out var tFirst, out var tLast);
 
             if (collide)
             {
@@ -516,9 +515,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public List<Entity> GetEntitiesFromWorldPos(Vector2 worldPos)
     {
-        ChunkInfo info;
-        int x, y;
-        if (GetTileDataFromWorldPos(worldPos, out info, out x, out y))
+        if (GetTileDataFromWorldPos(worldPos, out var info, out var x, out var y))
         {
             return info.GetEntities(x, y);
         }

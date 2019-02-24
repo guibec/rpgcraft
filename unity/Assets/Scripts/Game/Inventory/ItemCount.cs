@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-    public struct ItemCount
+﻿public struct ItemCount
     {
         public ItemCount(ETile item_, int count_) : this()
         {

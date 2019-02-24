@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
-
-using IronExtension;
 using Debug = UnityEngine.Debug;
 
 public class BiomeMap
@@ -54,12 +52,12 @@ public class BiomeManager
 
     List<Vector2> m_points;
     Texture m_debugTexture;
-    BiomeMap m_biomeMap = new BiomeMap();
+    readonly BiomeMap m_biomeMap = new BiomeMap();
 
     /// <summary>
     /// How each Biome map to a generation template tells us how this area will be generated
     /// </summary>
-    private Dictionary<EBiome, GenerationTemplate> m_biomeToGeneration = new Dictionary<EBiome, GenerationTemplate>(10);
+    private readonly Dictionary<EBiome, GenerationTemplate> m_biomeToGeneration = new Dictionary<EBiome, GenerationTemplate>(10);
 
     public BiomeMap Map
     {
@@ -128,7 +126,7 @@ public class BiomeManager
         m_biomeToGeneration[EBiome.Mountain] = mountainTemplate;
     }
 
-    static public ETile Biome2Tile(EBiome biome)
+    public static ETile Biome2Tile(EBiome biome)
     {
         switch (biome)
         {
@@ -168,10 +166,7 @@ public class BiomeManager
     public void Clear()
     {
         Map.Clear();
-        if (m_points != null)
-        {
-            m_points.Clear();
-        }
+        m_points?.Clear();
         m_debugTexture = null;
     }
 
@@ -194,13 +189,11 @@ public class BiomeManager
         public int Region
         {
             get;
-            set;
         }
 
         public int Distance
         {
             get;
-            set;
         }
     }
 
@@ -289,9 +282,9 @@ public class BiomeManager
 
         GenerateDebugTexture();
         sw.Stop();
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation took {0} ms", sw.ElapsedMilliseconds));
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation min distance took {0} ms", minDistance.ElapsedMilliseconds));
-        Debug.Log(string.Format("BiomeManager: Voronoi tessellation remap took {0} ms", remap.ElapsedMilliseconds));
+        Debug.Log($"BiomeManager: Voronoi tessellation took {sw.ElapsedMilliseconds} ms");
+        Debug.Log($"BiomeManager: Voronoi tessellation min distance took {minDistance.ElapsedMilliseconds} ms");
+        Debug.Log($"BiomeManager: Voronoi tessellation remap took {remap.ElapsedMilliseconds} ms");
     }
 
     private void GenerateDebugTexture()

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Diagnostics;
 
 public struct Box2D 
@@ -69,7 +68,7 @@ public struct Box2D
         }
         set
         {
-            BuildFrom(Center, Width/2, Height);
+            BuildFrom(Center, value/2, Height);
         }
     }
 
@@ -81,7 +80,7 @@ public struct Box2D
         }
         set
         {
-            BuildFrom(Center, Width, Height/2);
+            BuildFrom(Center, Width, value/2);
         }
     }
 
