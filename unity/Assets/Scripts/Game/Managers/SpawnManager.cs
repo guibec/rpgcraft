@@ -55,6 +55,8 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         ETile toSpawn = ETile.Invalid;
         if (tile_ == ETile.Mountain)
             toSpawn = ETile.Stone;
+        else if (tile_ == ETile.Gold_Brick)
+            toSpawn = ETile.Gold_Ore;
         else if (tile_ == ETile.Tree)
             toSpawn = ETile.Wood;
 

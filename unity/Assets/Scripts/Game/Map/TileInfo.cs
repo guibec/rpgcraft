@@ -16,6 +16,7 @@ public enum ETile
     Forest,
     Water,
     Stone,
+    Gold_Ore,
     PickAxe,
     Sword,
     Gel,
