@@ -10,12 +10,13 @@ public enum ETile
     Grass,
     Dirt,
     Mountain,
-    Gold_Ore,
+    Gold_Brick,
     Desert,
     Tree,
     Forest,
     Water,
     Stone,
+    Gold_Ore,
     PickAxe,
     Sword,
     Gel,
@@ -29,8 +30,8 @@ public enum ETile
 // describe a specific tile
 public struct TileInfo
 {
-    public ETile Tile { get; private set; }
-    public float HP { get; private set; }
+    public ETile Tile { get;  }
+    public float HP { get; }
 
     private static readonly TileInfo Invalid = new TileInfo(
         ETile.Invalid);
@@ -42,7 +43,7 @@ public struct TileInfo
 
     public TileInfo(ETile tile_) : this()
     {
-        if (tile_ == ETile.Mountain || Tile == ETile.Gold_Ore || tile_ == ETile.Tree)
+        if (tile_ == ETile.Mountain || tile_ == ETile.Gold_Brick || tile_ == ETile.Tree)
             HP = 100.0f;
         else
             HP = 0.0f;
@@ -74,7 +75,7 @@ public struct TileInfo
     public TileInfo MaxHP()
     {
         float newHp;
-        if (Tile == ETile.Mountain || Tile == ETile.Gold_Ore)
+        if (Tile == ETile.Mountain || Tile == ETile.Gold_Brick)
             newHp = 100.0f;
         else
             newHp = 0.0f;

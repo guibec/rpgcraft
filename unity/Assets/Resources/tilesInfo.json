@@ -38,7 +38,7 @@
       },
       "world": {}
     },
-    "Gold_Ore": {
+    "Gold_Brick": {
       "resource": {
         "filename": "terrain",
         "rect": {
@@ -49,6 +49,18 @@
         }
       },
       "world": {}
+    },
+    "Gold_Ore": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_141",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
     },
     "Desert": {
       "resource": {
