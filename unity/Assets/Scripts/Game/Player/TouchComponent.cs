@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class TouchComponent : MonoBehaviourEx
 {
@@ -38,7 +37,7 @@ public class TouchComponent : MonoBehaviourEx
                 healthComponent.ReceiveDamage(damage);
                 m_hitEntities.Add(other, true);
 
-                Vector2 relativeDir = other.transform.position - this.transform.position;
+                Vector2 relativeDir = other.transform.position - transform.position;
                 enemy.KnockBack(relativeDir.normalized, 3f, 0.05f);
 
                 AudioManager.Instance.PlayHit();

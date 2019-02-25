@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
+﻿using System;
 
 /// <summary>
 /// Derive each state of your machine from this.
@@ -10,7 +8,7 @@ public abstract class State
     /// <summary>
     /// Owner of this state, even if this state is not currently referenced by the machine.
     /// </summary>
-    public StateMachine FSM { get; private set; }
+    public StateMachine FSM { get; }
 
     protected State(StateMachine machine)
     {

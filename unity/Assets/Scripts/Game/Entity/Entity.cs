@@ -1,18 +1,13 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 [System.Serializable]
 public class Entity : MonoBehaviourEx 
 {
-    private bool m_destroying = false;
+    private bool m_destroying;
     private Vector3 m_lastPosition = Vector3.zero;
     protected StateMachine m_fsm;
 
     public int Id { private set; get; }
-
-    public Entity()
-    {
-    }
 
     private void Start()
     {
@@ -69,11 +64,8 @@ public class Entity : MonoBehaviourEx
 
     protected virtual void OnUpdate()
     {
-        if (m_fsm != null)
-        {
-            m_fsm.Update();    
-        }
-        
+        m_fsm?.Update();
+
 
         if (m_destroying)
         {
@@ -102,7 +94,7 @@ public class Entity : MonoBehaviourEx
     protected virtual void OnEntityDestroy()
     {
         CollisionManager.Instance.OnDestroy(this);
-        UnityEngine.Object.Destroy(gameObject);
+        Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }
 
@@ -155,10 +147,7 @@ public class Entity : MonoBehaviourEx
         if (m_fsm.IsInState<EntityState_Live>())
         {
             EntityState_Live psl = m_fsm.FindStateByType<EntityState_Live>();
-            if (psl != null)
-            {
-                psl.KnockBack(dir * force, time);
-            }
+            psl?.KnockBack(dir * force, time);
         }
     }
 

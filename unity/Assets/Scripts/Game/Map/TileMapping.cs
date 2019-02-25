@@ -28,7 +28,7 @@ namespace TileData
 
 public static class TileMapping
 {
-    private static TileData.TilesInfo m_tilesInfo;
+    private static TilesInfo m_tilesInfo;
 
     public static TileResourceDef GetTileResourceDef(ETile tile)
     {
@@ -42,7 +42,7 @@ public static class TileMapping
 
     public static bool BuildFromJSON(string filename)
     {
-        m_tilesInfo = JSONUtils.LoadJSON<TileData.TilesInfo>(filename);
+        m_tilesInfo = JSONUtils.LoadJSON<TilesInfo>(filename);
         return m_tilesInfo != null;
     }
     

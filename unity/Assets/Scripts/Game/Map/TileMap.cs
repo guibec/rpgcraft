@@ -1,7 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
-using System.Runtime.CompilerServices;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -16,7 +14,7 @@ public class TileMap : MonoBehaviourEx
 
     private Vector3? m_currentSelection;
 
-    private bool m_dirty = false;
+    private bool m_dirty;
 
     // Use this for initialization
     void Start () 
@@ -139,7 +137,7 @@ public class TileMap : MonoBehaviourEx
         Shader shader = Shader.Find("dig");
         if (shader == null)
         {
-            UnityEngine.Debug.Log("Could not find shader");
+            Debug.Log("Could not find shader");
         }
 
         int numVertices = m_width*m_height*4;

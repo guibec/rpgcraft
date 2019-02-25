@@ -13,7 +13,7 @@ public abstract class StateMachine
     /// <summary>
     /// Owner of this StateMachine.
     /// </summary>
-    public MonoBehaviour MonoBehaviour { get; private set; }
+    public MonoBehaviour MonoBehaviour { get; }
 
     /// <summary>
     /// Current state.
@@ -46,7 +46,7 @@ public abstract class StateMachine
 
         foreach (Type state in states)
         {
-            State stateInstance = System.Activator.CreateInstance(state, this) as State;
+            State stateInstance = Activator.CreateInstance(state, this) as State;
             m_states[state] = stateInstance;
         }
 

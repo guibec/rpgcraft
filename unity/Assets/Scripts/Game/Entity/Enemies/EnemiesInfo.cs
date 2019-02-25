@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 using System;
 using IronExtension;
 
@@ -111,7 +110,7 @@ namespace LootData
 
             try
             {
-                lootsInfo = JSONUtils.LoadJSON<LootData.LootsInfo>(filename);
+                lootsInfo = JSONUtils.LoadJSON<LootsInfo>(filename);
             }
             catch (Exception e)
             {

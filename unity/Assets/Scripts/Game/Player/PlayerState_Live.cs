@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class PlayerState_Live : EntityState_Live
 {
     private Player m_player;
 
-    private float m_timeBetweenAttack = 1.0f;
-    private float m_timeRemainingForNextAttack = 0.0f;
+    private readonly float m_timeBetweenAttack = 1.0f;
+    private float m_timeRemainingForNextAttack;
 
     public PlayerState_Live(StateMachine psm)
         : base(psm)

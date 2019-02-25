@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 
 public class Player : Entity, ISave<Player.Save_Data>
 {
@@ -116,11 +114,11 @@ public class Player : Entity, ISave<Player.Save_Data>
 
         m_entityRender = GetComponent<EntityRender>();
         HealthComponent = GetComponent<HealthComponent>();
-        Inventory = new Inventory(this);
+        Inventory = new Inventory();
         Experience = new Experience();
     }
 
-    private string[] frameGroups = 
+    private readonly string[] frameGroups = 
     {
         "Up",
         "Down",
@@ -221,8 +219,7 @@ public class Player : Entity, ISave<Player.Save_Data>
 
             if (currentAction.m_durationLeft == 0.0f)
             {
-                if (currentAction.m_completedDelegate != null)
-                    currentAction.m_completedDelegate(currentAction);
+                currentAction.m_completedDelegate?.Invoke(currentAction);
                 currentAction = null;
             }
 
@@ -304,7 +301,7 @@ public class Player : Entity, ISave<Player.Save_Data>
     {
         if (prefab == null)
         {
-            UnityEngine.Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
+            Debug.Log("Can't SpawnAttack since m_attackPrefab is null");
             return null;
         }
 
@@ -427,9 +424,7 @@ public class Player : Entity, ISave<Player.Save_Data>
         float sqrDistance = (worldPos - gameObject.transform.position).sqrMagnitude;
         if (sqrDistance <= 6.0 * 6.0)
         {
-            ChunkInfo chunkInfo;
-            int x, y;
-            bool success = GameManager.Instance.GetTileDataFromWorldPos(worldPos, out chunkInfo, out x, out y);
+            bool success = GameManager.Instance.GetTileDataFromWorldPos(worldPos, out var chunkInfo, out var x, out var y);
 
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)

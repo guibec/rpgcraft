@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Enemy : Entity
 {
@@ -27,7 +26,7 @@ public class Enemy : Entity
             }
             else
             {
-                return this.GetType().Name;
+                return GetType().Name;
             }
         }
     }
@@ -44,7 +43,7 @@ public class Enemy : Entity
                 asPlayer.ReceiveDamage(5);
 
                 // check relative position of player vs enemy
-                Vector2 relativeDir = other.transform.position - this.transform.position;
+                Vector2 relativeDir = other.transform.position - transform.position;
                 asPlayer.KnockBack(relativeDir.normalized, 3f, 0.05f);
             }
         }
@@ -92,7 +91,7 @@ public class Enemy : Entity
         Vector2 screenPos = Camera.main.WorldToScreenPoint(anchor.transform.position);
         screenPos.y += 32;
 
-        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration(string.Format("+{0} XP", xp), screenPos, 2f);
+        UIManager.DynamicText dynamicText = UIManager.Instance.DisplayTextWithDuration($"+{xp} XP", screenPos, 2f);
         dynamicText.Text.color = Color.green;
 
         dynamicText.ParentToWorld(anchor);

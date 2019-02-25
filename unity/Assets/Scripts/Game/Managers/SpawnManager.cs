@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class SpawnManager : MonoSingleton<SpawnManager>
 {
@@ -14,7 +13,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return null;
         }
 
-        var tileResourceDef = TileMapping.GetTileResourceDef((ETile)item);
+        var tileResourceDef = TileMapping.GetTileResourceDef(item);
         if (tileResourceDef == null)
         {
             return null;
@@ -96,7 +95,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
             Vector2 target = (Vector2)ii.gameObject.transform.position + (randDir * dir);
 
-            itemInstanceMover.StartInterpolation(target, 0.3f, null);
+            itemInstanceMover.StartInterpolation(target, 0.3f);
         }
     }
 
@@ -245,8 +244,8 @@ public class SpawnManager : MonoSingleton<SpawnManager>
 
     [Tooltip("How many enemies must be killed before boss is spawned")]
     public int m_numEnemiesBeforeBoss = 30;
-    private int m_numEnemiesKilled = 0;
+    private int m_numEnemiesKilled;
 
-    float m_spawnTime = 0.0f;
-    float m_nextSpawn = 0.0f;
+    float m_spawnTime;
+    float m_nextSpawn;
 }

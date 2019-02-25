@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
 
 public class TimeManager : MonoSingleton<TimeManager> 
@@ -50,6 +49,6 @@ public class TimeManager : MonoSingleton<TimeManager>
 
     // dt info
     private long m_lastTick, m_currentTick;
-    private float m_dt = 0.0f;
-    private long m_frameCount = 0;
+    private float m_dt;
+    private long m_frameCount;
 }

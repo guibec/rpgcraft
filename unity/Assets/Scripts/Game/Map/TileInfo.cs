@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 // TODO: Would be nicer to self-generate
 public enum ETile
@@ -91,6 +88,6 @@ public struct TileInfo
 
     public override string ToString()
     {
-        return base.ToString() + " " + Tile.ToString();
+        return base.ToString() + " " + Tile;
     }
 }

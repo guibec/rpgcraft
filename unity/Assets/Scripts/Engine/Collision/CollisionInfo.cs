@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-/// <summary>
+﻿/// <summary>
 /// Represent an information about a collision
 /// </summary>
 public struct CollisionInfo
@@ -13,7 +10,7 @@ public struct CollisionInfo
         Flags = flags_;
     }
 
-    public Entity Entity { get; private set; }
-    public Box2D Box { get; private set; }
-    public CollisionFlags Flags { get; private set; }
+    public Entity Entity { get; }
+    public Box2D Box { get; }
+    public CollisionFlags Flags { get; }
 }
