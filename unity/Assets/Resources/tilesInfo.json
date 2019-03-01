@@ -227,5 +227,15 @@
       "item": {},
       "weapon": {}
     }
-  }
+  },
+  "mining": [
+    {
+      "Gold_Brick": "Gold_Ore"
+    },
+    {
+      "Iron_Brick":  "Iron_Ore" 
+    }
+  ]
+
+
 }
