@@ -37,7 +37,7 @@ public class InputManager : MonoSingleton<InputManager>
 
         if (itemInstance)
         {
-            UIManager.Instance.UpdateMouseToolTip(screenPos, itemInstance.Item.ToString());
+            UIManager.Instance.UpdateMouseToolTip(screenPos, itemInstance.GetDisplayName());
         }
         else
         {
