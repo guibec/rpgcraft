@@ -228,14 +228,12 @@
       "weapon": {}
     }
   },
-  "mining": [
-    {
-      "Gold_Brick": "Gold_Ore"
-    },
-    {
-      "Iron_Brick":  "Iron_Ore" 
-    }
-  ]
+  "mining": {
+    "Gold_Brick": "Gold_Ore",
+    "Iron_Brick": "Iron_Ore",
+    "Mountain": "Stone",
+    "Tree": "Wood"
+  }
 
 
 }
