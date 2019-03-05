@@ -36,7 +36,11 @@
         },
         "count": 11
       },
-      "world": {}
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
     },
     "Gold_Brick": {
       "resource": {
@@ -48,11 +52,43 @@
           "height": 16
         }
       },
-      "world": {}
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
+    },
+    "Iron_Brick": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 16,
+          "y": 32,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
     },
     "Gold_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_141",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
+    },
+    "Iron_Ore": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_11",
         "rect": {
           "x": 0,
           "y": 0,
@@ -227,5 +263,13 @@
       "item": {},
       "weapon": {}
     }
+  },
+  "mining": {
+    "Gold_Brick": "Gold_Ore",
+    "Iron_Brick": "Iron_Ore",
+    "Mountain": "Stone",
+    "Tree": "Wood"
   }
+
+
 }

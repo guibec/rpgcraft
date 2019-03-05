@@ -8,12 +8,14 @@ public enum ETile
     Dirt,
     Mountain,
     Gold_Brick,
+    Iron_Brick,
     Desert,
     Tree,
     Forest,
     Water,
     Stone,
     Gold_Ore,
+    Iron_Ore,
     PickAxe,
     Sword,
     Gel,
@@ -40,11 +42,7 @@ public struct TileInfo
 
     public TileInfo(ETile tile_) : this()
     {
-        if (tile_ == ETile.Mountain || tile_ == ETile.Gold_Brick || tile_ == ETile.Tree)
-            HP = 100.0f;
-        else
-            HP = 0.0f;
-
+        HP = TileMapping.GetTileProperties(Tile).Durability;
         Tile = tile_;
     }
 
@@ -71,11 +69,7 @@ public struct TileInfo
 
     public TileInfo MaxHP()
     {
-        float newHp;
-        if (Tile == ETile.Mountain || Tile == ETile.Gold_Brick)
-            newHp = 100.0f;
-        else
-            newHp = 0.0f;
+        float newHp = TileMapping.GetTileProperties(Tile).Durability;
 
         TileInfo newTileInfo = new TileInfo(Tile, newHp);
         return newTileInfo;

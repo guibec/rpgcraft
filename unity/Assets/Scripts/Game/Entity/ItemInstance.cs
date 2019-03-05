@@ -42,6 +42,11 @@ public class ItemInstance : Entity
             return new Color32(255, 255, 255, 255);
     }
 
+    public string GetDisplayName()
+    {
+        return Item.ToString().Replace("_", " ");
+    }
+
     public static Color GetColorForItem(ETile item)
     {
         return GetColor32ForItem(item); // Cast operation is overloaded: http://answers.unity3d.com/questions/634208/convert-color32-to-color.html

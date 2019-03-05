@@ -49,15 +49,10 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         return ii;
     }
 
+    // TODO: This should be data driven
     public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
     {
-        ETile toSpawn = ETile.Invalid;
-        if (tile_ == ETile.Mountain)
-            toSpawn = ETile.Stone;
-        else if (tile_ == ETile.Gold_Brick)
-            toSpawn = ETile.Gold_Ore;
-        else if (tile_ == ETile.Tree)
-            toSpawn = ETile.Wood;
+        ETile toSpawn = TileMapping.GetMiningTransform(tile_);
 
         if (toSpawn == ETile.Invalid)
         {
