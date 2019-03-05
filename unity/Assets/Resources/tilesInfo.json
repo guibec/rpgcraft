@@ -36,7 +36,11 @@
         },
         "count": 11
       },
-      "world": {}
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
     },
     "Gold_Brick": {
       "resource": {
@@ -48,7 +52,27 @@
           "height": 16
         }
       },
-      "world": {}
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
+    },
+    "Iron_Brick": {
+      "resource": {
+        "filename": "terrain",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
     },
     "Gold_Ore": {
       "resource": {

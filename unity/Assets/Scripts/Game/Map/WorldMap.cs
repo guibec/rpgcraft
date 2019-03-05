@@ -150,7 +150,10 @@ public class WorldMap : MonoBehaviourEx
 
         // Add Ores to the world
         int howMany = RandomManager.Next(5, 20);
-        DrizzleOres(chunkInfo, 0.75f, howMany);
+        DrizzleOres(chunkInfo, ETile.Gold_Brick, 0.75f, howMany);
+
+        howMany = RandomManager.Next(5, 20);
+        DrizzleOres(chunkInfo, ETile.Iron_Brick, 0.75f, howMany);
 
 #else
         // Chunk goes from -Inf to + Inf
@@ -174,7 +177,7 @@ public class WorldMap : MonoBehaviourEx
     /// <param name="chunkInfo">The chunk to add ores to</param>
     /// <param name="probability">The probability that this chunk will contain ores (if there are stones)</param>
     /// <param name="howMany">How many stones will have the ores</param>
-    private void DrizzleOres(ChunkInfo chunkInfo, float probability, int howMany)
+    private void DrizzleOres(ChunkInfo chunkInfo, ETile ore, float probability, int howMany)
     {
         // Check if we are going to add ORes
         if (!RandomManager.Probability(probability))
@@ -186,7 +189,7 @@ public class WorldMap : MonoBehaviourEx
         HashSet<Vector2> stones = chunkInfo.GetCountOf(ETile.Mountain);
 
         int numOres = Math.Min(stones.Count, howMany);
-        chunkInfo.AddOnePatchToPoints(stones, numOres, ETile.Gold_Brick);
+        chunkInfo.AddOnePatchToPoints(stones, numOres, ore);
     }
 
 
