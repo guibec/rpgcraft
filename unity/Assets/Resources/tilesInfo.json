@@ -62,8 +62,8 @@
       "resource": {
         "filename": "terrain",
         "rect": {
-          "x": 0,
-          "y": 96,
+          "x": 16,
+          "y": 32,
           "width": 16,
           "height": 16
         }
@@ -77,6 +77,18 @@
     "Gold_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_141",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
+    },
+    "Iron_Ore": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_11",
         "rect": {
           "x": 0,
           "y": 0,

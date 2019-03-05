@@ -16,7 +16,7 @@ namespace TileData
         public string Name { get; set; }
         public TileResourceDef Resource { get; set; }
 
-        public TileProperties Properties { get; set; }
+        public TileProperties Properties { get; set; } = new TileProperties();
     }
 
     public class TilesInfo
@@ -38,7 +38,7 @@ public static class TileMapping
 
     public static TileProperties GetTileProperties(ETile tile)
     {
-        return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? null : tileDef.Properties;
+        return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? new TileProperties() : tileDef.Properties;
     }
 
     public static bool BuildFromJSON(string filename)
