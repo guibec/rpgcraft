@@ -429,7 +429,7 @@ public class Player : Entity, ISave<Player.Save_Data>
             TileInfo tileInfo = chunkInfo.ReadSlotValue(x, y);
             if (success)
             {
-                if (selectedItem == ETile.PickAxe && tileInfo.Tile == ETile.Mountain || tileInfo.Tile == ETile.Gold_Brick)
+                if (selectedItem == ETile.PickAxe && tileInfo.HP > 0)
                 {
                     // Try to dig ! Start an action
                     StartAction(EAction.Dig, 0.05f, worldPos, actionCompleted_ =>
@@ -438,7 +438,7 @@ public class Player : Entity, ISave<Player.Save_Data>
 
                         // logic here for now, should be moved as we add more
                         TileInfo newTile = tileInfo.RemoveHP(10.0f);
-                        if (newTile.HP == 0.0f)
+                        if (newTile.HP <= 0.0f)
                         {
                             newTile = newTile.TransformToTile(ETile.Grass);
 
@@ -471,7 +471,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     }
                     );
                 }
-                else if (selectedItem == ETile.Stone && tileInfo.Tile != ETile.Mountain && tileInfo.Tile != ETile.Gold_Brick)
+                else if (selectedItem == ETile.Stone && TileMapping.GetTileProperties(tileInfo.Tile).IsPassable)
                 {
                     if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
                         return false;

@@ -16,13 +16,14 @@ namespace TileData
         public string Name { get; set; }
         public TileResourceDef Resource { get; set; }
 
-        public TileProperties Properties { get; set; }
+        public TileProperties Properties { get; set; } = new TileProperties();
     }
 
     public class TilesInfo
     {
         public string version;
         public Dictionary<ETile, TileDef> tilesInfo = new Dictionary<ETile, TileDef>(50);
+        public Dictionary<ETile, ETile> mining = new Dictionary<ETile, ETile>(50);
     }
 }
 
@@ -37,13 +38,23 @@ public static class TileMapping
 
     public static TileProperties GetTileProperties(ETile tile)
     {
-        return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? null : tileDef.Properties;
+        return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? new TileProperties() : tileDef.Properties;
     }
 
     public static bool BuildFromJSON(string filename)
     {
         m_tilesInfo = JSONUtils.LoadJSON<TilesInfo>(filename);
         return m_tilesInfo != null;
+    }
+
+    /// <summary>
+    /// Return the new ETile from input after it has been mined. If input cannot be mined, return Invalid
+    /// </summary>
+    /// <param name="input">The tile to mine</param>
+    /// <returns></returns>
+    public static ETile GetMiningTransform(ETile input)
+    {
+        return m_tilesInfo.mining.TryGetValue(input, out ETile result) ? result : ETile.Invalid;
     }
     
     public static void GetUVFromTile(TileInfo tileInfo, out Vector2 ul, out Vector2 ur, out Vector2 bl, out Vector2 br)
