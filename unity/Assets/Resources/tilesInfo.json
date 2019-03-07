@@ -74,6 +74,22 @@
         "durability": 100
       }
     },
+    "Emerald": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_179",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
+    },
     "Gold_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_141",
@@ -89,6 +105,18 @@
     "Iron_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_11",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
+    },
+    "Emerald_Gem": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_179",
         "rect": {
           "x": 0,
           "y": 0,
@@ -267,6 +295,7 @@
   "mining": {
     "Gold_Brick": "Gold_Ore",
     "Iron_Brick": "Iron_Ore",
+    "Emerald":  "Emerald_Gem", 
     "Mountain": "Stone",
     "Tree": "Wood"
   }
