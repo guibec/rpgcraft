@@ -74,7 +74,7 @@ public class TileMap : MonoBehaviourEx
                 {
                     TileInfo tileInfo = m_sourceChunk.ReadSlotValue(i, j);
                     int vertexIndex = (j * m_width + i) * 4;
-                    TileMapping.GetUVFromTile(tileInfo, out uvs[vertexIndex], out uvs[vertexIndex + 1], out uvs[vertexIndex + 2], out uvs[vertexIndex + 3]);
+                    TileMapping.Instance.GetUVFromTile(tileInfo, out uvs[vertexIndex], out uvs[vertexIndex + 1], out uvs[vertexIndex + 2], out uvs[vertexIndex + 3]);
                 }
             }
         }
@@ -199,7 +199,6 @@ public class TileMap : MonoBehaviourEx
         if (mc)
             mc.sharedMesh = mesh;
 
-        //if (m_autoSize)
         UpdateUVs();
     }
     

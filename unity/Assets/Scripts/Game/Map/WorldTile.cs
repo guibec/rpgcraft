@@ -2,6 +2,6 @@
 {
     public static bool IsCollision(ETile tile)
     {
-        return !TileMapping.GetTileProperties(tile).IsPassable;
+        return !TileMapping.Instance.GetTileProperties(tile).IsPassable;
     }
 }

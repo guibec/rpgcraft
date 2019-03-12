@@ -13,7 +13,7 @@ namespace TileData
 
     public class TileDef
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public TileResourceDef Resource { get; set; }
 
         public TileProperties Properties { get; set; } = new TileProperties();
@@ -27,24 +27,95 @@ namespace TileData
     }
 }
 
-public static class TileMapping
+public class TileMapping : MonoSingleton<TileMapping>
 {
-    private static TilesInfo m_tilesInfo;
+    private TilesInfo m_tilesInfo;
+    private Texture2D m_atlasTexture;
 
-    public static TileResourceDef GetTileResourceDef(ETile tile)
+    public TileResourceDef GetTileResourceDef(ETile tile)
     {
         return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? null : tileDef.Resource;
     }
 
-    public static TileProperties GetTileProperties(ETile tile)
+    public TileProperties GetTileProperties(ETile tile)
     {
         return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? new TileProperties() : tileDef.Properties;
     }
 
-    public static bool BuildFromJSON(string filename)
+    /// <summary>
+    /// Load the file information from the json file specified in filename. 
+    /// </summary>
+    /// <param name="filename">The json file found in the Resource asset</param>
+    /// <returns>True if the file was properly loaded</returns>
+    public bool BuildFromJSON(string filename)
     {
         m_tilesInfo = JSONUtils.LoadJSON<TilesInfo>(filename);
-        return m_tilesInfo != null;
+
+        if (m_tilesInfo == null)
+        {
+            return false;
+        }
+
+        UpdateAtlas();
+
+        return true;
+    }
+
+    private string[] GetUniqueFilenames()
+    {
+        HashSet<string> filesSet = new HashSet<string>();
+
+        foreach (var tilesInfo in m_tilesInfo.tilesInfo)
+        {
+            if (!tilesInfo.Value.Resource.Filename.Empty)
+            {
+                filesSet.Add(tilesInfo.Value.Resource.Filename);
+            }
+        }
+
+        string[] ret = new string[filesSet.Count];
+        filesSet.CopyTo(ret);
+        return ret;
+    }
+
+    private void UpdateAtlas()
+    {
+        m_atlasTexture = new Texture2D(8192, 8192);
+
+        // first pass loop checking how many unique filenames we have
+        string[] files = GetUniqueFilenames();
+        Texture2D[] textures = new Texture2D[files.Length];
+
+        int texIndex = 0;
+        foreach (var file in files)
+        {
+            foreach (var tileInfo in m_tilesInfo.tilesInfo)
+            {
+                string texturePath = tileInfo.Value.Resource.Filename;
+                if (texturePath == file)
+                {
+                    var texture = Resources.Load<Texture2D>(texturePath);
+                    if (texture != null)
+                    {
+                        textures[texIndex] = texture;
+                        texIndex++;
+                    }
+                    else
+                    {
+                        // TODO: Handle can't load texture
+                    }
+
+                    break;
+                }
+            }
+        }
+        
+        // At this point, all the textures have been loaded into the Texture2D[] field
+        // Create the atlas
+
+        Rect[] rects = m_atlasTexture.PackTextures(textures, 2, 8192, true);
+
+
     }
 
     /// <summary>
@@ -52,12 +123,12 @@ public static class TileMapping
     /// </summary>
     /// <param name="input">The tile to mine</param>
     /// <returns></returns>
-    public static ETile GetMiningTransform(ETile input)
+    public ETile GetMiningTransform(ETile input)
     {
         return m_tilesInfo.mining.TryGetValue(input, out ETile result) ? result : ETile.Invalid;
     }
     
-    public static void GetUVFromTile(TileInfo tileInfo, out Vector2 ul, out Vector2 ur, out Vector2 bl, out Vector2 br)
+    public void GetUVFromTile(TileInfo tileInfo, out Vector2 ul, out Vector2 ur, out Vector2 bl, out Vector2 br)
     {
         if (m_tilesInfo.tilesInfo.TryGetValue(tileInfo.Tile, out var tileDef))
         {

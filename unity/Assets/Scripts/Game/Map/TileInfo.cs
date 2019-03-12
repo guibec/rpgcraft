@@ -44,7 +44,7 @@ public struct TileInfo
 
     public TileInfo(ETile tile_) : this()
     {
-        HP = TileMapping.GetTileProperties(Tile).Durability;
+        HP = TileMapping.Instance.GetTileProperties(Tile).Durability;
         Tile = tile_;
     }
 
@@ -71,7 +71,7 @@ public struct TileInfo
 
     public TileInfo MaxHP()
     {
-        float newHp = TileMapping.GetTileProperties(Tile).Durability;
+        float newHp = TileMapping.Instance.GetTileProperties(Tile).Durability;
 
         TileInfo newTileInfo = new TileInfo(Tile, newHp);
         return newTileInfo;

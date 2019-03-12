@@ -471,7 +471,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     }
                     );
                 }
-                else if (selectedItem == ETile.Stone && TileMapping.GetTileProperties(tileInfo.Tile).IsPassable)
+                else if (selectedItem == ETile.Stone && TileMapping.Instance.GetTileProperties(tileInfo.Tile).IsPassable)
                 {
                     if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
                         return false;
