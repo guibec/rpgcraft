@@ -67,9 +67,10 @@ public class TileMapping : MonoSingleton<TileMapping>
 
         foreach (var tilesInfo in m_tilesInfo.tilesInfo)
         {
-            if (!tilesInfo.Value.Resource.Filename.Empty)
+            string filename = tilesInfo.Value.Resource.Filename;
+            if (filename != "")
             {
-                filesSet.Add(tilesInfo.Value.Resource.Filename);
+                filesSet.Add(filename);
             }
         }
 
@@ -112,8 +113,9 @@ public class TileMapping : MonoSingleton<TileMapping>
         
         // At this point, all the textures have been loaded into the Texture2D[] field
         // Create the atlas
-
         Rect[] rects = m_atlasTexture.PackTextures(textures, 2, 8192, true);
+
+        // The atlas has been created. It's time to update the Rect information for each resource
 
 
     }
