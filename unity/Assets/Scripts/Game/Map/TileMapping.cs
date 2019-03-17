@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using TileData;
 
 namespace TileData
@@ -87,6 +88,12 @@ public class TileMapping : MonoSingleton<TileMapping>
         string[] files = GetUniqueFilenames();
         Texture2D[] textures = new Texture2D[files.Length];
 
+        // we will build this map as we go along
+        Dictionary<string, Texture2D> mapPathToTexture = new Dictionary<string, Texture2D>(files.Length);
+        Dictionary<string, int> mapPathToTextureIndex = new Dictionary<string, int>(files.Length);
+
+        HashSet<string> loadedFiles = new HashSet<string>();
+
         int texIndex = 0;
         foreach (var file in files)
         {
@@ -95,29 +102,64 @@ public class TileMapping : MonoSingleton<TileMapping>
                 string texturePath = tileInfo.Value.Resource.Filename;
                 if (texturePath == file)
                 {
-                    var texture = Resources.Load<Texture2D>(texturePath);
-                    if (texture != null)
+                    // Only load the texture if it has not been loaded so far
+                    if (!loadedFiles.Contains(texturePath))
                     {
-                        textures[texIndex] = texture;
-                        texIndex++;
-                    }
-                    else
-                    {
-                        // TODO: Handle can't load texture
-                    }
+                        var texture = Resources.Load<Texture2D>(texturePath);
+                        if (texture != null)
+                        {
+                            loadedFiles.Add(texturePath);
+                            mapPathToTexture.Add(texturePath, texture);
+                            mapPathToTextureIndex.Add(texturePath, texIndex);
 
-                    break;
+                            textures[texIndex] = texture;
+                            texIndex++;
+                        }
+                        else
+                        {
+                            Debug.LogError($"Could not load Resource {texturePath}");
+                            break;
+                            // TODO: Handle can't load texture
+                        }
+                    }
                 }
             }
         }
-        
+
         // At this point, all the textures have been loaded into the Texture2D[] field
         // Create the atlas
+
+        string allPathsCSV = string.Join(", ", mapPathToTextureIndex.Keys.ToList());
+        Debug.Log($"Going to pack {mapPathToTextureIndex.Count} textures: {allPathsCSV}");
         Rect[] rects = m_atlasTexture.PackTextures(textures, 2, 8192, true);
 
+        if (rects == null)
+        {
+            Debug.LogError("Could not create texture atlas");
+            return;
+        }
+
         // The atlas has been created. It's time to update the Rect information for each resource
+        foreach (var tileInfo in m_tilesInfo.tilesInfo)
+        {
+            string texturePath = tileInfo.Value.Resource.Filename;
 
+            if (texturePath == "")
+                continue;
 
+            bool foundTexture = mapPathToTexture.TryGetValue(texturePath, out Texture2D texture);
+            bool foundIndex = mapPathToTextureIndex.TryGetValue(texturePath, out int textureIndex);
+
+            if (!foundTexture || !foundIndex)
+            {
+                Debug.LogError($"Could not remap texture atlas for {texturePath}");
+                continue;
+            }
+
+            // Remap the UVs
+            Debug.Log($"Remapping {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {rects[textureIndex]}");
+            tileInfo.Value.Resource.Rect = rects[textureIndex];
+        }
     }
 
     /// <summary>
