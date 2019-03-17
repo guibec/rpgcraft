@@ -93,22 +93,11 @@ public class TileMap : MonoBehaviourEx
 
     public void Regenerate()
     {
+        // Assign the unique atlas texture
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+        meshRenderer.material.mainTexture = TileMapping.Instance.AtlasTexture;
+
         BuildMesh();
-        GenerateLevel();
-    }
-
-    private void GenerateLevel()
-    {
-        if (m_autoSize)
-            return;
-
-        for (int j = 0; j <= m_height; ++j)
-        {
-            for (int i = 0; i <= m_width; ++i)
-            {
-                //uvs[j * (m_width + 1) + i] = new Vector2(i / (float)numTilesHorizontal, j / (float)numTilesVertical);
-            }
-        }
     }
 
     private void OnSourceChunkUpdated()

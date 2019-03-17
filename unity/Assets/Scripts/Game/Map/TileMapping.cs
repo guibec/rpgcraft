@@ -33,6 +33,11 @@ public class TileMapping : MonoSingleton<TileMapping>
     private TilesInfo m_tilesInfo;
     private Texture2D m_atlasTexture;
 
+    public Texture2D AtlasTexture
+    {
+        get { return m_atlasTexture; }
+    }
+
     public TileResourceDef GetTileResourceDef(ETile tile)
     {
         return !m_tilesInfo.tilesInfo.TryGetValue(tile, out var tileDef) ? null : tileDef.Resource;
@@ -79,6 +84,8 @@ public class TileMapping : MonoSingleton<TileMapping>
         filesSet.CopyTo(ret);
         return ret;
     }
+
+
 
     private void UpdateAtlas()
     {
@@ -129,9 +136,10 @@ public class TileMapping : MonoSingleton<TileMapping>
         // At this point, all the textures have been loaded into the Texture2D[] field
         // Create the atlas
 
+        const int atlasSize = 8192;
         string allPathsCSV = string.Join(", ", mapPathToTextureIndex.Keys.ToList());
         Debug.Log($"Going to pack {mapPathToTextureIndex.Count} textures: {allPathsCSV}");
-        Rect[] rects = m_atlasTexture.PackTextures(textures, 2, 8192, true);
+        Rect[] rects = m_atlasTexture.PackTextures(textures, 2, atlasSize, true);
 
         if (rects == null)
         {
@@ -157,8 +165,14 @@ public class TileMapping : MonoSingleton<TileMapping>
             }
 
             // Remap the UVs
-            Debug.Log($"Remapping {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {rects[textureIndex]}");
-            tileInfo.Value.Resource.Rect = rects[textureIndex];
+            Rect destRect = rects[textureIndex];
+            //destRect.xMin *= atlasSize;
+            //destRect.xMax *= atlasSize;
+            //destRect.yMin *= atlasSize;
+            //destRect.yMax *= atlasSize;
+
+            Debug.Log($"Remapping {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {destRect}");
+            tileInfo.Value.Resource.Rect = destRect;
         }
     }
 
@@ -204,18 +218,19 @@ public class TileMapping : MonoSingleton<TileMapping>
 
             }
 
-            float pixelOffset = countOffset*tileDef.Resource.Rect.width;
+            //float pixelOffset = countOffset*tileDef.Resource.Rect.width;
+            float pixelOffset = 0;
             bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMin);
             br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
             ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
             ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
             
             // now remap to real UVs and invert Y since I like to count from top to bottom for tile indices
-            const float textureSize = 256f;
-            ul = new Vector2(ul.x / textureSize, (textureSize - ul.y) / textureSize);
-            ur = new Vector2(ur.x / textureSize, (textureSize - ur.y) / textureSize);
-            bl = new Vector2(bl.x / textureSize, (textureSize - bl.y) / textureSize);
-            br = new Vector2(br.x / textureSize, (textureSize - br.y) / textureSize);
+            //const float textureSize = 256f;
+            //ul = new Vector2(ul.x / textureSize, (textureSize - ul.y) / textureSize);
+            //ur = new Vector2(ur.x / textureSize, (textureSize - ur.y) / textureSize);
+            //bl = new Vector2(bl.x / textureSize, (textureSize - bl.y) / textureSize);
+            //br = new Vector2(br.x / textureSize, (textureSize - br.y) / textureSize);
         }
         else
         {
