@@ -95,7 +95,8 @@ public class TileMap : MonoBehaviourEx
     {
         // Assign the unique atlas texture
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-        meshRenderer.material.mainTexture = TileMapping.Instance.AtlasTexture;
+        if (meshRenderer)
+            meshRenderer.material.mainTexture = TileMapping.Instance.AtlasTexture;
 
         BuildMesh();
     }

@@ -31,6 +31,7 @@ namespace TileData
 public class TileMapping : MonoSingleton<TileMapping>
 {
     private TilesInfo m_tilesInfo;
+
     private Texture2D m_atlasTexture;
 
     public Texture2D AtlasTexture
@@ -147,6 +148,16 @@ public class TileMapping : MonoSingleton<TileMapping>
             return;
         }
 
+        // All rects are based from 0 to 1
+        var keys = mapPathToTextureIndex.Keys.ToList();
+        for (int index = 0; index != keys.Count; index++)
+        {
+            Debug.Log($"Texture {keys[index]} now at Rect {rects[index]}");
+        }
+
+        int newTextureWidth = m_atlasTexture.width;
+        int newTextureHeight = m_atlasTexture.height;
+
         // The atlas has been created. It's time to update the Rect information for each resource
         foreach (var tileInfo in m_tilesInfo.tilesInfo)
         {
@@ -164,15 +175,21 @@ public class TileMapping : MonoSingleton<TileMapping>
                 continue;
             }
 
-            // Remap the UVs
-            Rect destRect = rects[textureIndex];
-            //destRect.xMin *= atlasSize;
-            //destRect.xMax *= atlasSize;
-            //destRect.yMin *= atlasSize;
-            //destRect.yMax *= atlasSize;
+            int originalTextureWidth = texture.width;
+            int originalTextureHeight = texture.height;
 
-            Debug.Log($"Remapping {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {destRect}");
-            tileInfo.Value.Resource.Rect = destRect;
+            // Remap to the new UVs
+            Rect destTextureRect = rects[textureIndex];
+            Rect originalRect = tileInfo.Value.Resource.Rect;
+
+            Rect newRect = new Rect();
+            newRect.xMin = destTextureRect.xMin + originalRect.xMin / originalTextureWidth * destTextureRect.width;
+            newRect.yMin = destTextureRect.yMin + originalRect.yMin / originalTextureHeight * destTextureRect.height;
+            newRect.width = originalRect.width / originalTextureWidth * destTextureRect.width;
+            newRect.height = originalRect.height / originalTextureHeight * destTextureRect.height;
+
+            Debug.Log($"Remapping {tileInfo.Key} of {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {newRect}");
+            tileInfo.Value.Resource.Rect = newRect;
         }
     }
 
@@ -225,6 +242,7 @@ public class TileMapping : MonoSingleton<TileMapping>
             ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
             ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
             
+
             // now remap to real UVs and invert Y since I like to count from top to bottom for tile indices
             //const float textureSize = 256f;
             //ul = new Vector2(ul.x / textureSize, (textureSize - ul.y) / textureSize);
