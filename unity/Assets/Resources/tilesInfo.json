@@ -6,7 +6,7 @@
         "filename": "terrain",
         "rect": {
           "x": 0,
-          "y": 0,
+          "y": 240,
           "width": 16,
           "height": 16
         }
@@ -30,7 +30,7 @@
         "filename": "terrain",
         "rect": {
           "x": 0,
-          "y": 240,
+          "y": 0,
           "width": 16,
           "height": 16
         },
@@ -47,7 +47,7 @@
         "filename": "terrain",
         "rect": {
           "x": 0,
-          "y": 32,
+          "y": 208,
           "width": 16,
           "height": 16
         }
@@ -63,7 +63,7 @@
         "filename": "terrain",
         "rect": {
           "x": 16,
-          "y": 32,
+          "y": 208,
           "width": 16,
           "height": 16
         }
@@ -131,7 +131,7 @@
         "filename": "terrain",
         "rect": {
           "x": 32,
-          "y": 16,
+          "y": 224,
           "width": 16,
           "height": 16
         }
@@ -143,7 +143,7 @@
         "filename": "terrain",
         "rect": {
           "x": 240,
-          "y": 80,
+          "y": 160,
           "width": 16,
           "height": 16
         }
@@ -155,7 +155,7 @@
         "filename": "terrain",
         "rect": {
           "x": 240,
-          "y": 0,
+          "y": 240,
           "width": 16,
           "height": 16
         }
@@ -167,7 +167,7 @@
         "filename": "terrain",
         "rect": {
           "x": 208,
-          "y": 192,
+          "y": 48,
           "width": 16,
           "height": 16
         }

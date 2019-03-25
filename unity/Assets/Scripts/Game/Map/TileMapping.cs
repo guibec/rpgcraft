@@ -182,6 +182,11 @@ public class TileMapping : MonoSingleton<TileMapping>
             Rect destTextureRect = rects[textureIndex];
             Rect originalRect = tileInfo.Value.Resource.Rect;
 
+            // Original Rect Coordinates are in :
+            // Pixels, going from upper left to bottom right.
+            // In absolute coordinates (ex: 0 ... 512)
+            // Once converted, they will be in UV, going from bottom-left to upper right
+            // In relative coordinates (0.0f ... 1.0f)
             Rect newRect = new Rect();
             newRect.xMin = destTextureRect.xMin + originalRect.xMin / originalTextureWidth * destTextureRect.width;
             newRect.yMin = destTextureRect.yMin + originalRect.yMin / originalTextureHeight * destTextureRect.height;
