@@ -80,6 +80,7 @@ public class TileMap : MonoBehaviourEx
         }
 
         MeshFilter mf = GetComponent<MeshFilter>();
+        Debug.Log($"The mesh vertices array size={mf.mesh.vertices.Length} while UVs size are={uvs.Length}");
         mf.mesh.uv = uvs;
 
         m_dirty = false;

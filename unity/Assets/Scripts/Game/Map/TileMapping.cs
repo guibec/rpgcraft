@@ -8,7 +8,13 @@ namespace TileData
     public class TileResourceDef
     {
         public string Filename { set; get; }
+
+        // Pixel Rect (ex: going from 0 to 1023)
+        public Rect PixelRect { set; get; }
+
+        // UVs Rect, computed dynamically (going from 0.f to 1.f)
         public Rect Rect { set; get; }
+
         public int Count { set; get; }
     }
 
@@ -85,8 +91,6 @@ public class TileMapping : MonoSingleton<TileMapping>
         filesSet.CopyTo(ret);
         return ret;
     }
-
-
 
     private void UpdateAtlas()
     {
@@ -180,7 +184,7 @@ public class TileMapping : MonoSingleton<TileMapping>
 
             // Remap to the new UVs
             Rect destTextureRect = rects[textureIndex];
-            Rect originalRect = tileInfo.Value.Resource.Rect;
+            Rect originalRect = tileInfo.Value.Resource.PixelRect;
 
             // Original Rect Coordinates are in :
             // Pixels, going from bottom left to upper right.

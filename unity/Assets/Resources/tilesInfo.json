@@ -4,7 +4,7 @@
     "Grass": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 240,
           "width": 16,
@@ -16,7 +16,7 @@
     "Dirt": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 32,
           "y": 0,
           "width": 16,
@@ -28,7 +28,7 @@
     "Mountain": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -45,7 +45,7 @@
     "Gold_Brick": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 208,
           "width": 16,
@@ -61,7 +61,7 @@
     "Iron_Brick": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 16,
           "y": 208,
           "width": 16,
@@ -77,7 +77,7 @@
     "Emerald": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_179",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -93,7 +93,7 @@
     "Gold_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_141",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -105,7 +105,7 @@
     "Iron_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_11",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -117,7 +117,7 @@
     "Emerald_Gem": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_179",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -129,7 +129,7 @@
     "Desert": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 32,
           "y": 224,
           "width": 16,
@@ -141,7 +141,7 @@
     "Tree": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 240,
           "y": 160,
           "width": 16,
@@ -153,7 +153,7 @@
     "Forest": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 240,
           "y": 240,
           "width": 16,
@@ -165,7 +165,7 @@
     "Water": {
       "resource": {
         "filename": "terrain",
-        "rect": {
+        "pixelRect": {
           "x": 208,
           "y": 48,
           "width": 16,
@@ -179,7 +179,7 @@
     "Stone": {
       "resource": {
         "filename": "Item_3",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -191,7 +191,7 @@
     "PickAxe": {
       "resource": {
         "filename": "Item_1",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -203,7 +203,7 @@
     "Sword": {
       "resource": {
         "filename": "Swords",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -216,7 +216,7 @@
     "Gel": {
       "resource": {
         "filename": "Item_23",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -229,7 +229,7 @@
     "Copper_Axe": {
       "resource": {
         "filename": "Item_10",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -242,7 +242,7 @@
     "Wood": {
       "resource": {
         "filename": "Item_94",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 24,
@@ -255,7 +255,7 @@
     "Heart": {
       "resource": {
         "filename": "heart",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -268,7 +268,7 @@
     "Bomb": {
       "resource": {
         "filename": "bomb",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -281,7 +281,7 @@
     "Arrow": {
       "resource": {
         "filename": "arrow",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 256,
