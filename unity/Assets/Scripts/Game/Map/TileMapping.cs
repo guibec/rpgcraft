@@ -197,8 +197,19 @@ public class TileMapping : MonoSingleton<TileMapping>
             newRect.width = originalRect.width / originalTextureWidth * destTextureRect.width;
             newRect.height = originalRect.height / originalTextureHeight * destTextureRect.height;
 
+            // Need to update the PixelRect too !
+            Rect newPixelRect = new Rect();
+            newPixelRect.xMin = newRect.xMin * newTextureWidth;
+            newPixelRect.yMin = newRect.yMin * newTextureHeight;
+            newPixelRect.width = newRect.width * newTextureWidth;
+            newPixelRect.height = newRect.height * newTextureHeight;
+
             Debug.Log($"Remapping {tileInfo.Key} of {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {newRect}");
+            Debug.Log(
+                $"Remapping {tileInfo.Key} of {texturePath} from pixel {tileInfo.Value.Resource.PixelRect} to {newPixelRect}");
+
             tileInfo.Value.Resource.Rect = newRect;
+            tileInfo.Value.Resource.PixelRect = newPixelRect;
         }
     }
 
