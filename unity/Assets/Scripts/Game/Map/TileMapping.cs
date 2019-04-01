@@ -183,7 +183,7 @@ public class TileMapping : MonoSingleton<TileMapping>
             Rect originalRect = tileInfo.Value.Resource.Rect;
 
             // Original Rect Coordinates are in :
-            // Pixels, going from upper left to bottom right.
+            // Pixels, going from bottom left to upper right.
             // In absolute coordinates (ex: 0 ... 512)
             // Once converted, they will be in UV, going from bottom-left to upper right
             // In relative coordinates (0.0f ... 1.0f)
@@ -242,10 +242,10 @@ public class TileMapping : MonoSingleton<TileMapping>
 
             //float pixelOffset = countOffset*tileDef.Resource.Rect.width;
             float pixelOffset = 0;
-            bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMin);
-            br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
-            ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
-            ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
+            ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMin);
+            ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
+            bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
+            br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
             
 
             // now remap to real UVs and invert Y since I like to count from top to bottom for tile indices
