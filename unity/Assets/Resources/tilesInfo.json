@@ -3,10 +3,10 @@
   "tilesInfo": {
     "Grass": {
       "resource": {
-        "filename": "terrain",
+        "filename": "grass",
         "pixelRect": {
-          "x": 0,
-          "y": 240,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -27,10 +27,10 @@
     },
     "Mountain": {
       "resource": {
-        "filename": "terrain",
+        "filename": "mountain",
         "pixelRect": {
-          "x": 0,
-          "y": 0,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         },
