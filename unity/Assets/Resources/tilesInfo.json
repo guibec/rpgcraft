@@ -44,10 +44,10 @@
     },
     "Gold_Brick": {
       "resource": {
-        "filename": "terrain",
+        "filename": "gold_brick",
         "pixelRect": {
-          "x": 0,
-          "y": 208,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -60,10 +60,10 @@
     },
     "Iron_Brick": {
       "resource": {
-        "filename": "terrain",
+        "filename": "iron_brick",
         "pixelRect": {
-          "x": 16,
-          "y": 208,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -128,10 +128,10 @@
     },
     "Desert": {
       "resource": {
-        "filename": "terrain",
+        "filename": "desert",
         "pixelRect": {
-          "x": 32,
-          "y": 224,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -140,10 +140,10 @@
     },
     "Tree": {
       "resource": {
-        "filename": "terrain",
+        "filename": "tree",
         "pixelRect": {
-          "x": 240,
-          "y": 160,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -152,10 +152,10 @@
     },
     "Forest": {
       "resource": {
-        "filename": "terrain",
+        "filename": "tree",
         "pixelRect": {
-          "x": 240,
-          "y": 240,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -164,10 +164,10 @@
     },
     "Water": {
       "resource": {
-        "filename": "terrain",
+        "filename": "water",
         "pixelRect": {
-          "x": 208,
-          "y": 48,
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
