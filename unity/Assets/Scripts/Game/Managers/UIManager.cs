@@ -397,14 +397,13 @@ public class UIManager : MonoSingleton<UIManager>
                     {
                         var tileResourceDef = TileMapping.Instance.GetTileResourceDef(ic.Item);
 
-                        // TODO: Sprite expect Rect here to be in Pixel, not in UVs coordinate
                         Sprite sprite = Sprite.Create(TileMapping.Instance.AtlasTexture, tileResourceDef.PixelRect, Vector2.zero);
                         isu.m_icon.sprite = sprite;
                         isu.m_icon.color = ItemInstance.GetColorForItem(ic.Item);
                         isu.m_icon.rectTransform.SetWidth(32);
                         isu.m_icon.rectTransform.SetHeight(32);
-                        //isu.m_icon.rectTransform.SetWidth(Mathf.Min(tileResourceDef.Rect.width, 32));
-                        //isu.m_icon.rectTransform.SetHeight(Mathf.Min(tileResourceDef.Rect.height, 32));
+                        isu.m_icon.rectTransform.SetWidth(Mathf.Min(tileResourceDef.PixelRect.width, 32));
+                        isu.m_icon.rectTransform.SetHeight(Mathf.Min(tileResourceDef.PixelRect.height, 32));
                     }
                 }
             }
