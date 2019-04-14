@@ -304,13 +304,6 @@ public class TileMapping : MonoSingleton<TileMapping>
                     tileOffset = 10;
             }
 
-
-            if (tileOffset < 0 || tileOffset >= tileDef.Resource.RectList.Count)
-            {
-                int err;
-                err = 0;
-            }
-
             Rect uvRect = tileDef.Resource.RectList[tileOffset];
             ul = new Vector2(uvRect.xMin, uvRect.yMin);
             ur = new Vector2(uvRect.xMax, uvRect.yMin);
