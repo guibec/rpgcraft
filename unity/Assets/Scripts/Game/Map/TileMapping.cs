@@ -1,21 +1,52 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using TileData;
 
 namespace TileData
 {
     public class TileResourceDef
     {
+        // JSON properties
         public string Filename { set; get; }
 
         // Pixel Rect (ex: going from 0 to 1023)
         public Rect PixelRect { set; get; }
 
+        public int Count { set; get; } = 1;
+
+        // DYNAMIC Properties
         // UVs Rect, computed dynamically (going from 0.f to 1.f)
         public Rect Rect { set; get; }
 
-        public int Count { set; get; }
+        /// <summary>
+        /// When a tile can refer to multiple phases, the PixelRect are also stored here.
+        /// </summary>
+        public List<Rect> PixelRectList { get; set; }
+
+        /// <summary>
+        /// When a tile can refer to multiple phases, the other Rect are stored here
+        /// </summary>
+        public List<Rect> RectList { set; get; }
+
+        [OnDeserialized]
+        internal void OnDeserialized(StreamingContext context)
+        {
+            // Build the PixelRectList from 
+            PixelRectList = new List<Rect>(Count == 0 ? 1 : Count);
+            PixelRectList.Add(PixelRect);
+            if (Count > 1)
+            {
+                Rect slidingRect = PixelRect;
+                for (int i = 1; i < Count; i++)
+                {
+                    slidingRect.xMin += slidingRect.width + 2;
+                    slidingRect.xMax += slidingRect.width + 2;
+                    PixelRectList.Add(slidingRect);
+                }
+            }
+        }
     }
 
     public class TileDef
@@ -261,14 +292,6 @@ public class TileMapping : MonoSingleton<TileMapping>
             ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
             bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
             br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
-            
-
-            // now remap to real UVs and invert Y since I like to count from top to bottom for tile indices
-            //const float textureSize = 256f;
-            //ul = new Vector2(ul.x / textureSize, (textureSize - ul.y) / textureSize);
-            //ur = new Vector2(ur.x / textureSize, (textureSize - ur.y) / textureSize);
-            //bl = new Vector2(bl.x / textureSize, (textureSize - bl.y) / textureSize);
-            //br = new Vector2(br.x / textureSize, (textureSize - br.y) / textureSize);
         }
         else
         {

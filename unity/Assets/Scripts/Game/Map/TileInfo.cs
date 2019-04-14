@@ -5,7 +5,6 @@ public enum ETile
 {
     Invalid,
     Grass,
-    Dirt,
     Mountain,
     Gold_Brick,
     Iron_Brick,
