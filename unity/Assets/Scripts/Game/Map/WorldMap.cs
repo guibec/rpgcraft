@@ -155,6 +155,9 @@ public class WorldMap : MonoBehaviourEx
         howMany = RandomManager.Next(5, 20);
         DrizzleOres(chunkInfo, ETile.Iron_Brick, 0.75f, howMany);
 
+        howMany = RandomManager.Next(5, 20);
+        DrizzleOres(chunkInfo, ETile.Emerald, 0.75f, howMany);
+
 #else
         // Chunk goes from -Inf to + Inf
         // But biomeMap goes from 0 to Width / 2

@@ -13,7 +13,7 @@ public class SpawnManager : MonoSingleton<SpawnManager>
             return null;
         }
 
-        var tileResourceDef = TileMapping.GetTileResourceDef(item);
+        var tileResourceDef = TileMapping.Instance.GetTileResourceDef(item);
         if (tileResourceDef == null)
         {
             return null;
@@ -49,10 +49,9 @@ public class SpawnManager : MonoSingleton<SpawnManager>
         return ii;
     }
 
-    // TODO: This should be data driven
     public GameObject SpawnFromTile(ETile tile_, ChunkInfo info_, int x_, int y_)
     {
-        ETile toSpawn = TileMapping.GetMiningTransform(tile_);
+        ETile toSpawn = TileMapping.Instance.GetMiningTransform(tile_);
 
         if (toSpawn == ETile.Invalid)
         {

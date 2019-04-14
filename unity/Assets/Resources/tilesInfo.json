@@ -3,22 +3,10 @@
   "tilesInfo": {
     "Grass": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 0,
-          "y": 0,
-          "width": 16,
-          "height": 16
-        }
-      },
-      "world": {}
-    },
-    "Dirt": {
-      "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 32,
-          "y": 0,
+        "filename": "grass",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -27,10 +15,10 @@
     },
     "Mountain": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 0,
-          "y": 240,
+        "filename": "mountain",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         },
@@ -44,10 +32,10 @@
     },
     "Gold_Brick": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 0,
-          "y": 32,
+        "filename": "gold_brick",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -60,10 +48,26 @@
     },
     "Iron_Brick": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 16,
-          "y": 32,
+        "filename": "iron_brick",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "world": {},
+      "properties": {
+        "isPassable": false,
+        "durability": 100
+      }
+    },
+    "Emerald": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_179",
+        "pixelRect": {
+          "x": 0,
+          "y": 0,
           "width": 16,
           "height": 16
         }
@@ -77,7 +81,7 @@
     "Gold_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_141",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -89,7 +93,19 @@
     "Iron_Ore": {
       "resource": {
         "filename": "extern/terraria/graphics/Item_11",
-        "rect": {
+        "pixelRect": {
+          "x": 0,
+          "y": 0,
+          "width": 16,
+          "height": 16
+        }
+      },
+      "item": {}
+    },
+    "Emerald_Gem": {
+      "resource": {
+        "filename": "extern/terraria/graphics/Item_179",
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -100,10 +116,10 @@
     },
     "Desert": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 32,
-          "y": 16,
+        "filename": "desert",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -112,10 +128,10 @@
     },
     "Tree": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 240,
-          "y": 80,
+        "filename": "tree",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -124,10 +140,10 @@
     },
     "Forest": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 240,
-          "y": 0,
+        "filename": "tree",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -136,10 +152,10 @@
     },
     "Water": {
       "resource": {
-        "filename": "terrain",
-        "rect": {
-          "x": 208,
-          "y": 192,
+        "filename": "water",
+        "pixelRect": {
+          "x": 1,
+          "y": 1,
           "width": 16,
           "height": 16
         }
@@ -151,7 +167,7 @@
     "Stone": {
       "resource": {
         "filename": "Item_3",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -163,7 +179,7 @@
     "PickAxe": {
       "resource": {
         "filename": "Item_1",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -175,7 +191,7 @@
     "Sword": {
       "resource": {
         "filename": "Swords",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -188,7 +204,7 @@
     "Gel": {
       "resource": {
         "filename": "Item_23",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 16,
@@ -201,7 +217,7 @@
     "Copper_Axe": {
       "resource": {
         "filename": "Item_10",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -214,7 +230,7 @@
     "Wood": {
       "resource": {
         "filename": "Item_94",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 24,
@@ -227,7 +243,7 @@
     "Heart": {
       "resource": {
         "filename": "heart",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -240,7 +256,7 @@
     "Bomb": {
       "resource": {
         "filename": "bomb",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 32,
@@ -253,7 +269,7 @@
     "Arrow": {
       "resource": {
         "filename": "arrow",
-        "rect": {
+        "pixelRect": {
           "x": 0,
           "y": 0,
           "width": 256,
@@ -267,6 +283,7 @@
   "mining": {
     "Gold_Brick": "Gold_Ore",
     "Iron_Brick": "Iron_Ore",
+    "Emerald":  "Emerald_Gem", 
     "Mountain": "Stone",
     "Tree": "Wood"
   }

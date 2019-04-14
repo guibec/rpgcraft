@@ -74,12 +74,13 @@ public class TileMap : MonoBehaviourEx
                 {
                     TileInfo tileInfo = m_sourceChunk.ReadSlotValue(i, j);
                     int vertexIndex = (j * m_width + i) * 4;
-                    TileMapping.GetUVFromTile(tileInfo, out uvs[vertexIndex], out uvs[vertexIndex + 1], out uvs[vertexIndex + 2], out uvs[vertexIndex + 3]);
+                    TileMapping.Instance.GetUVFromTile(tileInfo, out uvs[vertexIndex], out uvs[vertexIndex + 1], out uvs[vertexIndex + 2], out uvs[vertexIndex + 3]);
                 }
             }
         }
 
         MeshFilter mf = GetComponent<MeshFilter>();
+        Debug.Log($"The mesh vertices array size={mf.mesh.vertices.Length} while UVs size are={uvs.Length}");
         mf.mesh.uv = uvs;
 
         m_dirty = false;
@@ -93,22 +94,12 @@ public class TileMap : MonoBehaviourEx
 
     public void Regenerate()
     {
+        // Assign the unique atlas texture
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer)
+            meshRenderer.material.mainTexture = TileMapping.Instance.AtlasTexture;
+
         BuildMesh();
-        GenerateLevel();
-    }
-
-    private void GenerateLevel()
-    {
-        if (m_autoSize)
-            return;
-
-        for (int j = 0; j <= m_height; ++j)
-        {
-            for (int i = 0; i <= m_width; ++i)
-            {
-                //uvs[j * (m_width + 1) + i] = new Vector2(i / (float)numTilesHorizontal, j / (float)numTilesVertical);
-            }
-        }
     }
 
     private void OnSourceChunkUpdated()
@@ -199,7 +190,6 @@ public class TileMap : MonoBehaviourEx
         if (mc)
             mc.sharedMesh = mesh;
 
-        //if (m_autoSize)
         UpdateUVs();
     }
     

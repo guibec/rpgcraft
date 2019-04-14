@@ -392,18 +392,18 @@ public class UIManager : MonoSingleton<UIManager>
             {
                 if (isu.m_icon.sprite == null)
                 {
-                    var tileResourceDef = TileMapping.GetTileResourceDef(ic.Item);
-                    Texture2D tex = tileResourceDef != null
-                        ? Resources.Load(tileResourceDef.Filename) as Texture2D
-                        : null;
-
-                    if (tex)
+                    // Everything is now in a giant atlas
+                    if (TileMapping.Instance.AtlasTexture)
                     {
-                        Sprite sprite = Sprite.Create(tex, tileResourceDef.Rect, Vector2.zero);
+                        var tileResourceDef = TileMapping.Instance.GetTileResourceDef(ic.Item);
+
+                        Sprite sprite = Sprite.Create(TileMapping.Instance.AtlasTexture, tileResourceDef.PixelRect, Vector2.zero);
                         isu.m_icon.sprite = sprite;
                         isu.m_icon.color = ItemInstance.GetColorForItem(ic.Item);
-                        isu.m_icon.rectTransform.SetWidth(Mathf.Min(tileResourceDef.Rect.width, 32));
-                        isu.m_icon.rectTransform.SetHeight(Mathf.Min(tileResourceDef.Rect.height, 32));
+                        isu.m_icon.rectTransform.SetWidth(32);
+                        isu.m_icon.rectTransform.SetHeight(32);
+                        isu.m_icon.rectTransform.SetWidth(Mathf.Min(tileResourceDef.PixelRect.width, 32));
+                        isu.m_icon.rectTransform.SetHeight(Mathf.Min(tileResourceDef.PixelRect.height, 32));
                     }
                 }
             }

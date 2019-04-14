@@ -41,7 +41,7 @@ public class PlayerState_Live : EntityState_Live
         float speed = m_player.PlayerSpeed;
 
         TileInfo tileInfo = GameManager.Instance.GetTileFromWorldPos(m_player.transform.position);
-        TileProperties tileProperties = TileMapping.GetTileProperties(tileInfo.Tile);
+        TileProperties tileProperties = TileMapping.Instance.GetTileProperties(tileInfo.Tile);
 
         if (tileProperties != null)
         {

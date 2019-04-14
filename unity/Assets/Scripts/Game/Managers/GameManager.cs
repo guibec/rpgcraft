@@ -54,7 +54,7 @@ public class GameManager : MonoSingleton<GameManager>
         base.Awake();
 
         m_worldMap = GetComponent<WorldMap>();
-        TileMapping.BuildFromJSON("tilesInfo");
+        TileMapping.Instance.BuildFromJSON("tilesInfo");
     }
 
     public void Start()
