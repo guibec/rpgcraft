@@ -34,18 +34,28 @@ namespace TileData
         internal void OnDeserialized(StreamingContext context)
         {
             // Build the PixelRectList from 
-            PixelRectList = new List<Rect>(Count == 0 ? 1 : Count);
+            PixelRectList = new List<Rect>(Count);
+
+            // We also need to prebuild the RectList
+            RectList = new List<Rect>(Count);
+
             PixelRectList.Add(PixelRect);
-            if (Count > 1)
+            RectList.Add(Rect);
+
+            Rect slidingRect = PixelRect;
+            for (int i = 1; i < Count; i++)
             {
-                Rect slidingRect = PixelRect;
-                for (int i = 1; i < Count; i++)
-                {
-                    slidingRect.xMin += slidingRect.width + 2;
-                    slidingRect.xMax += slidingRect.width + 2;
-                    PixelRectList.Add(slidingRect);
-                }
+                float width = slidingRect.width;
+                slidingRect.xMin += width + 2;
+                slidingRect.xMax += width + 2;
+                PixelRectList.Add(slidingRect);
+
+                // Add a dummy Rect for now, it will be fixed in the atlas mapping
+                RectList.Add(Rect);
             }
+
+
+            
         }
     }
 
@@ -171,7 +181,6 @@ public class TileMapping : MonoSingleton<TileMapping>
 
         // At this point, all the textures have been loaded into the Texture2D[] field
         // Create the atlas
-
         const int atlasSize = 8192;
         string allPathsCSV = string.Join(", ", mapPathToTextureIndex.Keys.ToList());
         Debug.Log($"Going to pack {mapPathToTextureIndex.Count} textures: {allPathsCSV}");
@@ -215,32 +224,42 @@ public class TileMapping : MonoSingleton<TileMapping>
 
             // Remap to the new UVs
             Rect destTextureRect = rects[textureIndex];
-            Rect originalRect = tileInfo.Value.Resource.PixelRect;
 
-            // Original Rect Coordinates are in :
-            // Pixels, going from bottom left to upper right.
-            // In absolute coordinates (ex: 0 ... 512)
-            // Once converted, they will be in UV, going from bottom-left to upper right
-            // In relative coordinates (0.0f ... 1.0f)
-            Rect newRect = new Rect();
-            newRect.xMin = destTextureRect.xMin + originalRect.xMin / originalTextureWidth * destTextureRect.width;
-            newRect.yMin = destTextureRect.yMin + originalRect.yMin / originalTextureHeight * destTextureRect.height;
-            newRect.width = originalRect.width / originalTextureWidth * destTextureRect.width;
-            newRect.height = originalRect.height / originalTextureHeight * destTextureRect.height;
+            for (int i = 0; i < tileInfo.Value.Resource.Count; i++)
+            {
+                Rect originalRect = tileInfo.Value.Resource.PixelRectList[i];
 
-            // Need to update the PixelRect too !
-            Rect newPixelRect = new Rect();
-            newPixelRect.xMin = newRect.xMin * newTextureWidth;
-            newPixelRect.yMin = newRect.yMin * newTextureHeight;
-            newPixelRect.width = newRect.width * newTextureWidth;
-            newPixelRect.height = newRect.height * newTextureHeight;
+                // Original Rect Coordinates are in :
+                // Pixels, going from bottom left to upper right.
+                // In absolute coordinates (ex: 0 ... 512)
+                // Once converted, they will be in UV, going from bottom-left to upper right
+                // In relative coordinates (0.0f ... 1.0f)
+                Rect newRect = new Rect();
+                newRect.xMin = destTextureRect.xMin + originalRect.xMin / originalTextureWidth * destTextureRect.width;
+                newRect.yMin = destTextureRect.yMin + originalRect.yMin / originalTextureHeight * destTextureRect.height;
+                newRect.width = originalRect.width / originalTextureWidth * destTextureRect.width;
+                newRect.height = originalRect.height / originalTextureHeight * destTextureRect.height;
 
-            Debug.Log($"Remapping {tileInfo.Key} of {texturePath} from {tileInfo.Value.Resource.Rect} to atlas at {newRect}");
-            Debug.Log(
-                $"Remapping {tileInfo.Key} of {texturePath} from pixel {tileInfo.Value.Resource.PixelRect} to {newPixelRect}");
+                // Need to update the PixelRect too !
+                Rect newPixelRect = new Rect();
+                newPixelRect.xMin = newRect.xMin * newTextureWidth;
+                newPixelRect.yMin = newRect.yMin * newTextureHeight;
+                newPixelRect.width = newRect.width * newTextureWidth;
+                newPixelRect.height = newRect.height * newTextureHeight;
 
-            tileInfo.Value.Resource.Rect = newRect;
-            tileInfo.Value.Resource.PixelRect = newPixelRect;
+                Debug.Log($"Remapping {tileInfo.Key} of {texturePath} from {tileInfo.Value.Resource.RectList[i]} to atlas at {newRect}");
+                Debug.Log(
+                    $"Remapping {tileInfo.Key} of {texturePath} from pixel {tileInfo.Value.Resource.PixelRectList[i]} to {newPixelRect}");
+
+                if (i == 0)
+                {
+                    tileInfo.Value.Resource.Rect = newRect;
+                    tileInfo.Value.Resource.PixelRect = newPixelRect;
+                }
+
+                tileInfo.Value.Resource.RectList[i] = newRect;
+                tileInfo.Value.Resource.PixelRectList[i] = newPixelRect;
+            }
         }
     }
 
@@ -258,40 +277,45 @@ public class TileMapping : MonoSingleton<TileMapping>
     {
         if (m_tilesInfo.tilesInfo.TryGetValue(tileInfo.Tile, out var tileDef))
         {
-            int countOffset = 0;
-            if (tileDef.Resource.Count > 0)
+            int tileOffset = 0;
+            if (tileDef.Resource.Count > 1)
             {
                 if (tileInfo.HP == 100f)
-                    countOffset = 0;
+                    tileOffset = 0;
                 else if (tileInfo.HP >= 90f)
-                    countOffset = 1;
+                    tileOffset = 1;
                 else if (tileInfo.HP >= 80f)
-                    countOffset = 2;
+                    tileOffset = 2;
                 else if (tileInfo.HP >= 70f)
-                    countOffset = 3;
+                    tileOffset = 3;
                 else if (tileInfo.HP >= 60f)
-                    countOffset = 4;
+                    tileOffset = 4;
                 else if (tileInfo.HP >= 50f)
-                    countOffset = 5;
+                    tileOffset = 5;
                 else if (tileInfo.HP >= 40f)
-                    countOffset = 6;
+                    tileOffset = 6;
                 else if (tileInfo.HP >= 30f)
-                    countOffset = 7;
+                    tileOffset = 7;
                 else if (tileInfo.HP >= 20f)
-                    countOffset = 8;
+                    tileOffset = 8;
                 else if (tileInfo.HP >= 10f)
-                    countOffset = 9;
+                    tileOffset = 9;
                 else if (tileInfo.HP >= 0f)
-                    countOffset = 10;
-
+                    tileOffset = 10;
             }
 
-            //float pixelOffset = countOffset*tileDef.Resource.Rect.width;
-            float pixelOffset = 0;
-            ul = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMin);
-            ur = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMin);
-            bl = new Vector2(tileDef.Resource.Rect.xMin + pixelOffset, tileDef.Resource.Rect.yMax);
-            br = new Vector2(tileDef.Resource.Rect.xMax + pixelOffset, tileDef.Resource.Rect.yMax);
+
+            if (tileOffset < 0 || tileOffset >= tileDef.Resource.RectList.Count)
+            {
+                int err;
+                err = 0;
+            }
+
+            Rect uvRect = tileDef.Resource.RectList[tileOffset];
+            ul = new Vector2(uvRect.xMin, uvRect.yMin);
+            ur = new Vector2(uvRect.xMax, uvRect.yMin);
+            bl = new Vector2(uvRect.xMin, uvRect.yMax);
+            br = new Vector2(uvRect.xMax, uvRect.yMax);
         }
         else
         {
