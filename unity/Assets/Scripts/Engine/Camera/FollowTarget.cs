@@ -5,7 +5,7 @@ public class FollowTarget : MonoBehaviourEx {
 
     // target to follow
     public GameObject m_target;
-    public float m_tolerance = 0.7f; // how much we allow the target to go off-center
+    public float m_tolerance = 0.5f; // how much we allow the target to go off-center
 
     private Camera m_camera;
 
