@@ -54,7 +54,7 @@ public class Player : Entity, ISave<Player.Save_Data>
 
     public Vector2 BeforeInputPos { get; set; }
     public Vector2 AfterInputPos { get; set; }
-    public float PlayerSpeed { get; set; } = 8.0f;
+    public float PlayerSpeed { get; set; } = 4.0f;
     
     // Action information
     public enum EAction
