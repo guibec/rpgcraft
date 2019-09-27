@@ -12,6 +12,11 @@ public enum E_Music
 [RequireComponent(typeof(AudioFadeInOut))]
 public class AudioManager : MonoSingleton<AudioManager>
 {
+    public float m_musicVolume = 0.5f;
+    public float m_sfxVolume = 1.0f;
+
+    public float m_timeFadeInOut = 0.5f;
+
     public AudioSource m_worldMapMusic;
     public AudioSource m_battleMusic;
     public AudioSource m_bossBattleMusic;
@@ -35,6 +40,39 @@ public class AudioManager : MonoSingleton<AudioManager>
         base.Awake();
     }
 
+    void OnEnable()
+    {
+        MusicVolume = m_musicVolume;
+    }
+
+    public float MusicVolume
+    {
+        get
+        {
+            return m_musicVolume;
+        }
+        set
+        {
+            m_musicVolume = value = Mathf.Clamp01(value);
+
+            m_worldMapMusic.volume = value;
+            m_battleMusic.volume = value;
+            m_bossBattleMusic.volume = value;
+       }
+    }
+
+    public float SFXVolume
+    {
+        get
+        {
+            return m_sfxVolume;
+        }
+        set
+        {
+            m_sfxVolume = Mathf.Clamp01(value);
+        }
+    }
+
     public void PlayDig()
     {
         PlayAudioClip(m_digAudio);
@@ -50,12 +88,12 @@ public class AudioManager : MonoSingleton<AudioManager>
         PlayAudioClip(m_hitAudio);
     }
 
-    public static void PlaySfx(AudioClip audioClip)
+    public void PlaySfx(AudioClip audioClip)
     {
-        AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position);
+        AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position, m_sfxVolume);
     }
 
-    private static void PlayAudioClip(List<AudioClip> possibilities)
+    private void PlayAudioClip(List<AudioClip> possibilities)
     {
         int indexToPlay = 0;
         if (possibilities == null || possibilities.Count == 0)
@@ -81,7 +119,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         switch (m_currentMusic)
         {
             case E_Music.WorldMap:
-                m_lastWorldMapMusicTime = m_worldMapMusic.time; // technically incorrect due to the fadeout
+                m_lastWorldMapMusicTime = Mathf.Max(m_worldMapMusic.time - m_timeFadeInOut, 0.0f);
                 fadeOutMusic = m_worldMapMusic;
                 break;
             case E_Music.Battle:
@@ -119,7 +157,8 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     public void ChangeMusic(AudioSource fadeOut, AudioSource fadeIn) 
     {
-        m_audioFadeInOut.StartFadeOutIn(fadeOut, 0.5f, fadeIn, 0.5f);
+        m_audioFadeInOut.StartFadeOutIn(fadeOut, m_timeFadeInOut, fadeIn, m_timeFadeInOut);
+        MusicVolume = m_musicVolume;
     }
 
     public E_Music CurrentMusic

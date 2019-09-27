@@ -61,7 +61,7 @@ public class Bomb : Entity
         EntityRender explodeRenderer = GetExplodeRenderer();
         explodeRenderer.SetCurrentGroup("Explode");
 
-        AudioManager.PlaySfx(m_explodeSfx);
+        AudioManager.Instance.PlaySfx(m_explodeSfx);
         yield return new WaitForSeconds(m_explodeSfx.length);
     }
 

@@ -5,14 +5,22 @@ using Newtonsoft.Json;
 public class DebugManager : MonoSingleton<DebugManager>
 {
     private bool m_displayDebug;
+    private bool m_displayOptions;
+
     private Texture m_biomeTexture;
+
+    public float m_defaultOffsetX = 10.0f;
+    public float m_defaultOffsetY = 0.0f;
+    public float m_defaultWidth = 200.0f;
+    public float m_defaultHeight = 20.0f;
+    public float m_spaceY = 30.0f;
 
     protected override void OnUpdate()
     {
         base.OnUpdate();
 
         if (Input.GetKeyDown(KeyCode.Escape))
-        {
+        {            
             m_displayDebug = !m_displayDebug;
         }
     }
@@ -68,33 +76,50 @@ public class DebugManager : MonoSingleton<DebugManager>
     // Make the contents of the window.
     void DoDebugWindow(int windowID)
     {
-        // TODO: button layout / placement should be automated
-        GUI.Button(new Rect(10, 30, 200, 20), "Options...");
+        float offsetX = m_defaultOffsetX;
+        float offsetY = m_defaultOffsetY;
+   
+        if (GUI.Button(new Rect(offsetX, offsetY+=m_spaceY, m_defaultWidth, m_defaultHeight), "Options..."))
+        {
+            m_displayOptions = !m_displayOptions;
+        }
+        
+        if (m_displayOptions)
+        {
+            GUI.Label(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "[Music Volume]");
+            float musicVolume = GUI.HorizontalSlider(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), AudioManager.Instance.MusicVolume, 0.0f, 1.0f);
 
-        if (GUI.Button(new Rect(10, 60, 200, 20), "Generate new level..."))
+            GUI.Label(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "[SFX Volume]");
+            float sfxVolume = GUI.HorizontalSlider(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), AudioManager.Instance.SFXVolume, 0.0f, 1.0f);
+
+            AudioManager.Instance.MusicVolume = musicVolume;
+            AudioManager.Instance.SFXVolume = sfxVolume;
+        }
+
+        if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Generate new level..."))
         {
             RegenerateLevel();
         }
 
-        GUI.Button(new Rect(10, 90, 200, 20), "Save level...");
-        GUI.Button(new Rect(10, 120, 200, 20), "Load level...");
+        GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Save level...");
+        GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Load level...");
 
-        if (GUI.Button(new Rect(10, 150, 200, 20), "(Debug) Save character..."))
+        if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "(Debug) Save character..."))
         {
             SaveCharacter();
         }
 
-        if (GUI.Button(new Rect(10, 180, 200, 20), "(Debug) Load character..."))
+        if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "(Debug) Load character..."))
         {
             LoadCharacter();
         }
 
-        if (GUI.Button(new Rect(10, 210, 200, 20), "(Debug) Reload configuration files"))
+        if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "(Debug) Reload configuration files"))
         {
             ReloadConfiguration();
         }
 
-        if (GUI.Button(new Rect(10, 240, 200, 20), "Back to game"))
+        if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Back to game"))
         {
             m_displayDebug = false;
         }
@@ -103,7 +128,7 @@ public class DebugManager : MonoSingleton<DebugManager>
 
         if (m_biomeTexture != null)
         {
-            GUI.DrawTexture(new Rect(250, 50, 256, 256), m_biomeTexture, ScaleMode.ScaleToFit, true, 0.0f);
+            GUI.DrawTexture(new Rect(offsetX + m_defaultWidth + 46, 50, 256, 256), m_biomeTexture, ScaleMode.ScaleToFit, true, 0.0f);
         }
     }
 
@@ -125,5 +150,13 @@ public class DebugManager : MonoSingleton<DebugManager>
     private void RegenerateLevel()
     {
         GameManager.Instance.RegenerateWorld();
+    }
+
+    public bool Visible
+    {
+        get
+        {
+            return m_displayDebug;
+        }
     }
 }
