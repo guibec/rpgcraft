@@ -83,6 +83,18 @@ public class DebugManager : MonoSingleton<DebugManager>
         {
             m_displayOptions = !m_displayOptions;
         }
+        
+        if (m_displayOptions)
+        {
+            GUI.Label(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "[Music Volume]");
+            float musicVolume = GUI.HorizontalSlider(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), AudioManager.Instance.GetMusicVolume(), 0.0f, 1.0f);
+
+            GUI.Label(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "[SFX Volume]");
+            float sfxVolume = GUI.HorizontalSlider(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), AudioManager.Instance.GetSFXVolume(), 0.0f, 1.0f);
+
+            AudioManager.Instance.SetMusicVolume(musicVolume);
+            AudioManager.Instance.SetSFXVolume(sfxVolume);
+        }
 
         if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Generate new level..."))
         {
