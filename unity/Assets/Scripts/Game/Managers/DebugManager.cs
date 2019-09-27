@@ -151,4 +151,9 @@ public class DebugManager : MonoSingleton<DebugManager>
     {
         GameManager.Instance.RegenerateWorld();
     }
+
+    public bool IsVisible()
+    {
+        return m_displayDebug;
+    }
 }

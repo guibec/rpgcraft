@@ -344,21 +344,24 @@ public class GameManager : MonoSingleton<GameManager>
             Application.Quit();
         }
 
-        // Specific action before
-        if (Input.GetMouseButtonDown(0))
+        if (!DebugManager.Instance.IsVisible())
         {
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            if (MainPlayer.SkillActionAt(worldPos))
-                return;
-        }
+            // Specific action before
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (MainPlayer.SkillActionAt(worldPos))
+                    return;
+            }
 
-        // Digging
-        if (Input.GetMouseButton(0))
-        {
-            // check if player can consume it
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            if (MainPlayer.ActionAt(worldPos))
-                return;
+            // Digging
+            if (Input.GetMouseButton(0))
+            {
+                // check if player can consume it
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (MainPlayer.ActionAt(worldPos))
+                    return;
+            }
         }
 
         KeyCode[] keycodes =
