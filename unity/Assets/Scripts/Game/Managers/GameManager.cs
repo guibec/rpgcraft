@@ -344,7 +344,7 @@ public class GameManager : MonoSingleton<GameManager>
             Application.Quit();
         }
 
-        if (!DebugManager.Instance.IsVisible())
+        if (!DebugManager.Instance.Visible)
         {
             // Specific action before
             if (Input.GetMouseButtonDown(0))

@@ -42,31 +42,35 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     void OnEnable()
     {
-        SetMusicVolume(m_musicVolume);
+        MusicVolume = m_musicVolume;
     }
 
-    public float GetMusicVolume()
+    public float MusicVolume
     {
-        return m_musicVolume;
+        get
+        {
+            return m_musicVolume;
+        }
+        set
+        {
+            m_musicVolume = value = Mathf.Clamp01(value);
+
+            m_worldMapMusic.volume = value;
+            m_battleMusic.volume = value;
+            m_bossBattleMusic.volume = value;
+       }
     }
 
-    public void SetMusicVolume(float value)
+    public float SFXVolume
     {
-        m_musicVolume = value = Mathf.Clamp01(value);
-
-        m_worldMapMusic.volume = value;
-        m_battleMusic.volume = value;
-        m_bossBattleMusic.volume = value;
-    }
-
-    public float GetSFXVolume()
-    {
-        return m_sfxVolume;
-    }
-
-    public void SetSFXVolume(float value)
-    {
-        m_sfxVolume = Mathf.Clamp01(value);
+        get
+        {
+            return m_sfxVolume;
+        }
+        set
+        {
+            m_sfxVolume = Mathf.Clamp01(value);
+        }
     }
 
     public void PlayDig()
@@ -114,7 +118,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         AudioSource fadeOutMusic = null;
         switch (m_currentMusic)
         {
-            case E_Music.WorldMap:                
+            case E_Music.WorldMap:
                 m_lastWorldMapMusicTime = Mathf.Max(m_worldMapMusic.time - m_timeFadeInOut, 0.0f);
                 fadeOutMusic = m_worldMapMusic;
                 break;
@@ -154,7 +158,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void ChangeMusic(AudioSource fadeOut, AudioSource fadeIn) 
     {
         m_audioFadeInOut.StartFadeOutIn(fadeOut, m_timeFadeInOut, fadeIn, m_timeFadeInOut);
-        SetMusicVolume(m_musicVolume);
+        MusicVolume = m_musicVolume;
     }
 
     public E_Music CurrentMusic
