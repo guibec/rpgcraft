@@ -6,7 +6,16 @@ public enum E_Music
     None,
     WorldMap,
     Battle,
-    BossBattle,
+    BossBattle
+}
+
+[System.Serializable]
+public struct MusicSlot
+{
+    public E_Music tag;
+    public AudioSource source;
+    public bool restorePosition;
+    [HideInInspector] public float lastPosition;
 }
 
 [RequireComponent(typeof(AudioFadeInOut))]
@@ -17,10 +26,7 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     public float m_timeFadeInOut = 0.5f;
 
-    public AudioSource m_worldMapMusic;
-    public AudioSource m_battleMusic;
-    public AudioSource m_bossBattleMusic;
-    // Next person to add a music here makes a generic system!
+    public MusicSlot[] m_musics;
 
     // Like this for now, data driven later on
     public List<AudioClip> m_digAudio;
@@ -55,9 +61,13 @@ public class AudioManager : MonoSingleton<AudioManager>
         {
             m_musicVolume = value = Mathf.Clamp01(value);
 
-            m_worldMapMusic.volume = value;
-            m_battleMusic.volume = value;
-            m_bossBattleMusic.volume = value;
+            foreach(MusicSlot music in m_musics)
+            {
+                if (music.source != null)
+                {
+                    music.source.volume = value;
+                }
+            }
        }
     }
 
@@ -116,41 +126,32 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
 
         AudioSource fadeOutMusic = null;
-        switch (m_currentMusic)
+        AudioSource fadeInMusic = null;
+
+        for (var index = 0; index < m_musics.Length; ++index)
         {
-            case E_Music.WorldMap:
-                m_lastWorldMapMusicTime = Mathf.Max(m_worldMapMusic.time - m_timeFadeInOut, 0.0f);
-                fadeOutMusic = m_worldMapMusic;
-                break;
-            case E_Music.Battle:
-                fadeOutMusic = m_battleMusic;
-                break;
-            case E_Music.BossBattle:
-                fadeOutMusic = m_bossBattleMusic;
-                break;
-            default:
-                break;
+            if (m_musics[index].tag == m_currentMusic)
+            {
+                fadeOutMusic = m_musics[index].source;
+
+                if (m_musics[index].source != null && m_musics[index].restorePosition)
+                {
+                    m_musics[index].lastPosition = Mathf.Max(m_musics[index].source.time - m_timeFadeInOut, 0.0f);
+                }
+            }
+            else
+            if (m_musics[index].tag == requestedMusic)
+            {
+                fadeInMusic = m_musics[index].source;
+
+                if (m_musics[index].source != null && m_musics[index].restorePosition)
+                {
+                    m_musics[index].source.time = m_musics[index].lastPosition;
+                }
+            }
         }
 
         m_currentMusic = requestedMusic;
-
-        AudioSource fadeInMusic = null;
-        switch (m_currentMusic)
-        {
-            case E_Music.WorldMap:
-                m_worldMapMusic.time = m_lastWorldMapMusicTime;
-                fadeInMusic = m_worldMapMusic;
-                break;
-            case E_Music.Battle:
-                fadeInMusic = m_battleMusic;
-                break;
-            case E_Music.BossBattle:
-                fadeInMusic = m_bossBattleMusic;
-                break;
-            default:
-                Debug.Break();
-                break;
-        }
 
         ChangeMusic(fadeOutMusic, fadeInMusic);
     }
