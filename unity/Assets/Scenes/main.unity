@@ -1822,9 +1822,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f8588484c2c21846903d3a65d4025ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_worldMapMusic: {fileID: 1789717169}
-  m_battleMusic: {fileID: 294451895}
-  m_bossBattleMusic: {fileID: 1576160839}
+  m_musicVolume: 0.5
+  m_sfxVolume: 1
+  m_timeFadeInOut: 0.5
+  m_musics:
+  - tag: 0
+    source: {fileID: 0}
+    restorePosition: 0
+    lastPosition: 0
+  - tag: 1
+    source: {fileID: 1789717169}
+    restorePosition: 1
+    lastPosition: 0
+  - tag: 2
+    source: {fileID: 294451895}
+    restorePosition: 0
+    lastPosition: 0
+  - tag: 3
+    source: {fileID: 1576160839}
+    restorePosition: 0
+    lastPosition: 0
   m_digAudio: []
   m_cutAudio: []
   m_hitAudio:
