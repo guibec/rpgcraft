@@ -132,6 +132,11 @@ public class AudioManager : MonoSingleton<AudioManager>
         {
             if (m_musics[index].tag == m_currentMusic)
             {
+                if (fadeOutMusic != null)
+                {
+                    Debug.LogWarning("Duplicate tag found (fadeOutMusic): " + m_currentMusic);
+                }
+
                 fadeOutMusic = m_musics[index].source;
 
                 if (m_musics[index].source != null && m_musics[index].restorePosition)
@@ -142,6 +147,11 @@ public class AudioManager : MonoSingleton<AudioManager>
             else
             if (m_musics[index].tag == requestedMusic)
             {
+                if (fadeInMusic != null)
+                {
+                    Debug.LogWarning("Duplicate tag found (fadeInMusic): " + requestedMusic);
+                }
+
                 fadeInMusic = m_musics[index].source;
 
                 if (m_musics[index].source != null && m_musics[index].restorePosition)
