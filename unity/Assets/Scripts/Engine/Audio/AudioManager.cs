@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
 public enum E_Music
 {
     None,
@@ -69,6 +70,19 @@ public class AudioManager : MonoSingleton<AudioManager>
                 Debug.LogError("Invalid sound element " + index + ". It should be: [" + (E_Sound)index + "] not [" + m_sounds[index].tag + "]");
             }
         }
+
+        if (m_musics.Length != System.Enum.GetNames(typeof(E_Music)).Length)
+        {
+            Debug.LogError("Music entries differ [" + m_musics.Length + "] It should be [" + System.Enum.GetNames(typeof(E_Music)).Length + "]");
+        }
+
+        for (int index = 0; index < m_musics.Length; ++index)
+        {
+            if (m_musics[index].tag != (E_Music)index)
+            {
+                Debug.LogError("Invalid music element " + index + ". It should be: [" + (E_Music)index + "] not [" + m_musics[index].tag + "]");
+            }
+        }
     }
 
     void OnEnable()
@@ -135,37 +149,18 @@ public class AudioManager : MonoSingleton<AudioManager>
         AudioSource fadeOutMusic = null;
         AudioSource fadeInMusic = null;
 
-        for (var index = 0; index < m_musics.Length; ++index)
+        int currentMusicIndex = (int)m_currentMusic;
+        fadeOutMusic = m_musics[currentMusicIndex].source;
+        if (m_musics[currentMusicIndex].source != null && m_musics[currentMusicIndex].restorePosition)
         {
-            if (m_musics[index].tag == m_currentMusic)
-            {
-                if (fadeOutMusic != null)
-                {
-                    Debug.LogWarning("Duplicate tag found (fadeOutMusic): " + m_currentMusic);
-                }
+            m_musics[currentMusicIndex].lastPosition = Mathf.Max(m_musics[currentMusicIndex].source.time - m_timeFadeInOut, 0.0f);
+        }
 
-                fadeOutMusic = m_musics[index].source;
-
-                if (m_musics[index].source != null && m_musics[index].restorePosition)
-                {
-                    m_musics[index].lastPosition = Mathf.Max(m_musics[index].source.time - m_timeFadeInOut, 0.0f);
-                }
-            }
-            else
-            if (m_musics[index].tag == requestedMusic)
-            {
-                if (fadeInMusic != null)
-                {
-                    Debug.LogWarning("Duplicate tag found (fadeInMusic): " + requestedMusic);
-                }
-
-                fadeInMusic = m_musics[index].source;
-
-                if (m_musics[index].source != null && m_musics[index].restorePosition)
-                {
-                    m_musics[index].source.time = m_musics[index].lastPosition;
-                }
-            }
+        int requestMusicIndex = (int)requestedMusic;
+        fadeInMusic = m_musics[requestMusicIndex].source;
+        if (m_musics[requestMusicIndex].source != null && m_musics[requestMusicIndex].restorePosition)
+        {
+            m_musics[requestMusicIndex].source.time = m_musics[requestMusicIndex].lastPosition;
         }
 
         m_currentMusic = requestedMusic;
