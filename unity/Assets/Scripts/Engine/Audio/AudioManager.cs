@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
 public enum E_Music
 {
     None,
@@ -18,6 +19,21 @@ public struct MusicSlot
     [HideInInspector] public float lastPosition;
 }
 
+[System.Serializable]
+public enum E_Sound
+{
+    Dig,
+    Cut,
+    Hit,
+}
+
+[System.Serializable]
+public struct SoundSlot
+{
+    public E_Sound tag;
+    public List<AudioClip> clips;
+}
+
 [RequireComponent(typeof(AudioFadeInOut))]
 public class AudioManager : MonoSingleton<AudioManager>
 {
@@ -27,16 +43,10 @@ public class AudioManager : MonoSingleton<AudioManager>
     public float m_timeFadeInOut = 0.5f;
 
     public MusicSlot[] m_musics;
-
-    // Like this for now, data driven later on
-    public List<AudioClip> m_digAudio;
-    public List<AudioClip> m_cutAudio;
-
-    public List<AudioClip> m_hitAudio;
-
     private E_Music m_currentMusic = E_Music.None;
-    private float m_lastWorldMapMusicTime;
-
+        
+    public SoundSlot[] m_sounds = new SoundSlot[System.Enum.GetNames(typeof(E_Sound)).Length];
+   
     private AudioFadeInOut m_audioFadeInOut;
     protected override void Awake()
     {
@@ -44,6 +54,35 @@ public class AudioManager : MonoSingleton<AudioManager>
         DebugUtils.Assert(m_audioFadeInOut != null);
 
         base.Awake();
+    }
+
+    void OnValidate()
+    {
+        if (m_sounds.Length != System.Enum.GetNames(typeof(E_Sound)).Length)
+        {
+            Debug.LogError("Sound entries differ [" + m_sounds.Length + "] It should be [" + System.Enum.GetNames(typeof(E_Sound)).Length + "]");
+        }
+        
+        for (int index = 0; index < m_sounds.Length; ++index)
+        {            
+            if (m_sounds[index].tag != (E_Sound)index)
+            {
+                Debug.LogError("Invalid sound element " + index + ". It should be: [" + (E_Sound)index + "] not [" + m_sounds[index].tag + "]");
+            }
+        }
+
+        if (m_musics.Length != System.Enum.GetNames(typeof(E_Music)).Length)
+        {
+            Debug.LogError("Music entries differ [" + m_musics.Length + "] It should be [" + System.Enum.GetNames(typeof(E_Music)).Length + "]");
+        }
+
+        for (int index = 0; index < m_musics.Length; ++index)
+        {
+            if (m_musics[index].tag != (E_Music)index)
+            {
+                Debug.LogError("Invalid music element " + index + ". It should be: [" + (E_Music)index + "] not [" + m_musics[index].tag + "]");
+            }
+        }
     }
 
     void OnEnable()
@@ -83,39 +122,21 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
     }
 
-    public void PlayDig()
+    public void PlaySound(E_Sound sound)
     {
-        PlayAudioClip(m_digAudio);
-    }
+        int soundIndex = (int)sound;
+        if (m_sounds[soundIndex].clips == null || m_sounds[soundIndex].clips.Count == 0)
+        {
+            Debug.LogWarning("AudioClips empty: " + sound);
+            return;
+        }
 
-    public void PlayCut()
-    {
-        PlayAudioClip(m_cutAudio);
-    }
-
-    public void PlayHit()
-    {
-        PlayAudioClip(m_hitAudio);
+        PlaySfx(m_sounds[soundIndex].clips[Random.Range(0, m_sounds[soundIndex].clips.Count)]);
     }
 
     public void PlaySfx(AudioClip audioClip)
     {
         AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position, m_sfxVolume);
-    }
-
-    private void PlayAudioClip(List<AudioClip> possibilities)
-    {
-        int indexToPlay = 0;
-        if (possibilities == null || possibilities.Count == 0)
-        {
-            return;
-        }
-        else if (possibilities.Count > 1)
-        {
-            indexToPlay = Random.Range(0, possibilities.Count);
-        }
-
-        PlaySfx(possibilities[indexToPlay]);
     }
 
     public void PlayMusic(E_Music requestedMusic)
@@ -128,37 +149,18 @@ public class AudioManager : MonoSingleton<AudioManager>
         AudioSource fadeOutMusic = null;
         AudioSource fadeInMusic = null;
 
-        for (var index = 0; index < m_musics.Length; ++index)
+        int currentMusicIndex = (int)m_currentMusic;
+        fadeOutMusic = m_musics[currentMusicIndex].source;
+        if (m_musics[currentMusicIndex].source != null && m_musics[currentMusicIndex].restorePosition)
         {
-            if (m_musics[index].tag == m_currentMusic)
-            {
-                if (fadeOutMusic != null)
-                {
-                    Debug.LogWarning("Duplicate tag found (fadeOutMusic): " + m_currentMusic);
-                }
+            m_musics[currentMusicIndex].lastPosition = Mathf.Max(m_musics[currentMusicIndex].source.time - m_timeFadeInOut, 0.0f);
+        }
 
-                fadeOutMusic = m_musics[index].source;
-
-                if (m_musics[index].source != null && m_musics[index].restorePosition)
-                {
-                    m_musics[index].lastPosition = Mathf.Max(m_musics[index].source.time - m_timeFadeInOut, 0.0f);
-                }
-            }
-            else
-            if (m_musics[index].tag == requestedMusic)
-            {
-                if (fadeInMusic != null)
-                {
-                    Debug.LogWarning("Duplicate tag found (fadeInMusic): " + requestedMusic);
-                }
-
-                fadeInMusic = m_musics[index].source;
-
-                if (m_musics[index].source != null && m_musics[index].restorePosition)
-                {
-                    m_musics[index].source.time = m_musics[index].lastPosition;
-                }
-            }
+        int requestMusicIndex = (int)requestedMusic;
+        fadeInMusic = m_musics[requestMusicIndex].source;
+        if (m_musics[requestMusicIndex].source != null && m_musics[requestMusicIndex].restorePosition)
+        {
+            m_musics[requestMusicIndex].source.time = m_musics[requestMusicIndex].lastPosition;
         }
 
         m_currentMusic = requestedMusic;
