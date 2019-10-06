@@ -18,6 +18,21 @@ public struct MusicSlot
     [HideInInspector] public float lastPosition;
 }
 
+[System.Serializable]
+public enum E_Sound
+{
+    Dig,
+    Cut,
+    Hit,
+}
+
+[System.Serializable]
+public struct SoundSlot
+{
+    public E_Sound tag;
+    public List<AudioClip> clips;
+}
+
 [RequireComponent(typeof(AudioFadeInOut))]
 public class AudioManager : MonoSingleton<AudioManager>
 {
@@ -27,15 +42,10 @@ public class AudioManager : MonoSingleton<AudioManager>
     public float m_timeFadeInOut = 0.5f;
 
     public MusicSlot[] m_musics;
-
-    // Like this for now, data driven later on
-    public List<AudioClip> m_digAudio;
-    public List<AudioClip> m_cutAudio;
-
-    public List<AudioClip> m_hitAudio;
-
     private E_Music m_currentMusic = E_Music.None;
-
+        
+    public SoundSlot[] m_sounds = new SoundSlot[System.Enum.GetNames(typeof(E_Sound)).Length];
+   
     private AudioFadeInOut m_audioFadeInOut;
     protected override void Awake()
     {
@@ -43,6 +53,22 @@ public class AudioManager : MonoSingleton<AudioManager>
         DebugUtils.Assert(m_audioFadeInOut != null);
 
         base.Awake();
+    }
+
+    void OnValidate()
+    {
+        if (m_sounds.Length != System.Enum.GetNames(typeof(E_Sound)).Length)
+        {
+            Debug.LogError("Sound entries differ [" + m_sounds.Length + "] It should be [" + System.Enum.GetNames(typeof(E_Sound)).Length + "]");
+        }
+        
+        for (int index = 0; index < m_sounds.Length; ++index)
+        {            
+            if (m_sounds[index].tag != (E_Sound)index)
+            {
+                Debug.LogError("Invalid sound element " + index + ". It should be: [" + (E_Sound)index + "] not [" + m_sounds[index].tag + "]");
+            }
+        }
     }
 
     void OnEnable()
@@ -82,39 +108,21 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
     }
 
-    public void PlayDig()
+    public void PlaySound(E_Sound sound)
     {
-        PlayAudioClip(m_digAudio);
-    }
+        int soundIndex = (int)sound;
+        if (m_sounds[soundIndex].clips == null || m_sounds[soundIndex].clips.Count == 0)
+        {
+            Debug.LogWarning("AudioClips empty: " + sound);
+            return;
+        }
 
-    public void PlayCut()
-    {
-        PlayAudioClip(m_cutAudio);
-    }
-
-    public void PlayHit()
-    {
-        PlayAudioClip(m_hitAudio);
+        PlaySfx(m_sounds[soundIndex].clips[Random.Range(0, m_sounds[soundIndex].clips.Count)]);
     }
 
     public void PlaySfx(AudioClip audioClip)
     {
         AudioSource.PlayClipAtPoint(audioClip, GameManager.Instance.m_mainCamera.transform.position, m_sfxVolume);
-    }
-
-    private void PlayAudioClip(List<AudioClip> possibilities)
-    {
-        int indexToPlay = 0;
-        if (possibilities == null || possibilities.Count == 0)
-        {
-            return;
-        }
-        else if (possibilities.Count > 1)
-        {
-            indexToPlay = Random.Range(0, possibilities.Count);
-        }
-
-        PlaySfx(possibilities[indexToPlay]);
     }
 
     public void PlayMusic(E_Music requestedMusic)

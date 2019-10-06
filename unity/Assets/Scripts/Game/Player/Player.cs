@@ -434,7 +434,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     // Try to dig ! Start an action
                     StartAction(EAction.Dig, 0.05f, worldPos, actionCompleted_ =>
                     {
-                        AudioManager.Instance.PlayDig();
+                        AudioManager.Instance.PlaySound(E_Sound.Dig);
 
                         // logic here for now, should be moved as we add more
                         TileInfo newTile = tileInfo.RemoveHP(10.0f);
@@ -456,7 +456,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                     // Try to dig ! Start an action
                     StartAction(EAction.Cut, 0.05f, worldPos, actionCompleted_ =>
                     {
-                        AudioManager.Instance.PlayCut();
+                        AudioManager.Instance.PlaySound(E_Sound.Cut);
 
                         // logic here for now, should be moved as we add more
                         TileInfo newTile = tileInfo.RemoveHP(10.0f);
@@ -483,7 +483,7 @@ public class Player : Entity, ISave<Player.Save_Data>
                         if (CollisionManager.Instance.HasPlayerCollision(chunkInfo, x, y))
                             return;
 
-                        AudioManager.Instance.PlayDig();
+                        AudioManager.Instance.PlaySound(E_Sound.Dig);
 
                         // logic here for now, should be moved as we add more
                         TileInfo newTile = tileInfo.TransformToTile(ETile.Mountain).MaxHP();
