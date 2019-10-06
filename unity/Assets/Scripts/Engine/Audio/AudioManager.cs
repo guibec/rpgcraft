@@ -35,7 +35,6 @@ public class AudioManager : MonoSingleton<AudioManager>
     public List<AudioClip> m_hitAudio;
 
     private E_Music m_currentMusic = E_Music.None;
-    private float m_lastWorldMapMusicTime;
 
     private AudioFadeInOut m_audioFadeInOut;
     protected override void Awake()
