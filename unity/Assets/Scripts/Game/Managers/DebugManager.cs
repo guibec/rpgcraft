@@ -6,6 +6,7 @@ public class DebugManager : MonoSingleton<DebugManager>
 {
     private bool m_displayDebug;
     private bool m_displayOptions;
+    private bool m_showFPS;
 
     private Texture m_biomeTexture;
 
@@ -94,6 +95,8 @@ public class DebugManager : MonoSingleton<DebugManager>
 
             AudioManager.Instance.MusicVolume = musicVolume;
             AudioManager.Instance.SFXVolume = sfxVolume;
+
+            m_showFPS = GUI.Toggle(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), m_showFPS, "Show FPS");
         }
 
         if (GUI.Button(new Rect(offsetX, offsetY += m_spaceY, m_defaultWidth, m_defaultHeight), "Generate new level..."))
@@ -141,6 +144,12 @@ public class DebugManager : MonoSingleton<DebugManager>
         if (m_displayDebug)
         {
             GUI.Window((int)DebugWindowsID.GameMenu, new Rect(Screen.width / 8, Screen.height / 8, Screen.width * 6 / 8, Screen.height * 6 / 8), DoDebugWindow, "Game menu");
+        }
+
+        if (m_showFPS)
+        {
+            float currentFPS = (1f / Time.unscaledDeltaTime);
+            GUI.Label(new Rect(2, 2, Screen.width, Screen.height), string.Format("FPS({0:0.00})", currentFPS));
         }
 
         // Next step, draw the biome map here:
