@@ -89,14 +89,6 @@ public class Slime : Enemy
         }
     }
 
-    // TODO: We will want a some point to distinguish when an Entity is killed a "gameplay" event
-    // and when an Entity is destroyed. When it is killed, we want to give rewards.
-    // when it is destroyed, we may not want to, since there could be other reasons (level ended, some cutscene removed all enemies, etc.)
-    protected override void OnEntityDestroy()
-    {
-        base.OnEntityDestroy();
-    }
-
     protected override void OnUpdate()
     {
         base.OnUpdate();
