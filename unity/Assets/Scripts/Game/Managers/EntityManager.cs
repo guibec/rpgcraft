@@ -45,8 +45,6 @@ public class EntityManager : MonoSingleton<EntityManager>
 
         if (entity_ is Player)
             UnregisterPlayer(entity_ as Player);
-
-        //OnDestroy.Invoke(entity_);
     }
 
     public Player Player

@@ -97,11 +97,4 @@ public class Enemy : Entity
         dynamicText.ParentToWorld(anchor);
         dynamicText.SimpleMovement(new Vector2(0f, 16f), 1f);
     }
-
-    protected override void OnEntityDestroy()
-    {
-
-
-        base.OnEntityDestroy();
-    }
 }

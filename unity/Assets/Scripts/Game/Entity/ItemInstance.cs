@@ -54,10 +54,10 @@ public class ItemInstance : Entity
 
     // http://docs.unity3d.com/ScriptReference/MonoBehaviour.OnDestroy.html
     // OnDestroy will only be called on game objects that have previously been active
-    protected override void OnEntityDestroy()
+    protected override void OnRequestDestroy()
     {
         ItemManager.Instance.Unregister(this);
 
-        base.OnEntityDestroy();
+        base.OnRequestDestroy();
     }
 }

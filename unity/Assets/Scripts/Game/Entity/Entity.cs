@@ -66,10 +66,9 @@ public class Entity : MonoBehaviourEx
     {
         m_fsm?.Update();
 
-
         if (m_destroying)
         {
-            OnEntityDestroy();
+            OnRequestDestroy();
         }
     }
 
@@ -83,17 +82,9 @@ public class Entity : MonoBehaviourEx
         LastPosition = newPosition;
     }
 
-    // This is Unity destroy method.
-    // I would much prefer we always control our life-span through our function that be "surprised" my object is now dead
-    // should be called after everything have been taken care of
-    private void OnDestroy()
+    protected virtual void OnRequestDestroy()
     {
-        //
-    }
-
-    protected virtual void OnEntityDestroy()
-    {
-        CollisionManager.Instance.OnDestroy(this);
+        CollisionManager.Instance.OnRequestDestroy(this);
         Destroy(gameObject);
         EntityManager.Instance.Unregister(this);
     }

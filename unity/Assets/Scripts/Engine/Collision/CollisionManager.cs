@@ -52,7 +52,7 @@ public class CollisionManager : MonoSingleton<CollisionManager>
         new Vector2(1, -1),
     };
     
-    public void OnDestroy(Entity entity)
+    public void OnRequestDestroy(Entity entity)
     {
         RemoveFromChunk(entity, entity.LastPosition);
     }
