@@ -78,7 +78,7 @@ public:
     template< typename T >
     bool Read( T& dest )
     {
-        serialization_assert(T);
+        static_assert(xIs_trivially_copyable(T), "Cannot serialize non-POD object.");
         return Read( &dest, sizeof(T) );
     }
 };

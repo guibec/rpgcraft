@@ -115,7 +115,7 @@ typedef void VoidFunc();
 #   include <kernel.h>
 #   include "../../thirdparty/gcc/intrin_x86.h"
 #elif defined(__GNUC__)
-// this includes all XMMs, which is really not what I want, but GCC isn't keen on letting us jsut include ia32intrin.h.  :(
+// this includes all XMMs, which is really not what I want, but GCC isn't keen on letting us just include ia32intrin.h.  :(
 #   include <x86intrin.h>
 #   include "intrin_x86.h"      // thirdparty provision, mimics microsoft/intel <intrin.h>
 #else
@@ -145,15 +145,11 @@ typedef void VoidFunc();
 
 #if defined(__clang__)
 
-#if !defined(SCE_ORBIS_SDK_VERSION)
-// Note: ORBIS SDK already defines several things that we've also be defining here (yay!)
-//       Such as __unused, __aligned(), __noinline, etc.
 #   define __aligned(x)             __attribute__((aligned(x)))
 #   define __noinline               __attribute__((noinline))
 #   define __unused                 __attribute__((unused))
 #   define __used
 #   define __packed                 __attribute__((packed))
-#endif
 
 #   define sealed                   final
 #   define __alwaysinline           __attribute__((always_inline))
@@ -170,10 +166,8 @@ typedef void VoidFunc();
 #   define __noreturn               __attribute__((noreturn))
 #   define __optimize(n)
 #   define _msc_pragma(str)
-#   if !defined(SCE_ORBIS_SDK_VERSION) || (SCE_ORBIS_SDK_VERSION >> 16) < 0x0200
-#       define  xIs_trivially_copyable(x)   (std::is_trivially_copyable<T>::value)
-#       define  xIs_standard_layout(x)      (std::is_standard_layout<T>::value)
-#   endif
+#   define  xIs_trivially_copyable(x)   (std::is_trivially_copyable<T>::value)
+#   define  xIs_standard_layout(x)      (std::is_standard_layout<T>::value)
 #   define __verify_fmt(fmtpos, vapos)
 
 #   define foreach( typeVar, srclist )  for( typeVar : srclist)
@@ -274,7 +268,7 @@ typedef void VoidFunc();
 #   define  xIs_trivially_copyable(x)      (true)
 #endif
 
-// MSVC has no printf format verification fanciness :(
+// Visual Studio defines _Printf_format_string_ instead of attribute(format) things.
 #   define __verify_fmt(fmtpos, vapos)
 
 #   define foreach( typeVar, srclist )  for each( typeVar in srclist )
@@ -288,6 +282,12 @@ typedef void VoidFunc();
     typedef s32         ssize_t;
 #endif
 
+#endif
+
+#if !defined(_MSC_VER)
+// gcc uses __attribute__((format(printf))), but msvc uses _Printf_format_string_.
+// they need to be placed at different locations though, so two macros are needed.
+#   define _Printf_format_string_
 #endif
 
 #define EXPECT_FALSE(a)             EXPECT((a), (false))

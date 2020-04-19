@@ -758,7 +758,7 @@ void _hostImpl_ImGui_NewFrame()
         io.MouseDown[2] = mouseState.pressed.MBUTTON;
 
         // Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
-        if (io.WantMoveMouse)
+        if (io.WantMoveMouse && g_hWnd)
         {
             POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
             ::ClientToScreen(g_hWnd, &pos);

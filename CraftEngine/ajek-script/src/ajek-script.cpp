@@ -111,7 +111,7 @@ void AjekScript_SetDebugRelativePath(const xString& relpath)
 // luaL_error() is expected to be called from a C function (lualib), which means the parameter for "where" is 1,
 // when we actually need it to be zero when in the context fot he Lua VM itself.
 
-int luaVM_error (lua_State *L, const char *fmt, ...) {
+int luaVM_error (lua_State *L, _Printf_format_string_ const char *fmt, ...) __verify_fmt(2, 3) {
   va_list argp;
   va_start(argp, fmt);
   luaL_where(L, 0);

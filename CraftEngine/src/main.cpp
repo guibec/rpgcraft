@@ -69,8 +69,8 @@ float2 get2dPoint(const float4& point3D, const int2& viewSize, const XMMATRIX& v
     float4 xf2 = xform / xform.w;
 
     // This assumes viewOffset is center of the screen, directx style.
-    float winX = int (roundf((( xform.x + 1 ) / 2.0) * viewSize.x ));
-    float winY = int (roundf((( 1 - xform.y ) / 2.0) * viewSize.y ));
+    float winX = int (roundf((( xform.x + 1 ) / 2.0f) * viewSize.x ));
+    float winY = int (roundf((( 1 - xform.y ) / 2.0f) * viewSize.y ));
 
     // More generic OGL friendly version but I need to determine exactly what viewOffset should be, and I'm lazy --jstine
     //float winX = ((xf2.x + 1.0) / 2.0) * viewSize.x; // + viewOffset

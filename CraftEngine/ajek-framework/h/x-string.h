@@ -165,16 +165,16 @@ public:
     xString&   RemoveAllMutable     (char c);
 // }
 
-    xString&   FormatV              (const char*    fmt, va_list list);
-    xString&   AppendFmtV           (const char*    fmt, va_list list);
-    xString&   Format               (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
-    xString&   AppendFmt            (const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
+    xString&   FormatV              (_Printf_format_string_ const char*    fmt, va_list list);
+    xString&   AppendFmtV           (_Printf_format_string_ const char*    fmt, va_list list);
+    xString&   Format               (_Printf_format_string_ const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (_Printf_format_string_ const char*    fmt=nullptr, ...)     __verify_fmt(2,3);
 
 #if TARGET_MSW
-    xString&   FormatV              (const wchar_t* fmt, va_list list);
-    xString&   AppendFmtV           (const wchar_t* fmt, va_list list);
-    xString&   Format               (const wchar_t* fmt, ...)     __verify_fmt(2,3);
-    xString&   AppendFmt            (const wchar_t* fmt, ...)     __verify_fmt(2,3);
+    xString&   FormatV              (_Printf_format_string_ const wchar_t* fmt, va_list list);
+    xString&   AppendFmtV           (_Printf_format_string_ const wchar_t* fmt, va_list list);
+    xString&   Format               (_Printf_format_string_ const wchar_t* fmt, ...)     __verify_fmt(2,3);
+    xString&   AppendFmt            (_Printf_format_string_ const wchar_t* fmt, ...)     __verify_fmt(2,3);
 #endif
 
     xString    ToLower              ()  const;
@@ -349,7 +349,6 @@ extern  xString     xPosixErrorStr      (int errorval);
 extern  xString     xPosixErrorStr      ();
 extern  bool        xStringToBoolean    (const xString& src);
 extern  bool        xStringIsBoolean    (const xString& src);
-
 
 // --------------------------------------------------------------------------------------
 //  xHexStr (template function)
