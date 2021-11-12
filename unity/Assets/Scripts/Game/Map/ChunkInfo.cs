@@ -309,13 +309,50 @@ public class ChunkInfo
         if (height < 0)
             return false;
 
-        if (width >= Width / 2)
+        if (width * 2 + 1 > Width)
             return false;
-        if (height >= Height / 2)
+        if (height * 2 + 1 > Height)
             return false;
 
-        Maze maze(width, height);
+        Maze maze = new Maze(width, height);
         maze.Generate();
+
+        Debug.Log("Maze: " + maze);
+
+        // Now render it !
+
+        // North and west border
+        int mapOriginX = 0;
+        int mapOriginY = 0;
+
+        for (int x = 0; x < width * 2 + 1; x++)
+        {
+            WriteSlotValue(x, 0, ETile.Mountain);
+        }
+
+        for (int y = 0; y < height * 2 + 1; y++)
+        {
+            WriteSlotValue(0, y, ETile.Mountain);
+        }
+
+        foreach (var cell in maze.GetCells())
+        {
+            int x = cell.x * 2 + 1;
+            int y = cell.y * 2 + 1;
+
+            // itself is good
+            WriteSlotValue(x, y, ETile.Grass);
+
+            // take care of the other borders since they share between tiles
+            var linkTile = cell.IsLinked(cell.South) ? ETile.Grass : ETile.Mountain;
+            WriteSlotValue(mapOriginX + x, mapOriginY + y + 1, linkTile);
+
+            linkTile = cell.IsLinked(cell.East) ? ETile.Grass : ETile.Mountain;
+            WriteSlotValue(mapOriginX + x + 1, mapOriginY + y, linkTile);
+
+            // Corner walls are never passable
+            WriteSlotValue(mapOriginX + x + 1, mapOriginY + y + 1, ETile.Mountain);
+        }
 
         return true;
     }

@@ -145,18 +145,23 @@ public class WorldMap : MonoBehaviourEx
         // Special case for starting spot
         if (x == 0 && y == 0)
         {
-            chunkInfo.GenerateSquare(ETile.Grass, 8, 8);
+            //chunkInfo.GenerateSquare(ETile.Grass, 8, 8);
+            chunkInfo.GenerateMaze(16, 16);
+        }
+        else
+        {
+            // Add Ores to the world
+            int howMany = RandomManager.Next(5, 20);
+            DrizzleOres(chunkInfo, ETile.Gold_Brick, 0.75f, howMany);
+
+            howMany = RandomManager.Next(5, 20);
+            DrizzleOres(chunkInfo, ETile.Iron_Brick, 0.75f, howMany);
+
+            howMany = RandomManager.Next(5, 20);
+            DrizzleOres(chunkInfo, ETile.Emerald, 0.75f, howMany);
+
         }
 
-        // Add Ores to the world
-        int howMany = RandomManager.Next(5, 20);
-        DrizzleOres(chunkInfo, ETile.Gold_Brick, 0.75f, howMany);
-
-        howMany = RandomManager.Next(5, 20);
-        DrizzleOres(chunkInfo, ETile.Iron_Brick, 0.75f, howMany);
-
-        howMany = RandomManager.Next(5, 20);
-        DrizzleOres(chunkInfo, ETile.Emerald, 0.75f, howMany);
 
 #else
         // Chunk goes from -Inf to + Inf
