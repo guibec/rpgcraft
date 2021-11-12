@@ -302,6 +302,24 @@ public class ChunkInfo
         return true;
     }
 
+    public bool GenerateMaze(int width, int height) {
+
+        if (width < 0)
+            return false;
+        if (height < 0)
+            return false;
+
+        if (width >= Width / 2)
+            return false;
+        if (height >= Height / 2)
+            return false;
+
+        Maze maze(width, height);
+        maze.Generate();
+
+        return true;
+    }
+
     private void FillWorldWith(ETile tt)
     {
         //Stopwatch sw = Stopwatch.StartNew();
